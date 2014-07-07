@@ -99,17 +99,19 @@ public final class MicroBenchmark {
 		 */
 		@Override
 		public long setup( long n) {
-			int ni = ( int) Math.min( 1000000, n); // max 1.000.000
 			if ( size > 0) {
+				int ni = ( int) Math.min( 10000000 / size, n); // max 1.000.000
 				lists = new List[ni];
+				BenchLogger.sysout( getClass().getSimpleName() + " creating " + ni + " lists");
 				for ( int i = 0; i < ni; i++) {
 					lists[i] = createList( size);
 				}
-				// BenchLogger.sysout( getClass().getSimpleName() + " created " + size +
-				// " strings");
+				BenchLogger.sysout( ni + " " + getClass().getSimpleName() + " created " + size
+						+ " strings");
+				System.gc();
+				return ni;
 			}
-			System.gc();
-			return ni;
+			return n;
 		}
 
 		/*

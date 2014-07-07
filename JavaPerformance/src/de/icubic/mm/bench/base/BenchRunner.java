@@ -130,6 +130,7 @@ public class BenchRunner implements IBenchRunner {
 		double emptyLoopNanos = 0;
 		// Kalibriere
 		long nruns = 1;
+		benchRunnable.setup( nruns);
 		runNanosActual = run( nruns);
 		// mindestens eine Sekunde, für Hotspot Warmup
 		while ( runNanosActual < 1e9) {
@@ -150,7 +151,7 @@ public class BenchRunner implements IBenchRunner {
 			nruns = 1;
 		}
 		// aufräumen
-		benchRunnable.setup( nruns);
+		nruns = benchRunnable.setup( nruns);
 		// der Run
 		runNanosActual = run( nruns);
 		loopCount = benchRunnable.getTotalRunSize( nruns);
