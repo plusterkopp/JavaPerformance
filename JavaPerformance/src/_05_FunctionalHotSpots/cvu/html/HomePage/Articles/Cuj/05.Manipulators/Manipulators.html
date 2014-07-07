@@ -1,0 +1,629 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <title>Curiously Recurring Manipulators</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CujManipulators"></a>
+<br><font color="#295AB5"><font size=+3>Curiously Recurring Manipulators</font></font>
+<br><font color="#295AB5"><font size=+1>Using Modern Programming Techniques
+for Implementation of Stream Manipulators</font></font>
+<p><font color="#295AB5"><font size=+2>C/C++ Users Journal, June 2001</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p>Let us revisit stream manipulators. We explained them in two articles
+in
+<i>C++ Report</i> last summer [<a href="#1">1</a>, <a href="#2">2</a>].
+The techniques that we demonstrated for implementation of stream manipulators
+were inspired by classic programming techniques that have traditionally
+been used to implement manipulators using the classic, pre-standard IOStreams
+library. We took those old ideas, twisted and tweaked them a little bit,
+and made them work with the new templatized standard IOStreams classes.
+The resulting solution works, but it turned out that the classic techniques
+did not seamlessly fit into the context of a library of templates — and
+almost all standard stream classes are templates these days.
+<p>For those readers who cannot recall the two reference articles, we will
+give a brief recap of the classic-inspired solution and its downside in
+a minute. (Similar ground is covered in our IOStreams book (see <a href="#3">[3]</a>
+on page 176ff.) But what we really want to discuss in this installment
+of our column is not manipulators again, but application of more modern
+programming techniques for implementing stream manipulators in a significantly
+more elegant way. We will be using template programming techniques and
+in particular the Curiously Recurring Template pattern <a href="#4">[4]</a>,
+which is also referred to as <i>parameterized inheritance</i>. And we want
+to demonstrate how useful function object types can be.
+<h3>
+Recap: Implementing Manipulators with Parameters — The Old-Style Approach</h3>
+A stream manipulator is an object that we can insert into an output stream
+or extract from an input stream. The effect of this insertion or extraction
+is a manipulation of the stream. An example is the widely known <b>endl</b>
+manipulator. Here is the classic example of its use:
+<pre>cout &lt;&lt; "Hello World!" &lt;&lt; endl;</pre>
+The <b>endl</b> manipulator is an object that can be inserted into an output
+stream; the effect of which is insertion of an end-of-line character into
+the stream and subsequent flushing of the stream buffers. There are countless
+further pre-defined manipulators in the standard IOStreams library, such
+as <b>boolalpha</b> for switching from numeric to textual display of Boolean
+values, <b>noskipws</b> for suppressing white-space-skipping on input,
+or <b>setw(n)</b> for setting the field width for subsequent output.
+<h4>
+User-Defined Stream Manipulators</h4>
+The IOStreams library is extensible, and we can add user-defined special-purpose
+manipulators. As an example, let us implement a multi-end-of-line manipulator,
+pretty much like the standard manipulator <b>endl</b>, but with the additional
+capability of inserting an arbitrary number of end-of-line characters:
+<pre>cout &lt;&lt; mendl(5);</pre>
+Implementing such a stream manipulator is pretty straightforward. Here
+is a solution:
+<pre>class mendl {
+public:
+&nbsp;&nbsp; explicit mendl(unsigned int i) : i_(i) {}
+private:
+&nbsp;&nbsp; const unsigned int i_;
+
+
+&nbsp;&nbsp; template &lt;class charT, class Traits>
+&nbsp;&nbsp; friend basic_ostream&lt;charT,Traits>&amp;
+&nbsp;&nbsp; operator&lt;&lt;(basic_ostream&lt;charT,Traits>&amp; os
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; , const mendl&amp; w)
+&nbsp;&nbsp; { for (int i=0; i&lt;w.i_; ++i)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; os.put(os.widen('\n'));&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp; os.flush();
+&nbsp;&nbsp; }
+};</pre>
+We must provide an inserter, that is, an overloaded version of <b>operator&lt;&lt;</b>,
+that allows insertion of an object of type <b>mendl</b> into an output
+stream and performs the desired manipulation of the stream. The inserter
+is implemented as a friend of class <b>mendl</b>. An expression such as
+<b>mendl(5)</b>
+is the construction of an unnamed object of type <b>mendl</b>, with the
+integer literal <b>5</b> as the constructor argument. The constructor argument
+is stored as a data member and later used to perform the manipulation.
+That's one of the classic ways of implementing stream manipulators with
+arguments.
+<h4>
+Factoring out Common Code into a Manipulator Base Class</h4>
+Now, manipulators have a lot in common, and in order to avoid redundancies,
+we aimed to factor out all IOStreams-specific tasks into a manipulator
+base class. These IOStreams-specific chores can for instance include proper
+error and exception handling, which uses the stream state judiciously,
+pays attention to the stream's exception mask, and does everything in perfect
+conformance with the IOStreams policies. For our purposes in this article,
+we omit the error and exception handling functionality that the manipulator
+base class could add. For the missing details, see page 186ff in our IOStreams
+book <a href="#3">[3]</a>. The manipulator base class is called <b>one_arg_manip_weh</b>
+and is designed as a base class for output stream manipulators that have
+one argument, like <b>mendl</b>. Here is a sketch of the implementation:
+<pre>template &lt;class charT, class Traits, class Argument>&nbsp;
+class one_arg_manip_weh {
+public:
+&nbsp;typedef void (* manipFct)(basic_ostream&lt;charT,Traits>&amp;, Argument);
+&nbsp;one_arg_manip_weh(manipFct pf, const Argument&amp; arg)
+&nbsp;: pf_(pf), arg_(arg), error_(ios_base::goodbit) {}
+private:
+&nbsp;manipFct pf_;
+&nbsp;const Argument arg_;
+&nbsp;ios_base::iostate error_;
+&nbsp;&nbsp;&nbsp;&nbsp;
+friend
+void do_manip(basic_ostream&lt;charT,Traits>&amp; str,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; const one_arg_manip_weh&lt;charT,Traits, Argument>&amp; oamw);
+};
+
+
+template &lt;class charT, class Traits, class Argument>
+void do_manip(basic_ostream&lt;charT,Traits>&amp; str,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; const one_arg_manip_weh&lt;charT,Traits, Argument>&amp; oamw)
+{
+// do lots of stuff, and in particular call the manipulation function
+&nbsp; ...
+&nbsp; oamw.pf_(str,oamw.arg_);
+&nbsp; ...
+}
+
+template &lt;class charT, class Traits, class Argument>
+basic_ostream&lt;charT,Traits>&amp; operator&lt;&lt;&nbsp;
+(basic_ostream&lt;charT,Traits>&amp; os,&nbsp;
+&nbsp;const one_arg_manip_weh&lt;charT,Traits,Argument>&amp; oamw)
+{
+&nbsp;if(os.good())
+&nbsp;&nbsp;&nbsp; do_manip&lt;charT,Traits,Argument>(os,oamw);
+&nbsp;return os;
+}</pre>
+Again, this solution is modeled after classic IOStreams solutions. In fact,
+you will find a similar base class in the IOStreams library, often named
+<b>smanip</b>
+or <b>_Smanip</b> or the like, which is used for implementation of the
+pre-defined standard manipulators with parameters such as <b>setw(n)</b>
+for instance. The key idea here is that the manipulator base class stores
+the manipulator argument and a function that performs the actual manipulation.
+The manipulator base class provides the required overloaded shift operators
+and implements them by calling the manipulation function with the stored
+argument. Note, that the manipulator function is represented in the form
+of a function pointer. That's a classic C/C++ technique of passing around
+functions.
+<p>Using this base class, we could re-implement the <b>mendl</b> manipulator
+as follows:
+<pre>template &lt;class charT,class Traits=char_traits&lt;charT> >
+class mendl&nbsp;
+: public one_arg_manip_weh&lt;charT,Traits,unsigned int>
+{public:
+&nbsp; explicit mendl(unsigned int i)&nbsp;
+&nbsp; : one_arg_manip_weh&lt;charT,Traits,unsigned int>(mendl::fct,i)
+&nbsp; { }
+&nbsp;private:
+&nbsp; static void fct (basic_ostream&lt;charT,Traits>&amp; os,&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; unsigned int n)&nbsp;
+&nbsp; { for (int i=0; i&lt;n; ++i)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; os.put(os.widen('\n'));&nbsp;
+&nbsp;&nbsp;&nbsp; os.flush();
+&nbsp; }
+};</pre>
+For better encapsulation, we provide the required manipulation function
+as a static member function of class <b>mendl</b> and pass the pointer
+to that function to the manipulator base class along with the argument
+that must later be passed to the function when it is invoked.
+<h4>
+The Caveat</h4>
+So far so good. But now we face a minor inconvenience that stems from the
+fact that the standard IOStreams classes are templates taking the character
+type as a template argument. In order to make the manipulator base class
+universally applicable, that is, to all kinds of streams regardless of
+their character type, the manipulator base class is a template, too. Consequently,
+the derived manipulator class <b>mendl</b> is a class template as well.
+<p>With <b>mendl</b> being a template, the manipulator expression is less
+convenient than it used to be. Each time we manipulate a stream by inserting
+a <b>mendl</b> object, we need to know the character type of that stream.
+Instead of simply saying:
+<pre>cout &lt;&lt; mendl(5); // wrong ! — does not compile
+wcout &lt;&lt; mendl(5); // wrong ! — does not compile</pre>
+we now have to specify the template arguments and say:
+<pre>cout &lt;&lt; mendl&lt;char>(5);
+wcout &lt;&lt; mendl&lt;wchar_t>(5);</pre>
+That's ugly. How did that happen? Look at our manipulation function <b>mendl::fct</b>.
+It calls the stream function <b>flush</b>, which is a member function of
+output streams, that is, of streams derived from class <b>basic_ostream&lt;charT,Traits></b>.
+For this reason, it must take a <b>basic_ostream&lt;charT,Traits>&amp;</b>
+as an argument, and since it is a static member function of class <b>mendl</b>,
+it turns the entire class into a class template. There is no way to avoid
+the templatization of class <b>mendl</b> with this approach.
+<p>In addition, our manipulator base class has other deficiencies: it can
+only serve as a base class for manipulators with exactly one argument,
+because it has only one data member for storing arguments and it is tied
+to a specific function signature for declaring the function pointer type.
+<p>Can we find an alternative and more flexible solution for the manipulator
+base class? The goal is to provide a manipulator base class that does not
+require the manipulator type to be a template and allows manipulators with
+an arbitrary number and type of arguments. The intended usage for manipulators
+implemented in terms of this new manipulator base class should ideally
+be as convenient as:
+<pre>cout &lt;&lt; mendl(5);
+wcout &lt;&lt; mendl(5);
+cout &lt;&lt; multi('*',80);</pre>
+where <b>multi</b> is a manipulator with two arguments that insert a given
+character n times into an output stream.
+<h3>
+Implementing Manipulators with Parameters — The Modern Approach</h3>
+In order to find a better solution, let us look at the original solution
+again. Here is our original base class template:
+<pre>template &lt;class charT, class Traits, class Argument>&nbsp;
+class one_arg_manip_weh {
+public:
+&nbsp;typedef void (* manipFct)(basic_ostream&lt;charT,Traits>&amp;, Argument);
+&nbsp;one_arg_manip_weh(manipFct pf, const Argument&amp; arg)
+&nbsp;: pf_(pf), arg_(arg), error_(ios_base::goodbit) {}
+private:
+&nbsp;manipFct pf_;
+&nbsp;const Argument arg_;
+&nbsp;...&nbsp;
+friend
+void do_manip(basic_ostream&lt;charT,Traits>&amp; str,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; const one_arg_manip_weh&lt;charT,Traits, Argument>&amp; oamw);
+};
+
+template &lt;class charT, class Traits, class Argument>
+void do_manip(basic_ostream&lt;charT,Traits>&amp; str,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; const one_arg_manip_weh&lt;charT,Traits, Argument>&amp; oamw)
+{&nbsp; ... oamw.pf_(str,oamw.arg_); ...&nbsp; }
+
+template &lt;class charT, class Traits, class Argument>
+basic_ostream&lt;charT,Traits>&amp; operator&lt;&lt;&nbsp;
+(basic_ostream&lt;charT,Traits>&amp; os,&nbsp;
+&nbsp;const one_arg_manip_weh&lt;charT,Traits,Argument>&amp; oamw)
+{
+&nbsp;if(os.good())
+&nbsp;&nbsp;&nbsp; do_manip&lt;charT,Traits,Argument>(os,oamw);
+&nbsp;return os;
+}</pre>
+
+<h4>
+Replacing Function Pointers by Function Objects</h4>
+The manipulator base class stores a pointer to the manipulation function
+and the argument and later uses both in the shift operator for performing
+the actual manipulation by invoking the manipulation function with its
+argument (indirectly via the helper function <b>do_manip</b>). Instead
+of using a function pointer, we could use a function object.
+<p>What is a function object? It is an object that can be called. What
+does it mean to call a function object? It means invocation of a member
+function of the respective function object type. Often this member function
+is an overloaded version of the function call operator, which is just a
+special case that allows for function call syntax. It is not required,
+and in our examples below, we will use a member function named <b>fct</b>
+instead.
+<p>Where is the advantage over a function pointer? A function object can
+know how to "call itself." In particular, it could store the parameters
+that control the manipulation as data members. When we invoke a function
+through a pointer, then we have to provide the function argument separately.
+In contrast, when we invoke a function object, then this invocation is
+a call to a member function, which has access to the function object's
+data members. The information that is provided in form of the function
+argument (in the pointer solution) could already be contained in the function
+object as a data member. Let us see how this can be done.
+<p>Here is the old implementation of <b>mendl</b>, where the manipulation
+function is a static member function that takes one argument, namely the
+number of times it must print the end-of-line character:
+<pre>template &lt;class charT,class Traits=char_traits&lt;charT> >
+class mendl&nbsp;
+: public one_arg_manip_weh&lt;charT,Traits,unsigned int>
+{public:
+&nbsp; explicit mendl(unsigned int i)&nbsp;
+&nbsp; : one_arg_manip_weh&lt;charT,Traits,unsigned int>(mendl::fct,i)
+&nbsp; { }
+&nbsp;private:
+&nbsp; static void fct (basic_ostream&lt;charT,Traits>&amp; os,&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; unsigned int n)&nbsp;
+&nbsp; { for (int i=0; i&lt;n; ++i)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; os.put(os.widen('\n'));&nbsp;
+&nbsp;&nbsp;&nbsp; os.flush();
+&nbsp; }
+};</pre>
+Note, that the constructor of <b>mendl</b> receives the integral value
+as an argument that will later be passed as a function argument to the
+static member function <b>mendl::fct</b>. This integral value is handed
+over to the manipulator base class along with the pointer to the static
+member function <b>mendl::fct</b>.
+<p>If we implemented <b>mendl</b> as a function object type, then it could
+look like this:
+<pre>&nbsp;
+class mendl : public <i>manipBase</i> {
+public:
+&nbsp;&nbsp; mendl(unsigned int n)&nbsp;
+&nbsp;&nbsp; : <i>manipBase(...)</i>, how_many_(n) {}
+private:
+&nbsp;&nbsp; const unsigned int how_many_;
+public:
+&nbsp;&nbsp; template &lt;class Ostream>
+&nbsp;&nbsp; Ostream&amp; fct(Ostream&amp; os) const
+&nbsp;&nbsp; {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for (unsigned int i=0; i&lt;how_many_; ++i)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; os.put(os.widen('\n'));
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; os.flush();
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return os;
+&nbsp;&nbsp; }
+};</pre>
+The constructor of <b>mendl</b> still receives the integral value that
+will later be passed as a function argument to the member function <b>fct</b>.
+But this time, it stores the integral value as a data member and uses this
+data member in the implementation of its non-static member function <b>fct</b>.
+<h4>
+Implementing the New Manipulator Base Class</h4>
+We've left open so far what the manipulator base class would then look
+like. Obviously it does not have to store the function argument any longer,
+since the <b>mendl</b> object knows itself how many times it must print
+the end-of-line character. All that the base class needs for performing
+the manipulation is a <b>mendl</b> object whose member function <b>fct</b>
+performs the manipulation. Instead of providing a function pointer to the
+base class, we pass the manipulator object itself to the base class:
+<pre>class mendl : public <i>manipBase</i> {
+public:
+&nbsp;&nbsp; mendl(unsigned int n)&nbsp;
+&nbsp;&nbsp; : <i>manipBase</i>(<b>*this</b>), how_many_(n) {}
+private:
+&nbsp;&nbsp; const unsigned int how_many_;
+public:
+&nbsp;&nbsp; template &lt;class Ostream>
+&nbsp;&nbsp; Ostream&amp; fct(Ostream&amp; os) const;
+};</pre>
+The manipulator base class must have a constructor that receives the manipulator
+function object and stores it somewhere. We'll look into the details of
+storing and accessing the function object later.
+<p>Ideally, the manipulator base class should work with all types of manipulators,
+and this is easily achievable by making it a template that takes the manipulator
+type as a template parameter.
+<p>In addition, the manipulator base class must provide the required shift
+operator for manipulator objects. As before, we implement the shift operator
+in terms of a helper function that does the actual work. The helper function
+was formerly named <b>do_manip</b>; we renamed it to <b>manipulate</b>
+for better distinction. The helper function performs the manipulation by
+invoking the manipulator function object, (that is, its member function
+<b>fct</b>),
+which was previously done through the function pointer, and does all the
+other interesting IOStream-specific things exactly as before.
+<p>Here is tentative implementation of the manipulator base class <b>manipBase</b>:
+<pre>template &lt;class Manip>&nbsp;
+class manipBase
+{public:
+&nbsp;&nbsp;&nbsp; manipBase(const Manip&amp; m)&nbsp;
+&nbsp;&nbsp;&nbsp; { // receive manipulator function object and store it somehow
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // details later ...&nbsp;
+&nbsp;&nbsp;&nbsp; }
+&nbsp;&nbsp;&nbsp; template &lt;class Stream>
+&nbsp;&nbsp;&nbsp; Stream&amp; manipulate(Stream&amp; str) const
+&nbsp;&nbsp;&nbsp; { // use the manipulator function object and call its fct() member function
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // details later ...
+&nbsp;&nbsp;&nbsp; }
+&nbsp;private:
+&nbsp;&nbsp;&nbsp; // private data considered later ...
+};
+template &lt;class Ostream, class Manip>
+Ostream&amp;&nbsp;
+operator&lt;&lt; (Ostream&amp; os, const manipBase&lt;Manip>&amp; m)
+{ return m.manipulate(os); }</pre>
+We introduced another minor change: we reduced the number of template parameters
+of the shift operator. Previously it had the character type and the character
+traits type as template parameters; now we use the stream type instead.
+<h4>
+Accessing the Manipulator Function Object inside the Manipulator Base Class</h4>
+Where do we store the manipulator function object? We could try to store
+it as a data member of the manipulator base class, like this:
+<pre>template &lt;class Manip>&nbsp;
+class manipBase
+{public:
+&nbsp;&nbsp;&nbsp; manipBase(const Manip&amp; m) : m_(m) {}
+
+&nbsp;&nbsp;&nbsp; template &lt;class Stream>
+&nbsp;&nbsp;&nbsp; Stream&amp; manipulate(Stream&amp; str) const
+&nbsp;&nbsp;&nbsp; { // calls the manipulators's function fct()
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // ... m_.fct() ...
+&nbsp;&nbsp;&nbsp; }
+&nbsp;private:
+&nbsp;&nbsp;&nbsp; Manip m_;
+};</pre>
+This approach does not work because it introduces a circular type dependency.
+Since <b>manipBase</b> is a template, class <b>mendl</b> would be defined
+as:
+<pre>class mendl : public <b>manipBase&lt;mendl></b> {
+public:
+&nbsp;&nbsp; mendl(unsigned int n)&nbsp;
+&nbsp;&nbsp; : manipBase&lt;mendl>(*this), how_many_(n) {}
+private:
+&nbsp;&nbsp; const unsigned int how_many_;
+public:
+&nbsp;&nbsp; template &lt;class Ostream>
+&nbsp;&nbsp; Ostream&amp; fct(Ostream&amp; os) const;
+};</pre>
+The derived manipulator class <b>mendl</b> uses class <b>manipBase</b>
+as its base class passing its own type as template argument to the base
+class. The compiler cannot resolve the circular dependency between the
+two types.
+<p>If we cannot store the manipulator function object as a data member
+and use delegation to the data member for performing the actual manipulation,
+we can alternatively take advantage of the fact that <b>manipBase</b> is
+a manipulator <i>base</i> class. Its sole purpose is to serve as a base
+class for manipulator types that have a public member function <b>fct</b>,
+which performs the actual manipulation.
+<p>It is not intended that we ever create objects of the base class type,
+because it does not provide any meaningful functionality by itself. Its
+purpose is to decorate the actual manipulation, which is provided by the
+derived manipulator type, with IOStream-specific error handling. For this
+reason, we can safely assume that all references to <b>manipBase</b> objects
+are actually references to derived manipulator objects. For instance, inside
+the shift operator, which takes a <b>manipBase&amp; </b>argument, we would
+know that the reference refers to a concrete derived manipulator object.
+Under these circumstances, we can safely cast down from the base class
+reference to the concrete derived class reference. With this downcast,
+we get access to the actual manipulation functionality, namely member function
+<b>fct</b>.
+Here is what it looks like:
+<pre>template &lt;class Manip> class manipBase {
+public:
+&nbsp;template &lt;class Stream>
+&nbsp;Stream&amp; manipulate(Stream&amp; str) const
+&nbsp;{ ...
+&nbsp;&nbsp; // call Manip::fct()
+&nbsp;&nbsp; <b>static_cast&lt;const Manip&amp;>(*this).fct(str);
+</b>&nbsp;&nbsp; ...
+&nbsp;}
+};
+template &lt;class Ostream, class Manip>
+Ostream&amp;&nbsp;
+operator&lt;&lt; (Ostream&amp; os, const manipBase&lt;Manip>&amp; m)
+{ return m.manipulate(os); }</pre>
+The obvious concern here is: can this crash? After all this is not even
+a safe <b>dynamic_cast</b>, but an unsafe static downcast. The answer is:
+no, it is perfectly safe. The only location where <b>manipBase</b>'s member
+function <b>manipulate</b> is invoked is from within the shift operator.
+In this context, <b>manipulate</b> is invoked on a reference to an object
+of type <b>manipBase</b> itself or any type derived thereof. Otherwise
+the invocation of the shift operator would just not compile. If the object
+is of a derived type, then the downcast is safe.
+<p>Can it happen that the referenced object passed to the shift operator
+is just a base class object, and not a derived class object? Well, would
+that make sense? The only accessible functionality of class <b>manipBase</b>
+is its <b>manipulate</b> function, and this member function will only compile
+if the generic type <b>Manip</b> (the template type argument) has a <b>fct</b>
+member function. Theoretically, <b>Manip</b> could be a type that is unrelated
+to class <b>manipBase</b> and has a <b>fct</b> member function, but in
+that case a reference to an object of the <b>Manip</b> type cannot be passed
+to the shift operator, and the <b>manipulate</b> function will never be
+called. Unless you introduce evil <b>reinterpret_cast</b>s someplace, you
+cannot break this code.
+<h3>
+Evaluation</h3>
+Let's step back and see what we've done. We've been using two interesting
+techniques here: parameterized inheritance and function objects.
+<h4>
+Parameterized Inheritance</h4>
+Parameterized inheritance is also known as the Curiously Recurring Template
+pattern, which can be summarized as follows (quoted from the Pattern Almanac
+<a href="#5">[5]</a>):
+<blockquote>A class is derived from a base class instantiated from a template.
+The derived class is passed as a parameter to the template instantiation.
+This pattern captures a circular dependency using inheritance in one direction
+and templates in the other.</blockquote>
+Our manipulator base class <b>manipBase</b> and its concrete derived classes,
+such as <b>mendl</b> are an example of this pattern: the derived manipulator
+type <b>mendl</b> passes itself as a template argument to its base class
+<b>manipBase</b>.
+The use of the safe static downcast is typical for implementation of this
+pattern.
+<p>You can also think of the Curiously Recurring Template pattern as a
+way of static polymorphism: Our manipulator base class <b>manipBase</b>
+exhibits polymorphic behavior (in its member function <b>manipulate</b>)
+depending on the type that was used for instantiation. It's a <i>static</i>
+polymorphism because no virtual functions are involved.
+<h4>
+Function Objects</h4>
+Replacing function pointers with function objects greatly simplified the
+solution and added a lot of flexibility. For instance, all the knowledge
+regarding invocation of the actual manipulation is now encapsulated in
+the function object type only. Previously, the function signature (number
+and type of arguments) of the manipulation function was known to the base
+class, and we needed a different base class for every new signature. The
+same holds for the function arguments. Knowledge of the parameters that
+control the manipulation is now located in the function object type only.
+Previously, these parameters had to be passed to the base class. This better
+separation of concerns frees the base class from various responsibilities.
+In particular, the base class is no longer a template that depends in any
+way on the stream type.
+<p>Our initial goal was to find a more flexible solution for the manipulator
+base class that does not require that a manipulator type is a template
+and allows manipulators with an arbitrary number and type of arguments.
+The intended usage for manipulators implemented in terms of this new manipulator
+base class should ideally be as convenient as:
+<pre>cout &lt;&lt; mendl(5);
+wcout &lt;&lt; mendl(5);
+cout &lt;&lt; multi('*',80);</pre>
+where <b>multi</b> is a manipulator with two arguments that insert a given
+character n times into an output stream.
+<p>Have we achieved this? Yes, we did. Recall the implementation of <b>mendl</b>
+using the new <b>manipBase</b> class:
+<pre>class mendl : public manipBase&lt;mendl> {
+public:
+&nbsp;&nbsp; mendl(unsigned int n)&nbsp;
+&nbsp;&nbsp; : manipBase&lt;mendl>(*this), how_many_(n) {}
+private:
+&nbsp;&nbsp; const unsigned int how_many_;
+public:
+&nbsp;&nbsp; template &lt;class Ostream>
+&nbsp;&nbsp; Ostream&amp; fct(Ostream&amp; os) const
+&nbsp;&nbsp; {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for (unsigned int i=0; i&lt;how_many_; ++i)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; os.put(os.widen('\n'));
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; os.flush();
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return os;
+&nbsp;&nbsp; }
+};</pre>
+Class <b>mendl</b> does no longer depend on the stream type or its character
+type. Only its member function <b>fct</b> depends on the stream type. Before,
+the entire manipulator class depended on the stream type because the base
+class depended on it. This was inevitable because the base class had knowledge
+of the function signature of the manipulation function. With the improved
+encapsulation this dependency is eliminated.
+<p>Regarding improved flexibility: here is the implementation of the <b>multi</b>
+manipulator with its entirely different signature. (It takes an additional
+argument.) It can be easily implemented using the same manipulator base
+class because the base class is not concerned with the specifics of the
+manipulation any more:
+<pre>class multi : public manipBase&lt;multi> {
+public:
+&nbsp;&nbsp; multi(char c, size_t n)&nbsp;
+&nbsp;&nbsp; : manipBase&lt;multi>(*this), how_many_(n), what_(c) {}
+private:
+&nbsp;&nbsp; const size_t how_many_;
+&nbsp;&nbsp; const char what_;
+public:
+&nbsp;&nbsp; template &lt;class Ostream>
+&nbsp;&nbsp; Ostream&amp; fct(Ostream&amp; os) const
+&nbsp;&nbsp; {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for (unsigned int i=0; i&lt;how_many_; ++i)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; os.put(what_);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; os.flush();
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return os;
+&nbsp;&nbsp; }
+};</pre>
+With the original manipulator base class, we need an additional base class
+<b>two_arg_manip_weh</b>
+that can store two arguments instead of just one and accepts a different
+function pointer type. Again, better encapsulation of concerns simplifies
+the solution and adds flexibility too boot.
+<h3>
+Summary</h3>
+In this article, we have studied how modern programming techniques greatly
+simplify programming tasks such as implementation of stream manipulators.
+We replaced function pointers by function objects, thus gaining a great
+deal of flexibility, while simplifying the solution at the same time. And
+we did not lose a bit in efficiency, by the way. We replaced polymorphism
+via function pointers with static polymorphism via templates using the
+Curiously Recurring Template pattern. We haven't been using any exotic
+template features for achieving this. We don't get any more adventurous
+than using a member template (the base class's <b>manipulate</b> member
+function is a template), but this feature is supported by most compilers
+these days. In essence, nothing should prevent you from using this solution.
+<h3>
+Acknowledgements</h3>
+We would like to give credit to our fellow columnist Kevlin Henney, whose
+email inspired us to write this article. He sent us email last summer as
+a reaction to our two manipulator articles and suggested an approach very
+similar to the one discussed in this article, where he creatively mixed
+<i>various</i>
+state-of-the-art techniques, including member function templates, function
+object types, overloaded function call operators, and parameterized inheritance.
+For those who are interested in his ideas, they are available at <b>http://www.langer.camelot.de/IOStreams/forum.htm</b>.
+<h3>
+References</h3>
+<a NAME="1"></a>[1] Klaus Kreft and Angelika Langer. "Implementing Manipulator
+With and Without Parameters Using the Standard IOStreams," <i>C++ Report</i>,
+April 2000.
+<p><a NAME="2"></a>[2] Klaus Kreft and Angelika Langer. "A More Refined
+Method for Implementing Manipulator with Parameters," <i>C++ Report</i>,
+June 2000.
+<p><a NAME="3"></a>[3] Angelika Langer and Klaus Kreft. <i>Standard C++
+IOStreams and Locales</i> (Addison Wesley, January 2000).
+<p><a NAME="4"></a>[4] James O. Coplien. "Curiously Recurring Template
+Patterns," <i>C++ Report</i>, February 1995.
+<p><a NAME="5"></a>[5] Linda Rising. <i>The Pattern Almanac 2000</i> (Addison-Wesley,
+2000).
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

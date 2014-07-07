@@ -1,0 +1,913 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="pre-copyedit version of a feature article published in JavaMagazin in April 2004">
+   <meta name="KeyWords" content="Java Generics J2SE 1.5 parameterized type  Java 1.5">
+   <title>Java Generics - Einf&uuml;hrung</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="JavaMagazinGenerics01"></a>
+<br><font color="#295AB5"><font size=+3>Java Generics - Parametrisierte
+Typen und Methoden</font></font>
+<br>&nbsp;
+<p><font color="#295AB5"><font size=+2>JavaMagazin, April 2004</font></font>
+<br><font color="#295AB5"><font size=+1>Angelika Langer &amp; Klaus Kreft</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<h1>
+Java Generics</h1>
+
+<p><br>Mit der n&auml;chsten Version 1.5 der Java 2 Standard Edition (J2SE)
+wird die Programmiersprache Java um einige neue Sprachmittel erweitert.&nbsp;
+Die gravierendste &Auml;nderung an der Sprache ist die Einf&uuml;hrung
+von generischen Typen und Methoden, den sogenannten Java Generics (JG).&nbsp;
+Die Freigabe von J2SE 1.5 ist f&uuml;r den August 2004 geplant.&nbsp; Aus
+diesem Anlass wollen wir das neue Sprachmittel der Java Generics in diesem
+Artikel vorstellen.
+<br>&nbsp;
+<h2>
+1 &Uuml;berblick &uuml;ber die Sprachmittel der Java Generics</h2>
+
+<h3>
+1.1 Wozu braucht man Generics?</h3>
+
+<p><br>Der Wunsch nach generischen Typen liegt in allen Sprachen, die ein
+solches Sprachmittel haben, in der Implementierung von Datenstrukturen
+wie Collections oder Containern. Generische Typen werden ben&ouml;tigt,
+um solche Datenstrukturen effizient implementieren zu k&ouml;nnen.&nbsp;
+Wenn man eine Collection implementieren will, dann stellt man fest, dass
+die Implementierung weitgehend unabh&auml;ngig vom Typ der Elemente ist,
+die in der Collection abgelegt werden. Man m&ouml;chte deshalb idealerweise
+nur eine einzige Implementierung der Collection zur Verf&uuml;gung stellen,
+die dann f&uuml;r das Ablegen beliebiger Elementtypen verwendet werden
+kann.
+<p>Traditionell (in nicht-generischem Java) erreicht man das dadurch, dass
+die Collection-Klassen (siehe z.B. die Klassen aus dem J2SE Collection
+Framework) Referenzen vom Typ Object verwalten.&nbsp; Da Object die Superklasse
+aller Java-Klassen ist, kann eine Collection Elemente beliebigen Typs enthalten.&nbsp;
+Ausgenommen sind lediglich die primitiven Typen, weil sie nicht von Object
+abgeleitet sind.&nbsp; Aber das ist kein gr&ouml;&szlig;eres Problem, weil
+es zu jedem primitiven Typ einen korrespondierenden Referenztyp gibt.&nbsp;
+Die Umwandlung eines primitiven Typs in den korrespondierenden Referenztyp
+bezeichnet man als <i>Boxing</i>.&nbsp; Das musste man bisher von Hand
+machen, aber in J2SE 1.5 wird das Boxing eine automatische Konvertierung
+(Autoboxing) sein, die man nicht mehr explizit hinschreiben muss.
+<p>Eine Eigenschaft der so implementierten Collections ist, dass sie nicht
+notwendig homogen sind, in dem Sinne, dass sie nicht notwendig Elemente
+desselben Typs enthalten.&nbsp; Vielmehr kann eine Collection eine Mischung
+von Objekten unterschiedlichen Typs verwalten.&nbsp; Das f&uuml;hrt dazu,
+dass man beim Herausholen eines Elements aus einer Collection niemals genau
+wei&szlig;, von welchem Typ das betreffende Element ist.&nbsp; Deshalb
+muss man einen Cast machen, ehe man das Element verwenden kann.&nbsp; Hier
+ein Beispiel:
+<p><tt>LinkedList list = new LinkedList();</tt>
+<br><tt>list.add(new Integer(0));</tt>
+<br><tt>Integer i = (Integer) list.get(0);</tt>
+<p>Dieser Cast ist ein Laufzeit-Cast vom Typ Object-Referenz auf den Typ
+Integer-Referenz.&nbsp; Sollte sich zur Laufzeit herausstellen, dass das
+Element kein Integer ist, dann wird eine ClassCastException ausgel&ouml;st.&nbsp;
+Die traditionellen Implementierungen von Collections erfordern also relativ
+viele Casts, die zur Laufzeit scheitern k&ouml;nnen.
+<p>Java Generics erlauben nun eine alternative Implementierungstechnik,
+bei der die Collections mit einem Element-Typ parametrisiert werden und
+dann homogen sind, also Elemente desselben Typs enthalten. Das Einf&uuml;gen
+eines Elements eines „fremden“ Typs wird zur Compilezeit bereits abgewiesen.&nbsp;
+Infolgedessen muss beim Herausholen eines Elements aus der Collection nicht
+mehr gepr&uuml;ft werden, ob das gefundene Element vom gew&uuml;nschten
+Typ ist. Der l&auml;stige Laufzeit-Cast entf&auml;llt deshalb.&nbsp; Hier
+ein Beispiel:
+<p><tt>LinkedList&lt;Integer> list = new LinkedList&lt;Integer>();</tt>
+<br><tt>list.add(new Integer(0));</tt>
+<br><tt>Integer i = list.get(0);</tt>
+<p>Im Vergleich zu einer traditionell implementierten Collection, wo Laufzeit-Casts
+beim Herausholen der Elemente n&ouml;tig sind, werden bei einer parametrisierten
+Collection Typpr&uuml;fungen bereits zur Compilezeit beim Einf&uuml;gen
+der Elemente gemacht.&nbsp; Traditionelle Collections sind ein Beispiel
+f&uuml;r Weak Typing mit Typpr&uuml;fungen zur Laufzeit; parametrisierte
+Collections sind ein Beispiel f&uuml;r Strong Typing, bei dem Typpr&uuml;fungen
+zur Compilezeit bereits gemacht werden.&nbsp; In J2SE 1.5 hat der Programmierer
+nun beide Techniken zur Verf&uuml;gung.
+<p>Die Collections des traditionellen Collection-Frameworks werden im &uuml;brigen
+in J2SE 1.5 durch entsprechende parametrisierte Collections ersetzt.&nbsp;
+Wie oben bereits gezeigt, kann die LinkedList in J2SE1.5 als LinkedList&lt;String>
+oder LinkedList&lt;Integer> oder LinkedList&lt;AnyType> verwendet werden.&nbsp;
+Die herk&ouml;mmliche Verwendung als LinkedList ist aber weiterhin m&ouml;glich.&nbsp;
+Auf diesen Kompatibilit&auml;tsaspekt gehen wir sp&auml;ter noch genauer
+ein.
+<p>Sehen wir uns aber zun&auml;chst einmal die Syntax der Java Generics
+genauer an.&nbsp; Man kann n&auml;mlich nicht nur die vorgefertigten parametrisierten
+Typen des Collection-Frameworks verwenden (wie im obigen Beispiel gezeigt),
+sondern man kann selber parametrisierte Typen implementieren.&nbsp; Sehen
+wir uns an, wie das im Detail aussieht.
+<br>&nbsp;
+<h3>
+1.2 Generische Typen</h3>
+Listing 1 zeigt Beispiele verschiedener parametrisierter Typen, die angelehnt
+sind an die Typen, die im 1.5 Collection-Framework zur Verf&uuml;gung stehen.&nbsp;
+Der Beispiel-Code zeigt eine parametrisierte Klasse LinkedList&lt;A>, ihr
+Super-Interface Collection&lt;A> und ihren Iterator vom Typ Iterator&lt;A>.
+<br>&nbsp;
+<table BORDER=0 >
+<tr VALIGN=TOP>
+<td><i><nobr>Listing 1: Parametrisierter Typen am Beispiel einer LinkedList</nobr></i></td>
+
+<td><font size=-2>*)&nbsp;</font></td>
+
+<td><font size=-2>Die Implementierung ist stark vereinfacht und dient lediglich
+als Anschauungsmaterial f&uuml;r die Nutzung von Typparametern. Eine realistische
+Implementierung findet man in den Sourcen des JDK 1.5.&nbsp; Vielen Dank
+an Herrn Martin Jung &lt;mjung@gitarren-tools.de> f&uuml;r seinen Korrekturvorschlag
+zur Implementierung des Iterators.</font></td>
+</tr>
+</table>
+
+<p><tt>interface Collection&lt;A>&nbsp; {</tt>
+<br><tt>&nbsp;public void add (A x);</tt>
+<br><tt>&nbsp;public Iterator&lt;A> iterator ();</tt>
+<br><tt>}</tt>
+<br><tt>interface Iterator&lt;A> {</tt>
+<br><tt>&nbsp;public A next ();</tt>
+<br><tt>&nbsp;public boolean hasNext();</tt>
+<br><tt>}</tt>
+<br><tt>class NoSuchElementException extends RuntimeException {}</tt><tt></tt>
+<p><tt>class LinkedList&lt;A> implements Collection&lt;A>{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; protected class Node{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A elt;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Node next = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Node(A elt){this.elt=elt;}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; protected Iterator&lt;A> myIterator = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; protected Node head = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; protected Node tail = null;</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public LinkedList(){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public void add(A elt){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if(head==null){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+head=new Node(elt);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+tail=head;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } else{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+tail.next = new Node(elt);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+tail=tail.next;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public Iterator&lt;A>iterator(){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (myIterator == null)
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+myIterator = new Iterator&lt;A>(){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+protected Node ptr = head;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+public boolean hasNext(){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return ptr != null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+public A next(){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if(ptr != null){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+A elt = ptr.elt;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ptr = ptr.next;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return elt;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+} else {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+throw new NoSuchElementException();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+};</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return myIterator;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<br><tt>final class Test {</tt>
+<br><tt>&nbsp;public static void main (String[ ] args) {</tt>
+<br><tt>&nbsp;&nbsp; LinkedList&lt;String> ys = new LinkedList&lt;String>();</tt>
+<br><tt>&nbsp;&nbsp; ys.add("zero"); ys.add("one");</tt>
+<br><tt>&nbsp;&nbsp; String y = ys.iterator().next();</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<p>Parametrisierte Typen unterscheiden sich von regul&auml;ren Typen dadurch,
+dass sie Typparameter haben. (Typparameter werden auch als Typvariablen
+bezeichnet; beide Begriffe sind synonym.)&nbsp; In unserem Beispiel haben
+die parametrisierten Typen genau einen Parameter mit dem Namen A. A bezeichnet
+dabei den Typ der Elemente, die in der Liste abgelegt werden k&ouml;nnen.
+Den Typparameter A kann man sich als Platzhalter f&uuml;r einen Typ vorstellen,
+der sp&auml;ter durch einen konkreten Typ ersetzt wird.&nbsp; Beispielsweise
+w&auml;re in einer LinkedList&lt;String>, der Typparameter A durch den
+konkreten Typ String ersetzt.&nbsp; Die Sache mit dem Platzhalter stimmt
+nicht ganz, wie wir sp&auml;ter noch erl&auml;utern werden; aber in erster
+N&auml;herung ist das eine angemessene Vorstellung von einem Typparameter.
+<br>&nbsp;
+<h3>
+1.3 Bounds</h3>
+F&uuml;r die Implementierung der LinkedList mussten wir eigentlich nichts
+&uuml;ber den unbekannten Elementtyp A wissen.&nbsp; Wir haben lediglich
+die Objekt-Referenzen verwaltet.&nbsp; Da wir keine Methode des Typs A
+aufgerufen haben, ist es v&ouml;llig egal, welche Felder oder Methoden
+der konkrete Typ sp&auml;ter hat.
+<p>Das ist nicht bei allen Collections so.&nbsp; Nehmen wir zum Beispiel
+die Implementierung einer Baum-basierten Collection wie TreeMap.&nbsp;
+Eine TreeMap enth&auml;lt Paare bestehend aus einem Schl&uuml;ssel (Key)
+und einem assoziierten Wert (Data).&nbsp; Diese Eintr&auml;ge werden in
+sortierter Reihenfolge gehalten.&nbsp; Die Sortierreihenfolge wird mit
+Hilfe der compareTo()-Methode des Key-Typs bestimmt; deshalb wird verlangt,
+dass der Key-Typ das Comparable-Interface implementiert, welches eine compareTo()-Methode
+verlangt.&nbsp; Listing 2 zeigt einen Auszug aus einer denkbaren Implementierung
+einer parametrisierten TreeMap.
+<p><i>Listing 2: Implementierung einer Baum-basierten Collection – ohne
+Bounds</i>
+<p><tt>public interface Comparable&lt;T> {</tt>
+<br><tt>&nbsp;public int compareTo(T arg);</tt>
+<br><tt>}</tt>
+<br><tt>public class TreeMap&lt;Key,Data>{</tt>
+<br><tt>&nbsp;&nbsp; private static class Entry&lt;K,V> {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; K key;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; V value;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> left = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> right = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> parent;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; private transient Entry&lt;Key,Data> root = null;</tt>
+<br><tt>&nbsp;&nbsp; …</tt>
+<br><tt>&nbsp;&nbsp; private Entry&lt; Key,Data > getEntry(Key key) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;Key,Data> p = root;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Key k = key;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; while (p != null) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int
+cmp = ((Comparable&lt;Key>)k).compareTo(p.key);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if
+(cmp == 0)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return p;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else
+if (cmp &lt; 0)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+p = p.left;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+p = p.right;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return null;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public boolean containsKey(Key key) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return getEntry(key) != null;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; …</tt>
+<br><tt>}</tt>
+<p>Die Klasse TreeMap hat 2 Typparameter Key und Data, die f&uuml;r den
+Typ des Schl&uuml;ssels und den Typ des assoziierten Werts stehen. Au&szlig;erdem
+gibt es eine eingeschachtelte parametrisierte Klasse Entry, die ebenfalls
+2 eigene Typparameter K und V mit analoger Bedeutung hat. Auch das Interface
+Comparable ist parametrisiert - mit einem Typparameter, der beschreibt,
+zu welchem Typ ein Comparable-Objekt vergleichbar ist.
+<p>Interessant ist der Aufruf der compareTo()-Methode in der Implementierung
+von getEntry().&nbsp; Da &uuml;ber den Key-Typ nichts bekannt ist, ist
+zun&auml;chst einmal ein Cast auf den Typ Comparable&lt;Key> n&ouml;tig,
+ehe die compareTo()-Methode aufgerufen werden kann. Sollte sich in der
+Collection ein Element befinden, dass nicht Comparable ist, dann w&uuml;rde
+dieser Cast zur Laufzeit eine ClassCastException ausl&ouml;sen.&nbsp; Man
+hat also wieder eine relativ sp&auml;te Typpr&uuml;fung zur Laufzeit.
+<p>Um eine fr&uuml;he Typpr&uuml;fung zur Compilezeit zu erm&ouml;glichen,
+gibt es in Java Generics das Sprachmittel der Bounds.&nbsp;&nbsp; Ein Typparameter
+kann einen oder mehrere sogenannte Bounds haben.&nbsp; Bounds sind Klassen
+oder Interfaces, von denen der unbekannte Typ abgeleitet sein muss.&nbsp;
+Der Compiler pr&uuml;ft dann, ob der konkrete Typ, der f&uuml;r den Typparameter
+sp&auml;ter eingesetzt wird, von den spezifizierten&nbsp; Bounds abgeleitet
+ist.
+<p>In unserem Beispiel der TreeMap k&ouml;nnen wir Bounds benutzen, um
+sicher zu stellen, dass der Key-Typ immer das Interface Comparable&lt;Key>
+implementiert. Das sieht dann so aus, wie in Listing 3 dargestellt.
+<p><i>Listing 3: Implementierung einer Baum-basierten Collection&nbsp;
+- mit&nbsp; Bounds</i>
+<p><tt>public class TreeMap&lt;Key extends Comparable&lt;Key>,Data> {</tt>
+<br><tt>&nbsp;&nbsp; static class Entry&lt;K,V> {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; K key;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; V value;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> left = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> right = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> parent;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; private transient Entry&lt;Key,Data> root = null;</tt>
+<br><tt>&nbsp;&nbsp; …</tt>
+<br><tt>&nbsp;&nbsp; private Entry&lt; Key,Data > getEntry(Key key) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;Key,Data> p = root;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Key k = key;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; while (p != null) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int
+cmp = k.compareTo(p.key);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if
+(cmp == 0)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return p;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else
+if (cmp &lt; 0)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+p = p.left;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+p = p.right;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return null;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public boolean containsKey(Key key) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return getEntry(key) != null;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; …</tt>
+<br><tt>}</tt>
+<p>Da nun sichergestellt ist, dass f&uuml;r den Typparameter Key nur Typen
+eingesetzt werden k&ouml;nnen, die das Interface Comparable&lt;Key> implementieren,
+kann der Cast beim Aufruf von compareTo() entfallen.
+<p>Der Hauptzweck der Bounds besteht darin, dem Compiler die M&ouml;glichkeit
+zu geben, gewisse Typeigenschaften der Typparameter bereits zur Compilezeit
+zu pr&uuml;fen. Beispielsweise w&uuml;rde der Compiler eine Instanziierung
+als TreeMap&lt;Number,String> abweisen, weil Number nicht Comparable&lt;Number>
+ist.&nbsp; Eine TreeMap&lt;String,Number> w&auml;re hingegen in Ordnung,
+weil String (in J2SE 1.5) das Interface&nbsp; Comparable&lt;String> implementiert.
+<p>Desweiteren haben die Bounds die Funktion, dem Compiler den Aufruf von
+Methoden des unbekannten Typs zu erm&ouml;glichen.&nbsp; &Uuml;ber einen
+Typparameter ohne Bounds wei&szlig; der Compiler nichts; er kann also ohne
+Cast nur die Methoden aufrufen, die bereits in Object definiert sind.&nbsp;
+Wenn hingegen ein Typparameter Bounds hat, dann kann der Compiler alle
+Methoden, die in den Bounds definiert sind, ohne Cast aufrufen.&nbsp; Das
+gilt allerdings nur f&uuml;r nicht-statische Methoden; Konstruktoren oder
+statische Methoden k&ouml;nnen nicht durch Bounds zug&auml;nglich gemacht
+werden.&nbsp; Die meisten Bounds sind in der Praxis Interfaces, wie das
+Comparable-Interface in unserem Beispiel.
+<p>Die Syntax f&uuml;r einen Typparameter mit mehreren Bounds sieht wie
+folgt aus:
+<blockquote><tt>TypParameter implements SuperClass &amp; Interface1 &amp;
+Interface2 &amp; ... &amp; InterfaceN</tt></blockquote>
+Es gibt eine Einschr&auml;nkung:&nbsp; in den Bounds d&uuml;rfen nicht
+mehrere Instanziierungen desselben parametrisierten Interfaces vorkommen.&nbsp;
+Die folgende Deklaration w&auml;re beispielsweise illegal:
+<p><tt>class SomeType&lt;T implements Comparable&lt;String> &amp; Comparable&lt;StringBuffer>></tt>
+<br><tt>{ … }</tt>
+<p>Comparable&lt;String> und Comparable&lt;StringBuffer> sind Instanziierungen
+des Comparable-Interfaces und d&uuml;rfen deshalb nicht beide in den Bounds
+des Typparameters T vorkommen.&nbsp; Woher diese Einschr&auml;nkung kommt,
+erl&auml;utern wir sp&auml;ter noch.
+<br>&nbsp;
+<h3>
+1.4 Generische Methoden</h3>
+Zus&auml;tzlich zu den generischen Typen lassen sich auch generische Methoden
+definieren.&nbsp; Die Syntax ist ein wenig anders als bei den generischen
+Typen, aber alles bisher Gesagte &uuml;ber Typparameter und Bounds gilt
+genauso auch f&uuml;r generische Methoden.&nbsp; Alle Arten von Methoden
+k&ouml;nnen parametrisiert werden: statische und nicht-statische Methoden
+sowie Konstruktoren.&nbsp; Listing 4 zeigt das Beispiel einer parametrisierten
+max()-Methode, die das gr&ouml;&szlig;te Element in einer Collection findet:
+<p><i>Listing 4: Beispiel einer parametrisierten Methode</i>
+<p><tt>interface Comparable&lt;A> {</tt>
+<br><tt>&nbsp; public int compareTo(A that);</tt>
+<br><tt>}</tt>
+<br><tt>final class Byte implements Comparable&lt;Byte> {</tt>
+<br><tt>&nbsp;private byte value;</tt>
+<br><tt>&nbsp;public Byte (byte value) { this.value = value; }</tt>
+<br><tt>&nbsp;public byte byteValue () { return value; }</tt>
+<br><tt>&nbsp;public int compareTo (Byte that) {</tt>
+<br><tt>&nbsp;&nbsp; return this.value - that.value;</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<br><tt>class Collections {</tt>
+<br><tt>&nbsp;public static &lt;A extends Comparable&lt;A>> A max (Collection&lt;A>
+xs) {</tt>
+<br><tt>&nbsp;&nbsp; Iterator&lt;A> xi = xs.iterator();</tt>
+<br><tt>&nbsp;&nbsp; A w = xi.next();</tt>
+<br><tt>&nbsp;&nbsp; while (xi.hasNext()) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; A x = xi.next();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; if (w.compareTo(x) &lt; 0) w = x;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; return w;</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<br><tt>final class Test {</tt>
+<br><tt>&nbsp;public static void main (String[ ] args) {</tt>
+<br><tt>&nbsp;&nbsp; LinkedList&lt;Byte> byteList = new LinkedList&lt;Byte>();</tt>
+<br><tt>&nbsp;&nbsp; byteList.add(new Byte((byte)0));</tt>
+<br><tt>&nbsp;&nbsp; byteList.add(new Byte((byte)1));</tt>
+<br><tt>&nbsp;&nbsp; Byte y = Collections.max(byteList);</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<p>Parametrisierte Methoden werden wie ganz normale Methoden aufgerufen,
+wie man in der main()-Methode sehen kann.&nbsp; Der konkrete Typ, der den
+Typparameter ersetzt, muss nicht explizit angegeben werden.&nbsp; Er wird
+automatisch vom Compiler aus dem Typ des Arguments deduziert, das beim
+Aufruf an die parametrisierte Methode &uuml;bergeben wird.&nbsp; In unserem
+Beispiel wird eine LinkedList&lt;Byte> als Argument an die max()-Methode
+&uuml;bergeben.&nbsp; Der Compiler ruft dann automatisch die Instanziierung
+max&lt;Byte>() auf, ohne dass explizit spezifiziert werden muss, dass der
+Typparameter A durch Byte ersetzt werden soll.&nbsp; Das &uuml;berlegt
+sich der Compiler von ganz alleine.&nbsp; Diesen Prozess bezeichnet man
+als Type Inference.
+<h3>
+1.5 Wildcard-Instanziierungen</h3>
+Der Vollst&auml;ndigkeit halber wollen wir noch die sogenannten Wildcard-Instanziierungen
+parametrisierter Typen erw&auml;hnen. Bisher haben wir ausschlie&szlig;lich
+Instanziierungen von parametrisierten Typen gezeigt, bei denen der Typparameter
+durch einen konkreten Typ ersetzt war.&nbsp; Ein Beispiel ist List&lt;String>.&nbsp;
+Nun kann man aber nicht nur konkrete Typen f&uuml;r den Typparameter einsetzen,
+sondern auch sogenannte Wildcards.&nbsp; Es gibt 3 Arten von Wildcards:
+„? extends Type“, „? super Type“ und „?“.&nbsp; Wildcard-Instanziierungen
+sehen dann zum Beispiel so aus:&nbsp; List&lt;? extends Number>, oder List&lt;?
+super Long> oder List&lt;?>.
+<p>Ein Wildcard bezeichnet keinen konkreten Typ, sondern eine Familie von
+Typen. Das Wildcard „? extends Number“ bezeichnet beispielsweise die Menge
+aller Typen, die vom Typ Number direkt oder indirekt abgeleitet sind, d.h.
+die Familie aller Subtypen von Number, also Long, Integer, usw., inklusive
+Number selbst.&nbsp; Die Wildcard-Instanziierung List&lt;? extends Number>&nbsp;
+bezeichnet daher logischerweise die Familie aller Instanziierungen des
+parametrisierten Typs List, bei dem ein Typ aus der Familie der Subtypen
+von Number f&uuml;r den Typparameter eingesetzt wurde, also List&lt;Long>,
+List&lt;Integer>, usw. inklusive List&lt;Number>.&nbsp; Ein Wildcard wie
+„? super Long“ bezeichnet die Familie aller Supertypen von Long und das
+Wildcard „?“ steht f&uuml;r die Menge aller Typen.
+<p>Eine Wildcard-Instanziierung eines parametrisierten Typs kann verglichen
+mit einer konkreten Instanziierung nicht dazu verwendet werden, um Objekte
+zu erzeugen.&nbsp; Man kann zwar eine Variable vom Typ List&lt;? extends
+Number>&nbsp; deklarieren, aber man kann kein Objekt vom Typ List&lt;?
+extends Number>&nbsp; erzeugen.&nbsp; Eine Variable vom Typ List&lt;? extends
+Number>&nbsp; kann aber auf Objekte von kompatiblen Typen verweisen.&nbsp;
+Die kompatiblen Typen sind genau die Typen aus der Familie von Typen, die
+die Wildcard-Instanziierung bezeichnet.&nbsp; Eine Referenzvariable vom
+Typ List&lt;? extends Number>&nbsp; kann also auf ein Objekt vom Typ List&lt;Long>
+oder List&lt;Integer> usw. verweisen.&nbsp;&nbsp; Analog kann eine Variable
+vom Typ List&lt;? super Long> auf Objekte vom Typ List&lt;Long> oder List&lt;Number>
+oder List&lt;Comparable> usw. verweisen.&nbsp;&nbsp; Eine Variable vom
+Typ List&lt;?> kann auf beliebige Instanziierungen von List verweisen.
+<p>Der Zugriff auf ein Objekt, das &uuml;ber eine Referenzvariable vom
+Typ Wildcard-Instanziierung referenziert wird, ist eingeschr&auml;nkt.&nbsp;
+&Uuml;ber eine Variable&nbsp; vom Typ List&lt;? extends Number> beispielsweise
+d&uuml;rfen keine Methoden des Typs List aufgerufen werden, die ein Argument
+vom dem Typ nehmen, f&uuml;r den das Wildcard steht.&nbsp; Hier ist ein
+Beispiel:
+<p><tt>List&lt;? extends Number> list = new LinkedList&lt;Integer>();</tt>
+<br><tt>list.add(new Integer(25));&nbsp; // compile-time error</tt>
+<p>Bei einem Wildcard mit “super” ist der Aufruf von Methoden unm&ouml;glich,
+deren Returntyp vom dem Typ ist, f&uuml;r den das Wildcard steht.&nbsp;
+F&uuml;r das „?“ Wildcard gelten beide Einschr&auml;nkungen.
+<p>Warum diese Einschr&auml;nkungen gelten, wollen wir an dieser Stelle
+nicht erl&auml;utern, weil es den Rahmen des Artikels sprengen w&uuml;rde.&nbsp;
+Auch auf die Benutzung der Wildcard-Instanziierungen k&ouml;nnen wir an
+dieser Stelle nicht eingehen.&nbsp; In der Praxis wird man Wildcard-Instanziierungen
+in der Regel als Argument- und Returntyp von Methoden finden, und eher
+seltener f&uuml;r die Deklaration von Referenzvariablen. Dabei d&uuml;rfte
+das Wildcard mit „extends“ am h&auml;ufigsten Verwendung finden.&nbsp;
+In den J2SE 1.5 Plattform-Bibliotheken findet man Beispiele daf&uuml;r
+(siehe z.B. die Methode boolean addAll(Collection&lt;? extends E> c) der
+Klasse java.util.List).
+<br>&nbsp;
+<h3>
+1.6 Nachsatz zum &Uuml;berblick</h3>
+Damit w&auml;ren die Grundbegriffe von Java Generics erkl&auml;rt.&nbsp;
+Das neue Sprachmittel ist in der Tat ausgesprochen n&uuml;tzlich und erlaubt
+es, st&auml;rker selbsterkl&auml;renden Code zu schreiben.&nbsp; Der Software-Entwickler
+kann jetzt klar und unmissverst&auml;ndlich sagen, dass eine Methode beispielsweise
+eine Collection von Strings erwartet, und nicht eine Collection irgendeinen
+anderen Inhalts&nbsp; Es kann also mehr Information im Source-Code hinterlegt
+werden und damit dem Leser des Codes das Verst&auml;ndnis erleichtert,
+aber auch dem Compiler die M&ouml;glichkeit gegeben werden, viele Typpr&uuml;fungen
+bereits zur Compilezeit zu machen, die traditionell erst zur Laufzeit gemacht
+wurden.&nbsp; Beides erweist sich in der praktischen Arbeit als n&uuml;tzlich.
+<p>Die Praxis zeigt aber auch, dass Java Generics allerlei &Uuml;berraschungen
+zu bieten haben, wobei mit „&Uuml;berraschungen“ unerwartete Einschr&auml;nkungen,
+gew&ouml;hnungsbed&uuml;rftige Semantik, und &auml;hnliche Ph&auml;nomene
+gemeint sind. Insbesondere Entwickler mit C++-Kenntnissen, die sich bei
+Java Generics an C++-Templates erinnert f&uuml;hlen, werden &uuml;berrascht
+sein zu sehen, dass Java Generics mit C++-Templates, abgesehen von der
+Syntax, nicht viel gemeinsam haben.
+<p>Um die Semantik von Java Generics im Detail verstehen zu k&ouml;nnen,
+ist es hilfreich zu wissen, wie der Java Compiler parametrisierte Typen
+und Methoden &uuml;bersetzt.&nbsp; Die Implementierung des Sprachmittels
+erkl&auml;rt viele der eher &uuml;berraschenden Seiten von Java Generics.&nbsp;
+Deshalb sehen wir uns im folgenden die Implementierung des Sprachmittels
+an.
+<br>&nbsp;
+<br>&nbsp;
+<h2>
+2 Implementierung von Java Generics</h2>
+
+<p><br>Wie &uuml;blich, &uuml;bersetzt der Java Compiler parametrisierte
+Typen und Methoden in Java Bytecode.&nbsp; Wir wollen uns ansehen, wie
+ein Compiler diese &Uuml;bersetzung prinzipiell bewerkstelligt.&nbsp; Betrachten
+wir das zun&auml;chst einmal v&ouml;llig unabh&auml;ngig von der Programmiersprache
+Java.&nbsp; Es gibt ja auch andere Sprachen, die parametrisierte Typen
+und Methoden unterst&uuml;tzen (z.B. Ada, C++, C#).
+<h3>
+2.1 &Uuml;bersetzung von Generics</h3>
+Ein Compiler hat im Prinzip 2 M&ouml;glichkeiten, um einen parametrisierten
+Typ oder eine parametrisierte Methode zu &uuml;bersetzen.
+<ul>
+<li>
+Code-Spezialisierung. Dabei erzeugt der Compiler eine jeweils separate
+Repr&auml;sentation f&uuml;r jede einzelne Instanziierung eines parametrisierten
+Typs/Methode.&nbsp; Beispielsweise w&uuml;rde ein Compiler mit dieser Technik
+Code f&uuml;r eine Liste von Strings und Code f&uuml;r eine Liste von Integers
+erzeugen.</li>
+
+<li>
+Code-Sharing. Dabei erzeugt der Compiler nur eine einzige Repr&auml;sentation
+pro parametrisiertem Typ/Methode.&nbsp; Die verschiedenen Instanziierungen
+des parametrisierten Typs/Methode werden auf diese eine Repr&auml;sentation
+abgebildet, wobei Typpr&uuml;fungen und Typkonvertierungen eingef&uuml;gt
+werden, wo immer das n&ouml;tig ist.</li>
+</ul>
+Code-Spezialisierung ist die in C++ verwendete &Uuml;bersetzungstechnik.&nbsp;
+Ein C++-Compiler generiert aus einem Template f&uuml;r jede Instanziierung
+unterschiedlichen Bin&auml;rcode. Aus einem Listen-Template beispielsweise
+entsteht der Bin&auml;rcode f&uuml;r mehrere Listen-Klassen.&nbsp; Bei
+dieser Technik besteht die Gefahr, dass sehr viel Bin&auml;rcode entsteht.
+<p>Das ist insbesondere dann reine Verschwendung, wenn beispielsweise eine
+Collection ausschlie&szlig;lich Pointer oder Referenzen auf Elemente verwaltet.&nbsp;
+Pointer und Referenzen sind alle gleich gro&szlig; und ihre Verwendung
+ist v&ouml;llig unabh&auml;ngig vom Typ des referenzierten Objekts. Der
+generierte Bin&auml;rcode f&uuml;r eine Liste von String-Referenzen ist
+nahezu identisch mit dem Bin&auml;rcode f&uuml;r eine Liste von Integer-Referenzen.&nbsp;
+Der Unterschied liegt lediglich in einigen Typpr&uuml;fungen und –konvertierungen,
+wenn Elemente in die Collection hineingegeben oder aus der Collection herausgeholt
+werden..
+<p>Da in Java fast alle Typen Referenztypen sind, ist es naheliegend, dass
+f&uuml;r die &Uuml;bersetzung von parametrisierten Typen und Methoden in
+Java die Code-Sharing-Technik verwendet wird.
+<p>Code-Sharing hat den Vorteil, dass tendenziell weniger Bin&auml;rcode
+erzeugt wird.&nbsp; Es verhindert aber andererseits die Verwendung von
+primitiven Typen als Typargumente einer Instanziierung. Und so kann man
+in Java Generics beispielsweise keine LinkedList&lt;int> verwenden; lediglich
+die LinkedList&lt;Integer> ist erlaubt.
+<br>&nbsp;
+<h3>
+2.2 Type Erasure</h3>
+Java &uuml;bersetzt parametrisierte Typen und Methoden mit der Code-Sharing-Technik.&nbsp;
+Dabei m&uuml;ssen die verschiedenen Instanziierungen auf die eine gemeinsame
+Repr&auml;sentation des parametrisierten&nbsp; Typs/Methode abgebildet
+werden.&nbsp; Wie erfolgt diese Abbildung?
+<p>In Java Generics erfolgt diese Abbildung &uuml;ber eine sogenannte Type
+Erasure .&nbsp; Die &Uuml;bersetzung mittels Type Erasure kann man sich
+vorstellen wie eine &Uuml;bersetzung von generischem Java in regul&auml;res
+Java: von der Instanziierung eines parametrisierten Typs/Methode werden
+s&auml;mtliche Typparameter entfernt, und in der Definition eines parametrisierten
+Typs/Methode&nbsp; wird der Typparameter durch sein erstes Bound oder den
+Typ Object ersetzt, falls keine Bounds angegeben waren.
+<p>Aus der parametrisierten LinkedList&lt;A> wird eine LinkedList&lt;Object>
+und aus ihren Instanziierungen wie LinkedList&lt;String> und LinkedList&lt;Integer>
+wird LinkedList. Parametrisierte Methoden wie max&lt;A extends Comparable&lt;A>>()
+und ihre Instanziierungen wie max&lt;Integer>() und max&lt;String>() werden
+&uuml;bersetzt in eine Methode max&lt;Comparable>() bzw. max().&nbsp; Listing
+5 und 6 zeigen die parametrisierten Typen aus Listing 1 und 4 nach der
+Type Erasure.
+<p><i>Listing 5:&nbsp; Parametrisierte Typen nach der Type Erasure</i>
+<p><tt>interface Collection {</tt>
+<br><tt>&nbsp;public void add (Object x);</tt>
+<br><tt>&nbsp;public Iterator iterator();</tt>
+<br><tt>}</tt>
+<br><tt>interface Iterator {</tt>
+<br><tt>&nbsp;public Object next();</tt>
+<br><tt>&nbsp;public boolean hasNext();</tt>
+<br><tt>}</tt>
+<br><tt>class NoSuchElementException extends RuntimeException {}</tt><tt></tt>
+<p><tt>class LinkedList implements Collection{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; protected class Node{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Object elt;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Node next = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Node(Object elt){this.elt=elt;}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; protected Iterator myIterator = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; protected Node head = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; protected Node tail = null;</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public LinkedList(){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public void add(Object elt){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if(head==null){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+head=new Node(elt);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+tail=head;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } else{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+tail.next = new Node(elt);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+tail=tail.next;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public Iterator iterator(){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (myIterator == null)
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+myIterator = new Iterator(){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+protected Node ptr = head;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+public boolean hasNext(){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return ptr != null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+public Object next(){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if(ptr != null){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Object elt = ptr.elt;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ptr = ptr.next;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return elt;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+} else {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+throw new NoSuchElementException();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+};</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return myIterator;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<br><tt>final class Test {</tt>
+<br><tt>&nbsp;public static void main (String[ ] args) {</tt>
+<br><tt>&nbsp;&nbsp; LinkedList ys = new LinkedList();</tt>
+<br><tt>&nbsp;&nbsp; ys.add("zero"); ys.add("one");</tt>
+<br><tt>&nbsp;&nbsp; String y = (String)ys.iterator().next();&nbsp;&nbsp;&nbsp;
+// cast inserted</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<p>Wie man sehen kann, wurde der Typparameter A &uuml;berall durch den
+Typ Object ersetzt.&nbsp; Das Ergebnis dieser Transformation ist exakt
+die Implementierung einer LinkedList, die man ohne Java Generics gebaut
+h&auml;tte: die entstandene nicht-parametrisierte Liste verwaltet alle
+Elemente per Object-Referenz.&nbsp; Das ist ein beabsichtigter Effekt,
+weil auf dieser Weise die neuen parametrisierten Collections kompatibel
+zu den traditionellen nicht-parametrisierten Collections sind.&nbsp; Nach
+der &Uuml;bersetzung per Type Erasure kann man die parametrisierte Collection
+von der nicht-parametrisierten traditionellen Collection-Implementierung
+nicht mehr unterscheiden.
+<p>Listing 5 zeigt noch ein weiteres typisches Element der &Uuml;bersetzung
+von generischem in nicht-generisches Java: beim Herausholen von Elementen
+aus der Collection wird automatisch ein Cast eingef&uuml;gt.&nbsp; Das
+ist genau der Cast, den man bei den traditionellen Collections schon immer
+gebraucht hat.&nbsp; Wenn ein Element aus einer LinkedList&lt;String> (nach
+der &Uuml;bersetzung nur noch eine LinkedList) geholt wird, dann ist das
+Ergebnis eine Object-Referenz, die auf den Typ String gecastet wird.&nbsp;
+Den entsprechenden Cast hat der Compiler im Zuge der &Uuml;bersetzung automatisch
+eingef&uuml;gt.
+<p>Ganz &auml;hnlich funktioniert die &Uuml;bersetzung einer generischen
+Methode. Listing 6 zeigt die Type Erasure der parametrisierten Methode
+max() aus Listing 4:
+<p><i>Listing 6: Parameterisierte Methode nach der Type Erasure</i>
+<p><tt>interface Comparable {</tt>
+<br><tt>&nbsp; public int compareTo(Object that);</tt>
+<br><tt>}</tt>
+<br><tt>final class Byte implements Comparable {</tt>
+<br><tt>&nbsp;private byte value;</tt>
+<br><tt>&nbsp;public Byte (byte value) { this.value = value; }</tt>
+<br><tt>&nbsp;public byte byteValue () { return value; }</tt>
+<br><tt>&nbsp;public int compareTo (Byte that) {</tt>
+<br><tt>&nbsp;&nbsp; return this.value - that.value;</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>&nbsp;public int compareTo (Object that) { // bridge method inserted</tt>
+<br><tt>&nbsp;&nbsp; return this.compareTo((Byte)that);</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<br><tt>class Collections {</tt>
+<br><tt>&nbsp;public static Comparable max (Collection xs) {</tt>
+<br><tt>&nbsp;&nbsp; Iterator xi = xs.iterator();</tt>
+<br><tt>&nbsp;&nbsp; Comparable w = (Comparable)xi.next();</tt>
+<br><tt>&nbsp;&nbsp; while (xi.hasNext()) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Comparable x = (Comparable)xi.next();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; if (w.compareTo(x) &lt; 0) w = x;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; return w;</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<br><tt>final class Test {</tt>
+<br><tt>&nbsp;public static void main (String[ ] args) {</tt>
+<br><tt>&nbsp;&nbsp; LinkedList ys = new LinkedList();</tt>
+<br><tt>&nbsp;&nbsp; ys.add(new Byte((byte)0)); ys.add(new Byte((byte)1));</tt>
+<br><tt>&nbsp;&nbsp; Byte y = (Byte)Collections.max(ys);&nbsp;&nbsp;&nbsp;
+// cast inserted</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<p>Wieder wurden die Typparameter an allen Stellen durch ihr erstes Bound
+oder Object ersetzt.&nbsp; Man sieht in main() wieder den automatisch eingef&uuml;gten
+Cast f&uuml;r das Ergebnis der max()-Methode. Das Beispiel demonstriert
+dar&uuml;ber hinaus ein weiteres Element der &Uuml;bersetzung per Type
+Erasure: die sogenannte Bridge-Methode.
+<p>Bridge-Methoden werden eingef&uuml;gt, damit das &Uuml;berschreiben
+von Methoden in Subklassen funktioniert, die von parametrisierten Superklassen
+oder –interfaces abgeleitet sind. In dem gew&auml;hlten Beispiel implementiert
+die Klasse Byte das Interface Comparable&lt;Byte> und muss die Methode
+int compareTo(Byte) implementieren.&nbsp; Nach der Type Erasure ist aus
+dem Interface Comparable&lt;Byte> ein schlichtes Interface Comparable mit
+einer Methode int compareTo(Object) geworden.&nbsp; Die implementierende
+Klasse Byte hat aber keine Implementierung f&uuml;r diese Methode; statt
+dessen hat sie eine Methode int compareTo(Byte).&nbsp; Diese Methode ist
+aber keine &uuml;berschreibende Variante der im Interface verlangten Methode,
+weil die Signatur anders ist.&nbsp; Die Klasse Byte, die vor der Type Erasure
+das Interface Comparable&lt;Byte> implementiert hat, implementiert nach
+der Type Erasure das nun entstandene Interface Comparable nicht mehr.&nbsp;
+Der generierte Code w&uuml;rde sich also ohne weitere Ma&szlig;nahmen nicht
+&uuml;bersetzen lassen.&nbsp; Um dies zu vermeiden, f&uuml;gt der Compiler
+nun die Bridge-Methode ein.
+<p>Eine Bridge-Methode wird in Subklassen ben&ouml;tigt, die von einem
+parametrisierten Interface oder einer parametrisierten Superklasse abgeleitet
+sind.&nbsp; Die Bridge-Methode hat genau die Signatur, die der Supertyp
+nach der Type Erasure verlangt.&nbsp; In unserem Beispiel hat die Bridge-Methode
+die Signatur int compareTo(Object).&nbsp; Bridge-Methoden sind immer so
+implementiert, dass sie an die eigentliche Methode delegieren, in unserem
+Beispiel an die Methode int compareTo(Byte).&nbsp; Der Compiler f&uuml;gt
+die Bridge-Methoden im Zuge der &Uuml;bersetzung per Type Erasure automatisch
+ein.
+<br>&nbsp;
+<h3>
+2.3 Repr&auml;sentation von Generics im Laufzeitsystem</h3>
+Die &Uuml;bersetzung per Type Erasure haben wir zur Veranschaulichung als
+&Uuml;bersetzung von generischem Java in regul&auml;res Java erkl&auml;rt.&nbsp;
+In Wahrheit erzeugt der Compiler selbstverst&auml;ndlich keine tempor&auml;res
+.java-Datei, die er dann in eine .class-Datei &uuml;bersetzt, sondern die
+&Uuml;bersetzung erfolgt direkt von generischem Java nach Java Bytecode.&nbsp;
+Der generierte Bytecode entspricht exakt dem nicht-generischen Javacode,
+den wir in den Beispielen gezeigt haben.&nbsp; Davon kann man sich leicht
+durch eine Decompilation der .class-Datei &uuml;berzeugen.
+<p>Es gibt einige wenige Spuren, die die Generics in einer .class-Datei
+dennoch hinterlassen: es werden sogenannte Signature-Attribute im Bytecode
+ablegen; sie enthalten statische Information &uuml;ber die Typparameter
+einer Klasse oder Methode.&nbsp; Diese Signature-Attribute werden von der
+virtuellen Maschine als Kommentar behandelt und nicht ausgewertet.&nbsp;
+Die Signature-Attribute&nbsp; werden lediglich vom Compiler ausgewertet,
+um beispielsweise zu pr&uuml;fen, ob eine Instanziierung zul&auml;ssig
+im Sinne der Bounds ist.&nbsp; F&uuml;r die virtuelle Maschine ist hingegen
+keinerlei Unterschied zwischen einem parametrisierten Typ/Methode und einem
+regul&auml;ren Typ/Methode zu erkennen. Nach der Type Erasure sind die
+Typparameter (bis auf die Signature-Attribute) verschwunden und damit sieht
+1.5-Bytecode f&uuml;r die JVM so aus wie 1.4-Bytecode.
+<p>Die &Uuml;bersetzung per Type Erasure wurde bewusst von den Designern
+der Java Generics als &Uuml;bersetzungstechnik gew&auml;hlt.&nbsp; Ziel
+des Designs der Java Generics ist die hundertprozentige Kompatibilit&auml;t
+des aus Generics generierten Bytecode mit herk&ouml;mmlichem Bytecode.&nbsp;
+Es soll problemlos m&ouml;glich sein,&nbsp; generischen mit nicht-generischem
+Code zu mischen und beides sowohl unter einer neuen, aber auch unter einer
+alten (d.h. 1.4) JVM ablaufen zu lassen.&nbsp; Mit Hilfe der Type Erasure
+wurde dieses Kompatibilit&auml;tsziel erreicht.
+<p>Die vollst&auml;ndige Eliminierung der Typparameter im Rahmen der Type
+Erasure hat den Vorteil der Kompatibilit&auml;t mit nicht-generischem Java.&nbsp;
+Dies wird erkauft durch verschiedene Einschr&auml;nkungen, die sich aus
+der Type Erasure ergeben.&nbsp; Der wohl wesentlichste Nebeneffekt ist
+das Fehler jeglicher Information &uuml;ber die Typparameter zur Laufzeit.&nbsp;
+Beim Ablauf des Programm kann eine LinkedList&lt;String> nicht von einer
+LinkedList&lt;Integer> unterschieden werden.&nbsp; Beide haben zur Laufzeit
+nur noch den Type LinkedList.&nbsp; Das f&uuml;hrt zu allerlei interessanten
+Effekten und &Uuml;berraschungen, deren Darstellung den Rahmen dieses Artikels
+sprengen w&uuml;rden. Zu den Einschr&auml;nkungen geh&ouml;rt u.a., dass
+keine Arrays von parametrisierten Typen verwendet werden d&uuml;rfen. Eine
+Deklaration wie Comparable&lt;String>[] ist beispielsweise nicht zul&auml;ssig.&nbsp;
+Das ist auf den ersten Blick ziemlich &uuml;berraschend und in der Praxis
+reichlich st&ouml;rend.&nbsp; Es gibt nat&uuml;rlich gute Gr&uuml;nde,
+warum diese Einschr&auml;nkung sinnvoll und notwendig ist.&nbsp; Insgesamt
+aber stellt man bei n&auml;herem Hinsehen fest, dass&nbsp; diese und andere
+Restriktionen wenig intuitiv sind und den Umgang mit Java Generics relativ
+gew&ouml;hnungsbed&uuml;rftig machen.&nbsp; Java Generics sind kein triviales
+Sprachfeature, dass sich dem Programmierer quasi wie von selbst erschlie&szlig;t.&nbsp;
+Im Gegenteil, ein gewisser Lernaufwand f&uuml;r einen sicheren Umgang mit
+Java Generics wird sich nicht vermeiden lassen.
+<br>&nbsp;
+<br>&nbsp;
+<h2>
+3 Zusammenfassung</h2>
+In diesem Artikel haben wir die wesentlichen Sprachmittel f&uuml;r die
+Definition und Verwendung von parametrisierten Typen und Methoden in Java
+betrachtet. Mit Hilfe von parametrisierten Typen und Methoden k&ouml;nnen
+zahlreiche Laufzeit-Typpr&uuml;fungen durch Compilezeit-Typpr&uuml;fungen
+ersetzt werden.&nbsp; Der Compiler &uuml;bersetzt Generics per Type Erasure
+in herk&ouml;mmlichen Bytecode.&nbsp; Die &Uuml;bersetzungstechnik per
+Type Erasure stellt sicher, dass generisches Java zu herk&ouml;mmlichem
+Java kompatibel ist.&nbsp; Der Nachteil dieser Technik ist das Fehlen jeglicher
+Information &uuml;ber die Typparameter&nbsp; zur Laufzeit.&nbsp; F&uuml;r
+weitere Informationen sei an dieser Stelle auf die nachfolgenden Links
+verwiesen.
+<br>&nbsp;
+<br>&nbsp;
+<h2>
+4 Weitere Informationen</h2>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDK15"></a>/JDK15/&nbsp;</td>
+
+<td VALIGN=TOP><b><font face="Times New Roman, Times, serif"><font size=+0>Java<sup>TM</sup>
+2 SDK, Standard Edition 1.5.0</font></font></b>
+<br><font face="Times New Roman, Times, serif"><font size=+0>Update 1</font></font>
+<br><font face="Times New Roman, Times, serif"><font size=+0><a href="http://java.sun.com/developer/earlyAccess/j2sdk150_alpha/">http://java.sun.com/developer/earlyAccess/j2sdk150_alpha/</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="TUT"></a>/TUT/</td>
+
+<td><b>Java Generics Tutorial</b>
+<br>Gilad Bracha
+<br><a href="http://java.sun.com/j2se/1.5/pdf/generics-tutorial.pdf">http://java.sun.com/j2se/1.5/pdf/generics-tutorial.pdf</a></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td><a NAME="FAQ"></a>/FAQ/</td>
+
+<td><b>Java Generics FAQ</b>
+<br>Angelika Langer
+<br><a href="http://www.langer.camelot.de/GenericsFAQ/JavaGenericsFAQ.html">http://www.AngelikaLanger.com/GenericsFAQ/JavaGenericsFAQ.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="LAN"></a>/LAN/&nbsp;</td>
+
+<td><b>Links related to Java Generics</b>
+<br>Further references to articles, tutorials, conversations and other
+information related to Java Generics can be found on this website at <a href="http://www.langer.camelot.de/Resources/Links/JavaGenerics.htm">http://www.AngelikaLanger.com/Resources/Links/JavaGenerics.htm</a>.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="MAG1"></a>/MAG1/</td>
+
+<td><b>Java Generics - Parametrisierte Typen und Methoden</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaMagazin, April 2004
+<br><a href="GenericsPart1.html">http://www.AngelikaLanger.com/Articles/JavaMagazin/Generics/GenericsPart1.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="MAG2"></a>/MAG2/</td>
+
+<td><b>Wildcard Instantiations of Parameterized Types</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaMagazin, Oktober 2004
+<br><a href="GenericsPart2.html">http://www.AngelikaLanger.com/Articles/JavaMagazin/Generics/GenericsPart2.html</a></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/J2SE1.5.html"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/J2SE1.5.html">Java
+5.0</a></font></b>- New Features in J2SE 5.0
+<br><font color="#000000"><font size=-1>1 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<dir>
+<dir>&nbsp;</dir>
+</dir>
+
+</body>
+</html>

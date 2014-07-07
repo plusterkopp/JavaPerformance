@@ -1,0 +1,120 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Angelika Langer">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <title>Read-Only vs. Read-Write Set Iterators - STL Portability Problems</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="AbstractReadOnlyIterators"></a>&nbsp;
+<div ALIGN=right><table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 COLS=1 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">ABSTRACT</font></b></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=0 COLS=1 WIDTH="95%" >
+<tr>
+<td>The set container in the STL must not allow modification of its contained
+elements because the element values determine the ordering of the underlying
+binary-tree-structure. Depending on the STL implementation this might be
+expressed in terms of set iterators being read-only iterators, which imposes
+severe restrictions on the usability of the container. In other STL implementations
+the set iterators are read-write iterators, which permits inadvertent corruption
+of the tree-structure. Both implementation techniques have up- and downsides.
+How do we effectively use these different set implementations and still
+write portable programs?&nbsp;
+<p>One way of coping with the inherent portability trap is implementation
+of a simple adapter that hides the differences.&nbsp; Most STL users shy
+away from implementing their own iterator types, but is easier than most
+developers believe.&nbsp; In this tutorial we see how it can be done and
+why it is worth the effort.&nbsp;</td>
+</tr>
+</table></div>
+&nbsp;</td>
+</tr>
+</table></div>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">PREREQUISITES</font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLPADDING=5 WIDTH="95%" >
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Level:</font></i></b></td>
+
+<td>intermediate</td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td WIDTH="50%">90 minutes</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><i><font color="#295AB5">Prerequisites:</font></i></b></td>
+
+<td WIDTH="50%">basic knowledge of C++ and the STL</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><b><i><font color="#295AB5">Presented at:</font></i></b></td>
+
+<td WIDTH="95%"><a href="PreviousEvents.html#SDWest2002">Software Development</a>,
+San Jose, CA, April 2002</td>
+</tr>
+</table></div>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=2 WIDTH="100%" >
+<tr>
+<td COLSPAN="2"><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar or
+skim through some further reading:</font></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminars</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Courses/EffectiveSTL.htm"><img SRC="../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><font color="#000000"><a href="../Courses/EffectiveSTL.htm">Effective
+STL Programming - Using and Extending the STL</a></font>
+<br><font color="#000000"><font size=-1>4 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+
+<td VALIGN=TOP><b><i><font color="#295AB5">Paper</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Articles/Papers/AnsiC++/AnsiC++WhitePaper.htm"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=27 width=31></a></td>
+
+<td><font color="#000000"><a href="../Articles/Papers/AnsiC++/AnsiC++WhitePaper.htm">New
+Features in ANSI&nbsp; C++ How can we get the most out of them?</a></font>
+<br><font color="#000000"><font size=-1>short white paper (providing first
+insights)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+</body>
+</html>

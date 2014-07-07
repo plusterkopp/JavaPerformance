@@ -1,0 +1,176 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <title>Comparing Java and C++  -  Whitepaper</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="PaperJavaGotchas"></a>
+<br><font color="#295AB5"><font size=+3>Really Understanding Java</font></font>
+<br><font color="#295AB5"><font size=+1>Myths and Truths Comparing C++
+and Java</font></font>
+<p><font color="#295AB5"><font size=+2>Whitepaper, 1998</font></font>
+<br><font color="#295AB5"><font size=+1>Angelika Langer</font></font><font color="#295AB5"><font size=+1></font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;<font size=-1></font>
+<p><font size=-1>When I got first interested in Java I came across the
+following statement that George Paolini, Director of Corporate Marketing
+at JavaSoft, made in an interview that was published in JavaREPORT 5/98:</font>
+<dir><font size=-1><b>Q: </b><i>When will Java win over the C++ developers
+once and for all ?</i></font>
+<p><font size=-1><b>A: </b>I think we’re winning them over now. On the
+programming language side, C++ programmers are probably the most adept
+at picking up Java. For them it’s basically about leaving out a lot of
+the trapdoors that were developed in C++ and unlearning a lot of bad habits.</font></dir>
+<font size=-1>When I later started exploring Java in a little more depth
+I realised that Mr. Paolini's statements was nothing but marketing hype.</font>
+<p><font size=-1>It is true that Java shares many of the syntactical elements
+with C++, and that indeed makes C++ programmers feel familiar with Java
+almost immediately. Yet, when you dig deeper you discover that Java is
+a programming language with its own rules and idioms. Some idioms are common
+to all object oriented languages, some are similar to rules and idioms
+in C++, and some are completely Java specific. Just forgetting the complicated
+stuff from C++ does not imply that you've understood Java. Actually, being
+a C++ programmer lures you into certain traps. Some of these pitfalls are
+explored in the following.</font>
+<p><b>Comparison of variables</b>
+<p><font size=-1>In Java, the result of applying the operator <b><font face="Courier New">==</font></b>
+to two variables of non-primitive type is </font><font face="Courier"><font size=-2>true</font></font><font size=-1><b><font face="Courier New">,</font></b>
+if the operand values are both </font><font face="Courier"><font size=-2>null</font></font><font size=-1>
+or if they both refer to the same object or array; otherwise, the result
+is </font><font face="Courier"><font size=-2>false</font></font><font size=-1>.
+Remember that in Java all non-primitive types are reference types, and
+the operator <b><font face="Courier New">==</font></b> checks the <b><i>identity</i></b>
+of both referred objects. In C++, in contrast, the operator <b><font face="Courier New">==</font></b>
+checks for <b><i>equality</i></b> of both operands.</font>
+<p><font size=-1>The pitfall here is that the syntax of the comparison
+operator is exactly the same in both languages, yet the meaning is entirely
+different.</font>
+<ul>
+<li>
+<font size=-1>In C++, the operator <b><font face="Courier New">==</font></b>
+by default, that is, for built-in types, checks for <b><i>equality</i></b>
+of both operands. This value oriented behavior has become a common idiom
+in C++ and for this reason even overloaded == operators exhibit the same
+behavior.</font></li>
+
+<li>
+<font size=-1>In Java, all non-primitive types have reference semantics,
+and for that reason the operator == checks for <b><i>identity</i></b>.</font></li>
+</ul>
+<font size=-1>Now, in Java all classes have the method </font><font face="Courier"><font size=-2>boolean
+equals(Object o)</font></font><font size=-1> defined; it is inherited from
+the base class of all classes, class </font><font face="Courier"><font size=-2>Object</font></font><font size=-1>.
+User-defined classes can override this method in order to implement a functionality
+that checks for <b><i>equality</i></b> . Redefining the </font><font face="Courier"><font size=-2>equals()</font></font><font size=-1>
+function looks like good way to get back the value oriented comparison
+semantics that we know so well from C++. However, this is treacherous.</font>
+<p><font size=-1>The precise meaning of</font><font face="Courier"><font size=-2>
+equals()</font></font><b><font size=-1> </font>always depends on the specific
+class and its implementation. </b><font face="Courier"><font size=-2>equals()</font></font><b>
+must not mean "check for <i>equality</i>"; it can equally well mean anything
+else. For instance, all classes that do not override the </b><font face="Courier"><font size=-2>equals()</font></font><font size=-1>
+function exhibit the default behaviour inherited from class </font><font face="Courier"><font size=-2>Object</font></font><font size=-1>
+which is "check for <b><i>identity</i></b>". Not even the JDK (the huge
+standard Java library) defines </font><font face="Courier"><font size=-2>equals()</font></font><font size=-1>
+consistently. Consider the following examples using the string and the
+string buffer classes from the JDK:</font>
+<dir><font face="Courier"><font size=-2>String s = "Hello World !";</font></font>
+<p><font face="Courier"><font size=-2>String s1 = new String(s);</font></font>
+<p><font face="Courier"><font size=-2>String s2 = new String(s);</font></font></dir>
+<font size=-1>Here, </font><font face="Courier"><font size=-2>s1.equals(s2)</font></font><font size=-1>
+yields </font><font face="Courier"><font size=-2>true</font></font><font size=-1>
+, as expected. If we compare two string variables that both contain the
+string </font><font face="Courier"><font size=-2>"Hello World !"</font></font><font size=-1>
+then we expect that they compare equal. That's how strings behave in C++,
+and that's how they behave in Java, too. However, generalising this expectation
+is misleading in Java. Look at this:</font>
+<dir><font face="Courier"><font size=-2>StringBuffer sb1 = new StringBuffer(s);</font></font>
+<p><font face="Courier"><font size=-2>StringBuffer sb2 = new StringBuffer(s);</font></font></dir>
+<font size=-1>Now, </font><font face="Courier"><font size=-2>sb1.equals(sb2)</font></font><font size=-1>
+yields </font><font face="Courier"><font size=-2>false</font></font><font size=-1>
+, which we might not have been expecting. After all we compare two sting
+buffer variables that both contain the string </font><font face="Courier"><font size=-2>"Hello
+World !"</font></font><font size=-1>. My expectation was that they compare
+equal. But no, they do not! The </font><font face="Courier"><font size=-2>StringBuffer</font></font><font size=-1>
+class does not override the </font><font face="Courier"><font size=-2>equals()</font></font><font size=-1>
+function and for that reason </font><font face="Courier"><font size=-2>equals()</font></font><font size=-1>
+checks for identity of the referred object, and yes, we have two different
+objects with the same value. So they compare not-equal in Java.</font>
+<p><font size=-1>The bottom line is: forget value semantics all together.
+Don't assume that an operator, such as operator ==, that looks the same
+in C++ and Java has the same meaning in both languages. Don't believe that
+Java mechanisms, like the </font><font face="Courier"><font size=-2>equal()</font></font><font size=-1>
+function, would help retain value semantics. It is not consistently used.
+Lots of pitfalls here! But these are not the only ones.</font>
+<p><font size=-1><b>Assignment.</b> Assignment of variables comes with
+similar surprises, because assignment is value assignment in C++ and reference
+assignment in Java. The </font><font face="Courier"><font size=-2>clone()</font></font><font size=-1>
+function again looks like it would get us back value semantics, but by
+default it does a shallow copy. Again, it depends on each single class
+what </font><font face="Courier"><font size=-2>clone()</font></font><font size=-1>
+actually means and it is not used consistently.</font>
+<p><font size=-1><b>Reference variables</b>. The type system itself makes
+for surprises because Java reference variables look like C++ references,
+but behave like C++ pointers. For instance, in C++ a reference must be
+initialised to refer to an existing object, and only pointers can have
+a null value indicating that it does not refer to anything valid. In Java,
+reference variables are by default initialised with a null reference, which
+makes them behave pretty much like C++ pointers: you always have to check
+for the null value before any access.</font>
+<p><font size=-1><b>Construction/destruction</b>. Object construction works
+differently in both languages. So does object destruction, or its Java
+counterpart: finalization. It turns out that resource management cannot
+be reliably done in Java, because you do not know whether a finalizer is
+invoked at all, and if so when. Even means that were obviously designed
+to mitigate this problem, like </font><font face="Courier"><font size=-2>runFinalizersOnExit()</font></font><font size=-1>
+have a quite suspicious track record: It did not work in JDK 1.0, it was
+supposed to work in JDK 1.1, and meanwhile for platform two (JDK 1.2) it
+is deprecated, because they realised it cannot be reliably implemented.</font>
+<p><font size=-1><b>Polymorphism</b> is different because non-virtual in
+C++ does not mean final in Java. <b>Function overloading</b> works differently
+for member functions in an inheritance tree because of the different name
+lookup rules. The concept of <b>constness</b> in C++ is similar to the
+semantics of final in Java, yet different. Even <b>exception handling</b>
+is different in both languages.</font>
+<p><font size=-1>So why did Mr. Paolini feel that C++ programmers just
+have to leave out a lot of the trapdoors that were developed in C++? Java
+opens quite a number of new trapdoors, especially to C++ programmers. But
+then, Java would be boring without these challenges, right? ;-)</font>
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+</body>
+</html>

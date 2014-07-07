@@ -1,0 +1,518 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Pre-Copyedit Version of Article in JavaSpektrum, September 2003">
+   <meta name="KeyWords" content="final polymorphism Effective Java">
+   <title>Non-Polymorphic Classes - final in Conjuction with Classes and Methods</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="EffectiveJava10"></a>
+<br><font color="#295AB5"><font size=+3>final-Klassen und final-Methoden</font></font>
+<br><font color="#295AB5"><font size=+2>&Uuml;ber die Bedeutung des Schl&uuml;sselworts
+final im Zusammenhang mit Klassen und Methoden</font></font>
+<p><font color="#295AB5"><font size=+2>JavaSPEKTRUM, September 2003</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p><b>Mit dem Sch&uuml;sselwort final k&ouml;nnen Variablen, Klassen und
+Methoden qualifiziert werden. Die Bedeutung von final-Variablen haben wir
+uns im letzen Artikel angesehen (siehe /<a href="#Kreft1">KRE1</a>/). Diesmal
+wollen wir uns mit final-Klassen und -Methoden befassen. Die wohl bekannteste
+final-Klasse ist die Klasse java.lang.String. Jeder Java-Programmierer
+wei&szlig;, da&szlig; die String-Klasse besondere Eigenschaften hat: sie
+ist unver&auml;nderlich. Bisweilen wird deshalb angenommen, die Unver&auml;nderlichkeit
+erg&auml;be sich aus der Qualifizierung mit final. Zwar hat final mit Unver&auml;nderlichkeit
+zu tun, aber eine final-Klasse ist nicht automatisch unver&auml;nderlich.
+In diesem Artikel wollen wir kl&auml;ren, was Unver&auml;nderlichkeit genau
+bedeutet (es gibt verschiedene Arten davon) und was das Schl&uuml;sselwort
+final damit zu tun hat.</b>
+<br>&nbsp;
+<h2>
+Was hei&szlig;t eigentlich „unver&auml;nderlich“?</h2>
+In den letzten beiden Artikeln haben wir unver&auml;nderliche Klassen diskutiert.&nbsp;
+Das sind Klassen, deren Objekte sich nicht &auml;ndern k&ouml;nnen und
+die auch nicht von Au&szlig;en ver&auml;ndert werden k&ouml;nnen. Dabei
+haben wir die Unver&auml;nderlichkeit stets auf den Zustand des Objekts
+bezogen. Der Begriff der „Unver&auml;nderlichkeit“ kann aber auch anders
+verstanden werden.
+<p>Ein Klasse hat immer zwei wesentliche Aspekte: Daten und Code. Die Daten
+sind die Felder. Sie bestimmen den Zustand („State“) der Objekte. Der Code
+sind die Methoden. Sie bestimmen das Verhalten („Behavior“) der Objekte.&nbsp;
+Entsprechend gibt es zwei Arten von Unver&auml;nderlichkeit.
+<br>Immutability
+<br>Wenn sich die Daten nicht &auml;ndern k&ouml;nnen, dann ist die Klasse
+unver&auml;nderlich.&nbsp; Solche Klassen haben wir in den letzten beiden
+Artikeln betrachtet.&nbsp; Wir haben diese Art von Klassen als „immutable“
+Klassen bezeichnet.
+<br>Polymorphismus
+<br>Von Polymorphismus spricht man, wenn das Verhalten ver&auml;nderlich
+ist.&nbsp; Dabei gibt es verschiedene Umst&auml;nde, unter den sich das
+Verhalten eines Objekts &auml;ndern kann.&nbsp; Zum einen kann ver&auml;ndertes
+Verhalten daher r&uuml;hren, da&szlig; sich der Zustand des Objekts ge&auml;ndert
+hat.&nbsp; Ver&auml;nderliches Verhalten ergibt sich aber auch, wenn die
+Methoden einer Klasse parametrisiert sind und beim Aufruf der Methode Argumente
+&uuml;bergeben werden.&nbsp; Dann zeigen die parametrisierten Methoden
+ver&auml;nderliches Verhalten abh&auml;ngig von den Aufrufparametern.&nbsp;
+Diese Arten von ver&auml;nderlichem Verhalten bezeichnet man nicht als
+polymorphes Verhalten.
+<p>Von Polymorphismus spricht man im Zusammenhang mit Referenzen. Objekte
+sind niemals polymorph, nur Referenzen k&ouml;nnen polymorph sein. 
+Eine
+Referenzvariable kann auf Objekte verschiedenen Typs zeigen.&nbsp; Dazu
+mu&szlig; die Variable eine Referenz auf einen Supertyp (Superklasse oder
+Superinterface) sein und die referenzierten Objekte m&uuml;ssen von einem
+Subtyp sein. Wenn sich abh&auml;ngig vom Typ des referenzierten Objekts
+das Verhalten der Variable ver&auml;ndert, dann spricht man polymorphem
+Verhalten.
+<p>Polymorphes Verhalten kann daher nur im Zusammenhang mit Vererbung auftreten
+und ergibt sich dadurch, da&szlig; Subtypen Methoden des Supertyps redefinieren
+und anders implementieren, als es der Supertyp tut. Sp&auml;ter, beim Ablauf
+des Programms, wird dann anhand des Typs des referenzierten Objekts entschieden,
+welche Implementierung einer Methode (die des Sub- oder die des Supertyps)
+angesto&szlig;en wird. Auf diese Weise ergibt sich das polymorphe (d.h.
+vielgestaltige) Verhalten der Referenzvariablen. Als polymorphe Klassen
+bezeichnet man in diesem Zusammenhang Klassen, deren Methoden von Subklassen
+redefiniert werden.
+<p>Da Polymorphismus mit Vererbung zu tun hat, liegt die Schlu&szlig;folgerung
+nahe, da&szlig; nicht-polymorphe Klassen jene Klassen sind, von denen man
+nicht ableiten kann, weil es ohne Subklassen keine redefinierten Methoden
+geben kann. Hier kommt das Schl&uuml;sselwort final ins Spiel: wenn eine
+Klasse mit final qualifiziert ist, dann kann man von dieser Klasse nicht
+ableiten. Deshalb gibt es das Mi&szlig;verst&auml;ndnis, final-Klassen&nbsp;
+seinen nicht-polymorph.&nbsp; Das stimmt leider nicht so ganz.
+<p>Die Verwirrung stammt vermutlich daher, da&szlig; die String-Klasse
+final ist und gleichzeitig unver&auml;nderlich in jeder Hinsicht: sie ist
+sowohl „immutable“ als auch „nicht-polymorph“.&nbsp; Im letzten Artikel
+(siehe /<a href="#Kreft1">KRE1</a>/) haben wir gesehen, da&szlig; Immutability
+praktisch nichts mit final zu tun hat.&nbsp; Immutability ist eine semantische
+Eigenschaft einer Klasse, die explizit programmiert werden mu&szlig; und
+die sich nicht durch die Syntax der Sprache ausdr&uuml;cken l&auml;&szlig;t.
+Polymorphismus hingegen hat mit final zu tun, aber nicht in der Art, da&szlig;
+jede final-Klasse automatisch nicht-polymorph w&auml;re.
+<br>&nbsp;
+<h2>
+Die Beziehung zwischen final und Polymorphismus</h2>
+Ein polymorpher Typ zeigt vielgestaltiges Verhalten. Das kann wie oben
+bereits beschrieben durch das &Uuml;berschreiben von Methoden in Subklassen
+erreicht werden.&nbsp; Diese Definition von polymorphem Verhalten ist sehr
+eng gefa&szlig;t und etwas vereinfacht. Es ist die Definition von Polymorphismus,
+die f&uuml;r Einf&uuml;hrungen in die Objektorientierung &uuml;blicherweise
+verwendet wird, um Neulingen den Begriff des Polymorphismus zu erl&auml;utern.&nbsp;
+Wir wollen den Begriff des Polymorphismus f&uuml;r die nachfolgenden Betrachtungen
+etwas allgemeiner fassen. Polymorphes Verhalten kann n&auml;mlich auch
+weniger direkt als durch die Redefinition von Methoden in Klassenhierarchien
+entstehen. Selbst Klassen, deren Methoden nicht &uuml;berschrieben werden,
+k&ouml;nnen polymorphes Verhalten zeigen, wenn n&auml;mlich ihr Zustand
+polymorph ist.&nbsp; Deshalb k&ouml;nnen auch final-Klassen sehr wohl polymorphes
+Verhalten zeigen.
+<p>Sehen wir uns das genauer an. Wie k&ouml;nnte eine polymorphe final-Klasse
+aussehen? Betrachten wir eine Klasse, die in ihrem Konstruktor ein Argument
+von einem Supertyp akzeptiert und Methoden des Arguments aufruft.
+<p><tt>public final class SampleClass {</tt>
+<br><tt>&nbsp; private SuperType field;</tt>
+<p><tt>&nbsp; SampleClass(SuperType arg) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; field = arg;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public void someInnocentMethod() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; field.doSomething();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Nehmen wir au&szlig;erdem an, die Methode SuperType.doSomething() sei
+polymorph, d.h. es gibt Subtpyen, die diese Methode redefiniert haben.
+Dann wird die Methode SampleClass.someInnocentMethod() unterschiedliches
+Verhalten an den Tag legen, abh&auml;ngig vom Typ des Konstruktorarguments.
+<p><tt>SampleClass sample1 = new SampleClass(new SuperType());</tt>
+<br><tt>SampleClass sample2 = new SampleClass(new SubType());</tt>
+<p><tt>Sample1.someInnocentMethod();&nbsp; // calls SuperType.doSomething()</tt>
+<br><tt>Sample2.someInnocentMethod();&nbsp; // calls SubType.doSomething
+()</tt>
+<p>Obwohl die final-Klasse SampleClass keine abgeleiteten Klassen haben
+kann, ist sie dennoch polymorph.&nbsp; Das liegt daran, da&szlig; sie eine
+Referenz auf ein polymorphes Objekte verwendet.&nbsp; Polymorphismus entsteht
+also nicht allein durch das &Uuml;berschreiben von Methoden in Klassenhierarchien,
+sondern bereits dann, wenn eine Klasse eine andere polymorphe Klasse verwendet.&nbsp;
+Die Schlu&szlig;folgerung, da&szlig; eine final-Klasse nicht-polymorph
+sei, ist also falsch.&nbsp; Das gleiche gilt im &uuml;brigen auch f&uuml;r
+final-Methoden. Betrachten wir in diesem Zusammenhang ein weiteres Mi&szlig;verst&auml;ndnis.
+<p>Sehen wir uns eine non-final-Klasse an, die sowohl final- als auch non-final-Methoden
+hat. Bisweilen wird vermutet, da&szlig; die non-final-Methoden polymorph
+w&auml;ren, wohingegen die final-Methoden nicht-polymorph seien.&nbsp;
+Auch das stimmt nicht, wie folgendes Beispiel zeigt:
+<p><tt>public class SuperClass {</tt>
+<br><tt>&nbsp; public void doSomething() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; …</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public final void someInnocentMethod() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; doSomething();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Die Methode someInnocentMethod() ist zwar final, aber sie ruft die non-final-Methode
+doSomething() auf und hat deshalb unterschiedliches Verhalten abh&auml;ngig
+vom Typ des Objekts, auf dem sie aufgerufen wird.&nbsp; Im Grunde liegt
+derselbe Fall vor wie im Beispiel oben: eine final-Methode ruft &uuml;ber
+eine Referenz,&nbsp; in diesem Fall die this-Referenz,&nbsp; eine polymorphe
+Methode auf und ist damit selbst polymorph.
+<p>Wie man sieht, f&uuml;hrt die Qualifizierung von Klassen mit dem Schl&uuml;sselwort
+final nicht zur Unver&auml;nderlichkeit der Klassen. Eine final-Klasse
+hat weder einen unver&auml;nderlichen Zustand noch ist ihr Verhalten unver&auml;nderlich
+im Sinne von nicht-polymorph.&nbsp; Die Qualifizierung von Klassen und
+Methoden mit dem Schl&uuml;sselwort final f&uuml;hrt lediglich dazu, da&szlig;
+im Falle einer final-Klasse keine Subklassen definiert werden k&ouml;nnen
+und im Falle von Methoden, da&szlig; die Methode nicht in einer Subklasse
+&uuml;berschrieben werden kann.&nbsp; Das ist auch genau das, was die Sprachspezifikation
+festlegt.
+<br>&nbsp;
+<table BORDER CELLSPACING=0 CELLPADDING=2 >
+<tr>
+<td BGCOLOR="#999999"><b><font color="#FFFFFF">Zitat aus der Java Language
+Specification</font></b></td>
+</tr>
+
+<tr>
+<td>
+<blockquote>&nbsp;
+<br><b><font face="Arial,Helvetica"><font size=-1>8.1.1.2 final Classes</font></font></b>
+<p><font face="Arial,Helvetica"><font size=-1>A class can be declared final
+if its definition is complete and no subclasses are desired or required.
+A compile-time error occurs if the name of a final class appears in the
+extends clause (&sect;8.1.3) of another class declaration; this implies
+that a final class cannot have any subclasses. A compile-time error occurs
+if a class is declared both final and abstract, because the implementation
+of such a class could never be completed (&sect;8.1.1.1). Because a final
+class never has any subclasses, the methods of a final class are never
+overridden (&sect;8.4.6.1).</font></font>
+<p><b><font face="Arial,Helvetica"><font size=-1>8.4.3.3 final Methods</font></font></b>
+<p><font face="Arial,Helvetica"><font size=-1>A method can be declared
+final to prevent subclasses from overriding or hiding it. It is a compile-time
+error to attempt to override or hide a final method. A private method and
+all methods declared in a final class (&sect;8.1.1.2) are implicitly final,
+because it is impossible to override them. It is permitted but not required
+for the declarations of such methods to redundantly include the final keyword.&nbsp;
+It is a compile-time error for a final method to be declared abstract.</font></font></blockquote>
+</td>
+</tr>
+</table>
+
+<p>Nun ist&nbsp; in der Praxis aber trotzdem so, da&szlig; viele Programmierer
+von einer final-Klasse erwarten, das sie nicht-polymorph ist. Diese Erwartungshaltung
+stammt einerseits von Beispielen aus dem JDK wie der String.&nbsp; Diese
+Auffassung wird au&szlig;erdem in B&uuml;chern verbreitet.&nbsp; Beispielsweise
+sagen Arnold, Gosling und Holmes in ihrem Java-Standardwerk „The Java Programming
+Language“ (/<a href="#ArnoldGosling">ARN</a>/) in Abschnitt 3.6:
+<blockquote><font face="Arial,Helvetica"><font size=-1>If a method is final,
+you can rely on its implementation details (unless it invokes non-final
+methods, of course). … If you make a method final, you should really intend
+that its behavior be completely fixed.</font></font></blockquote>
+Mit “completely fixed” ist hier „unver&auml;nderlich“ im Sinne von „nicht-polymorph“
+gemeint.
+<br>&nbsp;
+<h2>
+Wie implementiert man nicht-polymorphe Klassen?</h2>
+Nicht-polymorphes Verhalten mu&szlig; aktiv und bewu&szlig;t implementiert
+werden; es gen&uuml;gt nicht, Methoden als final zu deklarieren.
+<br>Damit das Verhalten einer Methode nicht-polymorph ist, mu&szlig; man
+darauf achten,
+<br>&middot; da&szlig; die Methode nichts verwendet, was seinerseits polymorph
+ist, und
+<br>&middot; da&szlig; die Methode selbst final ist, sonst k&ouml;nnte
+sie als Ganzes &uuml;berschrieben werden.
+<br>Eine gesamte Klasse ist nicht-polymorph,
+<br>&middot; wenn alle ihre Methoden nicht-polymorph sind, und
+<br>&middot; wenn die Klasse selbst final ist, sonst k&ouml;nnten beim
+Ableiten polymorphe Methoden hinzugef&uuml;gt werden.
+<p>Das hei&szlig;t, f&uuml;r die Implementierung einer nicht-polymorphen
+Klasse deklariert man zun&auml;chst einmal die Klasse als final. Damit
+sind dann implizit s&auml;mtliche Methoden final. Dann mu&szlig; man sicherstellen,
+da&szlig; die Methoden keine polymorphen Operationen aufrufen.
+<p>Woher wei&szlig; man, ob eine Operation, die aufrufen werden soll, polymorph
+ist oder nicht? So genau wei&szlig; man das leider meistens nicht. Man
+kann zumindest sicher sein, da&szlig; alle Operationen auf primitiven Typen
+nicht-polymorph sind, weil es f&uuml;r die primitiven Typen keine Vererbungsbeziehungen
+gibt und es in Java auch gar keine Referenzvariablen von primitivem Typ
+gibt. Alle Methoden, die &uuml;ber Referenzen aufgerufen werden, k&ouml;nnen
+hingegen polymorph sein. Hier mu&szlig; man in der jeweilige JavaDoc nachlesen,
+ob die Methode polymorph ist oder nicht. Die Tatsache, da&szlig; die Methode
+final ist, ist lediglich ein Hinweis, aber keine Garantie.
+<p>In der Praxis sind nur ganz wenig Klassen nicht-polymorph, weil die
+meisten Klassen irgend etwas Polymorphes verwenden.&nbsp; Lediglich ganz
+grundlegende Klassen wie String, Integer, Long, Boolean, etc. aus dem java.lang-Package
+sind nicht-polymorph. Wenn man ihre Implementierungen studiert, stellt
+man fest, da&szlig; sie ausschlie&szlig;lich primitive Typen oder andere
+nicht-polymorphe Typen verwenden. String beispielsweise verwendet nur primitive
+Typen und Locales, die ihrerseits nicht-polymorph sind. String ist eine
+final, nicht-polymorphe und immutable Klasse. Ebenso ist es bei Integer.
+<p>In den Listings 1 und 2 finden sich exemplarische Implementierungen
+f&uuml;r eine ver&auml;nderliche und eine unver&auml;nderliche Point-Klasse,
+wobei die unver&auml;nderliche Klasse unver&auml;nderlich in beiden Dimensionen
+ist , d.h. nicht-polymorph und immutable.&nbsp; Mischformen wie&nbsp; polymorphe
+Klassen mit unver&auml;nderlichen Zustand oder nicht-polymorphe Klassen
+mit ver&auml;nderlichen Zustand sind ebenfalls denkbar und k&ouml;nnen
+auch sinnvoll sein.&nbsp; Wichtig ist jedoch, da&szlig; man bei der Implementierung
+von final-Klassen und -Methode darauf achtet, da&szlig; der Benutzer typischerweise
+ein nicht-polymorphes Verhalten erwartet und da&szlig; dieses nicht automatisch
+durch die Qualifizierung mit final gegeben ist.
+<p>Wenig intuitiv w&auml;re z.B. eine final-Klasse, die sowohl polymorph
+als auch mutable ist, wie etwa die folgende Klasse:
+<p><tt>import java.awt.Point;</tt>
+<p><tt>public final class ColoredPoint {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private Point point;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private int&nbsp;&nbsp; color;</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; ColoredPoint (Point p, int c) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; point = p.clone();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; color = c;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; // more constructors</tt>
+<p><tt>&nbsp; public Point getLocation() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return point.getLocation();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public void setLocation(Point p) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; point.setLocation(p);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; // more methods</tt>
+<p><tt>}</tt>
+<p>Hier ist jede der gezeigten Methoden zwar final, weil die Klasse als
+Ganzes final ist, aber jede der Methoden ist polymorph, weil die benutzte
+Klasse java.awt.Point polymorph ist.&nbsp; Das ist nicht unbedingt das,
+was eine Benutzer erwartet, wenn er eine final-Klasse sieht.
+<br>&nbsp;
+<h2>
+Zusammenfassung und Ausblick</h2>
+Die Qualifizierung von Klassen und Methoden mit dem Schl&uuml;sselwort
+final bedeutet, da&szlig; die final-Klasse keine Subklassen haben kann
+und da&szlig; die final-Methoden nicht redefiniert werden k&ouml;nnen.&nbsp;
+Es bedeutet aber nicht, da&szlig; final-Klassen unver&auml;nderlich sind.
+Sowohl der Zustand als auch das Verhalten von final-Klassen k&ouml;nnen
+ver&auml;nderlich sein. Unver&auml;nderlichkeit ist immer eine semantische
+Eigenschaft einer Klasse, die durch Mittel der Sprache nicht direkt ausgedr&uuml;ckt
+werden kann.&nbsp; In der Praxis sind nicht-polymorphe Typen selten – wesentlich
+seltener als das Mi&szlig;verst&auml;ndnis, final-Klassen seien unver&auml;nderlich
+im Sinne von „immutable“ und/oder „nicht-polymorph“.
+<p>Im n&auml;chsten Artikel (siehe /<a href="#Kreft2">KRE2</a>/) kommen
+wir noch einmal auf polymorphen Methoden zur&uuml;ck und erl&auml;utern,
+warum Konstruktoren keine polymorphen Methoden der eigenen Klasse aufrufen
+sollten.
+<br>&nbsp;
+<h2>
+Listings</h2>
+&nbsp;
+<table BORDER COLS=2 >
+<tr BGCOLOR="#FFFF99">
+<td><b>Listing 1: Eine polymorphe, mutable Point-Klasse&nbsp;</b></td>
+
+<td><b>Listing 2: Eine nicht-polymorphe, immutable Point-Klasse</b></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>
+<br><tt>public class Point implements Cloneable {</tt>
+<br><tt>&nbsp;&nbsp; public int x;</tt>
+<br><tt>&nbsp;&nbsp; public int y;</tt>
+<p><tt>&nbsp;&nbsp; public Point() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; this(0, 0);</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public Point(Point p) {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; this(p.x, p.y);</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public Point(int x, int y) {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; this.x = x;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; this.y = y;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public double getX() {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return x;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public double getY() {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return y;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public Point getLocation() {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return new Point(x, y);</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public void setLocation(Point p) {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; setLocation(p.x, p.y);</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public void setLocation(int x, int y) {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; this.x = x;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; this.y = y;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public void translate(int dx, int dy) {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; this.x += dx;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; this.y += dy;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public double distance(Point pt) {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; double PX = pt.getX() - this.getX();&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; double PY = pt.getY() - this.getY();&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return Math.sqrt(PX * PX + PY * PY);</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public Object clone() {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; try {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return super.clone();&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; } catch (CloneNotSupportedException e)
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // </tt>this shouldn't happen,
+since we are Cloneable
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; throw new InternalError();&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public int hashCode() {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; int hc = 17;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; int hashMultiplier = 59;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; hc = hc*hashMultiplier + x;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; hc = hc*hashMultiplier + y;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return hc;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public boolean equals(Object obj) {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; if (obj == null)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return false;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; if (getClass() != obj.getClass())&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return false;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Point pt = (Point)obj;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return (x == pt.x) &amp;&amp; (y == pt.y);</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public String toString() {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return getClass().getName()</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
++ "[x=" + x + ",y=" + y + "]";</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<br>&nbsp;</td>
+
+<td>
+<br><tt>public <b><font color="#3333FF">final</font></b> class Point implements
+Cloneable {</tt>
+<br><tt>&nbsp;&nbsp; public int x;</tt>
+<br><tt>&nbsp;&nbsp; public int y;</tt>
+<p><tt>&nbsp;&nbsp; public Point() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; this(0, 0);</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public Point(Point p) {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; this(p.x, p.y);</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public Point(int x, int y) {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; this.x = x;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; this.y = y;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public double getX() {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return x;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public double getY() {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return y;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public Point getLocation() {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return new Point(x, y);</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br>&nbsp;
+<br>&nbsp;
+<p><tt>&nbsp;&nbsp; <b><font color="#3333FF">// mutating methods eliminated</font></b></tt>
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<p><tt>&nbsp;&nbsp; public double distance(Point pt) {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; double PX = pt.getX() - this.getX();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; double PY = pt.getY() - this.getY();&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return Math.sqrt(PX * PX + PY * PY);</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public Object clone() {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; try {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return super.clone();&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; } catch (CloneNotSupportedException e)
+{&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // </tt>this shouldn't happen,
+since we are Cloneable
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; throw new InternalError();&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public int hashCode() {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; int hc = 17;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; int hashMultiplier = 59;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; hc = hc*hashMultiplier + x;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; hc = hc*hashMultiplier + y;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return hc;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public boolean equals(Object obj) {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; if (obj == null)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return false;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; if (getClass() != obj.getClass())</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return false;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Point pt = (Point)obj;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return (x == pt.x) &amp;&amp; (y == pt.y);</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public String toString() {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return getClass().getName()</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
++ "[x=" + x + ",y=" + y + "]";</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<h2>
+Literaturverweise</h2>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft1"></a>/KRE1/</td>
+
+<td VALIGN=TOP><b>Unver&auml;nderliche Typen in Java (Teil 1-2)&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaSpektrum, M&auml;rz + Juli 2003
+<br><a href="../08.Immutability-Part1/08.Immutability-Part1.html">http://www.langer.camelot.de/Articles/JavaSpektrum/08.Immutability-Part1/08.Immutability-Part1.html</a>
+<br><a href="../09.Immutability-Part2/09.Immutability-Part2.html">http://www.langer.camelot.de/Articles/JavaSpektrum/09.Immutability-Part2/09.Immutability-Part2.html</a></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td><a NAME="Kreft2"></a>/KRE2/</td>
+
+<td><b>Aufruf polymorpher Methoden im Konstruktor</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaSpektrum, November 2003
+<br><a href="../11.PolyMethodsInCtor/11.PolyMethodsInCtor.html">http://www.langer.camelot.de/Articles/JavaSpektrum/11.PolyMethodsInCtor/11.PolyMethodsInCtor.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="ArnoldGosling"></a>/ARN/</td>
+
+<td><b>The Java Programming Language, 3rd Ed.</b>
+<br>Ken Arnold, James Gosling, David Holmes
+<br>Addison-Wesley, 2000</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

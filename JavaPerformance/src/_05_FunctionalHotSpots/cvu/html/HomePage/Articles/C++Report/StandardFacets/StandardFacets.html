@@ -1,0 +1,1030 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Article C++ Report November/December 1997">
+   <title>The Standard Facets</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CppReportStandardFacets"></a>
+<br><font color="#295AB5"><font size=+3>The Standard Facets</font></font>
+<p><font color="#295AB5"><font size=+2>C++ Report, November/December 1997</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p><font size=-1>Internationalization is building into a program the potential
+for worldwide use. Nowadays, it is a common task in almost every product
+development process. Internationalization is supported in various forms
+by programming languages, operating systems, and development tools. Traditionally,
+internationalization is done by means of the standard C library or equivalent
+C APIs such as the Win32 NLSAPI on Microsoft platforms or the X/Open NLS
+support on Unix platforms. Naturally, the C++ standards committee did not
+want to stand back and included internationalization support into the standard
+C++ library: a locale class was added and its use was demonstrated by internationalizing
+the standard iostreams. In our last contribution to this column (see /1/)
+we discussed the architecture of standard locales. Here is a brief recap:</font>
+<p><font size=-1>The standard C++ library provides an extensible framework
+for support of internationalization. Its main elements are <i>locales</i>
+and <i>facets</i>. A locale is a class that represents a container of facets;
+a facet is a class that contains information and provides functionality
+related to a certain aspect of internationalization. Access to a facet
+that is contained in a locale is via a template function called </font><font face="Courier,Courier New"><font size=-2>use_facet&lt;facet>(loc)</font></font><font size=-1>.
+The template argument </font><font face="Courier,Courier New"><font size=-2>facet</font></font><font size=-1>
+is a facet class, and the function argument </font><font face="Courier,Courier New"><font size=-2>loc</font></font><font size=-1>
+is a locale object; returned is a constant reference to the object of class
+</font><font face="Courier,Courier New"><font size=-2>facet</font></font><font size=-1>
+contained in the locale.</font>
+<p><font size=-1>Last time we described the locale framework’s architecture
+in detail and discussed the design of the </font><font face="Courier,Courier New"><font size=-2>locale</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>facet</font></font><font size=-1>
+classes. The standard library does not only provide the locale framework,
+but also contains a number of facet classes. In this article we explain
+which facets the standard already provides and what functionality they
+have. In a subsequent article we will demonstrate how one can use the locale
+framework to build and integrate a new user-defined, special-purpose facet.</font>
+<p><font size=-1>Before we delve into the details of a certain standard
+facet, please have a look at the overview of the internationalization aspects
+the committee found important enough to be standardized. They are summarized
+in<i> Table 1</i>.</font>
+<br>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=5 WIDTH="100%" BORDERCOLOR="#000000" >
+<tr>
+<td VALIGN=TOP WIDTH="45%"><b><font size=-2>Facet</font></b></td>
+
+<td VALIGN=TOP WIDTH="55%"><b><font size=-2>Functionality</font></b></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="45%"><font face="Courier,Courier New"><font size=-2>ctype&lt;charT>,&nbsp;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>ctype_byname&lt;charT></font></font></td>
+
+<td VALIGN=TOP WIDTH="55%"><font size=-1>character classification and conversion</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="45%"><font face="Courier,Courier New"><font size=-2>collate&lt;charT>,&nbsp;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>collate_byname&lt;charT></font></font></td>
+
+<td VALIGN=TOP WIDTH="55%"><font size=-1>string collation</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="45%"><font face="Courier,Courier New"><font size=-2>codecvt&lt;internT,externT,stateT>,
+codecvt_byname&lt;internT,externT,stateT></font></font></td>
+
+<td VALIGN=TOP WIDTH="55%"><font size=-1>code conversion</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="45%"><font face="Courier,Courier New"><font size=-2>messages&lt;charT>,</font></font>
+<br><font face="Courier,Courier New"><font size=-2>messages_byname&lt;charT></font></font></td>
+
+<td VALIGN=TOP WIDTH="55%"><font size=-1>retrieving localized message strings
+from message catalogs</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="45%"><font face="Courier,Courier New"><font size=-2>numpunct&lt;charT>,
+numpunct_byname&lt;charT></font></font></td>
+
+<td VALIGN=TOP WIDTH="55%"><font size=-1>information about the format and
+punctuation of numeric and Boolean expressions</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="45%"><font face="Courier,Courier New"><font size=-2>num_get&lt;char,InputIterator></font></font></td>
+
+<td VALIGN=TOP WIDTH="55%"><font size=-1>parsing of character sequences
+that represent a numeric or Boolean value</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="45%"><font face="Courier,Courier New"><font size=-2>num_put&lt;charT,OutputIterator></font></font></td>
+
+<td VALIGN=TOP WIDTH="55%"><font size=-1>generation of formatted character
+sequences that represent a numeric or Boolean value</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="45%"><font face="Courier,Courier New"><font size=-2>moneypunct&lt;charT,Inter>,</font></font>
+<br><font face="Courier,Courier New"><font size=-2>moneypunct_byname&lt;charT,Inter></font></font></td>
+
+<td VALIGN=TOP WIDTH="55%"><font size=-1>information about the format and
+punctuation of monetary expressions</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="45%"><font face="Courier,Courier New"><font size=-2>money_get&lt;charT,InputIterator></font></font></td>
+
+<td VALIGN=TOP WIDTH="55%"><font size=-1>parsing of character sequences
+that represent a monetary value</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="45%"><font face="Courier,Courier New"><font size=-2>money_put&lt;charT,OutputIterator></font></font></td>
+
+<td VALIGN=TOP WIDTH="55%"><font size=-1>generation of formatted character
+sequences that represent a monetary value</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="45%"><font face="Courier,Courier New"><font size=-2>time_get&lt;char,InputIterator>,</font></font>
+<br><font face="Courier,Courier New"><font size=-2>time_get_byname&lt;char,InputIterator></font></font></td>
+
+<td VALIGN=TOP WIDTH="55%"><font size=-1>parsing of character sequences
+that represent a date and/or time&nbsp;</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="45%"><font face="Courier,Courier New"><font size=-2>time_put&lt;charT,OutputIterator>,</font></font>
+<br><font face="Courier,Courier New"><font size=-2>time_put_byname&lt;charT,OutputIterator></font></font></td>
+
+<td VALIGN=TOP WIDTH="55%"><font size=-1>generation of formatted character
+sequences that represent a date and/or time&nbsp;</font></td>
+</tr>
+</table>
+<i><font size=-1>Table 1: Standard Facets</font></i>
+<p><font size=-1>Now let us see how these facets help to cope with cultural
+differences. The following sections discuss problem areas related to differences
+in language and alphabet and tasks concerning culture-dependent representations
+of numbers, monetary amounts, date and time. We take a look at the problem
+domain first and then describe how the standard facets address these problems.</font>
+<p><b><i><font face="Arial">Language and Alphabet.</font></i></b>
+<p><font size=-1>Different ethnic groups use different <i>languages</i>.
+Hence the language is one of the most apparent differences between cultures.
+Even within a single country people might prefer different languages. The
+Swiss for example use French, Italian, and German.</font>
+<p><font size=-1>Languages also differ in the <i>alphabet</i> they use.
+Here are a couple of examples of languages and their respective alphabets:</font>
+<br>&nbsp;
+<table BORDER=0 COLS=2 WIDTH="50%" >
+<tr>
+<td><font size=-1>US English:</font></td>
+
+<td><font size=-1>&nbsp;a-z, A-Z, and punctuation&nbsp;</font></td>
+</tr>
+
+<tr>
+<td><font size=-1>German:&nbsp;</font></td>
+
+<td><font size=-1>a-z, A-Z, punctuation, and &auml;&ouml;&uuml; &Auml;&Ouml;&Uuml;
+&szlig;</font></td>
+</tr>
+
+<tr>
+<td><font size=-1>Greek:&nbsp;</font></td>
+
+<td><font size=-1><font face="Symbol">a</font> -<font face="Symbol">w</font>
+, <font face="Symbol">A</font> -<font face="Symbol">W</font> , and punctuation</font></td>
+</tr>
+
+<tr>
+<td><font size=-1>Japanese:&nbsp;</font></td>
+
+<td><font size=-1>US English characters, ten of thousands of&nbsp; Kanji
+characters, Hiragana, and Katakana</font></td>
+</tr>
+</table>
+
+<p><font size=-1>We want to spare you the details about character encodings
+and codesets that can be used to represent different alphabets. However,
+we want to discuss, at least briefly, the different possibilities to represent
+alphabets with a large number of characters. There are two possible approaches
+for encoding large alphabets: character encodings that mix characters of
+different size (<i>multibyte character encodings</i>); or character encodings
+where all characters are of the same size (<i>wide character encodings</i>).
+It is common practice when handling large alphabets to use wide character
+encodings inside the program and multibyte character encodings outside
+on the external device.</font>
+<ul>
+<li>
+<font size=-1>The <i>internal</i> character set inside the program has
+to allow fast and arbitrary access to each character in a sequence. This
+is a functionality that comes with wide character encodings.</font></li>
+
+<li>
+<font size=-1>The <i>external</i> character set is used for storing text
+data in a file or any other kind of external device. The main purpose is
+to keep the file size small. This is a functionality typically provided
+by multibyte character encodings.</font></li>
+</ul>
+<font size=-1>A typical example is computer software for the Japanese market.
+A "Japanese" program might want to handle multibytes text files, encoded
+in JIS (= Japanese Industry Standard) for instance. The program would internally
+use a wide character encoding, such as Unicode. Hence the program would
+need to convert between the Unicode and the JIS encoding whenever it performs
+an input or output operation. The interpretation of some multibyte encodings
+is relatively complicated, because their encoding is<i> state dependent</i>.
+JIS is an example; it uses special character sequences, so-called escape
+sequences, that switch between one- and two-byte modes as well as between
+different character sets. For this reason not only the encoding but also
+the current conversion state are needed for determining a character representation.</font>
+<p><font size=-1>Different languages have different rules for sorting characters
+and words. These rules are called <i>collating sequence</i>. The collating
+sequence specifies the ordering of individual characters and other rules
+for ordering. In software development the order of characters is often
+determined by the numeric value of the byte(s) representing a character.
+This is what we call ASCII rules in the examples below. This kind of ordering
+does not meet the requirements of any language’s dictionary sorting. Here
+is an example for ASCII collation compared to language dictionary sorting:</font>
+<br>&nbsp;
+<table BORDER=0 COLS=2 WIDTH="50%" >
+<tr>
+<td><b><font size=-1>English rule&nbsp;</font></b></td>
+
+<td><b><font size=-1>ASCII rules</font></b></td>
+</tr>
+
+<tr>
+<td><font size=-1>alien&nbsp;</font></td>
+
+<td><font size=-1>American</font></td>
+</tr>
+
+<tr>
+<td><font size=-1>American&nbsp;</font></td>
+
+<td><font size=-1>Zulu</font></td>
+</tr>
+
+<tr>
+<td><font size=-1>zebra&nbsp;</font></td>
+
+<td><font size=-1>alien</font></td>
+</tr>
+
+<tr>
+<td><font size=-1>Zulu&nbsp;</font></td>
+
+<td><font size=-1>zebra</font></td>
+</tr>
+</table>
+
+<p><font size=-1>In an ASCII encoding the numerical values of upper letters
+are smaller than the values of lower letters. For this reason, all words
+with capital letters appear at the beginning of a list sorted according
+to ASCII rules.</font>
+<p><font size=-1>In some languages certain groups of characters are clustered
+and treated like a single character for the purpose of sorting characters.
+In other languages it is the other way round; one character is treated
+as if it were actually two characters. Here is an example for one character
+treated as two:</font>
+<br>&nbsp;
+<table BORDER=0 COLS=2 WIDTH="50%" >
+<tr>
+<td><b><font size=-1>German dictionary rules&nbsp;</font></b></td>
+
+<td><b><font size=-1>ASCII rules</font></b></td>
+</tr>
+
+<tr>
+<td><font size=-1>Mu&szlig;e&nbsp;</font></td>
+
+<td><font size=-1>Musselin</font></td>
+</tr>
+
+<tr>
+<td><font size=-1>Musselin&nbsp;</font></td>
+
+<td><font size=-1>Mu&szlig;e</font></td>
+</tr>
+</table>
+
+<p><font size=-1>The German character &szlig;, called sharp s, is treated
+as if it were two characters, namely ss.</font>
+<p><b><font size=+0>Character classification and conversion.</font></b>
+<p><font size=-1>Lets start our detailed examination of the standard facets
+with the <i>ctype</i> facet, defined by </font><font face="Courier,Courier New"><font size=-2>template
+&lt;class charT> class ctype</font></font><font size=-1>. Among other services,
+it provides the functionality to classify the characters of a character
+set. Criteria for this classification are provided as an enumerated bit
+set type, which is called </font><font face="Courier,Courier New"><font size=-2>mask.</font></font><font size=-1>
+It is a nested type in </font><font face="Courier,Courier New"><font size=-2>ctype_base,</font></font><font size=-1>
+the public base class of the ctype facet template. The values of </font><font face="Courier,Courier New"><font size=-2>mask</font></font><font size=-1>
+and their semantics are listed in <i>Table 2</i>.</font>
+<br>&nbsp;
+<br>&nbsp;
+<center><table BORDER CELLSPACING=2 CELLPADDING=5 WIDTH="592" BORDERCOLOR="#000000" >
+<tr>
+<td VALIGN=TOP WIDTH="18%"><font size=-1>mask value</font></td>
+
+<td VALIGN=TOP WIDTH="82%"><font size=-1>semantics</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="18%"><font size=-1>alpha</font></td>
+
+<td VALIGN=TOP WIDTH="82%"><font size=-1>alphabetic character</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="18%"><font size=-1>digit</font></td>
+
+<td VALIGN=TOP WIDTH="82%"><font size=-1>one of the character that represents
+the decimal digits 0 - 9</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="18%"><font size=-1>cntrl</font></td>
+
+<td VALIGN=TOP WIDTH="82%"><font size=-1>control character</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="18%"><font size=-1>lower</font></td>
+
+<td VALIGN=TOP WIDTH="82%"><font size=-1>lower case character</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="18%"><font size=-1>print</font></td>
+
+<td VALIGN=TOP WIDTH="82%"><font size=-1>printable character</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="18%"><font size=-1>punct</font></td>
+
+<td VALIGN=TOP WIDTH="82%"><font size=-1>punctuation characters</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="18%"><font size=-1>space</font></td>
+
+<td VALIGN=TOP WIDTH="82%"><font size=-1>white space characters</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="18%"><font size=-1>upper</font></td>
+
+<td VALIGN=TOP WIDTH="82%"><font size=-1>upper case characters</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="18%"><font size=-1>xdigit</font></td>
+
+<td VALIGN=TOP WIDTH="82%"><font size=-1>one of the characters that represents
+the hexadecimal digits 0 - f</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="18%"><font size=-1>alnum</font></td>
+
+<td VALIGN=TOP WIDTH="82%"><font size=-1>alpha or digit</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="18%"><font size=-1>graph</font></td>
+
+<td VALIGN=TOP WIDTH="82%"><font size=-1>alnum or punct</font></td>
+</tr>
+</table></center>
+
+<center>
+<p><a NAME="_Ref386113414"></a><i><font size=-1>Table 2: Character Classification
+Criteria</font></i></center>
+
+<p><font size=-1>Member functions of the ctype facet provide the functionality</font>
+<ul>
+<li>
+<font size=-1>to check if a certain character conforms to a certain criteria,</font></li>
+
+<li>
+<font size=-1>to determine all criteria each character from a range of
+characters conforms to,</font></li>
+
+<li>
+<font size=-1>to find the first element in a range of characters that conforms
+or does not conform to a certain criteria.</font></li>
+</ul>
+<font size=-1>Additional to character classification the ctype facet provides
+means for character conversion. One type of character conversion is supported
+by the overloaded member functions</font><font face="Courier,Courier New"><font size=-2>
+toupper()</font></font><font size=-1> and </font><font face="Courier,Courier New"><font size=-2>tolower().</font></font><font size=-1>They
+allow conversion of single characters or character ranges to their corresponding
+upper or lower case representation.</font>
+<p><font size=-1>Another type of conversion that ctype supports is the
+conversion between ctype’s template character type </font><font face="Courier,Courier New"><font size=-2>charT</font></font><font size=-1>
+and the built-in character type </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>.
+This functionality is provided by the member functions </font><font face="Courier,Courier New"><font size=-2>narrow()</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>widen().</font></font><font size=-1>
+For each function two overloaded versions exist; one that converts single
+characters and one that converts character ranges.</font>
+<p><font size=-1>For efficiency reasons the standard requires that </font><font face="Courier,Courier New"><font size=-2>ctype&lt;char></font></font><font size=-1>
+must be provided as a template specialization. Its implementation must
+be based on a table where the character encoding is the key and the value
+is a bit mask value of type</font><font face="Courier,Courier New"><font size=-2>
+ctype_base::mask.</font></font><font size=-1> The bit mask values indicate
+all criteria to which the character conforms. For example, a lower case
+letter such as </font><font face="Courier,Courier New"><font size=-2>‘k’</font></font><font size=-1>
+is associated to the bit mask value:</font>
+<p><font face="Courier,Courier New"><font size=-2>ctype_base::alpha | ctype_base::lower
+| ctype_base::print</font></font><font size=-1> .</font>
+<p><font size=-1>This table driven approach allows to implement most of
+the member functions as simple and efficient bit operations.</font>
+<br>&nbsp;
+<br>&nbsp;
+<p><b><font size=+0>String collation.</font></b>
+<p><font size=-1>The <i>collate</i> facet, defined by </font><font face="Courier,Courier New"><font size=-2>template
+&lt;class charT> class collate</font></font><font size=-1>, supports the
+comparison of strings according to language specific rules. Its member
+function:</font>
+<p><font face="Courier,Courier New"><font size=-2>int compare(const charT*
+low1, const charT* high1,</font></font>
+<br><font face="Courier,Courier New"><font size=-2>const charT* low2, const
+charT* high2) const;</font></font>
+<p><font size=-1>returns an integer value that indicates the order of two
+character sequences </font><font face="Courier,Courier New"><font size=-2>[low1,
+high1)</font></font><font size=-1> and </font><font face="Courier,Courier New"><font size=-2>[low2,
+high2)</font></font><font size=-1> respectively:</font>
+<dir><font size=-1>1, indicates that the character sequence </font><font face="Courier,Courier New"><font size=-2>[low1,high1)</font></font><font size=-1>
+is greater than the character sequence </font><font face="Courier,Courier New"><font size=-2>[low2,high2),</font></font>
+<p><font size=-1>-1, indicates that the first sequence is less than the
+second, and</font>
+<p><font size=-1>0, indicates that both sequences are equal.</font></dir>
+<font size=-1>The collate facet also supports the functionality to determine
+a hash value from a character sequence and a way to speed up the comparison
+of one character sequence against many other.</font>
+<p><font size=-1>Note that the standard string operations are not internationalized.
+A string compare operation in class </font><font face="Courier,Courier New"><font size=-2>basic_string</font></font><font size=-1>
+is a character-by-character comparison, which for instance is not sufficient
+for the interpretation of a single character as two characters, that is
+required in some languages. The consequence is that for internationalized
+programs the respective member functions of the </font><font face="Courier,Courier New"><font size=-2>basic_string</font></font><font size=-1>
+template class cannot be used for comparison of strings; instead the functionality
+of the collate facet is needed.</font>
+<br>&nbsp;
+<br>&nbsp;
+<p><b><font size=+0>Code conversion.</font></b>
+<p><font size=-1>The <i>codecvt</i> facet, defined by </font><font face="Courier,Courier New"><font size=-2>template
+&lt;class internT, class externT , class stateT> class codecvt</font></font><font size=-1>,
+supports conversion between two character codesets. This is needed when
+the internal and the external character set of a program differ. The template
+parameters are:</font>
+<ul>
+<li>
+<font face="Courier,Courier New"><font size=-2>internT</font></font><font size=-1>,
+which is the character type, that is associated with the internal code
+set;</font></li>
+
+<li>
+<font face="Courier,Courier New"><font size=-2>externT</font></font><font size=-1>,
+which is the character type, that is associated with the external code
+set;</font></li>
+
+<li>
+<font face="Courier,Courier New"><font size=-2>stateT</font></font><font size=-1>,
+which is the state type, that is capable of holding the conversion state.
+It must be maintained during a conversion from external to the internal
+character set and vice versa.</font></li>
+</ul>
+<font size=-1>The codecvt facet contains two types of member functions:
+those that provide information about the code conversion, and those that
+perform the conversion. An example of the first category is </font><font face="Courier,Courier New"><font size=-2>encoding(),</font></font><font size=-1>
+which indicates if a conversion is state dependent; if the ratio between
+external characters consumed and internal characters produced is fix, and
+if it is fix, what it is. Other operations of this category indicate if
+conversion is necessary at all, or they help to determine the length of
+the character sequence resulting from a certain input character sequence.</font>
+<p><font size=-1>The member function </font><font face="Courier,Courier New"><font size=-2>in()</font></font><font size=-1>
+is used for the conversion from the internal to the external character
+set, </font><font face="Courier,Courier New"><font size=-2>out()</font></font><font size=-1>
+for the conversion from the external to the internal. Both functions take
+an input character sequence and convert it to an output character sequence.
+For state dependent conversions they also maintain the conversion state.</font>
+<br>&nbsp;
+<br>&nbsp;
+<p><b><font size=+0>Message Catalogs.</font></b>
+<p><font size=-1>The <i>messages</i> facet, defined by</font><font face="Courier,Courier New"><font size=-2>
+template &lt;class charT> class messages</font></font><font size=-1>, supports
+the retrieval of user-defined localized messages from message catalogs.
+Its interface allows to open and close a message catalog identified by
+a catalog name and to retrieve a message from an open catalog.</font>
+<p><font size=-1>The upcoming C++-standard describes how message catalogs
+can be used via the messages facet’s interface. The syntax of message catalogs,
+as well as the way message catalogs have to be installed and maintained,
+are beyond the scope of the standard and implementation-specific.</font>
+<br>&nbsp;
+<br>&nbsp;
+<p><b><i><font face="Arial">Representation of Numbers, Monetary Amounts,
+Date and Time.</font></i></b>
+<p><font size=-1>Numbers are represented according to cultural conventions.
+For example, the symbol used for separation of the integer portion of a
+number from the fractional portion, the so-called <i>radix character</i>,
+can differ from country to country. In American English, this character
+is a period; in most European countries, it is a comma. Conversely, the
+symbol that groups numbers with more than three digits, the so-called <i>thousands
+separator</i>, is a comma in American English, and a period in much of
+Europe.</font>
+<p><font size=-1>Even the grouping of digits varies. In American English,
+digits are grouped by threes. In Nepal for instance, the first group has
+three digits, all subsequent groups have two digits.</font>
+<br>&nbsp;
+<table BORDER=0 COLS=2 WIDTH="30%" >
+<tr>
+<td><font size=-1>USA:</font></td>
+
+<td><font size=-1>10,000,000.00</font></td>
+</tr>
+
+<tr>
+<td><font size=-1>Germany:&nbsp;</font></td>
+
+<td><font size=-1>10.000.000,00</font></td>
+</tr>
+
+<tr>
+<td><font size=-1>Nepal:&nbsp;</font></td>
+
+<td><font size=-1>1,00,00,000.00</font></td>
+</tr>
+</table>
+
+<p><font size=-1>Similarly units of currency are represented in different
+cultures in different ways. The currency symbol can vary, its placement,
+as well as the format of negative currency values. For example, there are
+two different ways of representing the same amount in US dollars:</font>
+<br>&nbsp;
+<table BORDER=0 COLS=2 WIDTH="30%" >
+<tr>
+<td><font size=-1>domestic:&nbsp;</font></td>
+
+<td><font size=-1>$ 99.99</font></td>
+</tr>
+
+<tr>
+<td><font size=-1>international:</font></td>
+
+<td><font size=-1>USD 99.99</font></td>
+</tr>
+</table>
+
+<p><font size=-1>Here is an example that shows different cultural conventions
+for placing the currency symbol:</font>
+<br>&nbsp;
+<table BORDER=0 COLS=2 WIDTH="30%" >
+<tr>
+<td><font size=-1>Germany:</font></td>
+
+<td><font size=-1>&nbsp;49,99 DM</font></td>
+</tr>
+
+<tr>
+<td><font size=-1>Japan:&nbsp;</font></td>
+
+<td><font size=-1>&yen; 100</font></td>
+</tr>
+</table>
+
+<p><font size=-1>Obviously the representation of time and date depend on
+cultural conventions. The names and abbreviations for days of the week
+and months of the year vary with the language. Also, some countries use
+a 24-hour clock; others use a 12-hour clock. Even calendars differ; they
+are based on historical, seasonal, and astronomical events. The official
+Japanese calendar, for instance, is based on a historical event, the beginning
+of the reign of the current Emperor. Many countries, especially in the
+Western World, use the Gregorian calendar instead.</font>
+<p><font size=-1>Here are examples of representations of the same date
+in different countries. They differ in order of day, month, and year, the
+separators between those items, and the use or omission of item such as
+the weekday in the long form of the date in Hungarian.</font>
+<br>&nbsp;
+<table BORDER=0 WIDTH="50%" >
+<tr>
+<td></td>
+
+<td><b><font size=-1>Short Form</font></b></td>
+
+<td><b><font size=-1>Long Form</font></b></td>
+</tr>
+
+<tr>
+<td><font size=-1>USA:</font></td>
+
+<td><font size=-1>10/14/97</font></td>
+
+<td><font size=-1>Tuesday, October 14, 1997</font></td>
+</tr>
+
+<tr>
+<td><font size=-1>Germany:</font></td>
+
+<td><font size=-1>14.10.97</font></td>
+
+<td><font size=-1>Dienstag, 14. Oktober 1997</font></td>
+</tr>
+
+<tr>
+<td><font size=-1>Italy:&nbsp;</font></td>
+
+<td><font size=-1>14/10/97</font></td>
+
+<td><font size=-1>marted&igrave; 14 ottobre 1997</font></td>
+</tr>
+
+<tr>
+<td><font size=-1>Greece:</font></td>
+
+<td><font size=-1>14/10/1997</font></td>
+
+<td><font size=-1><font face="Symbol">Trith</font> , 14 <font face="Symbol">Oktwbriou</font>
+1997</font></td>
+</tr>
+
+<tr>
+<td><font size=-1>Hungary:</font></td>
+
+<td><font size=-1>1997.10.14</font></td>
+
+<td><font size=-1>1997. okt&oacute;ber 14.</font></td>
+</tr>
+</table>
+
+<p><b><font size=+0>Numeric and Boolean values.</font></b>
+<p><font size=-1>The localization information and functionality related
+to numeric and Boolean expressions is handled by three standard facets:</font>
+<ul>
+<li>
+<font size=-1><i>numpunct</i>, defined by </font><font face="Courier,Courier New"><font size=-2>template&lt;class
+charT> class numpunct</font></font><font size=-1>.</font></li>
+
+<li>
+<font size=-1><i>num_put</i>, defined by </font><font face="Courier,Courier New"><font size=-2>template&lt;class
+charT, class OutputIterator = ostreambuf_iterator&lt;charT> > class num_put.</font></font></li>
+
+<li>
+<i><font size=-1>num_get</font>, defined by </i><font face="Courier,Courier New"><font size=-2>template&lt;class
+charT, class InputIterator = istreambuf_iterator&lt;charT> > class num_get.</font></font></li>
+</ul>
+<font size=-1>The numpunct facet contains the information about the format
+and punctuation of numeric and Boolean expressions. For example, the member
+functions</font><font face="Courier,Courier New"><font size=-2> decimal_point()</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>thousands_sep()</font></font><font size=-1>
+return the characters that represent the radix separator and the thousands
+separator respectively. Other member functions provide the strings that
+represent the Boolean values </font><font face="Courier,Courier New"><font size=-2>true</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>false</font></font><font size=-1>,
+or a pattern describing how digits are grouped when they form a number.</font>
+<p><font size=-1>Based on the information contained in the numpunct facet
+the facets num_put and num_get provide the functionality to generate a
+formatted character sequence from a numeric or Boolean value, and the reverse
+functionality: parsing of a character sequence to extract a numeric or
+Boolean value. num_put does the formatting, num_get the parsing. The second
+parameter of the num_put and num_get template, </font><font face="Courier,Courier New"><font size=-2>OutputIterator</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>InputIterator</font></font><font size=-1>
+respectively, is used to specify the character sequence. num_put provides
+overloaded versions of its member function </font><font face="Courier,Courier New"><font size=-2>put()</font></font><font size=-1>
+for formatting of the following types: </font><font face="Courier,Courier New"><font size=-2>bool</font></font><font size=-1>,
+</font><font face="Courier,Courier New"><font size=-2>long</font></font><font size=-1>,
+</font><font face="Courier,Courier New"><font size=-2>unsignedlong</font></font><font size=-1>,
+</font><font face="Courier,Courier New"><font size=-2>double</font></font><font size=-1>,
+</font><font face="Courier,Courier New"><font size=-2>longdouble</font></font><font size=-1>,
+</font><font face="Courier,Courier New"><font size=-2>void*.</font></font><font size=-1>
+num_get provides overloaded versions of </font><font face="Courier,Courier New"><font size=-2>get()</font></font><font size=-1>
+for storage of the extracted value into the types: </font><font face="Courier,Courier New"><font size=-2>bool</font></font><font size=-1>,
+</font><font face="Courier,Courier New"><font size=-2>long</font></font><font size=-1>,
+</font><font face="Courier,Courier New"><font size=-2>unsignedlong</font></font><font size=-1>,
+</font><font face="Courier,Courier New"><font size=-2>unsignedint</font></font><font size=-1>,
+</font><font face="Courier,Courier New"><font size=-2>unsignedshort</font></font><font size=-1>,
+</font><font face="Courier,Courier New"><font size=-2>float</font></font><font size=-1>,
+</font><font face="Courier,Courier New"><font size=-2>double</font></font><font size=-1>,
+</font><font face="Courier,Courier New"><font size=-2>longdouble</font></font><font size=-1>,
+</font><font face="Courier,Courier New"><font size=-2>void*.</font></font><font size=-1>
+At first it might look as though versions for </font><font face="Courier,Courier New"><font size=-2>int</font></font><font size=-1>
+or </font><font face="Courier,Courier New"><font size=-2>float</font></font><font size=-1>
+were missing. But the intention was to keep the interface of the standard
+library concise, and a value of type </font><font face="Courier,Courier New"><font size=-2>int</font></font><font size=-1>
+can be handled by the version for </font><font face="Courier,Courier New"><font size=-2>long</font></font><font size=-1>.</font>
+<p><font size=-1>One of the parameters to </font><font face="Courier,Courier New"><font size=-2>put()</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>get()</font></font><font size=-1>
+is a reference to an</font><font face="Courier,Courier New"><font size=-2>
+ios_base</font></font><font size=-1> object. The format flags contained
+in this object are used to determine the format specifications for formatting
+and parsing. The semantics of the flags is the same as in standard iostreams.
+In fact, the formatting layer of iostreams uses the num_put and num_get
+facets for its formatting and parsing. An otherwise necessary type conversion
+is avoided because the iostreams operations pass the format specifications
+to the facets in form of an</font><font face="Courier,Courier New"><font size=-2>
+ios_base</font></font><font size=-1> object. The general use of num_put
+and num_get, however, is not limited by these design decisions; they may
+well be used in a context other than iostreams. The benefit of the integration
+of facets into standard iostreams is that i/o-operations for Boolean or
+numeric values are already internationalized.</font>
+<br>&nbsp;
+<br>&nbsp;
+<p><b><font size=+0>Monetary values.</font></b>
+<p><font size=-1>The localization information for monetary values is organized
+in a similar fashion as the localization information for numeric values.
+There is one facets that holds the localization-dependent information.
+Based on this facet are two facets that provide the functionality for formatting
+and parsing of character sequences that represents monetary values. The
+facets are:</font>
+<ul>
+<li>
+<font size=-1><i>moneypunct</i>, defined by </font><font face="Courier,Courier New"><font size=-2>template&lt;class
+charT, bool Inter = false> class moneypunct</font></font><font size=-1>,</font></li>
+
+<li>
+<font size=-1><i>money_put</i>, defined by </font><font face="Courier,Courier New"><font size=-2>template&lt;class
+charT, class OutputIterator = ostreambuf_iterator&lt;charT> > class money_put</font></font><font size=-1>,</font></li>
+
+<li>
+<font size=-1><i>money_get</i>, defined by </font><font face="Courier,Courier New"><font size=-2>template&lt;class
+charT, class InputIterator = istreambuf_iterator&lt;charT> > class money_get</font></font><font size=-1>,</font></li>
+</ul>
+<font size=-1>The value template parameter </font><font face="Courier,Courier New"><font size=-2>Inter</font></font><font size=-1>
+of type </font><font face="Courier,Courier New"><font size=-2>bool</font></font><font size=-1>
+for numpunct ndicates if the currency symbol used is the international
+(</font><font face="Courier,Courier New"><font size=-2>Inter=true</font></font><font size=-1>)
+or the domestic (</font><font face="Courier,Courier New"><font size=-2>Inter=false</font></font><font size=-1>).
+money_put and money_put do not have this template parameter, because their
+member functions have a paramter that indicates during runtime which currency
+symbol should be used.</font>
+<p><font size=-1>Like numpunct, moneypunct’s member functions provide the
+information about grouping of numeric value, about the characters used
+as radix separator and as thousands separator. Additionally moneypunct
+can tell how many digits are represented after the radix separator, which
+string forms the currency symbol, and how a negative and positive monetary
+amount is structured.</font>
+<p><font size=-1>money_put contains two overloaded versions of the </font><font face="Courier,Courier New"><font size=-2>put()</font></font><font size=-1>
+member function. One allows to format a value of type </font><font face="Courier,Courier New"><font size=-2>longdouble</font></font><font size=-1>
+to a representation of a monetary value, the other takes a references to
+</font><font face="Courier,Courier New"><font size=-2>basic_string&lt;charT></font></font><font size=-1>.
+money_put’s overloaded member function </font><font face="Courier,Courier New"><font size=-2>get()</font></font><font size=-1>
+does the reverse operation: it parses a character sequence that represents
+a monetary amount and stores the extracted value in either a </font><font face="Courier,Courier New"><font size=-2>long
+double</font></font><font size=-1> or a</font><font face="Courier,Courier New"><font size=-2>
+basic_string&lt;charT>.</font></font>
+<br>&nbsp;
+<br>&nbsp;
+<p><b><font size=+0>Date and time values.</font></b>
+<p><font size=-1>Two facets handle the localization functionality for date
+and time:</font>
+<ul>
+<li>
+<font size=-1><i>time_put</i>, defined as </font><font face="Courier,Courier New"><font size=-2>template&lt;class
+charT, class InputIterator = istreambuf_iterator&lt;charT> > class time_get</font></font><font size=-1>,
+and</font></li>
+
+<li>
+<font size=-1><i>time_get</i>, defined as </font><font face="Courier,Courier New"><font size=-2>template&lt;class
+charT, class OutputIterator = ostreambuf_iterator&lt;charT> > class time_put</font></font><font size=-1>.</font></li>
+</ul>
+<font size=-1>time_put() allows formatting of information provided in a
+</font><font face="Courier,Courier New"><font size=-2>struct
+tm</font></font><font size=-1> to a character sequence that represents
+a date and/or time. The formatting is performed according to format specifiers
+that have the same semantics as those used for </font><font face="Courier,Courier New"><font size=-2>strftime().</font></font>
+<p><font size=-1>time_get() provides several member functions that can
+parse a character sequence and return each specific date and time components
+in a </font><font face="Courier,Courier New"><font size=-2>struct tm</font></font><font size=-1>.
+Examples for member functions are: </font><font face="Courier,Courier New"><font size=-2>get_month()</font></font><font size=-1>
+or </font><font face="Courier,Courier New"><font size=-2>get_weekday()</font></font><font size=-1>,
+which extract from the character sequence a value representing a month
+or a weekday respectively and store it in a </font><font face="Courier,Courier New"><font size=-2>struct
+tm</font></font><font size=-1>.</font>
+<br>&nbsp;
+<br>&nbsp;
+<p><b><i><font face="Arial">byname Facets</font></i></b>
+<p><font size=-1>In the sections above we structured the description of
+the facets according to the way they address a certain localization aspect.
+However, there is another way to structure them:</font>
+<ul>
+<li>
+<font size=-1>There are facets that are independent of a certain localization
+environment, because they provide only functionality. The num_put, num_get,
+money_put, money_get facets fall into this category.</font></li>
+
+<li>
+<font size=-1>On the other hand a facet like numpunct depends on the localization
+environment, because it provides localization dependent information: the
+character representing the radix separator, the character representing
+the thousands separator, and so on.</font></li>
+</ul>
+<font size=-1>For those facets that provide information rather than functionality
+the standard defines so-called <i>byname</i> facets. A byname facet is
+a derived facet that provides the same interface as its base class, but
+has a constructor that takes an additional</font><font face="Courier,Courier New"><font size=-2>
+const char*</font></font><font size=-1> argument. This argument is the
+name that specifies a certain localization environment; hence the term
+"byname" facet. Syntax and semantics of these names are not defined by
+the standard, but implementation specific. For example, the name "De_CH"
+on a X/Open system denotes the same localization environment as "german-swiss"
+on a Microsoft platform. Such names cannot only be used to create facets;
+the locale, too, has a constructor that receives a name as an argument.
+This constructor creates a locale that contains byname facet objects constructed
+with this name. For example:</font>
+<p><font face="Courier,Courier New"><font size=-2>Locale myLocale("En_US");</font></font>
+<p><font size=-1>creates a locale that represents the US localization environment,
+and we can be sure that in the code shown below </font><font face="Courier,Courier New"><font size=-2>rs</font></font><font size=-1>
+will be initialized with </font><font face="Courier,Courier New"><font size=-2>‘.’</font></font><font size=-1>:</font>
+<p><font face="Courier,Courier New"><font size=-2>char rs = use_facet&lt;
+numpunct&lt;char> >(myLocale).decimal_point();</font></font>
+<br>&nbsp;
+<br>&nbsp;
+<p><b><i><font face="Arial">Base Class Facets</font></i></b>
+<p><font size=-1>After this discussion of the behavior of the <i>byname</i>
+facets, which are derived facet types, lets have a look at the behavior
+of the base class facets.</font>
+<p><font size=-1>No further explanation is needed for num_put, num_get,
+money_put, money_get. As described above they define functionality rather
+than holding locale-sensitive information; and the base classes implement
+this functionality.</font>
+<p><font size=-1>Some base class facets provide <i>classic "C"</i> behavior.
+Classic "C" means the way C functions used to behave before internationalization
+was added to the C standard. Facet base classes with classic "C" behavior
+are: ctype, collate, numpunct. Obviously, classic "C" does only describe
+a behavior for the character type </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>.
+As we will see below, these three facets need to be provided for the character
+types </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>wchar_t</font></font><font size=-1>.
+The behavior for </font><font face="Courier,Courier New"><font size=-2>wchar_t</font></font><font size=-1>
+is analogous to the classic "C" behavior for </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>.
+For instance, </font><font face="Courier,Courier New"><font size=-2>numpunct&lt;wchar_t>::decimal_point()</font></font><font size=-1>
+returns</font><font face="Courier,Courier New"><font size=-2> L‘.’</font></font><font size=-1>
+where </font><font face="Courier,Courier New"><font size=-2>numpunct&lt;char>::
+decimal_point()</font></font><font size=-1> returns </font><font face="Courier,Courier New"><font size=-2>‘.’</font></font><font size=-1>.</font>
+<p><font size=-1>The base classes of the following facets have implementation
+defined behavior: messages, moneypunct, time_get and time_put. This is
+because the standards committee, as an international forum, did not want
+to dictate one nation’s preference as a default for all other nations.
+For instance, there is no universally accepted pattern to represent a monetary
+amount. Therefore; they did not define a base class behavior.</font>
+<p><font size=-1>In the case of code conversion two codecvt base class
+facets must be provided by a standard compliant library. The facet </font><font face="Courier,Courier New"><font size=-2>codecvt&lt;char,char,mbstate_t></font></font><font size=-1>
+is a degenerated one; it implements "no conversion", so that </font><font face="Courier,Courier New"><font size=-2>in()</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>out()</font></font><font size=-1>
+behave very similar to a </font><font face="Courier,Courier New"><font size=-2>memcpy().</font></font><font size=-1>
+The behavior of </font><font face="Courier,Courier New"><font size=-2>codecvt&lt;char,wchar_t,mbstate_t></font></font><font size=-1>
+is implementation defined.</font>
+<p><font size=-1>Usually, interfaces with implementation defined behavior
+have to be avoided by users who strive for portability of their programs.
+Hence, one might wonder whether it is a problem that the base class behavior
+is implementation defined for some facets. The answer is: No, not really.
+In an internationalized application one will usually use the byname facets,
+because they provide localized information and functionality dependent
+on a specified cultural context. The behavior of a base class facet is
+of interest only when a new derived facet with a new behavior shall be
+implemented for an existing facet interface, and the existing base class
+behavior shall be reused, if possible. The byname facet objects are powerful
+and already provide support for all common localization environments. So,
+only when an exotic behavior is needed, the derivation of a new facet type
+is necessary at all. In such a case it is very likely that the new functionality
+must be implemented from scratch and cannot be built reusing the base class
+behavior. Hence the base class behavior is almost irrelevant because most
+likely it will be overwritten anyway.</font>
+<p><font size=-1>Speaking of derivation and overwriting functions: all
+standard facets follow the idiom that a non-virtual public member function
+calls a virtual protected member function, which implements the functionality.
+A derived class must then redefine the protected function, not the public
+one. The rationale behind this idiom is that a vendor might place code
+for system specific functionality in the public member function. A user,
+who derives from such a class, need not know and bother with the system
+specific issues, but can simply provide the new functionality by overwriting
+the protected member function. An example for system specific functionality
+put into the public member function is the use of a mutex for multi-thread
+support.</font>
+<br>&nbsp;
+<br>&nbsp;
+<p><font size=-1>The standard requires that the facet classes and class
+templates shown in <i>Table 3<b> </b></i>must be provided by a standard
+compliant implementation. It is up to the vendor how they are provided:
+as templates, or as (partial) specializations.</font>
+<br>&nbsp;
+<table BORDER CELLPADDING=5 WIDTH="704" BORDERCOLOR="#000000" >
+<tr>
+<td VALIGN=TOP><font size=-1>ctype&lt;char>, ctype&lt;wchar_t>, ctype_byname&lt;char>,
+ctype_byname&lt;wchar_t></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font size=-1>collate&lt;char>, collate&lt;wchar_t>, collate_byname&lt;char>,
+collate_byname&lt;wchar_t></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font size=-1>messages&lt;char>, messages&lt;wchar_t>, messages_byname&lt;char>,
+messages_byname&lt;wchar_t></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font size=-1>codecvt&lt;char,char,mbstate_t>, codecvt&lt;wchar_t,char,mbstate_t></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font size=-1>numpunct&lt;char>, numpunct&lt;wchar_t>, numpunct_byname&lt;char>,
+numpunct_byname&lt;wchar_t></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font size=-1>template &lt;class C, class InputIterator>
+num_get&lt;C,InputIterator></font><a NAME="_Ref386157640"></a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font size=-1>template &lt;class C, class OutputIterator>
+num_put&lt;C,OutputIterator></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font size=-1>template &lt;bool Inter> moneypunct&lt;char>,
+template &lt;bool Inter> moneypunct&lt;wchar_t>,&nbsp;</font>
+<br><font size=-1>template &lt;bool Inter> moneypunct_byname &lt;char>,&nbsp;</font>
+<br><font size=-1>template &lt;bool Inter> moneypunct_byname &lt;wchar_t></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font size=-1>template &lt;class InputIterator> money_get&lt;char>,&nbsp;</font>
+<br><font size=-1>template &lt;class InputIterator> money_get&lt;wchar_t></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font size=-1>template &lt;class OutputIterator> money_put&lt;char>,&nbsp;</font>
+<br><font size=-1>template &lt;class OutputIterator> money_put&lt;wchar_t></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font size=-1>template &lt;class InputIterator> time_get&lt;char>,&nbsp;</font>
+<br><font size=-1>template &lt;class InputIterator> time_get&lt;wchar_t>,</font>
+<p><font size=-1>template &lt;class InputIterator> time_get_byname&lt;char>,&nbsp;</font>
+<br><font size=-1>template &lt;class InputIterator> time_get_byname&lt;wchar_t></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font size=-1>template &lt;class OutputIterator > time_
+put &lt;char>,&nbsp;</font>
+<br><font size=-1>template &lt;class OutputIterator > time_ put &lt;wchar_t>,</font>
+<p><font size=-1>template &lt;class OutputIterator > time_ put _byname&lt;char>,&nbsp;</font>
+<br><font size=-1>template &lt;class OutputIterator > time_ put _byname&lt;wchar_t></font></td>
+</tr>
+</table>
+<i><font size=-1>Table 3: Mandatory Facets in the Standard C++ Library</font></i>
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<p><b>Summary</b>
+<p><font size=-1>A standard compliant C++ library does not only provide
+a framework for internationalization support, consisting of locale and
+facet classes, but also provides a number of standard facet classes. This
+article gave an overview of the functionality of the standard facets along
+with an idea of the problem domain addressed by that functionality. A subsequent
+article will show how the locale framework can be extended by adding new,
+non-standard facets types.</font>
+<p><b>References</b>
+<br>&nbsp;
+<table BORDER=0 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td><font size=-1>/1/&nbsp;</font></td>
+
+<td><font size=-1>Klaus Kreft &amp; Angelika Langer</font>
+<br><font size=-1>The Locale Framework</font>
+<br><font size=-1>C++ Report, September 1997</font>
+<br><font size=-1>URL: &lt;<a href="../LocaleFramework/LocaleFramework.html">http://www.langer.camelot.de/Articles/C++Report/LocaleFramework/LocaleFramework.html</a>></font></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

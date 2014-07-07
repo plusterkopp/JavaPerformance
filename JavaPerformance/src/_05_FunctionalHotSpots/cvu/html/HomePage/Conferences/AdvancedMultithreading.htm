@@ -1,0 +1,150 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <title>Concurrent Programming in Java</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="AbstractConcurrentJava"></a>&nbsp;
+<div ALIGN=right><table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 COLS=1 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">ABSTRACT</font></b></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=0 COLS=1 WIDTH="95%" >
+<tr>
+<td><b>Thread-Safety, Synchronization and State-Dependent Operations</b>
+<br>Support for programming with multiple threads is a core feature of
+the Java programming language, yet multithreading issues are ignored by
+many if not most Java developers.&nbsp; Even innocent classes that do not
+actively start and manage threads should be prepared for use by multiple
+threads, which raises issues of thread-safety and synchronization.
+<br>In this introductory talk we discuss the basics of thread-safety and
+concurrency control in general and the Java-specific features in particular.&nbsp;
+We will also address typical problems such as the nested monitor problem
+and its potential for deadlocks and we will learn how to apply common techniques
+such as the conflict set method.&nbsp;
+<p><b>Thread Interruption and the Java Memory Model</b>
+<br>This tutorial aims to explain some of the more challenging details
+of the Java thread API.&nbsp; Specifically, we look into thread termination
+due to an interrupt request or due to an uncaught exception.&nbsp; We will
+answer questions such as: How does thread interruption work?&nbsp; Why
+are the methods suspend() and resume() deprecated?&nbsp; What do we do
+instead? How do we gracefully terminate a thread in response to a thread
+interruption?&nbsp; What is the effect of uncaught exceptions on active
+threads?&nbsp;&nbsp; How can we avoid that an uncaught exception prematurely
+terminates a thread?
+<br>Another less commonly known topic is the Java memory model, which has
+certain problems with atomicity and sequential consistency of access to
+volatile variables.&nbsp; The Java language specification gives guarantees
+for volatile variables, but not all Java implementations actually meet
+these requirements.&nbsp; As Java developers we would like to know which
+guarantees we can rely on and which areas we should better avoid.
+<p><b>Concurrency Control Patterns</b>
+<br>This tutorial discusses patterns for concurrency control and how they
+can be implemented in Java. We will look into various incarnations of the
+adapter pattern and will se which kinds of adapters are relevant in concurrent
+programming (immutablity adapters, synchonization adapters). We will learn
+how to implement a reader-writer pattern in Java, including the before-after-technique.&nbsp;
+We will talk about patterns for thread conpletion (like future, callbacks,
+group proxies).
+<br>The tutorial is of interest to Java programmers, but also to developers
+who implement concurrent programs in related languages such as C++.
+<br>&nbsp;</td>
+</tr>
+</table></div>
+&nbsp;</td>
+</tr>
+</table></div>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">PREREQUISITES</font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLPADDING=5 WIDTH="95%" >
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Level:</font></i></b></td>
+
+<td>intermediate / advanced</td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td WIDTH="50%">90 min -&nbsp; full day</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><i><font color="#295AB5">Prerequisites:</font></i></b></td>
+
+<td WIDTH="50%">Attendants should be familiar with Java and the core concepts
+of concurrent programming in Java.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><b><i><font color="#295AB5">Presented at:</font></i></b></td>
+
+<td WIDTH="95%"><a href="PreviousEvents.html#OOP2003">OOP 2003</a>, Munich,
+Germany, January 2003
+<br><a href="PreviousEvents.html#ACCU2003">ACCU Conference</a>, Oxford,
+UK, April 2003
+<br><a href="PreviousEvents.html#Roots2003">ROOTS</a>, Bergen, Norway,
+May 2003</td>
+</tr>
+</table></div>
+
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=2 WIDTH="88%" >
+<tr>
+<td COLSPAN="2"><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar or
+skim through some further reading:</font></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminars</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Courses/ConcurrentJava.htm"><img SRC="../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><font color="#000000"><a href="../Courses/ConcurrentJava.htm">Concurrent
+Java</a></font>
+<br><font color="#000000"><font size=-1>3-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+
+<td VALIGN=TOP><b><i><font color="#295AB5">Paper</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Articles/JavaSpektrum.html"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=27 width=31></a></td>
+
+<td><font color="#000000"><a href="../Articles/JavaSpektrum.html">Effective
+Java</a></font>
+<br><font color="#000000"><font size=-1>column in JavaSPEKTRUM (in German)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<br>&nbsp;
+</body>
+</html>

@@ -1,0 +1,822 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <meta name="KeyWords" content="Java Generics parameterized type parameterized methodwildcard">
+   <title>Java Generics FAQs - Index</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+
+<h1>
+<a NAME="Top"></a><a NAME="FAQIndex"></a><a NAME="Index"></a><a NAME="IDX"></a>Index</h1>
+<font size=-2>&copy; Copyright&nbsp; 2004-2005 by Angelika Langer.&nbsp;
+All Rights Reserved.</font>
+<p><font face="Arial,Helvetica"><a href="#A">A<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#B">B<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#C">C<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#D">D<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#E">E<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#F">F<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#G">G<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#H">H<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#I">I<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#J">J<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#K">K<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#L">L<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#M">M<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#N">N<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#O">O<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#P">P<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#Q">Q<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#R">R<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#S">S<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#T">T<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#U">U<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#V">V<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#W">W<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#X">X<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#Y">Y<a href="#A"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font size=-2>
+</font><a href="#Z">Z</a></font>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="A"></a>A</h2>
+annotation:
+<br>&nbsp;&nbsp;&nbsp; <tt>SuppressWarnings</tt>, see <a href="#SuppressWarnings annotation"><tt>SuppressWarnings</tt>
+annotation</a>
+<p>array:
+<br>&nbsp;&nbsp;&nbsp; component type, see <a href="#array component type">array
+component type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#How do I generically create objects and arrays?">generic
+creation</a>
+<br>&nbsp;&nbsp;&nbsp; reference variable, see <a href="#array reference variable">array
+reference variable</a>
+<p><a NAME="array reference variable"></a>array reference variable:
+<br>&nbsp;&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I declare a reference variable of an array type whose component type is a concrete instantiation">to
+array of concrete parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I declare a reference variable of an array type whose component type is a bounded wildcard instantiation of a">to
+array of bounded wildcard </a><a href="ParameterizedTypes.html#Can I declare a reference variable of an array type whose component type is a concrete instantiation">parameterized</a><a href="ParameterizedTypes.html#Can I declare a reference variable of an array type whose component type is a bounded wildcard instantiation of a">
+type</a>
+<br>&nbsp;&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I declare a reference variable of an array type whose component type is an unbounded wildcard instantiation of a">to
+array of unbounded wildcard </a><a href="ParameterizedTypes.html#Can I declare a reference variable of an array type whose component type is a concrete instantiation">parameterized</a><a href="ParameterizedTypes.html#Can I declare a reference variable of an array type whose component type is an unbounded wildcard instantiation of a">
+type</a>
+<p><a NAME="array component type"></a>array component type:
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I create an array whose component type is a concrete instantiation of a parameterized type?">concrete
+parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I create an array whose component type is a wildcard instantiation of a parameterized type?">wildcard
+parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I create an array whose component type is a type parameter?">type
+parameter/variable</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Why is it allowed to create an array whose component type is an unbounded wildcard instantiation?">unbounded
+wildcard parameterized type</a>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="B"></a>B</h2>
+bound:
+<br>&nbsp;&nbsp;&nbsp; lower, see <a href="#lower bound">lower bound</a>
+<br>&nbsp;&nbsp;&nbsp; of type parameter, see <a href="#type parameter bounds">type
+parameter bounds</a>
+<br>&nbsp;&nbsp;&nbsp; of wildcard, see <a href="#wildcard bound">wildcard
+bound</a>
+<br>&nbsp;&nbsp;&nbsp; upper, see <a href="#upper bound">upper bound</a>
+<p>bounded:
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#What is a bounded type parameter?">type
+parameter</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What is a bounded wildcard?">wildcard</a>
+<p><a NAME="bridge method"></a>bridge method:
+<br>&nbsp;&nbsp;&nbsp; performance penalty, see <a href="TechnicalDetails.html#Is generic code faster or slower than non-generic code?">performance</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Under which circumstances is a bridge method generated?">purpose</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is a bridge method?">what
+is ...?</a>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="C"></a>C</h2>
+<a NAME="cast"></a>cast:
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Why does the compiler add casts when it translates generics?">compiler-generated</a>
+<br>&nbsp;&nbsp;&nbsp; performance penalty, see <a href="TechnicalDetails.html#Is generic code faster or slower than non-generic code?">performance</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Which types can or must not appear as target type in an instanceof expression?">target
+type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I cast to a parameterized type?">to
+parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I cast to the type that the type parameter stands for?">to
+type parameter</a>
+<p><a NAME="checked collection"></a><a href="ProgrammingIdioms.html#What is a checked collection?">checked
+collection</a>
+<p><tt>Class</tt>:
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#What does the type parameter of class java.lang.Class mean?">type
+parameter</a>
+<p>class literal:
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Why is there no class literal for the concrete instantiation of a parameterized type?">of
+parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Why is there no class literal for wildcard instantiations of a parameterized type?">of
+wildcard parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Why is there no class literal for a type parameter?">of
+type parameter / variable</a>
+<p><tt>clone</tt>:
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#How do I best implement the clone method of a parameterized type">of
+generic type</a>
+<p>collection:
+<br>&nbsp;&nbsp;&nbsp; <tt><a href="ProgrammingIdioms.html#What is the difference">Collection&lt;Object></a></tt>
+<br>&nbsp;&nbsp;&nbsp; <tt><a href="ProgrammingIdioms.html#What is the difference">Collection&lt;?></a></tt>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#What is a checked collection?">checked</a>
+<br>&nbsp;&nbsp;&nbsp; generic, see <a href="#parameterized collection">generic
+collection</a>
+<br>&nbsp;&nbsp;&nbsp; mixed, see <a href="#objects of different types">collection
+of <font size=+0>objects of different types</font></a>
+<br><a NAME="objects of different types"></a><font size=+0><a href="ProgrammingIdioms.html#How do I express a mixed sequence of instantiations of a given parameterized type?">of
+objects of different types</a></font>
+<br>&nbsp;&nbsp;&nbsp; parameterized, see <a href="#parameterized collection">parameterized
+collection</a>
+<p>compatibility:
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#How do I avoid breaking binary compatibility when I generify an existing type or method?">binary</a>
+<p>compiler-generated:
+<br>&nbsp;&nbsp;&nbsp; bridge method, see <a href="#bridge method">bridge
+method</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Why does the compiler add casts when it translates generics?">cast</a>
+<p>concrete:
+<br>&nbsp;&nbsp; instantiation, see <a href="#concrete parameterized type">concrete
+parameterized type</a>
+<br>&nbsp;&nbsp; parameterized type, see <a href="#concrete parameterized type">concrete
+parameterized type</a>
+<p><a NAME="concrete parameterized type"></a>concrete parameterized type:
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I create an array whose component type is a concrete instantiation of a parameterized type?">array
+of</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Why is there no class literal for the concrete instantiation of a parameterized type?">class
+literal</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Are different concrete instantiations of the same parameterized type compatible?">compatibility</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Concrete Instantiations">of
+generic type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I use a concrete instantiation of a parameterized type like any other type?">use
+of</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#When would I use an unbounded wildcard instantiation instead of a bounded or concrete instantiation?">vs.
+unbounded wildcard instantiation</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#When would I use a wildcard instantiation instead of a concrete instantiation?">vs.
+wildcard instantiation</a>
+<br>&nbsp;
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="D"></a>D</h2>
+derivation:
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I derive from a wildcard instantiation of a parameterized type?">from
+wildcard parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I derive from a type parameter?">from
+type parameter</a>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="E"></a>E</h2>
+enum type:
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#How do I decrypt Enum?">decryption
+of <tt>Enum&lt;E extends Enum&lt;E>></tt></a>
+<br>&nbsp;&nbsp;&nbsp; nested into generic type, see <a href="#nested enum type">nested
+enum type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Why are parameterized enum types illegal?">generic</a>
+<p><a NAME="equals"></a><tt>equals</tt>:
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#How do I best implement the equals method of a parameterized type?">of
+generic / parameterized type</a>
+<p>erasure, see <a href="#type erasure">type erasure</a>
+<p>exception handling:
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I use parameterized types in exception handling?">parameterized
+types</a>
+<p><a href="TechnicalDetails.html#What explicit type argument specification?">explicit
+type argument specification</a>
+<p><tt>extends</tt>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Does extends always mean inheritance?">meaning
+of</a>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="F"></a>F</h2>
+features:
+<br>&nbsp;&nbsp;&nbsp; see <a href="#language features">language features</a>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="G"></a>G</h2>
+generic:
+<br>&nbsp;&nbsp;&nbsp; code, see <a href="#generic code">generic code</a>
+<br>&nbsp;&nbsp;&nbsp; collection, see <a href="#parameterized collection">generic&nbsp;
+collection</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Why are parameterized exception and error types illegal?">exceptions</a>
+<br>&nbsp;&nbsp;&nbsp; interface, see <a href="#parameterized interface">generic&nbsp;
+interface</a>
+<br>&nbsp;&nbsp;&nbsp; method, see <a href="#parameterized method">generic
+method</a>
+<br>&nbsp;&nbsp;&nbsp; type, see <a href="#parameterized type">generic
+type</a>
+<p><a NAME="generic code"></a>generic code:
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#What happens when I mix generic and non-generic code?">mix
+with legacy code</a>
+<p><a NAME="parameterized collection"></a>generic collection
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#Should I use the parameterized collections or better stick to the old non-generic collections?">vs.
+non-generic collection</a>
+<p><a NAME="parameterized interface"></a>generic interface:
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I use different instantiations of a same parameterized type as bounds of a type parameter?">as
+bound of a type parameter</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#Can a class implement different instantiations of the same parameterized interface?">implementing
+different instantiations</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#Can a subclass implement another instantiation of a parameterized interface than any of its superclasses does?">in
+class hierarchy</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#What happens if a class implements two parameterized interfaces that define the same method?">name
+collision</a>
+<p><a NAME="parameterized type"></a>generic type:
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I use different instantiations of a same parameterized type as bounds of a type parameter?">as
+type parameter bound</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I cast to a parameterized type?">cast
+to</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#How is a parameterized type defined?">definition</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Why are parameterized enum types illegal?">enum
+type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I use parameterized types in exception handling?">exception
+handling</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#How is a parameterized type instantiated?">instantiation</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How do I refer to an interface type nested into a parameterized type?">nested
+interface</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Why do instantiations of a parameterized type share the same runtime type?">runtime
+type of</a>
+<br>&nbsp;&nbsp;&nbsp; static member, see <a href="#static member of parameterized type">static
+member of generic type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Which super-subtype relationships exist among instantiations of parameterized types?">super-subtype
+relationship</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How do parameterized types fit into the Java type system?">type
+system</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#Should I prefer instantiations of a parameterized type over raw types?">vs.
+raw type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#When would I implement a parameterized class (or method) instead of a regular one?">vs.
+regular type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#What is a parameterized (or generic) type?">what
+is ...?</a>
+<p><a NAME="parameterized method"></a>generic method:
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What explicit type argument specification?">explicit
+type argument specification</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedMethods.html#What is a parameterized (or generic) method?">definition</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedMethods.html#How do I invoke a parameterized method?">invocation</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is type argument inference?">type
+argument inference</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#When would I implement a parameterized class (or method) instead of a regular one?">vs.
+regular method</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedMethods.html#What is a parameterized (or generic) method?">what
+is ...?</a>
+<p>generics, see <a href="#Java generics">Java generics</a>
+<p>generification:
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#Should I re-engineer all my existing classes and generify them?">of
+legacy classes</a>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="H"></a>H</h2>
+<a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="I"></a>I</h2>
+import:
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Can I import a particular instantiation of parameterized type?">generic
+type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Can I import a particular instantiation of parameterized type?">parameterized
+type</a>
+<p>inference, see <a href="#type argument inference">type argument inference</a>
+<p><tt>instanceof</tt>:
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Which types can or must not appear as target type in an instanceof expression?">target
+type</a>
+<p>instantiation:
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#What is a concrete instantiation?">concrete
+instantiation</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#How is a parameterized type instantiated?">of&nbsp;
+generic type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Which super-subtype relationships exist among instantiations of parameterized types?">super-subtype
+relationship</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How do instantiations of a parameterized type relate to  instantiations of other parameterized types?">type
+relationship among i<font size=+0>nstantiations of different generic types</font></a>
+<br><font size=+0>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How do wildcard instantiations with a lower bound relate to other instantiations of the same type?">type
+relationship to lower bound wildcard instantiation</a></font>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How does the raw type relate to instantiations of the corresponding parameterized type?">type
+relationship to raw type</a>
+<br>&nbsp;&nbsp;&nbsp; <font size=+0><a href="TechnicalDetails.html#How do unbounded wildcard instantiations of a parameterized type relate to other instantiations of the same type?">type
+relationship to unbounded wildcard instantiation</a></font>
+<br>&nbsp;&nbsp;&nbsp; <font size=+0><a href="TechnicalDetails.html#How do wildcard instantiations with an upper bound relate to other instantiations of the same type?How do wildcard instantiations with an upper bound relate to other instantiations of the same type?">type
+relationship to upper bound wildcard instantiation</a></font>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#What is a wildcard instantiation?">wildcard
+instantiation</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#Should I prefer instantiations of a parameterized type over raw types?">vs.
+raw type</a>
+<p>interface:
+<br>&nbsp;&nbsp;&nbsp; nested into generic type, see <a href="#nested interface">nested
+interface</a>
+<br>&nbsp;&nbsp;&nbsp; generic, see <a href="#parameterized interface">generic
+interface</a>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="J"></a>J</h2>
+<a NAME="Java generics"></a>Java generics:
+<br>&nbsp;&nbsp;&nbsp; <a href="Fundamentals.html#What is the benefit of using Java generics?">benefit</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="Fundamentals.html#What is the pirmary purpose of Java generics?">purpose</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How does the compiler translate Java generics?">translation
+by type erasure</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="Fundamentals.html#What are Java generics?">what
+are ...?</a>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="K"></a>K</h2>
+<a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="L"></a>L</h2>
+<a NAME="language features"></a>language features:
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is a bridge method?">bridge
+method</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#What is a concrete instantiation?">concrete
+instantiation</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What explicit type argument specification?">explicit
+type argument specification</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedMethods.html#How do I invoke a parameterized method?">instantiation
+of generic method</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#How is a parameterized type instantiated?">instantiation
+of generic type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="Features.html#Which language features are related to Java generics?">overview</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedMethods.html#What is a parameterized (or generic) method?">generic
+method</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#What is a parameterized (or generic) type?">generic
+type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#What is a parameterized (or generic) type?">parameterized
+type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#What is the raw type?">raw
+type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What is a type argument?">type
+argument</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is type argument inference?">type
+argument inference</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is type erasure?">type
+erasure</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#What is a type parameter?">type
+parameter</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#What is a type parameter bound?">type
+parameter bound</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What is a wildcard?">wildcard</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What is a wildcard bound?">wildcard
+bound</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is the capture of a wildcard?">wildcard
+capture</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#What is a wildcard instantiation?">wildcard
+instantiation</a>
+<p>legacy code:
+<br><a NAME="generify"></a><a href="ProgrammingIdioms.html#Should I re-engineer all my existing classes and generify them?">generify</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#What happens when I mix generic and non-generic code?">mix
+with generic code</a>
+<br>&nbsp;&nbsp;&nbsp; re-engineer, see <a href="#generify">generify</a>
+<p><a NAME="lower bound"></a>lower bound:
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What is a wildcard?">what
+is ...?</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What is a bounded wildcard?">wildcard</a>
+<br>&nbsp;&nbsp;&nbsp; wildcard instantiation, see <a href="#lower bound wildcard instantiation">lower
+bound wildcard instantiation</a>
+<p><a NAME="lower bound wildcard instantiation"></a>lower bound wildcard
+instantiation:
+<br>&nbsp;&nbsp;&nbsp; <font size=+0><a href="TechnicalDetails.html#How do wildcard instantiations with a lower bound relate to other instantiations of the same type?">type
+relationship to other instantiations of the same type</a></font>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="M"></a>M</h2>
+method:
+<br>&nbsp;&nbsp;&nbsp; bridge, see <a href="#bridge method">bridge method</a>
+<br>&nbsp;&nbsp;&nbsp; generic, see <a href="#parameterized method">generic&nbsp;
+method</a>
+<br>&nbsp;&nbsp;&nbsp; parameterized, see <a href="#parameterized method">generic&nbsp;
+method</a>
+<br>&nbsp;&nbsp;&nbsp; synthetic, see <a href="#bridge method">bridge method</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#Should I use wildcards in the return type of a method?">with
+wildcard return type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#How do I implement a method that takes a wildcard argument?">with
+wildcard argument type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#How do I implement a method that takes a multi-level wildcard argument?">with
+multi-level wildcard argument type</a>
+<p><a NAME="multi-level wildcard"></a>multi-level wildcard
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#How do I implement a method that takes a multi-level wildcard argument?">as<font size=+0>
+argument type of a method</font></a>
+<br><font size=+0>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What do multilevel wildcards mean?">what
+is ...?</a></font>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="N"></a>N</h2>
+<a NAME="nested enum type"></a>nested enum type (with parameterized enclosing
+type):
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How do I refer to an enum type nested into a parameterized type?">scope
+name</a>
+<p><a NAME="nested interface"></a>nested interface (with parameterized
+enclosing type):
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How do I refer to an interface type nested into a parameterized type?">scope
+name</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#Can an interface type nested into a parameterized type use the enclosing type's type parameters?">access
+to enclosing type parameters</a>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="O"></a>O</h2>
+object:
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#How do I generically create objects and arrays?">generic
+creation</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I use a concrete instantiation of a parameterized type like any other type?">of
+concrete parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I create an object whose type is a wildcard instantiation of a parameterized type?">of
+wildcard parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I create an object whose type is a type parameter?">of
+type parameter/variable</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I create an object whose type is a wildcard instantiation of a parameterized type?">of
+unbounded wildcard parameterized type</a>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="P"></a>P</h2>
+parameterized:
+<br>&nbsp;&nbsp;&nbsp; collection, see <a href="#parameterized collection">parameterized
+collection</a>
+<br>&nbsp;&nbsp;&nbsp; interface, see <a href="#parameterized interface">parameterized
+interface</a>
+<br>&nbsp;&nbsp;&nbsp; method, see <a href="#parameterized method">generic
+method</a>
+<br>&nbsp;&nbsp;&nbsp; type, see <a href="#parameterized type">parameterized
+type</a>
+<p><a NAME="parameterized collection"></a>parameterized collection
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#Should I use the parameterized collections or better stick to the old non-generic collections?">vs.
+non-parameterized collection</a>
+<p><a NAME="parameterized interface"></a>parameterized interface:
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I use different instantiations of a same parameterized type as bounds of a type parameter?">as
+bound of a type parameter</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#Can a class implement different instantiations of the same parameterized interface?">implementing
+different instantiations</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#Can a subclass implement another instantiation of a parameterized interface than any of its superclasses does?">in
+class hierarchy</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#What happens if a class implements two parameterized interfaces that define the same method?">name
+collision</a>
+<p><a NAME="parameterized type"></a>parameterized type:
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I use different instantiations of a same parameterized type as bounds of a type parameter?">as
+type parameter bound</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I cast to a parameterized type?">cast
+to</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#How is a parameterized type defined?">definition</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Why are parameterized enum types illegal?">enum
+type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I use parameterized types in exception handling?">exception
+handling</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#How is a parameterized type instantiated?">instantiation</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How do I refer to an interface type nested into a parameterized type?">nested
+interface</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Why do instantiations of a parameterized type share the same runtime type?">runtime
+type of</a>
+<br>&nbsp;&nbsp;&nbsp; static member, see <a href="#static member of parameterized type">static
+member of parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Which super-subtype relationships exist among instantiations of parameterized types?">super-subtype
+relationship</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How do parameterized types fit into the Java type system?">type
+system</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#Should I prefer instantiations of a parameterized type over raw types?">vs.
+raw type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#When would I implement a parameterized class (or method) instead of a regular one?">vs.
+regular type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#What is a parameterized (or generic) type?">what
+is ...?</a>
+<p><a href="TechnicalDetails.html#Is generic code faster or slower than non-generic code?">performance</a>
+<p>primitive types:
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#Are primitive types permitted as type arguments?">as
+type arguments</a>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="Q"></a>Q</h2>
+<a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="R"></a>R</h2>
+raw type:
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Why are raw types permitted?">purpose</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How does the raw type relate to instantiations of the corresponding parameterized type?">type
+relationship to instantiation</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I use a raw type like any other type?">use
+of</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#Should I prefer instantiations of a parameterized type over raw types?">vs.
+parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#What is the difference between the unbounded wildcard instantiation and the raw type?">vs.
+unbounded wildcard instantiation</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#What is the raw type?">what
+is ...?</a>
+<p><a NAME="reifiable type"></a>reifiable type:
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is a reifiable type?">what
+is ...?</a>
+<p>runtime type:
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Why is there no class literal for the concrete instantiation of a parameterized type?">class
+literal</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#How do I pass type information to a method?">information</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Why do instantiations of a parameterized type share the same runtime type?">of
+parameterized type</a>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="S"></a>S</h2>
+static:
+<br>&nbsp;&nbsp;&nbsp; member, see <a href="#static member of parameterized type">static
+member of generic type</a>
+<p><a NAME="static member of parameterized type"></a>static member of generic
+type
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Is there one instances of a static field per instantiation of a parameterized type?">how
+many instances?</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How do I refer to static members of a parameterized type?">name
+of</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Why can't I use a type parameter in any static context of the parameterized class?">type
+parameter as type of</a>
+<p>super-subset
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Which super-subset relationships exist among wildcards?">relationship
+among type families denoted by wildcards</a>
+<p>super-subtype
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Which super-subtype relationships exist among instantiations of parameterized types?">relationship
+among instantiations of generic types</a>
+<p><a NAME="SuppressWarnings annotation"></a><a href="TechnicalDetails.html#What is the SuppressWarnings annotation?"><tt>SuppressWarnings</tt>
+annotation</a>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="T"></a>T</h2>
+type:
+<br>&nbsp;&nbsp;&nbsp; argument, see <a href="#type argument">type argument</a>
+<br>&nbsp;&nbsp;&nbsp; check, see <a href="#type check">type check</a>
+<br>&nbsp;&nbsp;&nbsp; generic, see <a href="#parameterized type">generic&nbsp;
+type</a>
+<br>&nbsp;&nbsp;&nbsp; parameter, see <a href="#type parameter">type parameter</a>
+<br>&nbsp;&nbsp;&nbsp; parameterized, see <a href="#parameterized type">parameterized
+type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#What is the raw type?">raw
+type</a>
+<br>&nbsp;&nbsp;&nbsp; reifiable, see <a href="#reifiable type">reifiable
+type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Why do instantiations of a parameterized type share the same runtime type?">runtime
+type</a>
+<p><a NAME="type argument"></a>type argument:
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#Do bounds restrict the set of types that can be used as type arguments?">and
+type parameter bounds</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What explicit type argument specification?">explicit
+type argument specification</a>
+<br>&nbsp;&nbsp;&nbsp; inference, see <a href="#type argument inference">type
+argument inference</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#Do I have to specify a type argument when I want to invoke a parameterized method?">of
+generic method</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#Do I have to specify a type argument when I want to use a parameterized type?">of
+parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#Which types are permitted as type arguments?">permitted
+types</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#Are primitive types permitted as type arguments?">primitive
+types</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#Are type parameters permitted as type arguments?">type
+parameters</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What is a type argument?">what
+is ...?</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#Are wildcards are permitted as type arguments?">wildcards</a>
+<p><a NAME="type check"></a>type check:
+<br>&nbsp;&nbsp; in checked collection, see <a href="#checked collection">checked
+collection</a>
+<br>&nbsp;&nbsp; in equals method, see <a href="#equals">equals</a>
+<br>&nbsp;&nbsp; <a href="TechnicalDetails.html#What is type erasure?">implicitly
+generated</a>
+<br>&nbsp;&nbsp; <a href="TechnicalDetails.html#What is an unchecked warning?">leading
+to unchecked warning</a>
+<br>&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I cast to a parameterized type?">target
+type is a parameterized type</a>
+<br>&nbsp;&nbsp; target type is a type parameter:
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is an unchecked warning?">performed
+at compile time</a>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#How do I perform a runtime type check whose target type is a type parameter?">performed
+at runtime time</a>
+<br>&nbsp; see also, <a href="#cast">cast</a>
+<p><a NAME="type argument inference"></a>type argument inference:
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What explicit type argument specification?">explicit
+type argument specification</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What happens if a type parameter does appear in the method parameter list?">from
+context</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is type argument inference?">what
+is ...?</a>
+<br>&nbsp;
+<p><a NAME="type erasure"></a>type erasure:
+<br>&nbsp;&nbsp;&nbsp; bridge method, see <a href="#bridge method">bridge
+method</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Why does the compiler add casts when it translates generics?">compiler-generated
+cast</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is the type erasure of a parameterized method?">of
+generic method</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is the type erasure of a parameterized type?">of
+parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is the type erasure of a type parameter?">of
+type parameter</a>
+<br>&nbsp;&nbsp;&nbsp; reifiable type, see <a href="#reifiable type">reifiable
+type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How does type erasure work when a type parameter has several bounds?">several
+bounds</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is type erasure?">what
+is ...?</a>
+<p><a NAME="type parameter"></a>type parameter:
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I create an array whose component type is a type parameter?">array
+of</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I use a type parameter as a type parameter bound?">as
+bound of another type parameter</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I use a type parameter as part of its own bounds or in the declaration of other type parameters?">as
+part of its own bounds</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I derive from a type parameter?">as
+supertype</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#How do I perform a runtime type check whose target type is a type parameter?">as
+target type of runtime type check</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#Are type parameters permitted as type arguments?">as
+type argument</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#What is a bounded type parameter?">bounded</a>
+<br>&nbsp;&nbsp;&nbsp; bounds, see <a href="#type parameter bounds">type
+parameter bounds</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I cast to the type that the type parameter stands for?">cast
+to</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Why is there no class literal for a type parameter?">class
+literal</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I derive from a type parameter?">derive
+from</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Can I use a type parameter in a catch clause?">in
+catch clause</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Can I use a type parameter in exception handling?">in
+exception handling</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Can I throw an object whose type is a type parameter?">in
+throw statement</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Can I use a type parameter in in a throws clause?">in
+throws clause</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I create an object whose type is a type parameter?">object
+of</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I use the type parameter of an outer type as part of the bounds of the type parameter of an inner type or a method?">of
+an outer type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Where is a type parameter visible (or invisible)?">scope
+of</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Why can't I use a type parameter in any static context of the parameterized class?">static
+context</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I use a type parameter like a type?">type-like
+use</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I use a type parameter like a type?">use
+of</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#What is a type parameter?">what
+is ...?</a>
+<p><a NAME="type parameter bounds"></a>type parameter bound
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Does a bound that is a class type give access to all its public members?">access
+to members</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#Do bounds restrict the set of types that can be used as type arguments?">and
+type arguments</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Can I use different instantiations of a same parameterized type as bounds of a type parameter?">different
+instantiations of a same generic type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Does extends always mean inheritance?"><tt>extends</tt>
+clause</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#Which types are permitted as type parameter  bounds?">permitted
+types</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What is the difference between a wildcard bound and a type parameter bound?">vs.
+type wildcard bound</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeParameters.html#What is a type parameter bound?">what
+is ...?</a>
+<p>type relationship
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How do parameterized types fit into the Java type system?">inheritance</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Which super-subtype relationships exist among instantiations of parameterized types?">super-subtype</a>
+<br>&nbsp;&nbsp;&nbsp; see also <a href="#type relationship">type relationship
+among</a>
+<p><a NAME="type relationship"></a>type relationship among:
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How does the raw type relate to instantiations of the corresponding parameterized type?">raw
+type and parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How do instantiations of a parameterized type relate to  instantiations of other parameterized types?">i<font size=+0>nstantiations
+of different generic types</font></a>
+<br><font size=+0>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How do wildcard instantiations with a lower bound relate to other instantiations of the same type?">lower
+bound wildcard instantiations and other instantiations of the same generic
+type</a></font>
+<br><font size=+0>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Which super-subtype relationships exist among instantiations of parameterized types?">instantiations
+of generic type (in general)</a></font>
+<br><font size=+0>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How do unbounded wildcard instantiations of a parameterized type relate to other instantiations of the same type?">unbounded
+wildcard instantiations and other instantiations of the same generic type</a></font>
+<br><font size=+0>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How do wildcard instantiations with an upper bound relate to other instantiations of the same type?How do wildcard instantiations with an upper bound relate to other instantiations of the same type?">upper
+bound wildcard instantiations and other instantiations of the same generic
+type</a></font>
+<p><a href="Fundamentals.html#What does type-safety mean?">type-safety</a>
+<p>type system, see <a href="#type relationship">type relationship</a>
+<p>type variable, see <a href="#type parameter">type parameter</a>
+<p>typing:
+<br>&nbsp;&nbsp;&nbsp; <a href="Fundamentals.html#What does type-safety mean?">strong</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="Fundamentals.html#What does type-safety mean?">weak</a>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="U"></a>U</h2>
+unbounded
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What is an unbounded wildcard?">wildcard</a>
+<br>&nbsp;&nbsp;&nbsp; wildcard instantiation, see <a href="#unbounded wildcard instantiation">unbounded
+wildcard instantiation</a>
+<p><a NAME="unbounded wildcard instantiation"></a>unbounded wildcard instantiation:
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Why is it allowed to create an array whose component type is an unbounded wildcard instantiation?">array
+of</a>
+<br>&nbsp;&nbsp;&nbsp; <font size=+0><a href="TechnicalDetails.html#How do unbounded wildcard instantiations of a parameterized type relate to other instantiations of the same type?">type
+relationship to other instantiations of the same generic type</a></font>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#When would I use an unbounded wildcard instantiation instead of a bounded or concrete instantiation?">vs.
+bounded wildcard instantiation</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#When would I use an unbounded wildcard instantiation instead of a bounded or concrete instantiation?">vs.
+concrete wildcard instantiation</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#What is the difference between the unbounded wildcard instantiation and the raw type?">vs.
+raw type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#What is an unbounded wildcard instantiation?">what
+is ...?</a>
+<p><a NAME="unchecked warning"></a>unchecked warning
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How can I avoid unchecked cast warnings?">avoid</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How can I disable or enable unchecked warnings?">disable</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Is it possible to eliminate all unchecked warnings?">eliminate</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#How can I disable or enable unchecked warnings?">enable</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is the SuppressWarnings annotation?">suppress</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is an unchecked warning?">what
+is ...?</a>
+<p><a NAME="upper bound"></a>upper bound:
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What is a bounded wildcard?">wildcard</a>
+<br>&nbsp;&nbsp;&nbsp; wildcard instantiation, see <a href="#upper bound wildcard instantiation">upper
+bound wildcard instantiation</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What is a wildcard?">what
+is ...?</a>
+<p><a NAME="upper bound wildcard instantiation"></a>upper bound wildcard
+instantiation:
+<br>&nbsp;&nbsp;&nbsp; <font size=+0><a href="TechnicalDetails.html#How do wildcard instantiations with an upper bound relate to other instantiations of the same type?How do wildcard instantiations with an upper bound relate to other instantiations of the same type?">type
+relationship to other instantiations of the same generic type</a></font>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="V"></a>V</h2>
+<a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="W"></a>W</h2>
+warning:
+<br>&nbsp;&nbsp;&nbsp; unchecked, see <a href="#unchecked warning">unchecked
+warning</a>
+<p>wildcard:
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#Are wildcards are permitted as type arguments?">as
+type argument</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What is a bounded wildcard?">bounded</a>
+<br>&nbsp;&nbsp;&nbsp; capture, see <a href="#wildcard capture">wildcard
+capture</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#Which role do wildcards play in method signatures?">in
+method signatures</a>
+<br>&nbsp;&nbsp;&nbsp; instantiation, see <a href="#wildcard parameterized type">wildcard
+parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp; multi-level, see <a href="#multi-level wildcard">multi-level
+wildcard</a>
+<br>&nbsp;&nbsp;&nbsp; parameterized type, see <a href="#wildcard parameterized type">wildcard
+parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Which super-subset relationships exist among wildcards?">super-subset
+relationship</a>
+<br>&nbsp;&nbsp;&nbsp; type, see <a href="#wildcard parameterized type">wildcard
+parameterized type</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What is an unbounded wildcard?">unbounded</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What is a wildcard?">what
+is ...?</a>
+<p><a NAME="wildcard bound"></a>wildcard bound
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Does extends always mean inheritance?"><tt>extends</tt>
+clause</a>
+<br>&nbsp;&nbsp;&nbsp; lower, see <a href="#lower bound">lower bound</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#Which types are permitted as wildcard bounds?">permitted
+types</a>
+<br>&nbsp;&nbsp;&nbsp; upper, see <a href="#upper bound">upper bound</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What is the difference between a wildcard bound and a type parameter bound?">vs.
+type parameter bound</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TypeArguments.html#What is a wildcard bound?">what
+is ...?</a>
+<p><a NAME="wildcard capture"></a>wildcard capture:
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is a wildcard capture assignment-compatible to?">assignment-compatibility</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#Is the capture of a bounded wildcard compatible to the bound?">of
+bounded wildcard</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="TechnicalDetails.html#What is the capture of a wildcard?">what
+is ...?</a>
+<p><a NAME="wildcard parameterized"></a>wildcard parameterized type:
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Which methods and fields are accessible/inaccessible through a reference variable of a wildcard type?">access
+to fields and methods</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I create an array whose component type is a wildcard instantiation of a parameterized type?">array
+of</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#How do I implement a method that takes a wildcard argument?">as<font size=+0>
+argument type of a method</font></a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#Should I use wildcards in the return type of a method?">as<font size=+0>
+return type of a method</font></a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I derive from a wildcard instantiation of a parameterized type?">as
+supertype</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Why is there no class literal for wildcard instantiations of a parameterized type?">class
+literal</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I derive from a wildcard instantiation of a parameterized type?">derive
+from</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#Which role do wildcards play in method signatures?">in
+method signatures</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I create an object whose type is a wildcard instantiation of a parameterized type?">in
+<tt>new</tt>
+expression</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I create an object whose type is a wildcard instantiation of a parameterized type?">object
+of</a>
+<br>&nbsp;&nbsp;&nbsp; unbounded, see <a href="#unbounded wildcard instantiation">unbounded
+wildcard instantiation</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#Can I use a wildcard instantiation like any other type?">use
+of</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#When would I use a wildcard instantiation instead of a concrete instantiation?">vs.
+concrete instantiation</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#When would I use an unbounded wildcard instantiation instead of a bounded or concrete instantiation?">vs.
+unbounded wildcard instantiation</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ParameterizedTypes.html#What is a wildcard instantiation?">what
+is ...?</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="ProgrammingIdioms.html#When would I use a wildcard instantiation with a lower bound?">with
+lower bound</a>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="X"></a>X</h2>
+<a href="TechnicalDetails.html#What is the -Xlint:unchecked compiler option?"><tt>Xlint</tt>
+compiler option</a>
+<p><a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="Y"></a>Y</h2>
+<a href="../../Images/bar.gif"><img SRC="../../Images/bar.gif" NOSAVE BORDER=0 height=4 width=500></a>
+<h2>
+<a NAME="Z"></a>Z</h2>
+
+<hr WIDTH="100%">
+<br><font face="Arial,Helvetica"><font size=-2><a href="../JavaGenericsFAQ.html#TOC">CONTENT<a href="../JavaGenericsFAQ.html#TOC"><img SRC="../../Images/bluebullet.gif" NOSAVE height=6 width=4></a></a>
+<font color="#666666"><a href="MoreInformation.html">PREVIOUS</a></font></font></font>
+<br>&nbsp;
+</body>
+</html>

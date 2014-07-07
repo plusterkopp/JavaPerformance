@@ -1,0 +1,134 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="author" content="Association of C & C++ Users">
+   <meta name="url" content="http://www.accu.org/bookreviews/public/">
+   <meta name="description" content="Review: Standard C++ IOStreams and Locales">
+   <meta name="keywords" content="KeywordsSeparatedBySpaces">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <title>ACCU Reviews: Standard C++ IOStreams and Locales</title>
+<!-- Page Title -->
+<!-- /Page Title -->
+<link rev="made" href="mailto:webmaster__at__accu.org" title="ACCU Reviews: Standard C++ IOStreams and Locales">
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#6600CC" vlink="#CC6600" alink="#FF0000">
+<a NAME="IOStreamsReviewACCU"></a>
+<br><b><font face="arial,helvetica"><font size=+3></font></font></b>&nbsp;<b><font face="arial,helvetica"><font size=+3></font></font></b>
+<p><b><font face="arial,helvetica"><font size=+3>Book Review&nbsp; </font></font></b>(found
+at <a href="http://www.accu.org/bookreviews/public/reviews/s/s002103.htm">www.accu.org</a>
+)&nbsp;
+<hr>
+<table CELLSPACING=6 WIDTH="100%" >
+<tr>
+<td BGCOLOR="#999999"><b><font face="arial,helvetica"><font color="#FFFFFF"><font size=+2>Standard
+C++ IOStreams and Locales by Angelika Langer &amp; Klaus Kreft</font></font></font></b>
+<br><b><font face="arial,helvetica"><font color="#CCCC00"><font size=+2>Highly
+Recommended</font></font></font></b></td>
+</tr>
+
+<tr>
+<td BGCOLOR="#CCCCCC">ISBN: <b>0 201 18395 1</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Publisher: <b>Addison-Wesley</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Pages:
+<b>640pp</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Price: <b>$49-95</b></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td BGCOLOR="#FFFFCC">Categories:&nbsp;&nbsp; <b>advanced c++</b></td>
+</tr>
+
+<tr>
+<td BGCOLOR="#FFFFCC">Reviewed by <b>Francis Glassborow</b>&nbsp; <i>(Mar
+2000)</i></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+I have very few doubts that I/O libraries are amongst the most difficult
+aspects of any language. They provide essential support for most programmers,
+particularly those that are just starting. It is very difficult to design
+a library that supports everything from the needs of programmers writing
+their first 'Hello World' program to those writing large applications for
+an international market. The first time programmer is not going to be concerned
+by which decimal separator will be used in the I/O for their work as the
+development environment will be set up to whatever the local rules are.
+If you are writing a financial package for world-wide use such points of
+detail become important.
+<p>&nbsp;If you have any doubt about the difficulties take a look at the
+mess in the I/O parts of the Standard C Library. Even when the programmer
+has learnt to navigate through the tar-pits of the scanf family of functions
+and knows that gets() is essentially broken few go on to master the locale
+support.
+<p>&nbsp;There is a much greater range of support for I/O in the Standard
+C++ Library. What we have is the result of over a decade of experiment
+and development. The lead developers were amongst the most skilled and
+knowledgeable in that aspect of library design. Their understanding of
+the needs of the international community heavily influenced the eventual
+design. The result is a very powerful set of tools but one that requires
+considerable skill and understanding if it is to be used at much more than
+a trivial level.
+<p>&nbsp;How many programmers understand the separation between 'formatting'
+and 'buffering, code conversion and transport of characters to and from
+an external device'? You have no need for such understanding when you write
+your early programs, however if you want to provide support for automatic
+logging (to a file) of all I/O in a student program you need to understand
+the difference and provide suitable stream buffers to do the work.
+<p>&nbsp;The texts for novices should confine themselves to good practice.
+In other words the authors of such books should introduce their readers
+to the basic use of iostream (it would help if the mentioned the existence
+of the wide character versions) and clearly defer further information to
+a later text. Once a programmer has mastered the basics they should acquire
+and study an in depth text on the Standard C++ Library (my choice would
+be The C++ Standard Library by Nicolai Josuttis).
+<p>&nbsp;At this stage many programmers will still be using relatively
+simple I/O or be relying on some form of GUI support library. Up until
+now there has been nothing to support the programmer who wants to more
+about the rich tapestry of tools (to mix a metaphor) available for more
+advanced I/O programming. Such questions as 'How do I deal with different
+collation sequences?', 'How should I cope with multi-byte character encodings?',
+'Is there any way of handling different national date and time formats?'
+and so on.
+<p>&nbsp;Langer &amp; Kraft address the needs of these people in two ways.
+The first 342 pages (part 1) is a tutorial on the subject. This part of
+the book is well written with explanations based on well thought out examples
+based on relatively simple needs. This means that understanding the problem
+does not obscure understanding the solution, something that is often missed
+in advanced texts. The English flows better than in many texts of a similar
+level (though I think we still have some way to go before I would be entirely
+satisfied).
+<p>&nbsp;The second part of the book is reference guide of just over 200
+pages. These add little if anything to what you would find in the C++ Standard
+but I have no great quarrel with that. These are the parts of the Standard
+that I need to look up when working in this area of programming.
+<p>&nbsp;The book concludes with a number of useful appendices. These include
+a comparison between the C and C++ locales as well as documenting the differences
+between the classic iostream (i.e. that provided by &lt;iostream.h>) support
+and that of the C++ Standard (as provided by &lt;iostream>).
+<p>&nbsp;If you feel ready to take the plunge into learning about how to
+use 'Standard IOStreams and Locales' this book is an excellent source to
+study. Even if you do not need to use the material in an advanced fashion,
+you will benefit from studying as many of the techniques are applicable
+to other areas of programming. Let me conclude by quoting the final paragraph
+of the Foreword--written by Jerry Shwarz, who some of you may know designed
+and implemented the first iostream library circa 1987.
+<p><i>... Not only does it address the kinds of questions that concern
+me, but also it does so with concrete examples that enable readers to quickly
+adapt the ideas to their own requirements. I am no longer contemplating
+writing a book on the library so I have only positive feelings about this
+book.
+<hr>Last Update - 18 March 2000.</i>
+<br>&nbsp;
+<p><i><font size=-1>To link to this review, please use the URL: http://www.accu.org/bookreviews/public/reviews/s/s002103.htm</font></i>
+<br><i>Copyright &copy; The Association of C &amp; C++ Users 1998-2000.
+All rights reserved.</i>
+<br><i></i>&nbsp;
+<br><i></i>&nbsp;
+</body>
+</html>

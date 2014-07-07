@@ -1,0 +1,137 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer and Klaus Kreft">
+   <title>Readers Forum</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="IOStreamsForum"></a>
+<br>&nbsp;
+<h3>
+Discussions and Related Information</h3>
+Several readers came up with ideas and suggestions of their own inspired
+by topics from the IOStreams book. We would like to share their ideas with
+interested readers by publishing them here, basically "as is" with a brief
+introductory comment.
+<p><b><font face="Arial,Helvetica"><font size=-1>List of Topics</font></font></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="60%" >
+<caption>&nbsp;</caption>
+
+<tr VALIGN=TOP>
+<td>
+<li>
+<font face="Arial,Helvetica"><font size=-1><a href="#ICU">Non-Standard
+Internationalization Support in C++</a>&nbsp;</font></font></li>
+</td>
+</tr>
+
+<tr>
+<td>
+<li>
+<font face="Arial,Helvetica"><font size=-1><a href="#Henney">Modern Manipulators</a>&nbsp;</font></font>&nbsp;</li>
+</td>
+</tr>
+</table>
+
+<p><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="ICU"></a><b>Non-Standard Internationalization Support in C++:</b>
+<p><i>Numerous readers mentioned that they prefer the internationalization
+support in Java over the the internationalization support defined by the
+C++ Standard, which is described in our book. They felt that Java has much
+more to offer than C++, especially in the area of Unicode support.</i>
+<p>This cross-language approach, calling Java from C++, is no longer necessary.
+There is an open-source project called <a href="http://oss.software.ibm.com/icu/">International
+Components for Unicode (ICU)</a> that offers Java-style internationalization
+support in C++. For more information visit IBM's website at <a href="http://oss.software.ibm.com/icu/">http://oss.software.ibm.com/icu/</a>
+.
+<p><font face="Trebuchet MS"><font size=-2>brought to our attention by:</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Werner Mossner, Siemens AG,
+Augsburg, January 2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="Henney"></a><b>Modern Manipulators:</b>
+<p><i>Kevlin Henney suggests a more modern technique for implementation
+of manipulators with parameters: he uses member function templates, function
+object types, and parameterized inheritance. This way he avoids passing
+function pointers, gets rid of the static member function, and eliminates
+the ugly stream type problem that we describe in section 3.2.2.2.&nbsp;
+By and large, a very elegant solution that relies heavily on modern template
+programming techniques.&nbsp; Kevlin's comments are in response to our
+article published in <a href="../Articles/C++Report/Manipulators 2.pdf">C++
+Report</a> in June 2000. Inspired by his ideas we later published another
+article on manipulators in the <a href="../Articles/Cuj/05.Manipulators/Manipulators.html">C/C++
+Users Journal</a> in June 2001. Below are Kevlin's thoughts on manipulators.</i>
+<p><font face="Trebuchet MS"><font size=-2>suggested by:</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Kevlin Henney, Curbralan Ltd.,
+<a href="mailto:kevlin@curbralan.com">kevlin@curbralan.com</a>
+, July 2000</font></font>
+<p>The following occurred to me as a way of avoiding passing function pointers
+around or running into the stream type problems you describe:
+<p><font face="Courier New,Courier"><font size=-1>#include &lt;iostream></font></font>
+<p><font face="Courier New,Courier"><font size=-1>using namespace std;</font></font>
+<p><font face="Courier New,Courier"><font size=-1>template&lt;typename
+derived></font></font>
+<br><font face="Courier New,Courier"><font size=-1>class manip</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>public:</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+template&lt;typename out_stream></font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+out_stream &amp;operator()(out_stream &amp;out) const</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return (*static_cast&lt;const derived *>(this))(out);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</font></font>
+<br><font face="Courier New,Courier"><font size=-1>};</font></font>
+<p><font face="Courier New,Courier"><font size=-1>class mendl : public
+manip&lt;mendl></font></font>
+<br><font face="Courier New,Courier"><font size=-1>{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>public:</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+explicit mendl(size_t how_many)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+: count(how_many)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+template&lt;typename out_stream></font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+out_stream &amp;operator()(out_stream &amp;out) const</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+for(size_t line = 0; line &lt; count; ++line)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+out.put(out.widen('\n'));</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return out;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</font></font>
+<br><font face="Courier New,Courier"><font size=-1>private:</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+size_t count;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>};</font></font>
+<p><font face="Courier New,Courier"><font size=-1>template&lt;typename
+out_stream, typename manip_type></font></font>
+<br><font face="Courier New,Courier"><font size=-1>out_stream &amp;operator&lt;&lt;(out_stream
+&amp;out, const manip&lt;manip_type> &amp;op)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return op(out);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>}</font></font>
+<p>It is possible to factor out one_arg_manip, two_arg_manip, etc classes,
+but for brevity and generality, the code above seems to work fine.
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br>&nbsp;
+<br>&nbsp;
+</body>
+</html>

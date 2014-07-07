@@ -1,0 +1,726 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Article C++ Report April 1998">
+   <title>Character Types and Character Traits</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CppReportCharTypes"></a>
+<br><font color="#295AB5"><font size=+3>Character Types and Character Traits</font></font>
+<p><font color="#295AB5"><font size=+2>C++ Report, April 1998</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p><font size=-1>Character types have an impact on various classes in the
+standard library. Strings, iostreams, and facets are abstractions in the
+library that manipulate characters or character sequences. All of them
+are implemented as class templates that take the character type as a template
+argument. The motivation for this design is the desire to keep abstraction
+like strings, streams, etc. independent of the characters they handle.
+Consider string operations: Concatenation of two strings, for instance,
+is mostly independent of the type of the characters that form the two strings
+in question. Hence it is possible to implement entirely generic strings
+that can handle sequences of any kind of characters. That at least is the
+idea behind class templates like </font><font face="Courier,Courier New"><font size=-2>basic_string,
+basic_fstream, basic_streambuf, ctype, num_get, num_put</font></font><font size=-1>,
+to name but a few of them.</font>
+<p><font size=-1>In practice it turns out that the character type alone
+does not provide enough information for all tasks that strings and iostreams
+perform. Streams, for instance, need to know how they can recognize the
+end of a file; after all the end-of-file-value might differ between character
+types. Also, strings must know how characters are compared, because the
+character type alone does not imply it. This additional information about
+a character type is encapsulated in yet another abstraction: the character
+traits. For use in the standard library each character type must be accompanied
+by an associated traits type. Otherwise the character type cannot be used
+for instantiating the string and stream class templates, because they require
+a second template argument, which is the traits type associated to the
+character type.</font>
+<p><font size=-1>Before we examine in detail how the character and traits
+type are used in strings, iostreams, and facets, we want to take a closer
+look at character types and character traits types in general.</font>
+<p><b><i><font face="Arial">Character Types</font></i></b>
+<p><font size=-1>What is a character? We all know intuitively that it is
+something like a 'A' or a 'B'. The notion that we share, is the <i>abstraction</i>
+of a character. Such an abstract character has numerous properties: visual
+representations (glyphs), binary representations (codes), and many more.
+Now, what do we mean when we talk of characters in the context of the standard
+library? Let's get it straight: As programmers, we deal with characters
+inside our C++ programs. In that context a character is an <i>object</i>,
+in the sense that it is an instance of a type, either a built-in or a user-defined
+type like a class. The built-in character types in (C and) C++ are type
+</font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>
+for narrow characters and type </font><font face="Courier,Courier New"><font size=-2>wchar_t</font></font><font size=-1>
+for wide characters. Like other objects in our program, character objects
+do not only have a type, but also an individual object state. A character
+object's state is the content of the character, i.e. its binary representation.
+It is the bit pattern stored inside a storage unit of type </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>
+or </font><font face="Courier,Courier New"><font size=-2>wchar_t</font></font><font size=-1>,
+for instance. The content of a character is also called a character code.
+A code usually belongs to a character encoding, which is a set of character
+codes along with rules for their interpretation. In this article we are
+talking of character objects. Keep in mind that whenever we mention a "character"
+in the following text we mean a "character object inside a C++ program".</font>
+<p><b><font face="Arial"><font size=-1>Character Type vs. Character Encoding</font></font></b>
+<p><font size=-1>A character has two aspects that are relevant in a C++
+program:</font>
+<ul>
+<li>
+<font size=-1>its type, and</font></li>
+
+<li>
+<font size=-1>its encoding.</font></li>
+</ul>
+<font size=-1>In principle, both aspects are independent of each other.
+In practice, they are related and sometimes even mixed up. Consider an
+example: an ASCII character sequence. ASCII is a one-byte character encoding,
+i.e. no single ASCII character needs more than one byte for its representation.
+Hence, an ASCII character can be stored in a storage unit of type </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>,
+because the built-in type </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>
+is large enough to hold items of the size of one byte. For this reason,
+it is customary to store a character sequence encoded in ASCII in an array
+of type </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>.
+However, </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>
+is not synonymous with ASCII. A storage unit of type </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>
+can as well hold a character encoded in EBCDIC, which is another one-byte
+character encoding. Also, an ASCII character could be stored in a storage
+unit larger than a </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>,
+say an </font><font face="Courier,Courier New"><font size=-2>int</font></font><font size=-1>,
+but this would be wasteful and is rarely done in practice.</font>
+<p><font size=-1>As you can see, there is no 1:1 relationship between the
+character type that describes the storage units used for storing a character,
+and the character encoding used to represent the code contained in that
+storage unit. Instead, a character sequence of a given encoding is stored
+in an array of units that have the minimum size required to hold any character
+of the encoding. The types typically used for storage of characters are
+the built-in character types </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>wchar_t</font></font><font size=-1>;
+one-byte character encodings are stored as </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>,
+and wide character encodings are stored as </font><font face="Courier,Courier New"><font size=-2>wchar_t</font></font><font size=-1>.
+The table below shows examples of tiny and wide character encodings and
+the character type that is typically used for storing and processing them:</font>
+<br>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=5 WIDTH="282" BORDERCOLOR="#000000" >
+<tr>
+<td VALIGN=TOP WIDTH="44%">
+<center><b><font size=-1>character type</font></b></center>
+</td>
+
+<td VALIGN=TOP WIDTH="56%">
+<center><b><font size=-1>character encoding</font></b></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="44%">
+<center><font face="Courier New"><font size=-1>char</font></font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="56%">
+<center><font size=-1>ASCII</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="44%">
+<center><font face="Courier New"><font size=-1>char</font></font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="56%">
+<center><font size=-1>EBCDIC</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="44%">
+<center><font face="Courier New"><font size=-1>char</font></font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="56%">
+<center><font size=-1>ISO 8859-2</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="44%">
+<center><font face="Courier New"><font size=-1>wchar_t</font></font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="56%">
+<center><font size=-1>Unicode</font></center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="44%">
+<center><font face="Courier New"><font size=-1>wchar_t</font></font></center>
+</td>
+
+<td VALIGN=TOP WIDTH="56%">
+<center><font size=-1>ISO 10646</font></center>
+</td>
+</tr>
+</table>
+
+<p><b><font face="Arial"><font size=-1>Requirements to Character Types</font></font></b>
+<p><font size=-1>Let us return to the character type parameter of strings,
+iostreams, and facets. Potential candidates for the character type are,
+of course, the built-in types </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>wchar_t</font></font><font size=-1>.
+User-defined types are allowed, too. The Japanese delegation on the ISO
+committee standardizing C++ brought up the notion of </font><font face="Courier,Courier New"><font size=-2>Jchar</font></font><font size=-1>,
+a character type that encapsulates information specific to processing of
+Japanese character representations. </font><font face="Courier,Courier New"><font size=-2>Jchar</font></font><font size=-1>
+would be a user-defined type that can be used for instantiation of class
+templates like</font><font face="Courier,Courier New"><font size=-2> basic_string,
+basic_fstream, ctype</font></font><font size=-1>, etc. Naturally, not just
+any type can serve as a character type. User-defined character types must
+meet the following requirements:</font>
+<ul>
+<li>
+<font size=-1>A character type must be a POD type (=plain old data structure).</font></li>
+
+<li>
+<font size=-1>Construction of a character from the numeric value </font><font face="Courier,Courier New"><font size=-2>0</font></font><font size=-1>
+must yield an end-of-string character.</font></li>
+</ul>
+<font size=-1>PODs are C-style </font><font face="Courier,Courier New"><font size=-2>struct</font></font><font size=-1>s,
+i.e. classes without base classes, virtual member functions, etc. They
+do not require explicit construction or destruction and allow bit-wise
+copy and assignment.</font>
+<p><font size=-1>For certain purposes (details below) the character type
+must provide additional functionality:</font>
+<ul>
+<li>
+<font size=-1>An </font><font face="Courier,Courier New"><font size=-2>operator==()</font></font><font size=-1>
+to compare elements.</font></li>
+</ul>
+<font size=-1>If a character type meets the first set of requirements,
+i.e. the "weak" requirements, then it can be used for instantiation of
+the string template classes. The second requirement, i.e. the "strong"
+one, is needed for instantiation of facet and iostreams template classes.</font>
+<p><b><i><font face="Arial">Character Traits Types</font></i></b>
+<p><font size=-1>A character traits type provides information associated
+to a character type. In order to be used for instantiation of string or
+iostreams class templates a traits type has to provide a set of member
+typedefs and functions, some of which are predominantly used by strings,
+other being mostly used by iostreams.</font>
+<p><b><font face="Arial"><font size=-1>Requirements to Character Traits
+Types</font></font></b>
+<p><font size=-1>Below we give an overview of the member typedefs and functions
+required of a character traits type, grouped by topics.</font>
+<p><b><font size=-1>Copying, Finding, and Comparing Characters</font></b>
+<p><font size=-1>The character traits are required to provide a number
+of member functions for typical operations on characters and character
+sequences. These are:</font>
+<br>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=5 WIDTH="691" BORDERCOLOR="#000000" >
+<tr>
+<td VALIGN=TOP WIDTH="47%"><font face="Courier,Courier New"><font size=-2>assign(),
+move(), copy()&nbsp;</font></font></td>
+
+<td VALIGN=TOP WIDTH="53%"><font size=-1>assigning and copying of characters</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="47%"><font face="Courier,Courier New"><font size=-2>find()&nbsp;</font></font></td>
+
+<td VALIGN=TOP WIDTH="53%"><font size=-1>finding a character in a character
+sequence</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="47%"><font face="Courier,Courier New"><font size=-2>eq()</font></font></td>
+
+<td VALIGN=TOP WIDTH="53%"><font size=-1>equality of characters</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="47%"><font face="Courier,Courier New"><font size=-2>lt(),
+compare()&nbsp;</font></font></td>
+
+<td VALIGN=TOP WIDTH="53%"><font size=-1>comparison of characters and character
+sequences&nbsp;</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="47%"><font face="Courier,Courier New"><font size=-2>length()</font></font></td>
+
+<td VALIGN=TOP WIDTH="53%"><font size=-1>length of a character sequence</font></td>
+</tr>
+</table>
+
+<p><font size=-1>They are mostly used by the string classes in standard
+library.</font>
+<p><a NAME="_Ref377641637"></a><b><font size=-1>Handling the end-of-file
+Character</font></b>
+<p><font size=-1>The character traits are required to provide types and
+functions for handing the end-of-file-value of a character type. This information
+is used by the iostreams classes in the standard library. Here is an overview:</font>
+<br>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=5 WIDTH="691" BORDERCOLOR="#000000" >
+<tr>
+<td VALIGN=TOP WIDTH="47%"><font face="Courier,Courier New"><font size=-2>int_type,
+eof()</font></font></td>
+
+<td VALIGN=TOP WIDTH="53%"><font size=-1>type and value of the end-of-file
+value</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="47%"><font face="Courier,Courier New"><font size=-2>char_type&nbsp;</font></font></td>
+
+<td VALIGN=TOP WIDTH="53%"><font size=-1>the character type itself</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="47%"><font face="Courier,Courier New"><font size=-2>eq(),
+eq_int_type()</font></font></td>
+
+<td VALIGN=TOP WIDTH="53%"><font size=-1>equality of characters and </font><font face="Courier,Courier New"><font size=-2>int_type</font></font><font size=-1>
+values</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="47%"><font face="Courier,Courier New"><font size=-2>to_int_type(),
+to_char_type()&nbsp;</font></font></td>
+
+<td VALIGN=TOP WIDTH="53%"><font size=-1>conversions between character
+and </font><font face="Courier,Courier New"><font size=-2>int_type</font></font><font size=-1>
+values&nbsp;</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="47%"><font face="Courier,Courier New"><font size=-2>not_eof()</font></font></td>
+
+<td VALIGN=TOP WIDTH="53%"><font size=-1>returns a value different from
+the end-of-file value</font></td>
+</tr>
+</table>
+
+<p><font size=-1>The end-of-file character is a special character that
+is different from all other character values. Historically, the end-of-file
+value was </font><font face="Courier,Courier New"><font size=-2>EOF</font></font><font size=-1>,
+which is a constant of type </font><font face="Courier,Courier New"><font size=-2>int,</font></font><font size=-1>
+that is different from all character values of type </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>.
+In the standard iostreams this principle was generalized. The end-of-file
+character of a character type is provided by the character traits in form
+of a static member function </font><font face="Courier,Courier New"><font size=-2>eof</font></font><font size=-1>().
+The end-of-file value's type is defined as a type nested in the character
+traits called </font><font face="Courier,Courier New"><font size=-2>int_type.</font></font><font size=-1>
+Note, that it usually is different from the character type itself, which
+is defined as</font><font face="Courier,Courier New"><font size=-2> char_type.</font></font>
+<p><font size=-1>Two values of type </font><font face="Courier,Courier New"><font size=-2>char_type</font></font><font size=-1>
+or</font><font face="Courier,Courier New"><font size=-2> int_type</font></font><font size=-1>
+cannot simply be compared by means of the built-in equality operator, because
+</font><font face="Courier,Courier New"><font size=-2>char_type</font></font><font size=-1>
+and</font><font face="Courier,Courier New"><font size=-2> int_type</font></font><font size=-1>
+can be any arbitrary type. Instead they are compared via the </font><font face="Courier,Courier New"><font size=-2>eq_int_type()</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>eq</font></font><font size=-1>()
+member functions. The traits also have to provide functions for conversion
+between values of </font><font face="Courier,Courier New"><font size=-2>char_type</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>int_type</font></font><font size=-1>
+and a convenience function for certain stream operations that returns an
+</font><font face="Courier,Courier New"><font size=-2>int_type</font></font><font size=-1>
+value that is guaranteed to be different from the end-of-file value.</font>
+<p><a NAME="_Ref397485962"></a><b><font size=-1>Conversion State and Stream
+Positions</font></b>
+<p><font size=-1>A character traits type has to provide typedefs related
+to character code conversions and stream positioning. These are:</font>
+<br>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=5 WIDTH="691" BORDERCOLOR="#000000" >
+<tr>
+<td VALIGN=TOP WIDTH="40%"><font face="Courier,Courier New"><font size=-2>state_type</font></font></td>
+
+<td VALIGN=TOP WIDTH="60%"><font size=-1>type of the conversion state maintained
+by a stream buffer</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="40%"><font face="Courier,Courier New"><font size=-2>pos_type</font></font></td>
+
+<td VALIGN=TOP WIDTH="60%"><font size=-1>type of an absolute stream position</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="40%"><font face="Courier,Courier New"><font size=-2>off_type</font></font></td>
+
+<td VALIGN=TOP WIDTH="60%"><font size=-1>type of an offset to a specified
+stream position</font></td>
+</tr>
+</table>
+
+<p><font size=-1>A discussion of character code conversions and stream
+positioning is beyond the scope of this article.</font>
+<br>&nbsp;
+<br>&nbsp;
+<p><b><font face="Arial"><font size=-1>The Predefined Character Traits</font></font></b>
+<p><font size=-1>The standard library provides two predefined traits types
+for the built-in character types </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>wchar_t</font></font><font size=-1>.
+These two types are specialization of a class template called </font><font face="Courier,Courier New"><font size=-2>char_traits&lt;class
+charT>.</font></font><font size=-1> Here are the declarations of these
+predefined traits types as they appear in the header file </font><font face="Courier,Courier New"><font size=-2>&lt;string>:</font></font>
+<dir><font face="Courier,Courier New"><font size=-2>template&lt;class charT>
+struct char_traits;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>template&lt;> struct
+char_traits&lt;char>;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>template&lt;> struct
+char_traits&lt;wchar_t>;</font></font></dir>
+<font size=-1>The traits types </font><font face="Courier,Courier New"><font size=-2>char_traits&lt;char></font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>char_traits&lt;wchar_t>
+</font></font><font size=-1>are
+the default traits types associated to the built-in character types </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>wchar_t.</font></font><font size=-1>
+If you never specify character traits, the standard library classes will
+use these defaults.</font>
+<p><font size=-1>Interestingly, the </font><font face="Courier,Courier New"><font size=-2>char_traits&lt;class
+charT></font></font><font size=-1> template itself is an empty class template.
+It sole purpose is to serve as a primary template for specializations.
+It is not supposed to be instantiated for any character types. A traits
+type for a user-defined character type would be a specialization, not an
+instantiation of the </font><font face="Courier,Courier New"><font size=-2>char_traits</font></font><font size=-1>
+template. The empty character traits class template is used as a default
+template argument for the class templates requiring a traits type argument.
+Let's take a look at some typical examples:</font>
+<dir><font face="Courier,Courier New"><font size=-2>template&lt;class charT,
+class traits = char_traits&lt;charT>, class Allocator = allocator&lt;charT>
+></font></font>
+<br><font face="Courier,Courier New"><font size=-2>class basic_string;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>template &lt;class charT,
+class traits = char_traits&lt;charT> ></font></font>
+<br><font face="Courier,Courier New"><font size=-2>class basic_fstream;</font></font></dir>
+<font size=-1>The traits type parameter of string and iostreams classes
+has a default value. This is for the convenience of users of these classes
+so that they need not specify the traits type argument. The default value
+for the traits type naturally depends on the character type: it is a specialization
+of the predefined character traits class template </font><font face="Courier,Courier New"><font size=-2>char_traits</font></font><font size=-1>.
+This way the predefined specializations for </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>wchar_t</font></font><font size=-1>
+are used as defaults, and even for user-defined types there is a natural
+default value:</font>
+<p><font size=-1>Imagine you would define a new character type </font><font face="Courier,Courier New"><font size=-2>myChar</font></font><font size=-1>.
+Then you would have to provide an associated traits type. If you defined
+it as a specialization of the </font><font face="Courier,Courier New"><font size=-2>char_traits</font></font><font size=-1>
+template, i.e. as </font><font face="Courier,Courier New"><font size=-2>char_traits&lt;myChar></font></font><font size=-1>,
+then the default would apply and a </font><font face="Courier,Courier New"><font size=-2>myChar</font></font><font size=-1>-string
+would be of type </font><font face="Courier,Courier New"><font size=-2>basic_string&lt;myChar></font></font><font size=-1>.
+Alternatively you could give the traits type a name of its own, say </font><font face="Courier,Courier New"><font size=-2>myCharTraits</font></font><font size=-1>.
+In that case the traits type argument could not be omitted, i.e. you would
+have to say </font><font face="Courier,Courier New"><font size=-2>basic_string&lt;myChar,myCharTraits></font></font><font size=-1>
+instead of just </font><font face="Courier,Courier New"><font size=-2>basic_string&lt;myChar></font></font><font size=-1>.
+For this reason it is recommendable to define the traits type associated
+to a character type as a specialization of the </font><font face="Courier,Courier New"><font size=-2>char_traits</font></font><font size=-1>
+template. There is only one situation when you would want to define traits
+types that are not specializations of the </font><font face="Courier,Courier New"><font size=-2>char_traits</font></font><font size=-1>
+template: when you define more than one traits type for the same character
+type.</font>
+<p><b><i><font face="Arial">Usage of Character Types and Traits Types</font></i></b>
+<p><font size=-1>We mentioned earlier that strings and iostreams rely on
+different parts of the character traits and that facets do not rely on
+the character traits at all, but make additional requirements to the character
+type. To aid understanding of these differences, let us get a rough impression
+of the way the character traits are used in the implementation of strings,
+iostreams, and facets.</font>
+<p><b><font face="Arial"><font size=-1>Strings</font></font></b>
+<p><font size=-1>The implementation of the </font><font face="Courier,Courier New"><font size=-2>basic_string</font></font><font size=-1>
+class template uses the traits member typedefs and functions, whenever
+it manipulates characters and character sequences. For instance, </font><font face="Courier,Courier New"><font size=-2>traits::eq()</font></font><font size=-1>
+is used for comparison in string functions such as </font><font face="Courier,Courier New"><font size=-2>find()</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>rfind()</font></font><font size=-1>;</font><font face="Courier,Courier New"><font size=-2>
+traits::compare()</font></font><font size=-1> is used for implementaion
+of string </font><font face="Courier,Courier New"><font size=-2>compare()</font></font><font size=-1>
+functions, and so on. Here is a simplified example, that shows use of </font><font face="Courier,Courier New"><font size=-2>traits::copy()</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>traits::assign()</font></font><font size=-1>
+in one of the </font><font face="Courier,Courier New"><font size=-2>append()</font></font><font size=-1>
+member functions of </font><font face="Courier,Courier New"><font size=-2>basic_string</font></font><font size=-1>:</font>
+<dir><font face="Courier,Courier New"><font size=-2>template&lt;class charT,
+class traits, class allocator></font></font>
+<br><font face="Courier,Courier New"><font size=-2>class basic_string {</font></font>
+<br><font face="Courier,Courier New"><font size=-2>public:</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;typedef typename
+allocator::size_type size_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>private:</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;charT *_ptr;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;size_type _len;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>public:</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;basic_string&amp;
+append(const charT *s, size_type m)</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;{.....</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp; size_type n;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp; if (0 &lt; m
+&amp;&amp; _extend(n = _len + m))</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;&nbsp; {traits::copy(_ptr
++ _len, s, m);</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;&nbsp;&nbsp; traits::assign(_ptr[_len
+= n], charT(0));</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;&nbsp; }</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp; return (*this);</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;}</font></font>
+<br><font face="Courier,Courier New"><font size=-2>};</font></font></dir>
+<font size=-1>You can see that the </font><font face="Courier,Courier New"><font size=-2>basic_string</font></font><font size=-1>
+template is entirely independent of the actual character type and its specific
+properties: The character sequence that is to be added to the string's
+end is copied using </font><font face="Courier,Courier New"><font size=-2>traits::copy()</font></font><font size=-1>,
+and the end-of-string character </font><font face="Courier,Courier New"><font size=-2>charT(0)</font></font><font size=-1>
+is added by means of </font><font face="Courier,Courier New"><font size=-2>traits::assign().</font></font><font size=-1>
+No assumptions are made about the character type itself or the way objects
+of that type are copied and assigned. One assumption that <i>is</i> made
+is that the end-of-string character can be obtained by constructing a character
+object from the numeric value</font><font face="Courier,Courier New"><font size=-2>
+0</font></font><font size=-1>. This is one of the requirements to the character
+type.</font>
+<p><b><font face="Arial"><font size=-1>IOStreams</font></font></b>
+<p><font size=-1>Iostreams classes rely on the character traits, too. They
+use the traits member typedefs and functions that have to do with the end-of-file
+value. Below is a typical example. Numerous member functions of stream
+and stream buffer classes return the end-of-file value in case of failure
+and a valid character in case of success. The </font><font face="Courier,Courier New"><font size=-2>get()</font></font><font size=-1>
+functions for unformatted input of characters show the principle:</font>
+<dir><font face="Courier,Courier New"><font size=-2>template&lt;class charT,
+class traits></font></font>
+<br><font face="Courier,Courier New"><font size=-2>class basic_istream
+: virtual public basic_ios&lt;charT, traits> {</font></font>
+<br><font face="Courier,Courier New"><font size=-2>public:</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;typedef typename
+traits::int_type int_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;int_type get()</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;{int_type c;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp; ...</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp; if (!_Ok) c =
+traits::eof();</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp; else {... c =
+rdbuf()->sbumpc(); ... }</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp; return (c);</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;}</font></font>
+<br><font face="Courier,Courier New"><font size=-2>basic_istream&lt;charT,
+traits>&amp; get(charT&amp; x)</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;{int_type c =
+get();</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp; if (!traits::eq_int_type(traits::eof(),
+c))</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;&nbsp;&nbsp; x
+= traits::to_char_type(c);</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp; return (*this);</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;}</font></font>
+<br><font face="Courier,Courier New"><font size=-2>};</font></font></dir>
+<font size=-1>You can see that the first </font><font face="Courier,Courier New"><font size=-2>get()</font></font><font size=-1>
+function has to return a value of type</font><font face="Courier,Courier New"><font size=-2>
+traits::int_type</font></font><font size=-1>, because the return value
+is either the end-of-file value, which is of type </font><font face="Courier,Courier New"><font size=-2>traits::int_type</font></font><font size=-1>,
+or a character of type </font><font face="Courier,Courier New"><font size=-2>charT</font></font><font size=-1>.
+The second </font><font face="Courier,Courier New"><font size=-2>get()</font></font><font size=-1>
+function demonstrates the need for conversions between both types and for
+comparison of values of those types.</font>
+<p><font size=-1>Iostreams classes additionally use the traits members
+that relate to stream positioning and code conversion.</font>
+<p><font size=-1>Note, that the standard does not guarantee that iostreams
+classes restrict themselves to the traits member typedefs and functions
+related to the end-of-file value and stream positioning and code conversion.
+They are allowed to also make use of member functions like </font><font face="Courier,Courier New"><font size=-2>compare(),
+assign(),</font></font><font size=-1> etc. Similarly, strings could theoretically
+use </font><font face="Courier,Courier New"><font size=-2>eof(), not_eof(),
+pos_type, off_type</font></font><font size=-1>, etc., although this is
+unlikely in practice. The principle is that strings and iostreams are permitted
+to rely on the full set of properties that are required of character types
+and their traits.</font>
+<p><b><font face="Arial"><font size=-1>Facets</font></font></b>
+<p><font size=-1>The facet class templates do not have a traits parameter.
+This is because many of the facets really do not manipulate characters.
+Think of the </font><font face="Courier,Courier New"><font size=-2>ctype</font></font><font size=-1>
+facet for instance: It classifies characters according to their properties,
+i.e. whether they are digits, white spaces, printable, lower case, upper
+case letters, etc. There is no need for ever really touching a character
+object, copying it, or comparing it.</font>
+<p><font size=-1>This is different for the parsing and formatting facets
+like </font><font face="Courier,Courier New"><font size=-2>num_get, num_put,
+money_get, money_put, time_get, </font></font><font size=-1>and</font><font face="Courier,Courier New"><font size=-2>
+time_put</font></font><font size=-1>. They have to compare characters.
+Just think of parsing of numeric values: the</font><font face="Courier,Courier New"><font size=-2>
+num_get</font></font><font size=-1> facet has to recognize that an input
+character is the radix character or the thousands separator. It will therefore
+compare an input character to the respective symbols defined in the </font><font face="Courier,Courier New"><font size=-2>numpunct</font></font><font size=-1>
+facet. Comparison is defined by the character traits in form of the </font><font face="Courier,Courier New"><font size=-2>eq()</font></font><font size=-1>
+function, but the facets do not know anything about the associated traits
+type. Instead of using </font><font face="Courier,Courier New"><font size=-2>traits::eq()</font></font><font size=-1>,
+they perform the comparison of two characters by means of </font><font face="Courier,Courier New"><font size=-2>operator==().</font></font><font size=-1>
+Here is a code snippet that could be part of the </font><font face="Courier,Courier New"><font size=-2>num_get</font></font><font size=-1>
+facet's </font><font face="Courier,Courier New"><font size=-2>do_get()</font></font><font size=-1>
+function:</font>
+<dir><font face="Courier,Courier New"><font size=-2>template &lt;class
+charT, class InputIterator = istreambuf_iterator&lt;charT> ></font></font>
+<br><font face="Courier,Courier New"><font size=-2>class num_get : public
+locale::facet {</font></font>
+<br><font face="Courier,Courier New"><font size=-2>protected:</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;virtual iter_type</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;do_get(iter_type
+beg, iter_type end, ios_base&amp; iob,ios_base::iostate&amp; err, long&amp;
+v) const</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;{...</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp; char_type ct
+= *in ;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp; char c;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp; if ( ct == use_facet&lt;numpunct&lt;charT>
+>(iob.getloc()).decimal_point() )</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;&nbsp;&nbsp; c
+= ’.’;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;&nbsp;&nbsp; bool
+discard =</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;
+( ct == use_facet&lt;numpunct&lt;charT> >(iob.getloc()).thousands_sep()</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&amp;&amp;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+use_facet&lt;numpunct&lt;charT> >(iob.getloc()).grouping().length() !=
+0 );</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+...</font></font>
+<br><font face="Courier,Courier New"><font size=-2>&nbsp;}</font></font>
+<br><font face="Courier,Courier New"><font size=-2>};</font></font></dir>
+<font size=-1>As you can see, the comparison of a character of type </font><font face="Courier,Courier New"><font size=-2>charT</font></font><font size=-1>
+is performed using an </font><font face="Courier,Courier New"><font size=-2>operator==()</font></font><font size=-1>
+for that character type. This explains, why facets impose additional requirements
+on the character type.</font>
+<p><font size=-1>An interesting side effect is that iostreams classes generally
+use the </font><font face="Courier,Courier New"><font size=-2>traits::eq()</font></font><font size=-1>
+function for comparison of characters, but for parsing and formatting of
+numeric values they use </font><font face="Courier,Courier New"><font size=-2>operator==().</font></font><font size=-1>
+This is because parsing and formatting of numeric values is delegated to
+the stream's locale's numeric facets, and we've seen above that facets
+do not use character traits. It follows that one should better implement
+an </font><font face="Courier,Courier New"><font size=-2>operator==()</font></font><font size=-1>
+for a user-defined character type that has the same semantics as the character
+type's </font><font face="Courier,Courier New"><font size=-2>traits::eq()</font></font><font size=-1>
+function. One problem remains: You can only have one </font><font face="Courier,Courier New"><font size=-2>operator==()</font></font><font size=-1>
+for a given character type, but several character traits types associated
+to that character type. What if the traits types have different </font><font face="Courier,Courier New"><font size=-2>eq()</font></font><font size=-1>
+functions? Iostreams might yield "interesting" results under these circumstances.
+However, this problem is unlikely to occur in practice.</font>
+<p><font size=-1>Consider also, that iostreams classes do not only rely
+on certain properties of the character type and the character traits type,
+but additionally require facets for that character type. Iostreams needs
+the numeric facets, as we've mentioned above. It also needs conversions
+between the character type and the built-in type </font><font face="Courier,Courier New"><font size=-2>char</font></font><font size=-1>,
+which have to be defined in the </font><font face="Courier,Courier New"><font size=-2>ctype</font></font><font size=-1>
+facet in form of the member functions </font><font face="Courier,Courier New"><font size=-2>narrow()</font></font><font size=-1>
+and </font><font face="Courier,Courier New"><font size=-2>widen()</font></font><font size=-1>.
+It also needs character classification functions from the </font><font face="Courier,Courier New"><font size=-2>ctype</font></font><font size=-1>
+facet in order to identify white-space characters. A code conversion facet
+is needed for file streams. In turns out that you have to provide <i>all</i>
+standard facets for a new character type, because facets are generally
+allowed to be interdependent.</font>
+<p><b><i><font face="Arial">Summary</font></i></b>
+<p><font size=-1>Character types play a significant role in the standard
+library as template arguments to strings, iostreams, and facets. Character
+types have to meet certain requirements and must be accompanied by an associated
+character traits type and by the standard facets for that character type.</font>
+<p><b><font size=-1>Acknowledgements</font></b>
+<p><font size=-1>We thank Nathan Myers, Bill Plauger, and Jerry Schwarz
+for their willingness to answer our questions and help interpreting the
+draft standard, and Kevlin Henney for his thorough review.</font>
+<p><b><font size=-1>References</font></b>
+<br>&nbsp;
+<table BORDER=0 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td>/1/&nbsp;</td>
+
+<td><font size=-1>Klaus Kreft &amp; Angelika Langer&nbsp;</font>
+<br><font size=-1>Iterators in the Standard C++ Library ,&nbsp;</font>
+<br><font size=-1>C++ Report, September 1996</font>
+<br><font size=-1>URL: &lt;<a href="../IteratorsInStdlib/IteratorsInStdlib.html">http://www.langer.camelot.de/Articles/IteratorsInStdlib/IteratorsInStdlib.html</a>></font></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>/2/</td>
+
+<td><font size=-1>Klaus Kreft &amp; Angelika Langer</font>
+<br><font size=-1>New Features in Standard IOStreams</font>
+<br><font size=-1>C++ Report, June 1997</font>
+<br><font size=-1>URL: &lt;<a href="../NewIOStreams/NewIOStreams.html">http://www.langer.camelot.de/Articles/C++Report/NewIOStreams/NewIOStreams.html</a>></font></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>/3/</td>
+
+<td><font size=-1>Klaus Kreft &amp; Angelika Langer</font>
+<br><font size=-1>The Locale Framework</font>
+<br><font size=-1>C++ Report, September 1997</font>
+<br><font size=-1>URL: &lt;<a href="../LocaleFramework/LocaleFramework.html">http://www.langer.camelot.de/Articles/C++Report/LocaleFramework/LocaleFramework.html</a>></font></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>/4/</td>
+
+<td><font size=-1>Klaus Kreft &amp; Angelika Langer</font>
+<br><font size=-1>The Standard Facets</font>
+<br><font size=-1>C++ Report, November 1997</font>
+<br><font size=-1>URL: &lt;<a href="../StandardFacets/StandardFacets.html">http://www.langer.camelot.de/Articles/C++Report/StandardFacets/StandardFacets.html</a>></font></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>/5/</td>
+
+<td><font size=-1>Klaus Kreft &amp; Angelika Langer</font>
+<br><font size=-1>Extending the Locale Framework - User-Defined Facets</font>
+<br><font size=-1>C++ Report, February 1998</font>
+<br><font size=-1>URL: &lt;<a href="../UserDefinedFacets/UserDefinedFacets.html">http://www.langer.camelot.de/Articles/C++Report/UserDefinedFacets/UserDefinedFacets.html</a>></font></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>/6/</td>
+
+<td><font size=-1>Working Paper for Draft Proposed International Standard
+for Information Systems&nbsp;</font>
+<br><font size=-1>Programming Language C++</font>
+<br><font size=-1>Doc No:X3J16/97-0079, WG21/N1117</font>
+<br><font size=-1>Date: 29 September 1997</font></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+</body>
+</html>

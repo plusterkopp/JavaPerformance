@@ -1,0 +1,390 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Pre-Copyedit Version of Article in JavaSpektrum, November 2002">
+   <meta name="KeyWords" content="Java clone copy Effective Java">
+   <title>Implementing the clone() Method  - Part 3</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="EffectiveJava06"></a>
+<br><font color="#295AB5"><font size=+3>Das Kopieren von Objekten in Java</font></font>
+<br><font color="#295AB5"><font size=+2>Teil 3: Die CloneNotSupportedException
+- Sollte die clone()-Methode eine CloneNotSupportedException werfen?</font></font>
+<p><font color="#295AB5"><font size=+2>JavaSPEKTRUM, Januar 2003</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p><b>In dieser Ausgabe unserer Kolumne wollen wir uns ansehen, ob eine
+clone()-Methode eine CloneNotSupportedException werfen sollte. Wir haben
+uns in den vorangegangenen zwei Artikeln (siehe /<a href="#Kreft1">KRE1</a>/)
+bereits ausf&uuml;hrlich mit clone() besch&auml;ftigt und dabei vorgeschlagen,
+dass clone() grunds&auml;tzlich keine CloneNotSupportedException&nbsp;
+werfen sollte.&nbsp; Dieses Thema wird aber in der Java-Community durchaus
+kontrovers diskutiert und wir wollen uns aus diesem Grunde den JDK genauer
+ansehen, um zu sehen, woher diese kontroverse Diskussion eigentlich stammt.</b>
+<br>&nbsp;
+<h2>
+<b>Die Idee von Cloneable, clone() und der CloneNotSupportedException</b></h2>
+Ein Klasse, die die clone()-Methode implementieren will, muss normalerweise
+das Cloneable-Interface implementieren. Das Cloneable-Interface ist ein
+leeres Marker-Interface, das dazu verwendet wird, um klonbare von nicht-klonbaren
+Objekten zu unterscheiden.&nbsp; Da das Cloneable-Interface leer ist, gibt
+es keine zwingende Vorschrift, was die Signatur der clone()-Methode einer
+Klasse angeht.&nbsp; Aus diesem Grunde verwenden manche Programmierer f&uuml;r
+die clone()-Methoden ihrer eigenen Klassen die Signatur von Object.clone(),
+n&auml;mlich
+<p><tt>Object clone() throws CloneNotSupportedException;</tt>
+<p>Nun ist es ein offensichtlicher Widerspruch, in einer Klasse eine public-Methode
+clone() zu implementieren, gerade mit dem Ziel, das Klonen zu unterst&uuml;tzen,
+und dann gleichzeitig zu sagen: diese Klasse unterst&uuml;tzt das Klonen
+eigentlich gar nicht und wird unter Umst&auml;nden eine CloneNotSupportedException
+werfen. Das ist unlogisch und aus diesem Grunde haben wir empfohlen, die
+clone()-Methode immer als Methode zu deklarieren, die keine CloneNotSupportedException
+wirft.
+<p>Das ist auch im JDK g&auml;ngige Praxis.&nbsp; Fast alle Klassen des
+JDK, die das Cloneable-Interface implementieren, haben eine clone()-Methode,
+die keine CloneNotSupportedException wirft. Die Verwirrung r&uuml;hrt im
+wesentlichen von der JavaDoc-Beschreibung der Methode Object.clone() her.&nbsp;
+Hier ein Auszug aus der Original-Beschreibung:
+<blockquote><font face="Arial,Helvetica"><font size=-1>Throws:</font></font>
+<blockquote><font size=-1><font face="Verdana">CloneNotSupportedException</font><font face="Arial,Helvetica">
+- if the object's class does not support the Cloneable interface. Subclasses
+that override the clone method can also throw this exception to indicate
+that an instance cannot be cloned.</font></font>
+<br><font size=-1><font face="Verdana">OutOfMemoryError</font><font face="Arial,Helvetica">
+- if there is not enough memory.</font></font></blockquote>
+</blockquote>
+Manche Java-Programmierer haben das so verstanden, dass alle clone()-Methoden
+die CloneNotSupportedException in ihrer throws-Klausel deklarieren sollten,
+damit Subklassen die M&ouml;glichkeit haben, diese Exception zu werfen.&nbsp;
+Schlie&szlig;lich kann man ja als Autor einer Superklasse nicht wissen,
+ob Subklassen sp&auml;ter &uuml;berhaupt die clone()-Methode implementieren
+k&ouml;nnen oder wollen.
+<p>Diese Argumentation ist insoweit richtig, als die Deklaration von clone()
+ohne throws-Klausel in einer non-final Klasse tats&auml;chlich bedeutet,
+dass eine Subklasse nicht die Freiheit hat, in ihrer Implementierung von
+clone() irgendwelche checked Exceptions zu werfen.&nbsp; Diese Einschr&auml;nkung
+ist aber eigentlich auch in Ordnung.&nbsp; Bei einem sauberen objekt-orientierten
+Design repr&auml;sentiert die Ableitungsbeziehung zwischen Super- und Subklasse
+eine sogenannte "is-a"-Beziehung, d.h. ein Objekt der Subklasse ist vom
+Typ her kompatibel zu einem Superklassenobjekt und kann &uuml;berall dort
+verwendet werden, wo ein Objekt der Superklasse verlangt wird. Dieses Prinzip
+ist als Liskov Substitution Principle (LSP) bekannt (siehe u.a. /<a href="#Liskov">LIS</a>/).
+<p>Das bedeutet insbesondere, dass die Subklasse s&auml;mtliche Operationen
+unterst&uuml;tzen muss, die die Superklasse&nbsp; unterst&uuml;tzt.&nbsp;
+Nun kann das Werfen einer CloneNotSupportedException in der clone()-Methode
+kaum als "Unterst&uuml;tzen der clone()-Operation" bezeichnet werden; es
+ist vielmehr das Gegenteil. Unter solchen Umst&auml;nden entst&uuml;nde
+eine Klasse, die cloneable w&auml;re (da sie das Cloneable-Interface von
+der Superklasse erbt) und eine clone()-Methode h&auml;tte, aber dann beim
+Aufruf eine CloneNotSupportedException werfen w&uuml;rde. Das ist gegen
+jede Intuition und etwa so unlogisch wie eine Klasse, die cloneable ist,
+aber keine clone()-Methode hat.
+<p>Nun kann es aber vorkommen, dass die Subklasse tats&auml;chlich keinen
+Klon erzeugen kann. Das kann zum Beispiel passieren, wenn kein Speicher
+mehr vorhanden ist. Was macht man mit solchen oder anderen Fehlersituationen?
+Das wirft ganz allgemein die Frage auf: wie kann das Scheitern einer clone()-Methode
+zum Ausdruck gebracht werden, wenn die clone()-Methode so deklariert ist,
+dass sie keine Exception wirft? Nun, durch eine checked Exception geht
+es offensichtlich nicht. Das ist aber auch richtig so.&nbsp; Exceptions
+(sowohl checked als auch unchecked Exceptions) dr&uuml;cken in Java logische
+Fehler aus, die vorhersehbar und vermeidbar sind, im Gegensatz zu den Errors,
+die schwere Ausnahmezust&auml;nde beschreiben, die auf Fehler in der Laufzeitumgebung
+(Virtuelle Maschine, Garbage Collector, AWT) zur&uuml;ckgehen.
+<p>Wenn bereits von der Logik her klar ist, dass in bestimmten Situationen
+kein Klon erzeugt werden kann, dann sollte die Klasse schon von vornherein
+das Cloneable-Interface gar nicht implementieren und auch keine clone()-Methode
+haben. Schlie&szlig;lich ist das Cloneable-Interface f&uuml;r jeden Benutzer
+der Klasse genau das Kennzeichen, an dem man erkennen kann, dass die Klasse
+cloneable ist, und dann sollte die Klasse auch nur dann cloneable sein,
+wenn sich die clone()-Methode sinnvoll implementieren l&auml;sst.
+<p>Unvorhersehbare Fehler k&ouml;nnen nat&uuml;rlich trotzdem auftreten.
+Das sind dann aber schwere Ausnahmefehler, die durch einen Error ausgedr&uuml;ckt
+werden,&nbsp; und keine "CloneNotSupported"-Situationen. Der Mangel an
+Speicherplatz ist ein Beispiel; in solchen F&auml;llen wird ein OutOfMemoryError
+ausgel&ouml;st. Andere Fehlersituationen sind eigentlich kaum vorstellbar,
+wenn sich alle Klassen an die Regel halten, dass sie keine CloneNotSupportedException
+werfen, wenn sie cloneable sind.&nbsp; Das wird klar, wenn man sich ansieht,
+was eine kanonische Implementierung von clone() tut: sie ruft die clone()-Methoden&nbsp;
+f&uuml;r alle&nbsp; Felder und die Superklasse auf.&nbsp; Die einzige clone()-Methode,
+die eine CloneNotSupportedException werfen k&ouml;nnte, ist Object.clone().
+Aber genau das kann nicht eintreten, weil die Klasse cloneable ist.
+<p><b>Fazit</b>:&nbsp; Die clone()-Methode von Klassen, die das Cloneable-Interface
+implementieren, sollte keine Exception werfen. Alle denkbaren Fehlersituationen
+sind so schwere Fehler, dass sie angemessen &uuml;ber einen Error ausgedr&uuml;ckt
+werden.
+<p>Sehen wir uns nach diesen Betrachtung jetzt einmal an, wie die Klassen
+aus dem JDK ihre clone()-Methoden implementieren.
+<br>&nbsp;
+<h2>
+Implementierungen von clone() im JDK</h2>
+Praktisch alle clone()-Methoden im JDK folgen der oben beschriebenen Regel.&nbsp;
+Es gibt allerdings einen h&auml;ufig auftretenden Fehler:&nbsp; viele clone()-Methoden
+sind in der JavaDoc so beschrieben, dass sie eine CloneNotSupportedException
+werfen. Wenn man dann die Implementierung dieser Methoden anschaut, stellt
+man fest: es stimmt gar nicht.&nbsp; Die Methoden haben korrekterweise
+keine throws-Klausel und werfen auch keine Exceptions.&nbsp; Da passen
+Implementierung und Dokumentation ganz offensichtlich nicht zusammen.
+<p>Das Ph&auml;nomen erkl&auml;rt sich dadurch, dass f&uuml;r diese Methoden
+keine JavaDoc-Kommentare geschrieben wurden.&nbsp; In solchen F&auml;llen
+benutzt das JavaDoc-Tool automatisch die Beschreibung der Methode der Superklasse.
+Die Beschreibung aus der Superklasse ist in all diesen F&auml;llen unpassend:
+es ist n&auml;mlich die Beschreibung von Object.clone(). Dieser offensichtliche
+Dokumentationsfehler sollte uns daran erinnern, dass man ihn f&uuml;r seine
+eigenen Klassen leicht vermeiden kann, indem man zu jeder Methode, die
+man implementiert, auch tats&auml;chlich JavaDoc-Kommentare schreibt.
+<p>Von diesem Dokumentationsfehler mal abgesehen, sind aber praktisch alle
+clone()-Methoden so implementiert, dass sie keine Exception, und damit
+insbesondere keine CloneNotSupportedException, werfen. Die meisten dieser
+Implementierungen rufen super.clone()auf, und damit letztendlich Object.clone(),
+und m&uuml;ssen irgendwie mit der CloneNotSupportedException fertig werden,
+die f&uuml;r Object.clone() deklariert ist, aber gar nicht auftreten kann,
+weil die Klasse das Cloneable-Interface implementiert. F&uuml;r den Umgang
+mit der CloneNotSupportedException, die gar nicht auftreten kann, findet
+man drei verschiedene Strategien im JDK: "v&ouml;llig unterdr&uuml;cken"
+oder&nbsp;&nbsp; "abbilden auf einen InternalError" oder "null zur&uuml;ckgeben".&nbsp;
+Sehen wir uns diese drei Strategien einmal anhand von Beispielen n&auml;her
+an.
+<br>&nbsp;
+<h3>
+CloneNotSupportedException unterdr&uuml;cken</h3>
+Ein Beispiel f&uuml;r diese Implementierungstechnik findet man zum Beispiel
+in java.util.Date:
+<p><tt>public Object clone() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date d = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+d = (Date)super.clone();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (d.cal != null) d.cal = (Calendar)d.cal.clone();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } catch (CloneNotSupportedException
+e) {} // Won't happen</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return d;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<p>Die Klasse Date ist direkt von Object abgeleitet und implementiert das
+Cloneable-Interface, deshalb kann von super.clone() keine CloneNotSupportedException
+kommen.&nbsp; Calendar.clone() ist so deklariert, dass es keine Exception
+wirft; hier kann also auch keine CloneNotSupportedException auftreten.&nbsp;
+Deshalb wird die&nbsp; CloneNotSupportedException abgefangen und unterdr&uuml;ckt.
+<br>&nbsp;
+<h3>
+CloneNotSupportedException abbilden auf einen InternalError</h3>
+Ein Beispiel f&uuml;r diese Implementierungstechnik findet man zum Beispiel
+in java.awt.geom.Point2D:
+<p><tt>public Object clone() {</tt>
+<br><tt>&nbsp;try {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return super.clone();</tt>
+<br><tt>&nbsp;} catch (CloneNotSupportedException e) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; // this shouldn't happen, since we are
+Cloneable</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; throw new InternalError();</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<p>Das ist im Prinzip die gleiche Situation wie oben bei Date. Hier hat
+der Autor aber entschieden, dass die CloneNotSupported Exception, nicht
+v&ouml;llig unterdr&uuml;ckt werden soll, sondern dass dies ein interner
+Fehler ist. Ist dieser InternalError gerechtfertigt? Irgendwie schon.&nbsp;
+Wenn von Object.clone() tats&auml;chlich eine CloneNotSupportedException
+kommt, was eigentlich nicht sein kann, dann liegt in der Tat in der Laufzeitumgebung
+ein schweres Problem vor: vielleicht eine inkonsistente oder fehlerhafte
+virtuelle Maschine oder eine andere kaum vorstellbare Fehlersituation.
+<br>&nbsp;
+<h3>
+CloneNotSupportedException abbilden auf die R&uuml;ckgabe einer null-Referenz</h3>
+Das ist eine eher exotische Variante, die wir in der Klasse java.text.Format
+gefunden haben:
+<p><tt>public Object clone() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Format other = (Format) super.clone();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return other;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } catch (CloneNotSupportedException
+e) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// will never happen</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<p>So geht es nat&uuml;rlich auch.&nbsp; Hier wird der Returnwert der Methode
+verwendet, um die Fehlersituation zum Ausdruck zu bringen. Das ist ein
+sch&ouml;nes Beispiel, welches die Grauzone zwischen Returncodes und Exceptions
+demonstriert.&nbsp; Unter Umst&auml;nden kann man dieselbe logische Information
+entweder &uuml;ber einen besonderen Fehler-Returncode oder &uuml;ber eine
+Exception ausdr&uuml;cken kann. Man h&auml;tte auch die Methode Object.clone()
+so spezifizieren k&ouml;nnen, dass sie ganz ohne Exception auskommt. Object.clone()
+hat zwei m&ouml;gliche Ergebnisse: die Referenz auf den erzeugten Klon,
+falls dieser erzeugt werden konnte, oder die Information, dass das Objekt
+nicht cloneable ist. Das letztere Ergebnis h&auml;tte sich in einer null-Referenz
+als R&uuml;ckgabewert ausdr&uuml;cken lassen. Das hat man allerdings anders
+gemacht; es wird statt dessen die CloneNotSupportedException geworfen.&nbsp;
+Und deshalb ist die oben gezeigte Variante einer clone()-Implementierung
+auch wernig empfehlenswert; eigentlich rechnet kein Benutzer mit einer
+null-Referenz als Ergebnis von clone().
+<p>Empfehlenswert sind die Varianten "Unterdr&uuml;cken" und" InternalError".&nbsp;
+Welche von beiden Techniken man vorzieht, ist Geschmacksache.&nbsp; Man
+kann nat&uuml;rlich auch einen anderen Error oder gar eine unchecked Exception
+werfen.&nbsp; Beides ist aber un&uuml;blich. Es hat sich eingeb&uuml;rgert,
+dass man einen InternalError wirft, wenn man die CloneNotSupportedException
+nicht unterdr&uuml;cken will.
+<br>&nbsp;
+<h2>
+Das leere Cloneable-Interface</h2>
+Die ganze Verwirrung um die CloneNotSupportedException h&auml;tte sich
+von vornherein vermeiden lassen, wenn das Cloneable-Interface klare Vorgaben
+machen w&uuml;rde.&nbsp; Die Tatsache, dass Cloneable ein leeres Interface
+ist, hat allerlei Nachteile.
+<p>Wir haben schon im vorletzten Artikel gesehen, dass das leere Cloneable-Interface
+zum Beispiel beim Kopieren von generischen Collections Schwierigkeiten
+bereitet; es bleibt einem nichts anderes &uuml;brig, als die&nbsp; clone()-Methode
+per Reflection aufzurufen, weil der Cast auf Cloneable keinen Zugriff auf
+die clone()-Methode gibt.&nbsp; Au&szlig;erdem kann es Klassen geben, die
+das Cloneable-Interface implementieren, aber keine clone()-Methode haben,
+was v&ouml;llig widersinnig ist, aber nicht verhindert werden kann. Und
+im Zusammenhang mit der CloneNotSupportedException w&auml;re es auch w&uuml;nschenswert,
+dass das Cloneable-Interface sinnvolle Vorgaben &uuml;ber eine throws-Klausel
+f&uuml;r die clone()-Methode machte.
+<p>Besteht die Aussicht, dass das Cloneable-Interface vielleicht in Zukunft
+korrigiert wird?&nbsp; Wohl kaum.&nbsp; Egal wie man die clone()-Methode
+eines Cloneable-Interfaces definiert, die Korrektur w&uuml;rde existierenden
+Code brechen. Da es nie Vorgaben f&uuml;r die Signatur von clone() gegeben
+hat, existieren clone()-Methoden mit und ohne throws-Klausel. (Es gibt
+sogar clone()-Methoden mit throws(CloneNotSupportedException)-Klausel im
+JDK.&nbsp; Ein Beispiel ist die Klasse java.awt.datatransfer.DataFlavor.)
+<p>Ganz egal, wie man sich bei der Korrektur von Cloneable entscheidet,
+ein Teil des heute existierenden Java-Codes w&uuml;rde un&uuml;bersetzbar
+werden.&nbsp; Wenn man das Cloneable-Interface mit einer clone()-Methode
+ohne throws-Klausel definiert, dann werden all die Klassen unbrauchbar,
+die eine clone()-Methode mit "throws CloneNotSupportedException "-Klausel
+haben. Wenn man umgekehrt das Cloneable-Interface mit einer clone()-Methode
+mit "throws CloneNotSupportedException"-Klausel definiert, dann blieben
+zwar alle cloneable Klassen g&uuml;ltig, aber die Benutzer dieser Klassen
+haben ein Problem: sie m&uuml;ssen pl&ouml;tzlich die CloneNotSupportedException
+behandeln, wenn sie nach eine Cast auf Cloneable die clone()-Methode aufrufen.
+Wie auch immer man das anstellt, die &Auml;nderung des heutigen leeren
+Cloneable-Interfaces w&uuml;rde in jedem Fall existierenden Code brechen.
+Solche Br&uuml;che hat Sun bislang vermieden; man ist dort sehr um Kompatibilit&auml;t
+der JDK-Versionen bem&uuml;ht.&nbsp; Deshalb ist nicht zu erwarten, dass
+das Cloneable-Interface jemals eine clone()-Methode haben wird.
+<p>Nun kann man das f&uuml;r eigene Projekte und Klassen nat&uuml;rlich
+anders und besser machen.&nbsp;&nbsp; Als wir das F&uuml;r und Wider der
+CloneNotSupportedException auf der OOP-Konferenz im Januar 2002 dargestellt
+haben, kam folgender Vorschlag aus dem Auditorium:&nbsp; "Kann man nicht
+ein projekt-spezifisches Cloneable-Subinterface haben, dass eine clone()-Methode
+hat und diese Interface anstelle des Cloneable-Interfaces verwenden?"&nbsp;
+Das ist eine gute Idee, die nat&uuml;rlich voraussetzt, dass es Programmierrichtlinien
+gibt oder die Software-Entwickler anderweitig motiviert sind, dieses neue
+Interface auch zu verwenden. Das Interface k&ouml;nnte dann wie folgt aussehen:
+<p><tt>/**</tt>
+<br><tt>&nbsp;* In contrast to the standard interface &lt;code>java.lang.Cloneable&lt;/code></tt>
+<br><tt>&nbsp;* this interface has a &lt;code>clone&lt;/code> method. It
+is supposed to be</tt>
+<br><tt>&nbsp;* used in lieu of the standard &lt;code>java.lang.Cloneable&lt;/code>
+interface.</tt>
+<br><tt>&nbsp;*</tt>
+<br><tt>&nbsp;* @author&nbsp; ...</tt>
+<br><tt>&nbsp;* @version ...</tt>
+<br><tt>&nbsp;* @see&nbsp;&nbsp;&nbsp;&nbsp; java.lang.Cloneable</tt>
+<br><tt>&nbsp;*/</tt>
+<br><tt>public interface CloneableWithCloneMethod extends Cloneable {</tt>
+<p><tt>&nbsp; /**</tt>
+<br><tt>&nbsp; * Creates and returns a copy of this object.</tt>
+<br><tt>&nbsp; *</tt>
+<br><tt>&nbsp; * @return&nbsp;&nbsp;&nbsp;&nbsp; a clone of this instance.</tt>
+<br><tt>&nbsp; * @exception&nbsp; OutOfMemoryError&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+in case of not enough memory.</tt>
+<br><tt>&nbsp; * @exception&nbsp; InternalError&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+in case of an unexpected CloneNotSupportedException.</tt>
+<br><tt>&nbsp; * @see&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; project.CloneableWithCloneMethod</tt>
+<br><tt>&nbsp; */</tt>
+<br><tt>&nbsp; public Object clone();</tt>
+<br><tt>}</tt>
+<p>Damit ist man zwar f&uuml;r die eigenen Klassen einen Schritt weiter,
+aber beim Klonen von generischen Collections beispielsweise muss man sich
+immer noch mit existierenden third-party Klassen herumschlagen, die das
+Cloneable-Interface implementieren und von dem projektspezifischen CloneableWithCloneMethod-Interface
+nichts
+wissen.
+<br>&nbsp;
+<h2>
+Zusammenfassung</h2>
+Die clone()-Methode sollte keine CloneNotSupportedexception werfen, sondern
+im Fehlerfall einen InternalError ausl&ouml;sen.
+<br>&nbsp;
+<h2>
+Literaturverweise</h2>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft1"></a>/KRE1/</td>
+
+<td VALIGN=TOP><b>Das Kopieren von Objekten in Java (Teil 1 + II)&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaSpektrum, September + November 2002
+<br>URL: <a href="../05.Clone-Part1/05.Clone-Part1.html">http://www.langer.camelot.de/Articles/JavaSpektrum/05.Clone-Part1/05.Clone-Part1.html</a>
+<br>URL: <a href="../06.Clone-Part2/06.Clone-Part2.html">http://www.langer.camelot.de/Articles/JavaSpektrum/06.Clone-Part2/06.Clone-Part2.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Liskov"></a>/LIS/&nbsp;</td>
+
+<td><b>Program Development in Java</b>
+<br>Abstraction, Specification, and Object-Oriented Design, Section 4.4
+<br>Barbara Liskov with John Guttag&nbsp;
+<br>Addison-Wesley, June 2000&nbsp;
+<br>ISBN: 0-201-65768-6</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDK"></a>/JDK/&nbsp;</td>
+
+<td><b>Java 2 Platform, Standard Edition v1.4.2</b>
+<br>URL: <a href="http://java.sun.com/j2se/1.4/">http://java.sun.com/j2se/1.4/</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDOC"></a>/JDOC/&nbsp;</td>
+
+<td><b>Java 2 Platform, Standard Edition, v 1.4.2 - API Specification</b>
+<br>URL: <a href="http://java.sun.com/j2se/1.4/docs/api/index.html">http://java.sun.com/j2se/1.4/docs/api/index.html</a></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

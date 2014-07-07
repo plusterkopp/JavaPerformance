@@ -1,0 +1,609 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="KeyWords" content="STL C++ seminar training coursestream iterator output iterator IOStreams">
+   <title>Stream Iterators</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CppReportStreamIterators"></a>
+<br><font color="#295AB5"><font size=+3>Stream Iterators</font></font>
+<p><font color="#295AB5"><font size=+2>C++ Report, May 1999</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<p><a NAME="_Toc430437633"></a>
+<p>Let us continue our exploration of iterator types in the standard library:
+In our last article we discussed insert iterators; this time we examine
+stream iterators. You might remember the old, non-standard IOStreams library,
+which was initially developed by Jerry Schwarz at AT&amp;T many years ago.
+This classic IOStreams library did not have stream iterators. The idea
+for those iterators came up when the standard committee adopted HP’s STL
+as part of the standard library. The STL is based on the idea of generic
+programming: iterators are provided by containers, and algorithms use these
+iterators to access the container elements. Here we had two entirely unrelated
+domains: the classic IOStreams abstraction and the STL with its concept
+of generic programming. Stream iterators build the bridge between both
+domains. They allow to see a stream as a sequence of elements, much like
+an STL containers, and allow to apply existing generic algorithms directly
+to streams. From this design effort two new iterators emerged:
+<ul>
+<li>
+<i>istream iterators</i>, which can be used to read from a stream, and</li>
+
+<li>
+<i>ostream iterators</i>, which can be used to write to a stream.</li>
+</ul>
+
+<p><br><a NAME="_Toc430437634"></a><b><font face="Arial"><font size=+1>Using
+Stream Iterators</font></font></b>
+<p>Before we delve into the details of stream iterators, let’s first have
+a look at two examples. They show how powerful the combination of generic
+algorithms and streams via stream iterators can be in practice. Assume
+we have a text file and want to count how often the word ‘the’ is contained
+in the text. We can achieve it in the following way:
+<dir><font face="Courier,Courier New"><font size=-1>ifstream str("my_text_file");</font></font>
+<br><font face="Courier,Courier New"><font size=-1>istream_iterator&lt;string>
+begin&Iacute;ter(str);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>istream_iterator&lt;string>
+endIter;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>cout &lt;&lt; "number
+of _the_: " &lt;&lt; count(beginIter, endIter, "the");</font></font></dir>
+This solution uses, on one hand, the IOStreams functionality: A stream
+is constructed from a file name and formatted input is read from the stream
+via the <font face="Courier New">istream_iterator</font>. On the other
+hand, it uses STL components: The generic <font face="Courier New">count</font>-algorithm
+determines how often the word ‘the’ can be found inside the iterator range
+[<font face="Courier New">beginIter, endIter</font>).
+<p>The second example, that we want to look at, deals with the problem
+that standard library containers do not support any stream i/o directly.
+So, the question is: What is the best way to print a container? Here is
+a solution that prints all container elements separated by a blank. The
+approach is based on the <font face="Courier New">ostream_iterator</font>
+and the <font face="Courier New">copy</font>-algorithm:
+<blockquote><font face="Courier New"><font size=-1>List&lt;int> myList;</font></font>
+<br><font face="Courier New"><font size=-1>// fill in some elements</font></font>
+<br><font face="Courier New"><font size=-1>copy (myList.begin(), myList.end(),
+ostream_iterator&lt;int>(cout, " "));</font></font></blockquote>
+Both examples show that stream iterators allow algorithms to see a stream
+as a container of homogeneous elements. Algorithms can apply their functionality
+to the stream in the same way as they would do to any other standard library
+container. In this sense, there is a certain analogy between stream iterators
+and container iterators. Naturally, there are differences, too. We will
+explore them in the following while we have a detailed look at the way
+stream iterators work.
+<p><a NAME="_Toc430437635"></a><b><i><font face="Arial"><font size=+1>Ostream
+Iterators</font></font></i></b>
+<p>We start our exploration with the <font face="Courier New">ostream_iterator</font>
+because it has a lot in common with the <font face="Courier New">insert_iterator</font>
+that we discussed in the last column. This becomes clearer when we revisit
+the example above and see how the code changes when we inline the <font face="Courier New">copy</font>-algorithm:
+<dir><font face="Courier New"><font size=-1>List&lt;int> myList;</font></font>
+<br><font face="Courier New"><font size=-1>// fill in some elements</font></font>
+<br><font face="Courier New"><font size=-1>List&lt;int>::const_iterator
+sourceIter = myList.begin();</font></font>
+<br><font face="Courier New"><font size=-1>List&lt;int>::const_iterator
+endIter = myList.end()</font></font>
+<br><font face="Courier New"><font size=-1>ostream_iterator&lt;int> targetIter(cout,
+" ");</font></font>
+<br><font face="Courier New"><font size=-1>while (sourceIter != endIter)</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; *targetIter++
+= *sourceIter++;</font></font></dir>
+We see that the <font face="Courier New">ostream_iterator</font> is used
+in a similar way as the <font face="Courier New">insert_iterator</font>:
+<ul>
+<li>
+It is used as an output iterator, i.e. values are always written via the
+iterator, but never read.</li>
+
+<li>
+The applied operations are: <font face="Courier New">operator*()</font>
+and <font face="Courier New">operator++()</font> or <font face="Courier New">operator++(int)</font>.</li>
+</ul>
+Due to the similar usage, we expect that an output_iterator’s implementation
+has a lot in common with that of an <font face="Courier New">insert_iterator</font>
+. And so it is:
+<dir><font face="Courier,Courier New"><font size=-1>template &lt;class
+T, class charT=char, class traits=char_traits&lt;charT> ></font></font>
+<br><font face="Courier,Courier New"><font size=-1>class ostream_iterator
+:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>public iterator&lt;output_iterator_tag,void,void,void,void></font></font>
+<br><font face="Courier,Courier New"><font size=-1>{</font></font>
+<br><font face="Courier,Courier New"><font size=-1>public:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; typedef
+charT char_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; typedef
+traits traits_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; typedef
+basic_ostream&lt;charT,traits> ostream_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; ostream_iterator(ostream_type&amp;
+s) : ost(&amp;s),delim(0) {}</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; ostream_iterator(ostream_type&amp;
+s, const charT* d) : ost(&amp;s),delim(d){};</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; ostream_iterator&lt;T,charT,traits>&amp;
+operator= (const T&amp; t)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; {</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+*ost &lt;&lt; t;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (delim != 0) *ost &lt;&lt; delim;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return this;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; ostream_iterator&lt;T,charT,traits>&amp;
+operator*() { return *this; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; ostream_iterator&lt;T,charT,traits>&amp;
+operator++() { return *this; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; ostream_iterator&lt;T,charT,traits>&amp;
+operator++(int); {return *this; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>private:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; const
+charT* delim;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; basic_ostream&lt;charT,traits>*
+ost</font></font>
+<br><font face="Courier,Courier New"><font size=-1>};</font></font></dir>
+
+<center><i><font size=-1>Listing 1: Implementation of the ostream_iterator
+type</font></i></center>
+
+<p>Listing 1 shows a typical <font face="Courier New">ostream_iterator</font>
+implementation. We do not want to go through each of <font face="Courier New">ostream_iterator</font>‘s
+member functions. They are implemented in analogy to the <font face="Courier New">insert_iterator’</font>s
+member functions, which we explained in detail in our last column (see
+[<a href="#Ref1">1</a>]). The reasons for this similarity between the <font face="Courier New">ostream_iterator</font>
+and <font face="Courier New">insert_iterator</font> implementation are
+subject of a future article.
+<p><a NAME="_Toc430437636"></a><font face="Arial"><font size=+1>Interaction
+with IOStreams</font></font>
+<p>One point in the <font face="Courier New">ostream_iterator</font>’s
+implemention is worth being examined in more detail. <font face="Courier New">operator=(const
+T&amp; t) </font>uses <font face="Courier New">T</font>’s stream inserter
+to write <font face="Courier New">t</font> to the stream. As a consequence,
+the <font face="Courier New">ostream_iterator
+</font>template can only
+be instantiated for types that have an associated stream inserter. Otherwise,
+a compile time error will occur.
+<p>In our example above we used the <font face="Courier New">copy</font>-algorithm
+and the <font face="Courier New">ostream_iterator</font> to write a <font face="Courier New">list&lt;int></font>
+to standard output. This works out nicely. We instantiate the <font face="Courier New">ostream_iterator</font>
+template as <font face="Courier New">ostream_iterator&lt;int></font>. Hence,
+a stream inserter for <font face="Courier New">int</font> is needed, and
+such an inserter is supplied by the standard library.
+<p>Another observation is that each time the <font face="Courier New">ostream_iterator</font>‘s
+assignment operator inserts an object into the output stream, the current
+stream position is advanced. This demonstrates that the <font face="Courier New">ostream_iterator</font>
+is not an artificial abstraction contrived out of the need to combine generic
+programming and output streams. Instead, it has genuine iterator-like semantics:
+It keeps track of the stream position at which the next object should be
+inserted, and it allows write access to this position via operator=.
+<p><a NAME="_Toc430437637"></a><font face="Arial"><font size=+1>Error Indication</font></font>
+<p>The <font face="Courier New">ostream_iterator</font> has no specific
+feature to indicate that the insertion of an object into the stream failed
+or caused an error. For error detection only the error indication mechanisms
+of the underlying stream are available. (For details of new stream features
+such
+as IOStreams exceptions see [<a href="#Ref2">2</a>].)
+<p>In our example, we can set <font face="Courier New">badbit</font>,
+<font face="Courier New">eofbit</font>,
+and <font face="Courier New">failbit</font> in <font face="Courier New">cout’s</font>
+exception mask before we apply the <font face="Courier New">copy</font>-algorithm
+to the <font face="Courier New">ostream_iterator</font>:
+<dir><font face="Courier,Courier New"><font size=-1>cout.exceptions(ios_base::badbit
+| ios_base::eofbit | ios_base::failbit);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>copy (myList.begin(),
+myList.end(), ostream_iterator&lt;int>(cout, " "));</font></font></dir>
+The stream will then throw an <font face="Courier New">ios_base::failure</font>
+exception when an error occurs. Alternatively, we can check <font face="Courier New">cout</font>’s
+stream state after the <font face="Courier New">copy</font>-algorithm has
+been run, to see if an error had occurred:
+<dir><font face="Courier,Courier New"><font size=-1>copy (myList.begin(),
+myList.end(), ostream_iterator&lt;int>(cout, " "));</font></font>
+<br><font face="Courier,Courier New"><font size=-1>if (!cout.good())</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{</font></font>
+<br><font face="Courier,Courier New"><font size=-1>// do something about
+the error !</font></font>
+<br><font face="Courier,Courier New"><font size=-1>}</font></font></dir>
+<a NAME="_Toc430437638"></a><b><i><font face="Arial"><font size=+1>Istream
+Iterator</font></font></i></b>
+<p>While the <font face="Courier New">ostream_iterator</font> is an output
+iterator the<font face="Courier New"> istream_iterator</font> naturally
+is an input iterator. It allows read access to the value that it refers
+to and it can be advanced in single steps.
+<p>Its implementation (see Listing 2) is straight forward. A private data
+member (<font face="Courier New">value</font>) buffers the next value from
+the input stream. Read only access to this data member is given by <font face="Courier New">operator*()</font>
+and <font face="Courier New">operator->()</font>: they return a <font face="Courier New">const</font>
+reference respectively a <font face="Courier New">const</font> pointer
+to this data member.
+<dir><font face="Courier,Courier New"><font size=-1>template &lt;class
+T, class charT = char, class Traits = char_traits&lt;charT>, class Distance
+= ptrdiff_t></font></font>
+<br><font face="Courier,Courier New"><font size=-1>class istream_iterator
+: public iterator&lt;input_iterator_tag, T, Distance, const T*, const T&amp;></font></font>
+<br><font face="Courier,Courier New"><font size=-1>{</font></font>
+<br><font face="Courier,Courier New"><font size=-1>public:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; typedef
+charT char_type</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; typedef
+Traits traits_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; typedef
+basic_istream&lt;charT,Traits> istream_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; istream_iterator()
+: istp(0) {}</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; istream_iterator(istream_type&amp;
+s) : istp(&amp;s) { readElem(); }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; const
+T&amp; operator*() const { return value; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; const
+T* operator->() const { return &amp;value; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; istream_iterator&lt;T,charT,Traits,Distance>&amp;
+operator++()</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; {</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+readElem();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return *this;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; istream_iterator&lt;T,charT,Traits,Distance>
+operator++(int)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; {</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+istream_iterator&lt;T,charT,Traits,Distance> tmp = *this;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+readElem();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return tmp;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>private:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; void
+readElem()</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; {</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (istp != 0)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (!(*istp >> value))</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ist = 0;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; basic_istream&lt;charT,traits>*
+istp;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; T
+value;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>};</font></font></dir>
+
+<center><i><font size=-1>Listing 2: Implementation of the istream_iterator
+type</font></i></center>
+
+<p><a NAME="_Toc430437639"></a><font face="Arial"><font size=+1>Interaction
+with IOStreams</font></font>
+<p>When we examined the <font face="Courier New">ostream_iterator</font>’s
+implemention, we saw that it is based on <font face="Courier New">T</font>’s
+inserter. Similarly, the <font face="Courier New">istream_iterator</font>‘s
+implementation is based on <font face="Courier New">T</font>’ s extractor.
+The extractor is used in the private member function <font face="Courier New">readElem()</font>.
+It reads the next object of type <font face="Courier New">T
+</font>from
+the stream and buffers it in the private data member <font face="Courier New">value</font>.
+<p>The standard specifies that the next object is extracted from the stream
+whenever <font face="Courier New">operator++()</font> or <font face="Courier New">operator++(int)</font>
+is applied to the <font face="Courier New">istream_iterator</font>. It
+is, however, implementation specific when the <i>first</i> object is read
+by the <font face="Courier New">istream_iterator</font>. According to the
+standard this can be done either when the <font face="Courier New">istream_iterator</font>
+is constructed or, as a kind of lazy evaluation, when <font face="Courier New">operator*()</font>
+or <font face="Courier New">operator->()</font> are used for the first
+time to access the value buffered in the iterator. The implementation given
+in Listing 2 extracts the first object in its constructor. Please note
+that the stream position of the input stream (that is the position of the
+read pointer) is moved forward in the stream with every extraction of an
+object from the stream. This means that an <font face="Courier New">istream_iterator</font>
+has true iterator-like semantics: It iterates over the input stream giving
+read access to the objects contained in the stream.
+<p><a NAME="_Toc430437640"></a><font face="Arial"><font size=+1>Error Indication
+and End-of-Stream Iterators</font></font>
+<p>What happens if <font face="Courier New">readElem()</font> tries to
+extract the next object of type <font face="Courier New">T</font> from
+the stream and none is available? By IOStreams convention, the <font face="Courier New">failbit</font>
+is set in the stream state to indicate that an extraction has failed. After
+each extraction <font face="Courier New">readElem()</font> checks the stream
+state. If the stream state is not <font face="Courier New">good()</font>
+anymore, the private member <font face="Courier New">istp</font> is set
+to <font face="Courier New">0</font>, which indicates that the iterator
+is detached from its stream. As a consequence, the stream iterator cannot
+be used to extract any further objects. An <font face="Courier New">istream_iterator</font>
+that is in this state is called a <i>end-of-stream iterator</i>. While
+this name might be a bit misleading, it is easy to understand where it
+comes from. After the extraction of an object the <font face="Courier New">istream_iterator</font>
+checks whether the stream state is still <font face="Courier New">good()</font>.
+That is, it checks if either <font face="Courier New">failbit</font>,
+<font face="Courier New">badbit</font>,
+<font face="Courier New">eofbit</font>,
+or a combination of them has been set. If no error ever occurs, neither
+<font face="Courier New">failbit</font>
+nor <font face="Courier New">badbit</font> get set. The only other event
+that can cause an <font face="Courier New">istream_iterator</font> to turn
+into an end-of-stream iterator is hitting the end of the stream because
+then <font face="Courier New">eofbit</font> is set. To sum it up: When
+an input iterator turns into an end-of-stream iterator, then this either
+signals an error situation or indicates that the end of the input stream
+was reached. As with the output stream iterator, we have to fall back to
+the underlying stream’s error indication mechanisms to distinguish between
+these two situations.
+<p><a NAME="_Toc430437641"></a><font face="Arial"><font size=+1>Input Iterator
+Ranges</font></font>
+<p>Generic algorithms, which read input from a containers, often receive
+two input iterators as parameters. The first one specifies the beginning
+and the second one the end of a sequence of iterator positions, to which
+the algorithm shall be applied. This sequence of iterator positions is
+called an <i>iterator range</i>. By convention, the iterator that specifies
+the beginning of the range is part of the range, while the iterator that
+specifies the end is not, that is, the algorithm is not applied to the
+end iterator. Say, we want to apply a generic algorithm to an input stream.
+How can we specify an according iterator range in terms of <font face="Courier New">istream_iterator</font>s?
+<p>When we construct an<font face="Courier New"> istream_iterator</font>
+from a valid input stream, the iterator refers to the current stream position
+of that input stream. Hence, we can use this <font face="Courier New">istream_iterator</font>
+to specify the beginning of the iterator range. Still, which iterator shall
+we use to specify the end of the range?
+<p>Iterator ranges are typically used in <font face="Courier New">while</font>-loops
+like this:
+<dir><font face="Courier,Courier New"><font size=-1>while (beginIter !=
+endIter)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; ...
+// do something</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; beginIter++;
+// increment iterator</font></font>
+<br><font face="Courier,Courier New"><font size=-1>}</font></font></dir>
+As an end iterator, we need an iterator that is reachable from the beginning
+of the range, that is, successive increments of the first iterator must
+eventually yield the second iterator.
+<p>A word on the <font face="Courier New">while</font>-condition: We silently
+assumed the existence of a (in-)equality operator for <font face="Courier New">istream_iterator</font>’s.
+How is that defined? The standard requires the following semantics:
+<ul>
+<li>
+Two end-of-stream iterators of the same type are always equal.</li>
+
+<li>
+An end-of-stream iterator is not equal to a non-end-of-stream iterator.</li>
+
+<li>
+Two non-end-of-stream iterators are equal when they are constructed from
+the same stream.</li>
+</ul>
+From the third requirement follows that two <font face="Courier New">istream_iterator</font>s
+which are equal do not necessarily refer to the same stream position. One
+might intuitively expect such a property, because it is true for pointers
+and container iterators. Note, that it is <i>not</i> true for input stream
+iterators.
+<p>Back to our problem: how do we express an iterator range of <font face="Courier New">istream_iterator</font>s?
+For the begin iterator we can simply use the <font face="Courier New">istream_iterator</font>
+constructed from the input stream. It represents the current stream position.
+If we successively increment this iterator, which means that we successively
+extract items from the stream, we will eventually hit the end of the stream.
+For the end iterator we therefore need an input stream iterator in end-of-stream
+state. How do we get one? The <font face="Courier New">istream_iterator</font>’s
+default constructor creates it.
+<p>Note, that the only input stream iterator ranges are from the current
+stream position to the end of the stream. It is not possible to specify
+a range from one stream position to another stream position, because any
+two non-end-of-stream iterators referring to the same stream always compare
+equal.
+<p>These explanations hopefully clarify the previous example, where we
+counted how often the word ‘the’ occurred in a text file:
+<dir><font face="Courier,Courier New"><font size=-1>ifstream str("my_text_file");</font></font>
+<br><font face="Courier,Courier New"><font size=-1>istream_iterator&lt;string>
+begin&Iacute;ter(str); // line 1</font></font>
+<br><font face="Courier,Courier New"><font size=-1>istream_iterator&lt;string>
+endIter; // line 2</font></font>
+<br><font face="Courier,Courier New"><font size=-1>cout &lt;&lt; "number
+of _the_: " &lt;&lt; count(beginIter, endIter, "the"); // line 3</font></font></dir>
+In line 1, we construct the begin iterator from the stream that we want
+to use. In line 2, the end iterator is created by the <font face="Courier New">istream_iterator</font>’s
+default constructor. In line 3, we apply the <font face="Courier New">count</font>-algorithm
+to the iterator range [<font face="Courier New">beginIter,endIter</font>).
+<br>&nbsp;
+<p><a NAME="_Toc430437642"></a><font face="Arial"><font size=+1>Reset after
+an error has occurred</font></font>
+<p>By comparing an <font face="Courier New">istream_iterator</font> to
+an end-of-stream iterator, it is possible to detect if a stream error has
+occurred. Yet, <font face="Courier New">istream_iterator</font>s have no
+feature to reset an iterator that has gone into an end-of-stream state.
+If the error is not fatal we can do the following: clear the stream’s error
+state, construct a new <font face="Courier New">istream_iterator</font>,
+which then represents the current stream position, and restart the algorithm
+with this iterator as the begin iterator:
+<dir><font face="Courier,Courier New"><font size=-1>str.clear();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>istream_iterator&lt;string>
+newBeginIter(str);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>cout &lt;&lt; "... and
+we have found ";</font></font>
+<br><font face="Courier,Courier New"><font size=-1>cout &lt;&lt; count(newBeginIter,
+endIter, "the");</font></font>
+<br><font face="Courier,Courier New"><font size=-1>cout &lt;&lt; " more
+_the_";</font></font></dir>
+<a NAME="_Toc430437643"></a><b><font size=+1>More Differences Between Stream
+And Container Iterators</font></b>
+<p>The detailed descriptions of the <font face="Courier New">ostream_iterator</font>
+and <font face="Courier New">istream_iterator</font> revealed quite a number
+of the differences between stream and container iterators.
+<ul>
+<li>
+Stream iterators impose specific requirements on the type of elements they
+contain: The element type must have an inserter and an extractor defined.
+Container iterators, on the other hand, make relatively weak, easy to meet,
+requirements like: the elements must be destructible, assignable, copy-constructible,
+and so on.</li>
+
+<li>
+The end iterator of an input stream iterator range is always an end-of-stream
+input iterator. With container iterators you can specify any range of iterator
+positions within a container. Also, an end-of-stream iterator is independent
+of any stream objects. Not so with container iterators: The end iterator
+of an range of container iterators must refer to a position in the same
+container as the begin iterator, or end iterator must be obtained by that
+container’s member function <font face="Courier New">end()</font>.</li>
+
+<li>
+Input stream iterators of the same type constructed from the same stream
+compare equal, independently of the stream position the refer to. Container
+iterators compare equal when they represent the same position in the container.</li>
+</ul>
+<a NAME="_Toc430437644"></a><font face="Arial"><font size=+1>One-pass vs.
+multi-pass iterators</font></font>
+<p>Yet another difference is that stream iterators are <i>one-pass iterators</i>,
+that is, you can access an element referred to by a stream iterator only
+once. For instance, we cannot re-read elements through a memorized iterator.
+The following would fail: memorizing the begin position of the stream,
+then extracting elements from the stream, and later trying to re-read the
+first element through the memorized begin iterator. The reason is that
+once extracted the element is consumed and cannot be re-read. The single-pass
+property can be best understood in terms of i/o from/to an terminal. Once
+we’ve read from the terminal stream, the input is consumed. Once we’ve
+written to the terminal stream, we cannot re-position and overwrite the
+output. In contrast, container iterators are multi-pass iterators. We can
+repeatedly access any element referred to by any iterator (except the end
+iterator, of course). The one-pass or multi-pass property is expressed
+in the iterator categories. Iterators in the input and output iterator
+category are one-pass iterators. Iterators in the forward, bidirectional,
+or random-access iterator categories must be multi-pass iterators.
+<p>Is the single-pass property a restriction? Can all algorithms live with
+this restriction? Let’s see what algorithms typically need of an iterator.
+<p>Algorithms that write output via an output iterator usually do not access
+the same output position twice. That would mean that they overwrite a position
+they had previously filled. No algorithm we know of does anything like
+that. Therefore, all algorithms that write output via an iterator require
+an iterator type of the output iterator category and happily live with
+its one-pass property. For this reason, an <font face="Courier,Courier New">ostream_iterator</font>
+can be used in all algorithms that require an output iterator.
+<p>Algorithms that read input via an iterator usually take an input iterator
+range. Not all such algorithms can live with the one-pass restriction of
+input iterators like the<font face="Courier,Courier New"> istream_iterator</font>.
+The <font face="Courier New">find_end()</font> algorithm, for instance,
+does a look ahead and for that matter needs the multi-pass property. In
+order to explain this, let’s take a closer look at the <font face="Courier New">find_end()</font>
+algorithm. It finds a subsequence of equal values in a sequence and returns
+an iterator to the begin of the subsequence. Here is an example of how
+it would be used:
+<dir><font face="Courier,Courier New"><font size=-1>string s1 = "abcdefghijk";</font></font>
+<br><font face="Courier,Courier New"><font size=-1>string s2 = "def";</font></font>
+<br><font face="Courier,Courier New"><font size=-1>string::iterator i =
+find_end(s1.begin(),s1.end(),s2.begin(),s2.end());</font></font>
+<br><font face="Courier,Courier New"><font size=-1>cout &lt;&lt; i &lt;&lt;
+endl;</font></font></dir>
+The result would be an iterator to the letter ‘d’ in <font face="Courier,Courier New">s1</font>.
+The algorithm maintains two iterators: the first refers to the first input
+sequence, the other one to the potential subsequence. In the beginning
+the first iterator points to the ‘a’ in <font face="Courier,Courier New">s1</font>,
+the second iterator points to the ‘d’ in <font face="Courier,Courier New">s2</font>.
+Then the algorithm looks for a match, that is, whether the ‘a’ is the beginning
+of the subsequence "def". It performs this search by successively advancing
+both iterators and comparing the referred to characters. As it can’t find
+a match here, it resets both iterators: the first one to the ‘b’ in <font face="Courier,Courier New">s1</font>
+and the second iterator back to the beginning of "def". Then it starts
+looking for the match again. And so on and so forth. The crux is that <font face="Courier,Courier New">find_end()</font>
+algorithm needs to re-read elements from the input sequences. This cannot
+be done with iterators from the input iterator category because they only
+support one-pass access. And indeed, the interface description of the <font face="Courier,Courier New">find_end()</font>
+function asks for an iterator from the forward_iterator category:
+<dir><font face="Courier,Courier New"><font size=-1>template&lt;class ForwardIterator1,
+class ForwardIterator2> inline</font></font>
+<br><font face="Courier,Courier New"><font size=-1>ForwardIterator1 find_end(ForwardIterator1
+first1, ForwardIterator1 last1</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+,ForwardIterator2 first2, ForwardIterator2 last2);</font></font></dir>
+Note, that the <font face="Courier,Courier New">find_end()</font> algorithm
+does not need the entire functionality that is required of a forward iterator.
+Forward iterators allow multi-pass access for reading
+<i>and</i> writing.
+Write access isn’t needed in <font face="Courier,Courier New">find_end()</font>.
+Hence, all that this algorithm really needs is a multi-pass input iterator.
+However, there is no such iterator category.
+<p>Let us hasten to add that there, of course, are algorithms for whom
+one-pass input iterators perfectly suffice. The often quoted <font face="Courier,Courier New">find()</font>
+algorithm is an example, and so is the <font face="Courier,Courier New">count()</font>
+algorithm that we used in our examples. These algorithms read elements
+successively until they find what they’re looking for or until they’ve
+counted all relevant elements. No element needs to be accessed twice, no
+look ahead, no repositioning is required. Their interface description only
+asks for iterators from the input iterator category:
+<dir><tt>template&lt;class InputIterator, class T></tt>
+<br><tt>InputIterator find (InputIterator first, InputIterator last, const
+T&amp; val);</tt>
+<br><tt>template&lt;class InputIterator, class T></tt>
+<br><tt>size_t count(InputIterator first, InputIterator last, const T&amp;
+val);</tt></dir>
+In sum, where input iterators are required, <font face="Courier,Courier New">istream_iterator</font>s
+can be provided. When an algorithm asks for a forward iterator, an <font face="Courier,Courier New">istream_iterator</font>
+will not suffice.
+<br>&nbsp;
+<h3>
+<a NAME="_Toc430437645"></a><b><font face="Arial">Summary</font></b></h3>
+Stream iterators connect the world of generic programming with the input
+and output stream abstractions. They show that it is possible to include
+a formerly completely unrelated domain like IOStreams into the concepts
+of generic programming. The general idea is: see a stream as a kind of
+container. We have also recognized that the analogy between streams and
+containers sometimes breaks, and that a number of smart design details
+(such as the end-of-stream iterator) were needed to make the analogy work.
+However, the architectural bridge built by the stream iterators might serve
+as an inspiration for your own work. It takes no more than a pair of iterators
+to connect an old domain with the generic abstractions from the standard
+library.
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+<b>References</b></h3>
+
+<ol><a NAME="Ref1"></a>Insert Iterators
+<br>Klaus Kreft &amp; Angelika Langer
+<br>C++ Report, February 1999
+<p><a NAME="Ref2"></a>New Features in Standard IOStreams
+<br>Klaus Kreft &amp; Angelika Langer
+<br>C++ Report, June 1997</ol>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+<font size=-1></font>
+<br>&nbsp;
+</body>
+</html>

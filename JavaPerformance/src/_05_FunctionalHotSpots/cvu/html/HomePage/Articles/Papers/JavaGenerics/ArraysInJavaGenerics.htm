@@ -1,0 +1,440 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <meta name="KeyWords" content="Effective Java, Java Generics">
+   <title>Arrays in Java Generics</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+
+<div class=Section1><a NAME="Top"></a><a NAME="PaperJavaGenerics"></a>
+<p><font color="#295AB5"><font size=+3>Arrays in Java Generics</font></font>
+<br><font color="#295AB5"><font size=+1>What are the issues regarding arrays
+in Java Generics?</font></font>
+<br>&nbsp;
+<p><font color="#295AB5"><font size=+2>Angelika Langer &amp; Klaus Kreft</font></font><font color="#295AB5"><font size=+2></font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<h1>
+</h1>
+
+<h1>
+Arrays in Java Generics</h1>
+
+<div class="MsoBodyText">Arrays of parameterized types and arrays of type
+variables exhibit counter-intuitive behavior. Below is an explanation of
+the issue, which illustrates why it might make sense to ban both arrays
+of parameterized types and arrays of type variables from Java Generics.</div>
+
+<h2>
+Arrays of Parameterized Types</h2>
+
+<h3>
+Covariance</h3>
+
+<div class="MsoNormal" style="text-align:justify">Java arrays have the
+property that there types are <i>covariant</i>, which means that an array
+of supertype references is a supertype of an array of subtype references.That
+is, Object[] is a supertype of String[] for example. As a result of covariance
+all the type rules apply that are customary for sub- and supertypes: a
+subtype array can be assigned to a supertype array variable, subtype arrays
+can be passed as arguments to methods that expect supertype arrays, and
+so on and so forth.Here is an example:</div>
+
+<div class="Teletype"><tt>Object[] objArr = new String[10];// fine</tt></div>
+
+<div class="MsoNormal" style="text-align:justify">In contrast, generic
+collections are not covariant. An instantiation of a parameterized type
+for a supertype is not considered a supertype of an instantiation of the
+same parameterized type for a subtype.That is, a LinkedList&lt;Object>
+is not a supertype of LinkedList&lt;String> and consequently a LinkedList&lt;String>
+cannot be used where a LinkedList&lt;Object> is expected; there is no assignment
+compatibility between those two instantiations of the same parameterized
+type, etc.Here is an example that illustrates the difference:</div>
+
+<div class="MsoNormal" style="text-align:justify"><tt>LinkedList&lt;Object>
+objLst = new LinkedList&lt;String>(); // compile-time error</tt></div>
+
+<br>&nbsp;
+<h3 class="MsoNormal" style="text-align:justify">
+Runtime Type Information</h3>
+
+<div class="MsoBodyText">Java arrays carry runtime type information that
+identifies the type of the elements contained.&nbsp; Generic collections
+have no runtime type information about their element type. Here are some
+examples showing the static type of the reference variables referring to
+an array or collection and the dynamic type of referenced array or collection:</div>
+
+<br>&nbsp;
+<table BORDER CELLSPACING=0 CELLPADDING=0 style="border-collapse:collapse;
+ border:none;mso-border-top-alt:solid green 1.5pt;mso-border-bottom-alt:solid green 1.5pt;
+ mso-padding-alt:0cm 3.5pt 0cm 3.5pt" >
+<tr style="height:14.25pt">
+<td VALIGN=TOP WIDTH="317" style="width:237.4pt;border-top:solid green 1.5pt;
+  border-left:none;border-bottom:solid green .75pt;border-right:none;
+  padding:0cm 3.5pt 0cm 3.5pt;height:14.25pt">
+<div class="Teletype">&nbsp;</div>
+</td>
+
+<td VALIGN=TOP WIDTH="132" style="width:99.25pt;border-top:solid green 1.5pt;
+  border-left:none;border-bottom:solid green .75pt;border-right:none;
+  padding:0cm 3.5pt 0cm 3.5pt;height:14.25pt">
+<center><b>static type</b></center>
+</td>
+
+<td VALIGN=TOP WIDTH="113" style="width:3.0cm;border-top:solid green 1.5pt;
+  border-left:none;border-bottom:solid green .75pt;border-right:none;
+  padding:0cm 3.5pt 0cm 3.5pt;height:14.25pt">
+<center><b>dynamic type</b></center>
+</td>
+</tr>
+
+<tr style="height:22.7pt">
+<td WIDTH="317" style="width:237.4pt;border:none;mso-border-top-alt:solid green .75pt;
+  padding:0cm 3.5pt 0cm 3.5pt;height:22.7pt">
+<div class="Teletype" style="margin-left:0cm"><tt>String[] strArr = new
+String[10];</tt></div>
+</td>
+
+<td WIDTH="132" style="width:99.25pt;border:none;mso-border-top-alt:solid green .75pt;
+  padding:0cm 3.5pt 0cm 3.5pt;height:22.7pt">
+<center><tt>String[]</tt></center>
+</td>
+
+<td WIDTH="113" style="width:3.0cm;border:none;mso-border-top-alt:solid green .75pt;
+  padding:0cm 3.5pt 0cm 3.5pt;height:22.7pt">
+<center><tt>String[]</tt></center>
+</td>
+</tr>
+
+<tr style="height:22.7pt">
+<td WIDTH="317" style="width:237.4pt;border:none;padding:0cm 3.5pt 0cm 3.5pt;
+  height:22.7pt">
+<div class="Teletype" style="margin-left:0cm"><tt>Object[] objArr = new
+String[10];</tt></div>
+</td>
+
+<td WIDTH="132" style="width:99.25pt;border:none;padding:0cm 3.5pt 0cm 3.5pt;
+  height:22.7pt">
+<center><tt>Object[]</tt></center>
+</td>
+
+<td WIDTH="113" style="width:3.0cm;border:none;padding:0cm 3.5pt 0cm 3.5pt;
+  height:22.7pt">
+<center><tt>String[]</tt></center>
+</td>
+</tr>
+
+<tr style="height:22.7pt">
+<td WIDTH="317" style="width:237.4pt;border:none;border-bottom:solid green 1.5pt;
+  padding:0cm 3.5pt 0cm 3.5pt;height:22.7pt">
+<div class="Teletype" style="margin-left:0cm"><tt>LinkedList&lt;String>
+strLst = new LinkedList&lt;String>();</tt></div>
+</td>
+
+<td WIDTH="132" style="width:99.25pt;border:none;border-bottom:solid green 1.5pt;
+  padding:0cm 3.5pt 0cm 3.5pt;height:22.7pt">
+<center><tt>LinkedList&lt;String></tt></center>
+</td>
+
+<td WIDTH="113" style="width:3.0cm;border:none;border-bottom:solid green 1.5pt;
+  padding:0cm 3.5pt 0cm 3.5pt;height:22.7pt">
+<center><tt>LinkedList</tt></center>
+</td>
+</tr>
+</table>
+
+
+<p class="MsoNormal">The runtime type information about the element type
+of array elements is used when elements are stored in an array. Consider
+the following example:
+
+<p class="Teletype" style="tab-stops:36.0pt"><tt>1&nbsp; Object[] objArr
+= new String[10];</tt>
+<div class="Teletype" style="tab-stops:36.0pt"><tt>2&nbsp; objArr[0] =
+new Object(); // compiles; fails at runtime with ArrayStoreException</tt></div>
+
+<div class="Teletype">The reference variable of type Object[] refers to
+a String[] and for this reason only strings should be stored in the referred
+to array.&nbsp; Indeed, at runtime a so-called array store check is performed.&nbsp;
+It uses the information about the array element type to perform a type
+check.&nbsp; In our example the array store check fails because an Object
+reference must not be stored in a String[].&nbsp; The JVM raises a ArrayStoreException
+to indicate the type mismatch.</div>
+
+<div class="Teletype">An equivalent store check is not needed for generic
+collections, because a reference to a supertype collection cannot refer
+to a subtype collection:</div>
+
+
+<p class="Teletype"><tt>1&nbsp; LinkedList&lt;Object> objLst = new LinkedList&lt;String>();&nbsp;
+// compile-time error</tt>
+<div class="Teletype"><tt>2&nbsp; objLst.add(new Object());</tt></div>
+
+<div class="MsoNormal">We can never get to line 2 because line 1 does not
+compile.</div>
+
+<br>&nbsp;
+<h3>
+Parameterized Types As Array Elements</h3>
+
+<div class="MsoNormal" style="text-align:justify">Problems arise when&nbsp;
+an array holds elements of a parameterized type.&nbsp; The array store
+uses the dynamic type of the array element type for the array store check.&nbsp;
+As a result of type erasure, elements of a parameterized type do not have
+exact runtime type information.&nbsp; What are the consequences?</div>
+
+<div class="MsoNormal" style="text-align:justify">Consider the example
+below.&nbsp; It uses a parameterized Pair type that is shown in Listing
+1.</div>
+
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER CELLSPACING=0 CELLPADDING=0 style="border-collapse:collapse;
+ border:none;mso-border-alt:solid black 1.5pt;mso-padding-alt:0cm 3.5pt 0cm 3.5pt" >
+<tr>
+<td VALIGN=TOP WIDTH="564" style="width:422.65pt;border:solid black 1.5pt;
+  border-bottom:none;background:black;mso-shading:white;mso-pattern:solid black;
+  padding:0cm 3.5pt 0cm 3.5pt">
+<div class="MsoNormal" style="text-align:justify"><b>Listing 1: Sketch
+of a Pair&nbsp; type</b></div>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="564" style="width:422.65pt;border:solid black 1.5pt;
+  border-top:none;padding:0cm 3.5pt 0cm 3.5pt">
+<div class="Teletype"><tt>public final class Pair&lt;X,Y> {&nbsp;</tt></div>
+
+<div class="Teletype"><tt>&nbsp; private X fst;</tt></div>
+
+<div class="Teletype"><tt>&nbsp; private Y snd;&nbsp;</tt></div>
+
+<div class="Teletype"><tt>&nbsp; public Pair(X fst, Y snd) {this.fst=fst;
+this.snd=snd;}&nbsp;</tt></div>
+
+<div class="Teletype"><tt>&nbsp; public X getFirst() { return fst; }&nbsp;</tt></div>
+
+<div class="Teletype"><tt>&nbsp; public Y getSecond() { return snd; }</tt></div>
+
+<div class="Teletype"><tt>}</tt></div>
+</td>
+</tr>
+</table>
+
+
+<p class="Teletype"><tt>1&nbsp; Pair&lt;Integer,Integer>[] intPairArr =
+new Pair&lt;Integer,Integer>[10];</tt>
+<div class="Teletype"><tt>2&nbsp; Object[] objArr = intPairArr;</tt></div>
+
+<div class="Teletype"><tt>3&nbsp; objArr[0] = new Pair&lt;String,String>("","");
+// should fail, but succeeds</tt></div>
+
+<div class="MsoNormal" style="text-align:justify">The array assignment
+in line 2 compiles as before, because arrays are covariant and an Object[]
+is considered a supertype of Pair&lt;Integer,Integer>[]. At runtime an
+array store check must be performed in line 3 when an array element is
+assigned. We would expect that the check fails because we are not supposed
+to store a Pair&lt;String,String> in a Pair&lt;Integer,Integer>[]. However,
+the JVM cannot detect any type mismatch here: at runtime, after type erasure,
+objArr has the dynamic type Pair[] and the element to be stored has the
+matching dynamic type Pair. Hence the store check succeeds.</div>
+
+
+<p class="MsoNormal" style="text-align:justify">We end up in a counter-intuitive
+situation.&nbsp; The array, that the reference variables objArr and intPairArr
+refer to, contains different types of pairs instead of pairs of the same
+type.&nbsp; This is in contradiction to the expectation that arrays hold
+elements of the same type or subtypes thereof.&nbsp; This counter-intuitive
+situation is likely to lead to program failure later, like for instance
+when any methods are invoked on the array elements.&nbsp; For instance
+the following code will fail:
+
+<p class="Teletype"><tt>Integer i = intPairArr[0].getFirst(); // fails
+at runtime with ClassCastException</tt>
+<p>The method getFirst() is applied to the first element of the array and
+it returns a String instead of an Integer because the first element in
+the array intPairArr is – unexpectedly – a pair of strings.
+<p>In order to eliminate this unfortunate deficiency of Java Generics,
+which is a side effect of its translation by type erasure, it might make
+sense to disallow arrays of parameterized types in the first place.
+<br>&nbsp;
+<h2>
+Arrays of Type Variables</h2>
+
+<h3>
+Generic Object Creation</h3>
+
+<div class="Teletype">The lack of exact type information and the erasure
+of type variables has a number of consequences.&nbsp; The severest is probably
+that no objects of the type represented by the type variable can be created.&nbsp;
+The following for instance is not permitted in Java Generics:</div>
+
+<div class="Teletype"><tt>&lt;T> void g() {</tt></div>
+
+<div class="Teletype"><tt>&nbsp; T ref = new T();&nbsp; // error: T is
+not a class</tt></div>
+
+<div class="Teletype"><tt>}</tt></div>
+
+<div class="MsoBodyText">The compiler rejects all attempts to use type
+variables in new expressions. However, creation of objects is often desired,
+like in the example below:</div>
+
+<div class="MsoNormal" style="text-align:justify"><tt>public final class
+Pair&lt;A, B> {</tt></div>
+
+<div class="MsoNormal" style="text-align:justify"><tt>&nbsp;&nbsp;&nbsp;
+public final A fst;</tt></div>
+
+<div class="MsoNormal" style="text-align:justify"><tt>&nbsp;&nbsp;&nbsp;
+public final B snd;</tt></div>
+
+<div class="MsoNormal" style="text-align:justify"><tt>&nbsp;&nbsp;&nbsp;
+public Pair() {</tt></div>
+
+<div class="MsoNormal" style="text-align:justify"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+this.fst = new A();&nbsp;&nbsp; // error</tt></div>
+
+<div class="MsoNormal" style="text-align:justify"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+this.snd = new B();&nbsp;&nbsp; // error</tt></div>
+
+<div class="MsoNormal" style="text-align:justify"><tt>&nbsp;&nbsp;&nbsp;
+}</tt></div>
+
+<div class="MsoNormal" style="text-align:justify"><tt>&nbsp;&nbsp;&nbsp;
+public Pair(A fst, B snd) {</tt></div>
+
+<div class="MsoNormal" style="text-align:justify"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+this.fst = fst;</tt></div>
+
+<div class="MsoNormal" style="text-align:justify"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+this.snd = snd;</tt></div>
+
+<div class="MsoNormal" style="text-align:justify"><tt>&nbsp;&nbsp;&nbsp;
+}</tt></div>
+
+<div class="MsoNormal" style="text-align:justify"><tt>}</tt></div>
+
+<div class="MsoNormal">In the default constructor we want to initialize
+the two fields with default constructed objects of their respective types,
+but this is not allowed. I order to understand why, imagine what this generic
+Pair class would be translated to, provided the compiler were willing to
+translate it:</div>
+
+<div class="MsoNormal"><tt>public final class Pair&lt;Object, Object> {</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp; public final Object fst;</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp; public final Object snd;</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp; public Pair() {</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.fst
+= new Object();&nbsp;&nbsp; // nonsense</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.snd
+= new Object();&nbsp;&nbsp; // nonsense</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp; }</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp; public Pair(Object fst, Object
+snd) {</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.fst
+= fst;</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.snd
+= snd;</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp; }</tt></div>
+
+<div class="MsoNormal"><tt>}</tt></div>
+
+<div class="MsoNormal">&nbsp;</div>
+
+<div class="MsoNormal">At runtime we could allocate default created objects
+of type Object, but that’s not what we want anyway, and for this reason
+the compiler radically forbids the occurrence of type variables in new
+expressions.&nbsp; This rule makes even more sense when the type variables
+have bounds, like in this case:</div>
+
+<div class="MsoNormal"><tt>public final class Pair&lt;A extends Cloneable,
+B extends Cloneable> {</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp; …</tt></div>
+
+<div class="MsoNormal"><tt>}</tt></div>
+
+<div class="MsoNormal">The erasure would then look like:</div>
+
+<div class="MsoNormal"><tt>public final class Pair {</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp; public final Cloneable fst;</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp; public final Cloneable snd;</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp; public Pair() {</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.fst
+= new Cloneable();&nbsp;&nbsp; // nonsense</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.snd
+= new Cloneable();&nbsp;&nbsp; // nonsense</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp; }</tt></div>
+
+<div class="MsoNormal"><tt>&nbsp;&nbsp;&nbsp; …</tt></div>
+
+<div class="MsoNormal"><tt>}</tt></div>
+
+<div class="MsoNormal">Clearly, interfaces cannot appear in new expressions
+so that this case can never work.</div>
+
+<br>&nbsp;
+<h3>
+Generic Array Creation</h3>
+
+<div class="MsoBodyText">Creation of arrays of unknown type has a problem
+similar to the one of creation of objects of an unknown type: the translation
+process maps the array to an array of the type variable’s erasure, which
+is its leftmost bound or Object, if no bound is specified. Here is an example:</div>
+
+<div class="MsoBodyText"><tt>&lt;T> T[] makeArray() {</tt></div>
+
+<div class="MsoBodyText"><tt>&nbsp; T[] ret = new T[0];&nbsp; // warning:
+unchecked generic array creation</tt></div>
+
+<div class="MsoBodyText"><tt>&nbsp; return ret;</tt></div>
+
+<div class="MsoBodyText"><tt>}</tt></div>
+
+<div class="MsoBodyText">The usual translation by type erasure would translate
+an array new expression to:</div>
+
+<div class="MsoBodyText"><tt>void Object[] makeArray() {</tt></div>
+
+<div class="MsoBodyText"><tt>&nbsp; Object[] ret = new Object[0];</tt></div>
+
+<div class="MsoBodyText"><tt>&nbsp; return ret;</tt></div>
+
+<div class="MsoBodyText"><tt>}</tt></div>
+
+<div class="MsoBodyText">An innocent assignment such as the following will
+compile, but fail at runtime:</div>
+
+<div class="MsoBodyText"><tt>String[] arr = makeArray();</tt></div>
+
+
+<p class="MsoBodyText">Inside makeArray() an Object array is created, which
+is not assignable to a String array, and as a result a ClassCastException
+is raised at runtime.
+
+<p class="MsoBodyText">Since this is an inevitable side effect of the translation
+by erasure, it might make sense to ban arrays of type variables from Java
+Generics.
+<br>&nbsp;</div>
+
+</body>
+</html>

@@ -1,0 +1,402 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="FORMATTER" content="Microsoft FrontPage 2.0">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <title>Effective STL Programming</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="EffectiveSTLCourse"></a><b><font face="Arial"><font color="#295AB5">COURSE
+DESCRIPTION</font></font></b>&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=5 CELLPADDING=2 WIDTH="98%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 CELLSPACING=0 CELLPADDING=3 COLS=1 WIDTH="98%" >
+<tr>
+<td><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p>The STL (Standard Template Library)&nbsp; is a comprehensive set of
+class and function templates for various collections and numerous algorithms
+and is part of the ISO/ANSI standard C++ library. It has an unusual and
+elegant architecture in that it separates data structures from algorithms
+- a programming paradigm known as <b><i>generic programming</i>.&nbsp;</b>
+<p>This course does not only provide in-depth knowledge of the STL itself,
+but also explains new C++ language features and novel programming techniques
+that are used in the STL. You will learn how to effectively use collections
+and algorithms from the STL, how you can extend the STL framework, and
+you will also enhance your understanding of templates.
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p>If you are a programmer with at least one year of hands-on experience
+using C++, you are ready for exploring another C++ programming paradigm
+- generic programming.
+<p>If you want to stay ahead of your time and keep your knowledge above
+average you need to know everything about the latest progamming techniques
+in C++, then this is the right course for you.
+<br>&nbsp;
+<br>&nbsp;
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p><font color="#295AB5">The course is designed and conducted by Angelika
+Langer and backed by years of experience in teaching&nbsp; C++ related
+topics and more than a decade of real-world experience in industrial software
+development. Angelika Langer is a freelance trainer/consultant in the area
+of object-oriented software development in C++ and Java. She is member
+of the ANSI C++ standards committee since 1993, columnist of C++ Report,
+and a recognized speaker at OO conferences.&nbsp;</font>
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>&nbsp;
+<p>&nbsp;</td>
+</tr>
+</table>
+&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 CELLSPACING=0 CELLPADDING=5 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="35%"><b><i><font color="#295AB5">Prerequisite Courses
+and Skills:</font></i></b></td>
+
+<td VALIGN=TOP WIDTH="65%">Introductory C++ course, or equivalent experience,
+plus base knowledge of templates&nbsp;
+<p>One year of programming experience using C++</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="50%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td ALIGN=LEFT VALIGN=TOP WIDTH="50%">4 days
+<p>The course can be broken down into two 2-day seminars:
+<li>
+an introductory seminar on using the predefined STL abstractions</li>
+
+<li>
+an advanced seminar on extending the STL framework</li>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="50%"><b><i><font color="#295AB5">Exercises:</font></i></b></td>
+
+<td WIDTH="50%">Workshops and hands-on labs&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="100%" >
+<tr>
+<td>Attendants should feel comfortable with the basics of the language
+and be open for expanding their knowledge beyond object oriented C++. We
+will explore new template features along with the generic programming paradigm.
+The goal is not only to learn how to use the predefined components of the
+STL, but also understanding the underlying concepts and how to extend the
+STL framework.&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<p><b><font face="Arial"><font color="#295AB5"><font size=+0>PERFORMANCE
+OBJECTIVES</font></font></font></b>
+<table BORDER=0 CELLSPACING=4 CELLPADDING=0 >
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Understand generic programming</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Get the most out of the STL</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Effectively use STL containers and algorithms</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Understand the design of STL iterators</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Understand function object types</td>
+</tr>
+</table>
+
+<p><b><font face="Arial"><font color="#295AB5"><font size=+0>BUSINESS OBJECTIVES</font></font></font></b>
+<table BORDER=0 CELLSPACING=4 CELLPADDING=0 >
+<tr>
+<td VALIGN=TOP><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Equip your software professional state-of-the-art C++ skills&nbsp;</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Make reuse happen</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Increase the efficiency of your C++ programs</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Build on reliable standard components</td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table></div>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial"><font color="#295AB5">COURSE OVERVIEW</font></font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+
+<table BORDER=0 CELLPADDING=2 WIDTH="98%" >
+<tr>
+<td VALIGN=TOP WIDTH="33%"><b>DAY 1</b>
+<blockquote><b><i>A Tour of STL</i></b>
+<p><b><i>Iterators</i></b>
+<ul>
+<li>
+Iterator concepts</li>
+
+<li>
+Iterator adaptors</li>
+
+<li>
+Stream iterators</li>
+</ul>
+<b><i>Sequential Containers</i></b>
+<ul>
+<li>
+Vector</li>
+
+<li>
+Sorting and searching</li>
+
+<li>
+Deque</li>
+
+<li>
+Insertion into vector/deque</li>
+
+<li>
+List</li>
+</ul>
+<b><i>Functors</i></b></blockquote>
+
+<ul>
+<ul>
+<li>
+Function objects vs. function pointers</li>
+
+<li>
+Predefined predicates and comparitors</li>
+
+<li>
+Erase-element predicate</li>
+</ul>
+</ul>
+</td>
+
+<td VALIGN=BASELINE WIDTH="33%"><b>DAY 2</b>
+<blockquote><b><i>Sequential Containers in Action</i></b></blockquote>
+
+<blockquote>
+<ul>
+<li>
+The pair abstraction</li>
+
+<li>
+Merging directories</li>
+
+<li>
+Directory lookup and update</li>
+</ul>
+<b><i>Associative containers</i></b>
+<ul>
+<li>
+Map</li>
+
+<li>
+Multimap</li>
+
+<li>
+Set and multiset</li>
+
+<li>
+Directory update using set and map</li>
+</ul>
+<b><i>Comparators In-Depth</i></b>
+<ul>
+<li>
+Algorithms, containers, and comparators</li>
+
+<li>
+Strict weak ordering</li>
+
+<li>
+User-defined comparators</li>
+
+<li>
+Merging containers with different sorting order</li>
+</ul>
+</blockquote>
+</td>
+</tr>
+
+<tr>
+<td COLSPAN="2">
+<br><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><b>DAY 3</b>
+<blockquote><b><i>Algorithms and Functors</i></b></blockquote>
+
+<ul>
+<ul>
+<li>
+Functor Requirements</li>
+
+<li>
+Functor Concepts</li>
+
+<li>
+Functors and Algorithms</li>
+</ul>
+
+<p><br><b><i>Functor Adapters</i></b>
+<br>&nbsp;
+<ul>
+<li>
+Binders and Negators</li>
+</ul>
+
+<p><br><b><i>Containers In-Depth</i></b>
+<ul>
+<li>
+Container adapters: stack &amp; queue</li>
+
+<li>
+Containter concepts</li>
+
+<li>
+Complexity guarantees</li>
+
+<li>
+Immutable set iterators</li>
+
+<li>
+User-defined containers</li>
+</ul>
+</ul>
+</td>
+
+<td><b>DAY 4</b>
+<blockquote><b><i>Iterator In-Depth</i></b></blockquote>
+
+<ul>
+<ul>
+<li>
+Iterator traits</li>
+
+<li>
+User-defined iterators</li>
+
+<li>
+"Safe" iterator adapter</li>
+
+<li>
+Stream and insert iterators</li>
+</ul>
+
+<p><br><b><i>Allocators</i></b>
+<br>&nbsp;
+<ul>
+<li>
+The standard allocator</li>
+
+<li>
+User-defined allocators</li>
+</ul>
+
+<p><br><b><i>Exception safety</i></b>
+<br>&nbsp;
+<ul>
+<li>
+The problem</li>
+
+<li>
+The basic guarantee</li>
+
+<li>
+The strong guarantee</li>
+</ul>
+</ul>
+</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial"><font color="#295AB5">FURTHER READING</font></font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+
+<table BORDER=0 CELLSPACING=10 CELLPADDING=2 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP WIDTH="60%"><a NAME="ReadingEffectiveJava"></a><font color="#000000">To
+get an impression of some topics covered in this course check out the sample
+reading:&nbsp;</font>
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=TOP WIDTH="50"><a href="../Articles/Papers/AnsiC++/AnsiC++WhitePaper.htm"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=27 width=31></a></td>
+
+<td NOWRAP><font color="#000000"><a href="../Articles/Papers/AnsiC++/AnsiC++WhitePaper.htm">New
+Features in ANSI C++</a></font>
+<br><font color="#000000"><font size=-1>White Paper</font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>
+<center><a href="../Articles/C++Report.html"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=27 width=31></a></center>
+</td>
+
+<td VALIGN=TOP><font size=-1><a href="../Articles/C++Report.html">EFFECTIVE
+STANDARD C++ LIBRARY</a></font>
+<br><font color="#000000"><font size=-1>Column in C++ Report</font></font></td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+<br>&nbsp;
+</body>
+</html>

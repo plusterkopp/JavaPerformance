@@ -1,0 +1,510 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <title>Fehlerfreies Programmieren in C++ - Dynamische Allokation von Ressourcen</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="ElektronikReliableCpp"></a>
+<br><font color="#295AB5"><font size=+3>Fehlerfreies Programmieren in C++</font></font>
+<br><font color="#295AB5"><font size=+1>Dynamische Allokation von Ressourcen</font></font>
+<p><font color="#295AB5"><font size=+2>Elektronik, M&auml;rz 1998</font></font>
+<br><font color="#295AB5"><font size=+1>Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<dl><b><font size=-1>C++ ist eine m&auml;chtige und komplexe Programmiersprache
+mit vielen unbestrittenen Vorteilen, aber dem unvermeidlichen Nachteil
+einer steilen Lernkurve. Eigenarten der Sprache, die dem langj&auml;hrigen
+C++-Experten als selbstverst&auml;ndlich erscheinen, stellen f&uuml;r den
+weniger ge&uuml;bten C++-Programmierer bisweilen Stolpersteine dar. In
+diesem Artikel werden einige typische Anwendungsfehler erl&auml;utert,
+mit dem Ziel ein Bewu&szlig;tsein f&uuml;r die Fehlerquellen zu wecken
+und Vorschl&auml;ge f&uuml;r deren Vermeidung zu machen.</font></b></dl>
+<font size=-1>Vielfach wird der &Uuml;bergang von C nach C++ als schwierig,
+m&uuml;hselig und fehleranf&auml;llig angesehen. Nicht v&ouml;llig zu unrecht.
+C++ ist eine vielseitige und m&auml;chtige Programmiersprache. Sie unterst&uuml;tzt
+mehrere Programmierparadigmen: prozedurale Programmierung im Stile von
+C, modulare Konzepte, Objekt-Orientierung und generisches Programmieren.
+Diese Vielseitigkeit hat den Vorteil, da&szlig; man C++ in nahezu jeder
+Art von Projekt erfolgreich und gewinnbringend einsetzen kann. Die objekt-orientierten
+Konzepte helfen, die Komplexit&auml;t von Gro&szlig;projekten in den Griff
+zu kriegen. Die N&auml;he und Kompatibilit&auml;t zu C erlaubt es, effiziente
+Systemsoftware in C++ zu bauen. Von einer verteilten 3-Tier-Business-Anwendung
+mit graphischer Benutzeroberfl&auml;che und Datenbankanschlu&szlig; bis
+zum Embedded Programm f&uuml;r einen Herzschrittmacher ist alles m&ouml;glich,
+ohne Bruch in der Sprache und ohne Adaptoren - ein System aus einem Gu&szlig;,
+alles in C++. Genau daf&uuml;r wurde die Sprache konzipiert.</font>
+<p><font size=-1>F&uuml;r diese Vielseitigkeit zahlt man einen Preis, n&auml;mlich
+den einer steilen Lernkurve. Der &uuml;bliche und empfehlenswerte Weg einer
+Ann&auml;herung an C++ beginnt mit der Verwendung von C++ als besseres
+C. Danach wendet man sich den modularen Konzepte zu, um sich dann allm&auml;hlich
+der Objekt-Orientierung zu n&auml;hern. Generische Programmierung und die
+Verwendung von Templates und Exceptions stecken noch heute in den Kinderschuhen.
+Vom ersten Ann&auml;herungsversuch bis zur perfekten Beherrschung der Sprache
+in allen ihren Facetten vergehen im allgemeinen 2-3 Jahre. Derart gewaltige
+Lernphasen sind im allgemeinen nur projektbegleitend m&ouml;glich. Daher
+finden sich viele Programmierer in einer Situation wieder, in der sie C++
+anwenden wollen und/oder m&uuml;ssen, aber bei weitem nicht alle Eigenheiten
+der Sprache kennen und lieben gelernt haben.</font>
+<p><b><font size=-1>Stolpersteine in C++ - am Beispiel der Konstruktion
+von Objekten</font></b>
+<p><font size=-1>In diesem Artikel will ich der Situation zahlreicher Entwickler
+von Embedded Systemen Rechnung tragen, die fundierte Kenntnisse in Assembler
+und C mitbringen, aber im Umgang mit C++ nicht &uuml;ber jahrelange Erfahrung
+verf&uuml;gen. Ich will versuchen, einige wenige typische Stolpersteine
+im Umgang mit der Sprache C++ darzustellen, den Leser f&uuml;r die fehleranf&auml;llige
+zu sensibilisieren und Vorschl&auml;ge zu deren Vermeidung zu unterbreiten.
+Als Beispiel habe ich die Konstruktion von Objekten herausgegriffen, aus
+folgenden Gr&uuml;nden: Erstens ist die Konstruktion an sich ein wichtiges
+Thema in C++ und wird tagt&auml;glich, bewu&szlig;t oder unbewu&szlig;t,
+von jedem C++-Programmierer verwendet. Zweitens sind Klassen und Objekte,
+als Verallgemeinerung von Datenstrukturen, insbesondere auch im Embedded
+Programming von Bedeutung, anders als zum Beispiel Mehrfachvererbung oder
+Polymorphismen. Als Einstieg in das Beispiel wollen wir zun&auml;chst einmal
+rekapitulieren, was jeder irgendwann einmal in einem C++-Kurs &uuml;ber
+Klassen gelernt hat.</font>
+<p><b><font size=-1>Das Sprachmittel der Klasse in C++</font></b>
+<p><font size=-1>C++ unterst&uuml;tzt die Definition neuer Typen durch
+den Benutzer. Diese benutzerdefinierten Typen sind &uuml;blicherweise Klassen,
+oder Strukturen oder Unions, die wiederum Spezialf&auml;llen von Klassen
+sind. Das Sprachmittel der Klasse in C++ hat mehrere Funktionen: Zum einen
+unterst&uuml;tzt es das Konzept abstrakter Datentypen (ADT), zu anderen
+hilft es beim korrekten Anlegen und Wegr&auml;umen von Daten und Ressourcen.</font>
+<p><font size=-1>Den abstrakten Datentypen liegt die Idee der Datenkapselung
+zu Grunde. Daten werden zusammen mit den Funktionen, die auf diesen Daten
+arbeiten, zu einem neuen Datentyp geb&uuml;ndelt. Ziel der &Uuml;bung ist
+es u.a., Unbefugten den Zugriff auf die Daten zu entziehen und Modifikationen
+der Daten zu kontrollieren. Auf diese Weise soll sichergestellt werden,
+da&szlig; die Daten nicht in inkonsistente Zust&auml;nde geraten k&ouml;nnen.
+In C++ werden abstrakte Datentypen als Klassen realisiert. In einer idealen
+Klasse sind die zu sch&uuml;tzenden Daten typischerweise private Datenmember
+der Klasse (gekennzeichnet durch das Schl&uuml;sselwort<tt><font face="Courier New">
+private</font></tt>); die Funktionen werden als &ouml;ffentliche Funktionsmember
+der Klasse (Schl&uuml;sselwort <tt><font face="Courier New">public</font></tt>)
+implementiert.</font>
+<p><font size=-1>Kontrolle allein gen&uuml;gt nicht, um die Daten einer
+Klasse stets konsistent zu halten. Es mu&szlig; auch daf&uuml;r gesorgt
+werden, da&szlig; die Daten korrekt angelegt und wieder wegger&auml;umt
+werden. Dies ist die zweite wichtige Funktion des Sprachmittels <tt><font face="Courier New">class</font></tt>
+in C++: es unterst&uuml;tzt die Verwaltung von Ressourcen und internen
+Daten eines Objekts. Die Konstruktoren einer Klasse sind zust&auml;ndig
+f&uuml;r das Anlegen und Initialisieren von Ressourcen, der Destruktor
+k&uuml;mmert sich um die Aufr&auml;umarbeiten. Der wesentliche Vorteil
+des Konzept von Konstruktoren und Destruktoren liegt im automatischen Aufruf
+derselben. Der Compiler f&uuml;hrt einen Konstruktor aus, wenn eine Instanz
+einer Klasse angelegt wird, und ruft den Destruktor, wenn die Instanz ihre
+G&uuml;ltigkeit verliert.</font>
+<p><font size=-1>Klassen verhalten sich idealerweise wie richtige Datentypen:
+Objekte eines Datentyps in C++, z.B. <tt><font face="Courier New">int</font></tt>
+oder <tt><font face="Courier New">long</font></tt>, k&ouml;nnen nicht nur
+erzeugt und weggeworfen werden, sondern auch kopiert, einander zugewiesen
+und ineinander konvertiert. Das gleiche gilt f&uuml;r Objekte eines benutzerdefinierten
+Typs. Deshalb gibt es neben Konstruktoren und Destruktoren noch eine Reihe
+weiterer Memberfunktionen in einer Klasse, die automatisch vom Compiler
+unter gewissen Umst&auml;nden gerufen werden. Dazu geh&ouml;ren all Operatoren,
+die in C++ typspezifisch &uuml;berladen werden k&ouml;nnen. Konstruktion,
+Destruktion, Kopieren und Zuweisen sind jedoch die Basisoperationen, die
+jeder benutzerdefinierte Typ in irgendeiner Form unterst&uuml;tzt - bewu&szlig;t
+oder unbewu&szlig;t. Wenden wir uns dem Unbewu&szlig;ten zu, denn dort
+gibt es bisweilen &Uuml;berraschungen.</font>
+<p><b><font size=-1>Compiler-generierte Operationen</font></b>
+<p><font size=-1>Wenn eine Klasse gewisse Operationen nicht selbst definiert,
+so generiert der Compiler diese Operationen. Daher hat eine Klasse immer
+die folgenden Memberfunktionen:</font>
+<ul>
+<li>
+<font size=-1>einen Default-Konstruktor,</font></li>
+
+<li>
+<font size=-1>einen Copy-Konstruktor, und</font></li>
+
+<li>
+<font size=-1>einen Zuweisungsoperator.</font></li>
+</ul>
+<font size=-1>Eine leere Klasse, d.h. eine Klasse ohne Datenmember und
+Memberfunktionen, ist also eigentlich nicht wirklich leer, sondern wird
+vom Compiler wie eine Klasse behandelt, die bereits die folgenden Memberfunktionen
+hat:</font>
+<pre><font size=-1>class Empty {
+public:
+&nbsp; Empty();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Default-Konstruktor
+&nbsp; Empty(const Empty&amp; rhs);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Copy-Konstruktor
+&nbsp; Empty&amp; operator=(const Empty&amp; rhs);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Zuweisungsoperator
+};</font></pre>
+<font size=-1>Hier sind ein paar Beispiele, die zeigen, wo und wann diese
+Operationen automatisch gerufen werden:</font>
+<pre><font size=-1>const Empty e1;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // ruft Default-Konstruktor
+Empty e2 = e1;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // ruft Copy-Konstruktor
+e2 = e1;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // ruft Zuweisungsoperator</font></pre>
+<font size=-1>Die implizite Generierung dieser Funktionen ist hilfreich,
+denn in vielen F&auml;llen nimmt einem der Compiler eine Menge Arbeit ab.
+Selbstverst&auml;ndlich kann der Compiler die Semantik einer Klasse nicht
+erraten. Was er generiert, sind Defaultversionen der oben aufgef&uuml;hrten
+Operationen, deren Funktionalit&auml;t in vielen F&auml;llen genau richtig
+ist. Unter gewissen Umst&auml;nden passen jedoch die vom Compiler generierten
+Operationen einfach nicht zur Semantik der Klasse, wie wir sp&auml;ter
+sehen werden. Schauen wir uns aber zun&auml;chst einmal an, was die compiler-generierten
+Operationen eigentlich tun. Dabei beschr&auml;nken wir uns auf den Copy-Konstruktor
+und die Zuweisungsoperation, weil die vollst&auml;ndige Betrachtung der
+Thematik den Rahmen dieses Artikel sprengen w&uuml;rde.</font>
+<p><font size=-1>Vereinfachend k&ouml;nnte man sagen: Der compiler-generierte
+Copy-Konstruktor kopiert ein Objekt, in dem er seine einzelnen Sub-Objekte
+kopiert. Der compiler-generierte Zuweisungsoperator weist ein Objekt einem
+anderen zu, in dem er die einzelnen Sub-Objekte zuweist Im Detail bedeutet
+es, da&szlig; alle nicht-statischen Datenmember einer Klasse kopiert bzw.
+zugewiesen werden, sowie alle Datenmember, die von direkten Basisklassen
+geerbt wurden. Abh&auml;ngig vom Typ des Sub-Objekts wird das Kopieren/Zuweisen
+unterschiedlich ausgef&uuml;hrt.</font>
+<ul>
+<li>
+<font size=-1><i>Skalare Typen</i>. F&uuml;r die in C++ definierten Typen
+wie <tt><font face="Courier New">bool</font></tt>, <tt><font face="Courier New">char</font></tt>,
+<tt><font face="Courier New">int</font></tt>,
+<tt><font face="Courier New">long</font></tt>,
+<tt><font face="Courier New">float</font></tt>,
+<tt><font face="Courier New">double</font></tt>,
+aber auch f&uuml;r Pointer wird bitweise kopiert/zugewiesen.</font></li>
+
+<li>
+<font size=-1><i>Klassen-Typen</i>. F&uuml;r Instanzen von Klassen wird
+deren Copy-Konstruktor/Zuweisungsoperator gerufen.</font></li>
+
+<li>
+<font size=-1><i>Arrays</i>. Jedes Element des Arrays wird gem&auml;&szlig;
+seines Typs kopiert/zugewiesen.</font></li>
+</ul>
+<font size=-1>Was bedeutet das in der Praxis? Die compiler-generierten
+Operationen sind alle so angelegt, da&szlig; sie f&uuml;r Strukturen im
+C-Stil genau das Richtige tun. Strukturen sind in C++ Spezialf&auml;lle
+von Klassen: es sind Klassen, deren Member per default alle <tt><font face="Courier New">public</font></tt>
+sind, wohingegen die Member einer Klasse per default alle <tt><font face="Courier New">private</font></tt>
+sind. Das ist der ganze Unterschied. Ansonsten sind Strukturen wie Klassen,
+d.h. auch sie haben Konstruktoren, Destruktoren, etc., und wenn sie diese
+nicht haben, werden sie vom Compiler generiert. Strukturen im C-Stil enthalten
+&uuml;blicherweise nur Datenmember skalaren Typs oder andere Strukturen
+im C-Stil. Sie haben keine Basisklassen, keine Funktionsmember und keine
+statischen Datenmember. Im C++-Fachjargon werden diese Strukturen PODs
+(Plain Old Data Structures) genannt. F&uuml;r eine POD tut der compiler-generierte
+Copy-Konstruktor/Zuweisungsoperator genau das Richtige: Alle Datenmember
+sind entweder skalaren Typs und werden daher bitweise kopiert bzw. zugewiesen,
+oder sie sind wiederum PODs. Dann wird deren compiler-generierter Copy-Konstruktor/Zuweisungsoperator
+gerufen, welcher seinerseits alle skalaren Datenmember bitweise kopiert/zuweist,
+usw. Auf Grund des rekursiven Aufrufs der compiler-generierten Operationen
+ist gew&auml;hrleistet, da&szlig; am Ende die gesamte Struktur bitweise
+kopiert bzw. zugewiesen wurde. Das ist genau das, was man aus C kennt und
+daher auch in C++ erwartet.</font>
+<p><font size=-1>Wie ist das nun bei Klassen? Betrachten wir ein einfaches
+Beispiel - eine Klasse, die einen ganzzahligen Wert mit einem Namen verkn&uuml;pft:</font>
+<pre><font size=-1>class NamedInt {
+private:
+&nbsp; String nameValue;
+&nbsp; int&nbsp;&nbsp;&nbsp; intValue;
+public:
+&nbsp; // diverse Konstruktoren
+&nbsp; NamedInt(char* name, int value);
+&nbsp; NamedInt(const String&amp; name, int value);
+&nbsp;&nbsp;
+&nbsp; // weitere Memberfunktionen
+&nbsp; ...
+};</font></pre>
+<font size=-1>Die Klasse besteht aus einer Zeichenkette f&uuml;r den Namen
+und einer Ganzzahl. Die definierten Konstruktoren initialisieren die beiden
+Datenmember. Man beachte, da&szlig; die Klasse <tt><font face="Courier New">NamedInt</font></tt>
+weder einen Default-Konstruktor noch einen Copy-Konstruktor definiert.
+Gegeben sei au&szlig;erdem eine Klasse String. Es handelt sich dabei um
+eine Zeichenketten-Klasse mit folgender Definition:</font>
+<pre><font size=-1>class String {
+public:
+&nbsp; String(char* val=0);
+&nbsp; String(const String&amp; rhs);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Copy-Konstruktor
+&nbsp; String&amp; operator=(const String&amp; rhs);&nbsp;&nbsp;&nbsp; // Zuseisungsoperator
+&nbsp; ...
+};</font></pre>
+<font size=-1>Auch diese Klasse hat keinen Default-Konstruktor, aber sie
+hat einen Copy-Konstruktor. Betrachten wir die folgenden Anweisungen:</font>
+<pre><font size=-1>NamedInt i("Smallest Prime Number", 2);
+NamedInt j = i;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // ruft den compiler-generierten Copy-Konstruktor</font></pre>
+<font size=-1>In der ersten Anweisung wird ein Objekt vom typ <tt><font face="Courier New">NamedInt</font></tt>
+konstruiert; es wird der Konstruktor <tt><font face="Courier New">NamedInt(char*
+name, int value)</font></tt> gerufen. In der zweiten Anweisung wird ein
+weiteres Objekt vom Typ <tt><font face="Courier New">NamedInt</font></tt>
+erzeugt, diesmal als Kopie eines anderen Objekts; es wird also ein Copy-Konstruktor
+gebraucht. Da der Autor der Klasse <tt><font face="Courier New">NamedInt</font></tt>
+keinen Copy-Konstruktor definiert hat, wird der vom Compiler generierte
+verwendet. Dieser Copy-Konstruktor kopiert das Integer-Datenmember <tt><font face="Courier New">intValue</font></tt>
+bitweise, weil es sich um ein Sub-Objekt skalaren Typs handelt, und ruft
+f&uuml;r das String-Datenmember <tt><font face="Courier New">NameValue</font></tt>
+den Copy-Konstruktor der Klasse <tt><font face="Courier New">String</font></tt>.
+Ganz offensichtlich ist das auch sinnvoll so: Die Klasse <tt><font face="Courier New">String</font></tt>
+hat einen Copy-Konstruktor und wird wohl selbst am besten wissen, wie sie
+ihre Objekte korrekt kopieren mu&szlig;. Also &uuml;berl&auml;&szlig;t
+man das Kopieren des <tt><font face="Courier New">String</font></tt>-Datenmembers
+dem Copy-Konstruktor der Klasse <tt><font face="Courier New">String</font></tt>.
+Insgesamt entspricht auch hier die vom Compiler gew&auml;hlte Strategie
+dem, was man ohnehin getan h&auml;tte. Man kann sich also die M&uuml;he
+sparen und braucht keinen expliziten Copy-Konstruktor zu definieren. Wenden
+wir uns nun den Situationen zu, in denen man mit den compiler-generierten
+Operationen nicht uneingeschr&auml;nkt gl&uuml;cklich ist.</font>
+<p><b><font size=-1>Dynamische Allokation von Ressourcen</font></b>
+<p><font size=-1>C++ unterst&uuml;tzt, im Gegensatz zu C, die Verwaltung
+von Ressourcen durch das Konzept der Konstruktoren und Destruktoren. Die
+Ressource wird &uuml;blicherweise in eine Klasse verpackt, in deren Konstruktor
+die Ressource angefordert und initialisiert wird, und in deren Destruktor
+die Ressource wieder frei gegeben wird. Solche Ressourcen k&ouml;nnen Dateizeiger
+sein, oder Mutexe und Semaphore, Socket oder Pipe Ids, Window Handles,
+oder dynamisch allozierter Speicher auf dem Heap. Sehen wir uns also eine
+Klasse mit einer dynamisch angeforderten Ressource an, eine primitive String-Klasse:</font>
+<pre><font size=-1>class String {
+private:
+&nbsp; char *data;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Zeiger auf den internen Puffer
+public:
+&nbsp; String(char* value=0);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Konstruktor
+&nbsp; ~String();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Destruktor
+};</font></pre>
+<font size=-1>Die fragliche Ressource ist der f&uuml;r das Ablegen der
+Zeichenkette ben&ouml;tigte Speicher. Er wird im Konstruktor angefordert:</font>
+<pre><font size=-1>String::String(char* value)
+{if(value)
+&nbsp;{ data=new char[strlen(value)+1];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Speicher f&uuml;r Puffer anfordern
+&nbsp;&nbsp; strcpy(data,value);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Puffer initialisieren, d.h. Initialwert kopieren
+&nbsp;}
+&nbsp;else&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // kein Initialwert vorhanden, d.h. leeren Puffer anlegen
+&nbsp;{ data=new char[1];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; *data='\0';
+&nbsp;}</font></pre>
+<font size=-1>und im Destruktor wieder freigegeben:</font>
+<pre><font size=-1>inline String::~String()
+{ delete[] data; }&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Speicher f&uuml;r Puffer freigeben</font></pre>
+<font size=-1>Man beachte, da&szlig; die Klasse <tt><font face="Courier New">String</font></tt>
+weder einen Copy-Konstruktor noch einen Zuweisungsoperator definiert und
+sich also f&uuml;r diese Operationen auf den Compiler verl&auml;&szlig;t.
+Nehmen wir jetzt einmal an, wir h&auml;tten zwei String-Objekte und w&uuml;rden
+die eine Zeichenkette den anderen zuweisen. Was geschieht dann?</font>
+<table BORDER=0 BORDERCOLOR="#000000" >
+<tr>
+<td WIDTH="272" BGCOLOR="#FFFFFF"><b><font color="#000000"><font size=-1>Ausgangssituation
+mit zwei String-Objekten</font></font></b></td>
+
+<td WIDTH="451" BGCOLOR="#FFFFFF"></td>
+</tr>
+
+<tr>
+<td WIDTH="272">
+<pre><font size=-1>String a("Hello");
+String b("World");</font></pre>
+</td>
+
+<td WIDTH="451"><img SRC="Folie3.JPG" NOSAVE height=81 width=500></td>
+</tr>
+</table>
+<font size=-1>Die beiden String-Objekte enthalten jeweils einen Zeiger
+auf den Speicherbereich, den sie f&uuml;r ihre Zeichenkette im Konstruktor
+angefordert haben. Wenn nun das eine Objekt dem anderen zugewiesen wird,
+wird der compiler-generierte Zuweisungsoperator verwendet. Der wiederum
+kopiert das Datenmember <tt><font face="Courier New">data</font></tt> bitweise.
+Mit anderen Worten, der Zeiger wird kopiert, nicht aber der Inhalt des
+referenzierten Speicherbereichs.</font>
+<br>&nbsp;
+<table BORDER=0 BORDERCOLOR="#000000" >
+<tr>
+<td WIDTH="272" BGCOLOR="#FFFFFF"><b><font color="#000000"><font size=-1>Situation
+nach der Zuweisung</font></font></b></td>
+
+<td WIDTH="451" BGCOLOR="#FFFFFF"></td>
+</tr>
+
+<tr>
+<td WIDTH="272">
+<pre><font size=-1>b = a;</font></pre>
+</td>
+
+<td WIDTH="451"><img SRC="Folie4.JPG" NOSAVE height=84 width=500></td>
+</tr>
+</table>
+<font size=-1>Das Resultat ist ein Memory Leak: Der vom Objekt</font> <font size=-1><tt><font face="Courier New">b</font></tt>
+angeforderte Speicher wird niemals frei gegeben. Dar&uuml;ber hinaus wird
+der von <tt><font face="Courier New">a</font></tt> angeforderte Speicher
+nun von <tt><font face="Courier New">a</font></tt> und <tt><font face="Courier New">b</font></tt>
+gemeinsam verwendet und deshalb bei der Destruktion der beiden Objekte
+zweimal frei gegeben. Auch das kann zu Problemen f&uuml;hren. Ganz offensichtlich
+reicht hier der vom Compiler generierte Zuweisungsoperator nicht aus. Die
+Klasse <tt><font face="Courier New">String</font></tt> mu&szlig; einen
+expliziten Zuweisungsoperator haben, der den Speicher des Objekts auf der
+linken Seite der Zuweisung korrekt frei gibt. Aber selbst dann verh&auml;lt
+sich die String-Klasse noch reichlich merkw&uuml;rdig. Betrachten wir folgende
+Situation:</font>
+<pre><font size=-1>void doNothing (String locStr) {}
+String s = "Goodbye cruel world";
+doNothing(s);</font></pre>
+<font size=-1>Wir rufen eine harmlose Funktion <tt><font face="Courier New">doNothing()</font></tt>
+auf, die gar nichts tut. Sie bekommt lediglich ein String-Objekt &uuml;bergeben,
+das sie aber nicht anr&uuml;hrt. &Uuml;berraschenderweise ist nach dem
+Aufruf von <tt><font face="Courier New">doNothing(s);</font></tt> der String
+<tt><font face="Courier New">s</font></tt>
+korrumpiert: sein Zeiger <tt><font face="Courier New">data</font></tt>
+zeigt auf einen bereits freigegeben Speicherbereich. Jeder weitere Zugriff
+auf <tt><font face="Courier New">s</font></tt> kann, mu&szlig; aber nicht,
+zum Programmabsturz f&uuml;hren. Es handelt sich um eine dieser wundersch&ouml;nen
+Situationen, deren Konsequenzen erst viel sp&auml;ter, an ganz anderen
+Stellen im Programm zu Problemen f&uuml;hren und deren Ursache so unendlich
+m&uuml;hselig zu finden ist. Was ist hier passiert?</font>
+<p><font size=-1>Bei der &Uuml;bergabe des Strings <tt><font face="Courier New">s</font></tt>
+an die Funktion<tt><font face="Courier New"> doNothing()</font></tt> wird
+eine Kopie des String-Objekts angelegt. Das liegt daran, da&szlig; die
+Funktion <tt><font face="Courier New">doNothing()</font></tt> ihr Argument
+als Wert und nicht als Referenz bekommen soll. W&auml;re die Funktion als
+<tt><font face="Courier New">void
+doNothing (String&amp; locStr)</font></tt> deklariert, so w&uuml;rde nur
+eine Referenz auf das String-Objekt <tt><font face="Courier New">s</font></tt>
+&uuml;bergeben. In unserer Situation mu&szlig; aber eine Kopie von <tt><font face="Courier New">s</font></tt>
+gemacht werden. Kopien werden mit Hilfe des Copy-Konstruktors erzeugt.
+Die Klasse <tt><font face="Courier New">String</font></tt> hat keinen expliziten
+Copy-Konstruktor. Also wird der vom Compiler generierte Copy-Konstruktor
+verwendet. Der wiederum erzeugt eine bitweise Kopie des Originals, d.h.
+es wird nur der Zeiger <tt><font face="Courier New">data</font></tt> kopiert,
+nicht aber der Inhalt des Speicherbereichs, auf den der Zeiger zeigt.</font>
+<br>&nbsp;
+<table BORDER=0 BORDERCOLOR="#000000" >
+<tr>
+<td WIDTH="383" BGCOLOR="#FFFFFF"><b><font color="#000000"><font size=-1>Situation
+bei Aufruf der Funktion doNothing()</font></font></b></td>
+
+<td WIDTH="340" BGCOLOR="#FFFFFF"></td>
+</tr>
+
+<tr>
+<td WIDTH="383">
+<pre><font size=-1>void doNothing (String locStr) {}
+String s = "Goodbye cruel world";
+doNothing(s);</font></pre>
+</td>
+
+<td WIDTH="340"><img SRC="Folie1.JPG" NOSAVE height=165 width=350></td>
+</tr>
+</table>
+<font size=-1>Nach dieser Aktion zeigen sowohl der Original-String<tt><font face="Courier New">s</font></tt>
+als auch die Kopie auf denselben Speicherbereich. Nun wird die Kopie der
+Funktion<tt><font face="Courier New"> doNothing()</font></tt> als Argument
+&uuml;bergeben. Funktionsargumente sind lokale Objekte und ihr G&uuml;ltigkeitsbereich
+endet beim Verlassen der Funktion, d.h. beim Verlassen der Funktion <tt><font face="Courier New">doNothing()</font></tt>
+wird die Kopie korrekterweise destruiert.</font>
+<br>&nbsp;
+<table BORDER=0 BORDERCOLOR="#000000" >
+<tr>
+<td WIDTH="383" BGCOLOR="#FFFFFF"><b><font color="#000000"><font size=-1>Situation
+nach dem Verlassen der Funktion doNothing()</font></font></b></td>
+
+<td WIDTH="340" BGCOLOR="#FFFFFF"></td>
+</tr>
+
+<tr>
+<td WIDTH="383">
+<pre><font size=-1>void doNothing (String locStr)&nbsp;
+{
+&nbsp;&nbsp; ...
+
+}&nbsp;&nbsp; Hier geht locStr "out of scope"!</font></pre>
+</td>
+
+<td WIDTH="340"><img SRC="Folie2.JPG" NOSAVE height=161 width=350></td>
+</tr>
+</table>
+<font size=-1>Bei der Destruktion von String-Objekten geben diese ihren
+Speicherbereich frei. Mit anderen Worten, die Kopie von</font> <font size=-1><tt><font face="Courier New">s</font></tt>
+gibt beim Verlassen der Funktion <tt><font face="Courier New">doNothing()</font></tt>
+den Speicher frei, auf den sie und aber auch das Original <tt><font face="Courier New">s</font></tt>
+zeigen. Aus diesem Grunde ist <tt><font face="Courier New">s</font></tt>
+nach dem Aufruf von <tt><font face="Courier New">doNothing(s)</font></tt>
+unbrauchbar geworden.</font>
+<p><font size=-1>Solche &Uuml;berraschungen will man gerne vermeiden, insbesondere
+da man die resultierenden Probleme erst sehr viel sp&auml;ter erkennt und
+dann die Ursache des &Uuml;bels nur noch schwer zu identifizieren ist.
+Was ist aber eigentlich die Ursache des &Uuml;bels hier? Die Klasse String
+ist irgendwie falsch. Einige Problempunkte haben wir bereits identifiziert.
+Der compiler-generierte Zuweisungsoperator hinterl&auml;&szlig;t Memory
+Leaks. Der Destruktor gibt Speicher zweimal oder viel zu fr&uuml;h wieder
+frei. Eine L&ouml;sung f&uuml;r das Problem mit dem Zuweisungsoperator
+wurde oben bereits skizziert: Man definiere einen expliziten Zuweisungsoperator
+f&uuml;r die Klasse String, der den Speicher korrekt frei gibt. Auch der
+Destruktor kann korrigiert werden. Es mu&szlig; gez&auml;hlt werden, wie
+viele String-Objekte auf denselben Speicherbereich zeigen, und es darf
+dann erst bei der Destruktion des letzten solchen String-Objekts der Speicher
+frei gegeben werden. Diese Technik wird als Reference Counting bezeichnet
+und wird in jeder realen Implementierung von String-Klassen verwendet.
+In diesem Fall mu&szlig; dann aber auch der Copy-Konstruktor explizit definiert
+werden, weil das Kopieren jeweils ein neues Objekt erzeugt, welches den
+Speicher gemeinsam mit seinem Original benutzt und also der Referenzz&auml;hler
+inkrementiert werden mu&szlig;. Der compiler-generierte Copy-Konstruktor
+reicht also nicht mehr aus.</font>
+<p><b><font size=-1>Res&uuml;mee</font></b>
+<p><font size=-1>Am Beispiele einer primitiven String-Klasse haben wir
+gesehen, da&szlig; C++ dem Programmierer bisweilen kleine Stolpersteine
+in den Weg legt. Die compiler-generierten Operationen einer Klasse sind
+ein Beispiel daf&uuml;r. Sie sind in vielen F&auml;llen sehr, sehr n&uuml;tzlich.
+In manchen F&auml;llen haben sie aber die falsche Semantik und ziehen &uuml;berraschende
+Fehler nach sich. Bisweilen mag es schwierig erscheinen, zu entscheiden,
+wann eine Klasse nun einen expliziten Copy-Konstruktor und Zuweisungsoperator
+braucht, und wann sie keinen braucht. Es ist z. B. keine gute L&ouml;sung,
+nun grunds&auml;tzlich immer alle Operationen explizit zu definieren. Erstens
+ist das viel Arbeit. Zweitens kann man viele Fehler dabei machen. Drittens
+ist der Compiler einfach effizienter, d.h. man ruiniert sich u.U. die Performance
+mit hand-codierten Operationen, die nicht n&ouml;tig sind. Es mu&szlig;
+also immer genau &uuml;berlegt werden, ob explizite Operationen gebraucht
+werden oder nicht. Als Faustregel kann man sich merken, da&szlig; sie mit
+Wahrscheinlichkeit immer dann explizit definiert werden m&uuml;ssen, wenn
+in der Klasse dynamisch Ressourcen angefordert werden. Der typischste solche
+Ressource ist Speicher auf dem Heap. Wenn eine Klasse also Datenmember
+hat, die Zeiger oder Referenzen sind, dann sollte man sich Gedanken &uuml;ber
+deren Initialisierung und Verwendung machen, und sehr wahrscheinlich wird
+man feststellen, da&szlig; der compiler-generierte Default-Konstruktor,
+Copy-Konstruktor, Zuweisungsoperator und Destruktor nicht ausreichen.</font>
+<p><font size=-1>Der Stolperstein bei der Entscheidung f&uuml;r oder gegen
+die compiler-generierten Operationen beim Design einer Klasse ist nur einer
+von unz&auml;hligen Beispielsweise haben wir nicht &uuml;berlegt, wann
+eigentlich ein Destruktor virtuell sein mu&szlig;, oder wie ein korrekter
+Zuweisungsoperator aussehen mu&szlig;, wie globale und statische Variablen
+korrekt initialisiert werden, etc. etc. Wie k&ouml;nnen Fehler schon im
+Vorfeld vermieden werden? Selbstverst&auml;ndlich ist Erfahrung durch nichts
+zu ersetzen. In der Praxis ist die notwendige Erfahrung aber oft nicht
+da, und au&szlig;erdem will man ja nicht alles durch schlechte Erfahrungen
+lernen. Werkzeuge k&ouml;nnen Hilfestellung leisten. Viele fehleranf&auml;llige
+Situationen k&ouml;nnen durch statische Analyse des Programms erkannt werden
+und ein Tool kann entsprechende Hinweise geben. Solche Werkzeuge sind dem
+<tt><font face="Courier New">lint</font></tt>
+Programm in C &auml;hnlich. Sie sind h&auml;ufig sogar in der Lage, die
+Einhaltung von Regeln aus Style Guides zu &uuml;berpr&uuml;fen. Nat&uuml;rlich
+k&ouml;nnen Werkzeuge und Style Guides nicht alle potentiellen Fehler erkennen.
+Manche Probleme k&ouml;nnen nur entdeckt werden, wenn man die Semantik
+einer Klasse versteht. Die korrekte Verwendung von <tt><font face="Courier New">const</font></tt>
+f&auml;llt typischerweise in diese Kategorie. Semantische Fehler kann nur
+ein Reviewer oder Mentor finden. Wer Fehler in C++ Programmen nicht erst
+beim Test finden will, sollte einen Style Guide verwenden, sich ein entsprechendes
+Werkzeug besorgen, und die Programme regelm&auml;&szlig;ige von einem erfahrenen
+Mentor reviewen lassen.</font>
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="50%" >
+<tr>
+<td><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font>
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../../../Courses/ReliableC++.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=30 width=46></a></td>
+
+<td><font color="#000000"><a href="../../../Courses/ReliableC++.htm">Reliable
+C++ - Avoiding Common Traps and Pitfalls</a></font>
+<br><font color="#000000"><font size=-1>3 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

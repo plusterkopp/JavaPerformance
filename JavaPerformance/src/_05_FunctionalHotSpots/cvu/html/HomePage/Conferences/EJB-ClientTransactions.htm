@@ -1,0 +1,85 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <title>Client Transactions with Enterprise Java Beans  -  Tutorial</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="AbstractClientTX"></a>
+<br>&nbsp;&nbsp;
+<div ALIGN=right><table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 COLS=1 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">ABSTRACT</font></b></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=0 COLS=1 WIDTH="95%" >
+<tr>
+<td>One of the main aspects of the Enterprise Java Beans (EJB) framework
+is its support for transactions.&nbsp; Although EJB supports alternative
+programming styles&nbsp; for use of transactions, namely declarative and
+programmatic transactions, EJB's support remains limited. The EJB transaction
+model is a component-centric model in the sense that transactions are tied
+to beans (1 bean method = 1 transaction).&nbsp; It&nbsp; helps coping with
+concurrent components, but it lacks support for managing concurrent clients
+who participate in a transaction.&nbsp; Client transactions&nbsp; typically
+need different and more sophisticated transactional support than is provided
+by plain EJB transactions.&nbsp;
+<p>In this tutorial we discuss several implementation techniques for client
+transactions.&nbsp; All implementations presented in this talk are built
+on top of EJB transactions. These approaches include client initiated transactions
+based on JTS/JTA and server-side support for optimistic and pessimistic
+locking.&nbsp; Along with the implementation techniques themselves we will
+discuss performance characteristics and further up- and down-sides of each
+of the idioms.</td>
+</tr>
+</table></div>
+&nbsp;</td>
+</tr>
+</table></div>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">PREREQUISITES</font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLPADDING=5 WIDTH="95%" >
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Level:</font></i></b></td>
+
+<td>intermediate</td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td WIDTH="50%">90 min</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><i><font color="#295AB5">Prerequisites:</font></i></b></td>
+
+<td WIDTH="50%">Attendants should be familiar with the core concepts of
+EJB.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><b><i><font color="#295AB5">Presented at:</font></i></b></td>
+
+<td WIDTH="95%"><a href="PreviousEvents.html#OOP2003">OOP 2003</a>, Munich,
+Germany, January 2003</td>
+</tr>
+</table></div>
+
+<br>&nbsp;
+</body>
+</html>

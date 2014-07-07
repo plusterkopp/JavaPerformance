@@ -1,0 +1,1066 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="pre-copyedit version of a feature article published in JavaPro Online in March 2004">
+   <meta name="KeyWords" content="Java Generics J2SE 1.5 parameterized type  Java 1.5">
+   <title>Java Generics - Introduction</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="JavaProOnline01"></a>
+<br><font color="#295AB5"><font size=+3>Language Features of Java Generics</font></font>
+<br><font color="#295AB5"><font size=+1>Introduction and Overview</font></font>
+<br>&nbsp;
+<p><font color="#295AB5"><font size=+2>JavaPro Online, March 2004</font></font>
+<br><font color="#295AB5"><font size=+1>Angelika Langer &amp; Klaus Kreft</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<blockquote><a href="#LanguageFeatures">Language Features - Overview and
+Introduction</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="#What is the purpose of generics?">What
+is the purpose of generics?</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="#Generic Types">Generic Types</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="#Bounds">Bounded Type Parameters</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="#Generic Methods">Generic Methods</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="#Wildcard Instantiations of Parameterized Types">Wildcard
+Instantiations of Parameterized Types</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="#Summary of Java Generics Language Features">Summary
+of Java Generics Language Features</a>
+<p><a href="#Implementation of the Java Generics Language Features">Implementation
+of the Java Generics Language Features</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="#Translation of Generics">Translation of
+Generics</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="#Type Erasure">Type Erasure</a>
+<p><a href="#Summary">Summary</a>
+<br><a href="#References">References</a>
+<br>&nbsp;</blockquote>
+
+<h2>
+<a NAME="LanguageFeatures"></a>Language Features</h2>
+J2SE 1.5 will become available by mid of 2004 and will include support
+for generic types and methods (see /<a href="#JDK15">JDK15</a>/).&nbsp;
+This new language feature, known as Java Generics (JG), is a major addition
+to the core language. In this article we will give an overview of the new
+feature.
+<h3>
+<a NAME="What is the purpose of generics?"></a><b>What is the purpose of
+generics?</b></h3>
+The need for generic types stems from the implementation and use of collections,
+like the ones in the Java collection framework (see /<a href="#JDK15">JDK15</a>/).
+Typically, the implementation of a collection of objects is independent
+of the type of the objects that the collection maintains. For this reason,
+it does not make sense to reimplement the same data structure over and
+over again, just because it will hold different types of elements.&nbsp;
+Instead, the goal is to have a single implementation of the collection
+and use it to hold elements of different types.&nbsp; In other words, rather
+than implementing a class <tt>IntList</tt> and <tt>StringList</tt> for
+holding integral values and strings respectively, we want to have one generic
+implementation <tt>List</tt> that can be used in either case.
+<p>In Java, this kind of generic programming is achieved today (in non-generic
+Java) by means of <tt>Object</tt> references: a generic list is implemented
+as a collection of <tt>Object</tt> references. Since <tt>Object</tt> is
+the superclass of all classes the list of <tt>Object</tt> references can
+hold references to any type of object. All collection classes in the Java
+platform libraries (see /<a href="#JDK15">JDK15</a>/) use this programming
+technique for achieving genericity.
+<p>As a side effect of this idiom we cannot have collections of values
+of primitive type, like a list of integral values of type <tt>int</tt>,
+because the primitive types are not subclasses of <tt>Object</tt>.&nbsp;
+This is not a major restriction because every primitive type has a corresponding
+reference type.&nbsp; We would convert <tt>int</tt>s to <tt>Integer</tt>s
+before we store them in a collection - a conversion that is known as boxing
+and that will be supported as an automatic conversion (<i>autoboxing</i>)&nbsp;
+in JDK 1.5 (see /<a href="#BOX">BOX</a>/).
+<p>A Java collection is very flexible; it can be used for holding reference
+to all types of objects. The collection need not even be homogeneous, that
+is, hold objects of the same type, but it can equally well be heterogeneous,
+that is, contain a mix of objects of different types.&nbsp; Using generic
+Java collections is straightforward.&nbsp; Elements are added to the collection
+by passing element reference to the collection. Each time we extract an
+object from a collection we receive an <tt>Object</tt> reference. Before
+we can effectively use the retrieved element, we must restore the element’s
+type information. For this purpose we cast the returned <tt>Object</tt>
+reference down to the element’s alleged type. Here is an example:
+<p><tt>LinkedList list = new LinkedList();</tt>
+<br><tt>list.add(new Integer(0));</tt>
+<br><tt>Integer i = <font color="#990000">(Integer)</font> list.get(0);</tt>
+<p>We must cast the <tt>Object</tt> reference returned from method <tt>get()
+</tt>down
+to type <tt>Integer</tt>.&nbsp; The cast is safe because it is checked
+at runtime.&nbsp; If we tried a cast to a type different from the extracted
+element’s actual type, a <tt>ClassCastException</tt> would be raised, like
+in the example below:
+<p><tt>String s = (String) list.get(0); // </tt>fine at compile-time, but
+fails at runtime with a<tt> ClassCastException</tt>
+<p>The lack of information about a collection’s element type and the resulting
+need for countless casts in all places where elements are extracted from
+a collection is the primary motivation for adding parameterized types to
+the Java programming language.&nbsp; The idea is to adorn the collection
+types with information about the type of elements that they contain. Instead
+of treating every collection as a collection of <tt>Object</tt> references,
+we would distinguish between collections of references to integers and
+collections of references to strings.&nbsp; A collection type would be
+a parameterized (or generic) type that has a type parameter, which would
+specify the element type.&nbsp; With a generic list, the previous example
+would look like this:
+<p><tt>LinkedList<font color="#990000">&lt;Integer></font> list = new LinkedList<font color="#990000">&lt;Integer></font>();</tt>
+<br><tt>list.add(new Integer(0));</tt>
+<br><tt>Integer i = list.get(0);</tt>
+<p>Note, that the <tt>get()</tt> method of a generic list returns a reference
+to an object of a specific type, in our example of type <tt>Integer</tt>,
+in which case the cast from <tt>Object</tt> to <tt>Integer</tt> is not
+needed any longer. Also, use of the extracted element as though it were
+of a different type would now be caught at compile time already, rather
+than at runtime.&nbsp; The example below would simply not compile:
+<p><tt>String s = list.get(0); // <font color="#990000">compile-time error</font></tt>
+<p>This way, Java Generics increase the expressive power of the language
+and increase the type safety of the language by enabling early static checks
+instead of late dynamic checks.
+<p>Java Generics do not only provide us with parameterized collection types
+like the one we used in the example above, it also allows us to implement
+generic types ourselves.&nbsp; In order to see, how we can use the new
+language feature for our own Java programs let us explore Java Generics
+in more depth. In the following we will briefly look at the syntax of the
+definition of generic types and further language features related to Java
+generics.
+<br>&nbsp;
+<h3>
+<a NAME="Generic Types"></a>Generic Types</h3>
+Listing 1 gives an example of the definition of several generic types.&nbsp;
+The sample code shows a sketch of a parameterized collection <tt>LinkedList&lt;A></tt>,
+its superinterface <tt>Collection&lt;A></tt> and its iterator type <tt>Iterator&lt;A></tt>.&nbsp;
+The types in this example are inspired by the collection classes from the
+Java platform libraries in package <tt>java.util</tt>.
+<br>&nbsp;
+<table BORDER CELLPADDING=5 >
+<tr>
+<td BGCOLOR="#000000"><b><font color="#FFFFFF">Listing 1:&nbsp; Examples
+of parameterized types – a linked list</font></b></td>
+</tr>
+
+<tr>
+<td><tt>interface Collection&lt;A>&nbsp; {</tt>
+<br><tt>&nbsp;public void add (A x);</tt>
+<br><tt>&nbsp;public Iterator&lt;A> iterator ();</tt>
+<br><tt>}</tt>
+<br><tt>interface Iterator&lt;A> {</tt>
+<br><tt>&nbsp;public A next ();</tt>
+<br><tt>&nbsp;public boolean hasNext ();</tt>
+<br><tt>}</tt>
+<br><tt>class NoSuchElementException extends RuntimeException {}</tt>
+<p><tt>class LinkedList&lt;A> implements Collection&lt;A> {</tt>
+<br><tt>&nbsp;protected class Node {</tt>
+<br><tt>&nbsp;&nbsp; A elt;</tt>
+<br><tt>&nbsp;&nbsp; Node next = null;</tt>
+<br><tt>&nbsp;&nbsp; Node (A elt) { this.elt = elt;&nbsp; }</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>&nbsp;protected Node head = null, tail = null;</tt>
+<br><tt>&nbsp;public LinkedList () {}</tt>
+<br><tt>&nbsp;public void add (A elt) {</tt>
+<br><tt>&nbsp;&nbsp; if (head == null) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; head = new Node(elt);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; tail = head;</tt>
+<br><tt>&nbsp;&nbsp; } else {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; tail.next = new Node(elt);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; tail = tail.next;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>&nbsp;public Iterator&lt;A> iterator () {</tt>
+<br><tt>&nbsp;&nbsp; return new Iterator&lt;A> () {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; protected Node ptr = head;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; public boolean hasNext () { return ptr
+!= null; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; public A next () {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (ptr != null) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A elt = ptr.elt;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ptr = ptr.next;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return elt;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } else {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; throw new NoSuchElementException
+();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; };</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<p><tt>final class Test {</tt>
+<br><tt>&nbsp;public static void main (String[ ] args) {</tt>
+<br><tt>&nbsp;&nbsp; LinkedList&lt;String> ys = new LinkedList&lt;String>();</tt>
+<br><tt>&nbsp;&nbsp; ys.add("zero"); ys.add("one");</tt>
+<br><tt>&nbsp;&nbsp; String y = ys.iterator().next();</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<p>Parameterized types have type parameters.&nbsp; In our example they
+have exactly one parameter, namely <tt>A</tt>. In general, a parameterized
+type can have arbitrarily many parameters.&nbsp; In our example, the parameter
+<tt>A</tt>
+stands for the type of the elements contained in the collection.&nbsp;
+A parameter such as <tt>A</tt> is also called a <i>type variable</i>. Type
+variables can be imagined as placeholders that will later be replaced by
+a concrete type.&nbsp; For instance, when an instantiation of the generic
+type, such as <tt>LinkedList&lt;String></tt>, is used, <tt>A </tt>will
+be replaced by <tt>String</tt>.
+<p>Later in this article we will see that there are restrictions regarding
+the use of type variables and we will realize that a type variable cannot
+be used like a type, i.e. the analogy with a “placeholder for a type”&nbsp;
+is not fully correct, just an approximation of what a type variable is.&nbsp;
+But for&nbsp; the time being, let’s regard the type variable as a placeholder
+for a type – the type of the elements contained in the collection, in our
+example.
+<br>&nbsp;
+<h3>
+<a NAME="Bounds"></a>Bounds</h3>
+For implementation of a generic list like in our example above we never
+need to invoke any method of the element type.&nbsp; A list just uses references
+to the elements, but never really accesses the elements.&nbsp; For this
+reason it need not know anything about the element type.&nbsp; Not all
+parameterized types have such rudimentary requirements to their element
+types.
+<p>Imagine we would want to implement a hash-based collection, like a hash
+table.&nbsp; A hash-based collection needs to calculate the entries’ hash
+codes.&nbsp; However, the element type is unknown in the implementation
+of a parameterized hash table.&nbsp; Only the type variable representing
+the element type is available. Listing 2 shows an excerpt of the implementation
+of a parameterized hash table.&nbsp; It is a parameterized class that has
+two type parameters for the key type and the associated value type.
+<br>&nbsp;
+<table BORDER CELLPADDING=5 >
+<tr>
+<td BGCOLOR="#000000"><b><font color="#FFFFFF">Listing 2: Example of&nbsp;
+parameterized type&nbsp; - a hash table</font></b></td>
+</tr>
+
+<tr>
+<td><tt>public class Hashtable&lt;Key, Data> {</tt>
+<br><tt>&nbsp;...&nbsp;</tt>
+<br><tt>&nbsp;private static class Entry&lt;Key, Data> {</tt>
+<br><tt>&nbsp;&nbsp; Key key;</tt>
+<br><tt>&nbsp;&nbsp; Data value;</tt>
+<br><tt>&nbsp;&nbsp; int hash;</tt>
+<br><tt>&nbsp;&nbsp; Entry&lt;Key, Data> next;</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>&nbsp;private Entry&lt;Key,Data>[] table;</tt>
+<br><tt>&nbsp;...</tt>
+<br><tt>&nbsp;public Data get(Key key) {</tt>
+<br><tt>&nbsp;&nbsp; int hash = <font color="#990000">key.hashCode()</font>;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; for (Entry&lt;Key,Data> e = table[hash &amp;
+hashMask]; e != null; e = e.next) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; if ((e.hash == hash) &amp;&amp; e.<font color="#990000">key.equals(key)</font>)
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return e.value;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; return null;</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<p>As we can see, the implementation of the hash table does not only move
+around references to the entries, but also needs to invoke methods of the
+key type, namely <tt>hashCode() </tt>and <tt>equals()</tt>. Both methods
+are defined in class <tt>Object</tt>.&nbsp; Hence the hash table implementation
+requires that the type variables <tt>Key</tt> and <tt>Data</tt> be replaced
+by concrete types that are subtypes of <tt>Object</tt>. Later in this article
+we will see that this is always guaranteed, because primitive types are
+prohibited as type arguments to generics.&nbsp; A concrete type that replaces
+a type variable must be a reference type and for this reason we can safely
+assume that the key type has the required methods.
+<p>What if needed to invoke methods that are not defined in class <tt>Object</tt>?&nbsp;
+Consider the implementation of a tree-based collection.&nbsp; Tree-based
+collections, like a <tt>TreeMap</tt>, require a sorting order for the contained
+elements.&nbsp; Element types can provide the sorting order by means of
+the <tt>compareTo()</tt> method, which is defined in the <tt>Comparable</tt>
+interface.&nbsp; The implementation of a tree-based collection might therefore
+want to invoke the element type’s <tt>compareTo()</tt> method.&nbsp; Listing
+3 below is a first attempt of an implementation of a parameterized <tt>TreeMap</tt>
+collection.
+<br>&nbsp;
+<table CELLSPACING=0 CELLPADDING=0 >
+<tr>
+<td VALIGN=TOP WIDTH="80%">
+<table BORDER CELLPADDING=5 >
+<tr>
+<td BGCOLOR="#000000"><b><font color="#FFFFFF">Listing 3: Implementation
+of tree-based collection<sup>1</sup>&nbsp;&nbsp; - <i>without</i> bounds</font></b></td>
+</tr>
+
+<tr>
+<td><tt>public interface Comparable&lt;T> {</tt>
+<br><tt>&nbsp;public int compareTo(T arg);</tt>
+<br><tt>}</tt>
+<br><tt>public class TreeMap&lt;Key,Data>{</tt>
+<br><tt>&nbsp;&nbsp; private static class Entry&lt;K,V> {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; K key;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; V value;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> left = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> right = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> parent;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; private transient Entry&lt;Key,Data> root = null;</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private Entry&lt; Key,Data > getEntry(Key key)
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;Key,Data> p = root;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Key k = key;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; while (p != null) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int
+cmp = <font color="#990000">((Comparable&lt;Key>)k).compareTo(p.key)</font>;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if
+(cmp == 0)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return p;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else
+if (cmp &lt; 0)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+p = p.left;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+p = p.right;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return null;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public boolean containsKey(Key key) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return getEntry(key) != null;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+</td>
+
+<td VALIGN=TOP>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=15 COLS=1 WIDTH="100%" >
+<tr>
+<td><sup>1</sup> <font size=-1>Note that the parameterized class TreeMap
+has two type parameters Key and Data and uses a nested parameterized type
+Entry that also has two type parameters K and V. The respective type parameters
+are independed of each other, in the sense that the nested class can be
+instantiated using arbitrary type argument that have nothing to do with
+the enclosing class’s type parameters.&nbsp; In this implementation a particular
+instantiation is used: the inner class is instantiated using the outer
+class’s type parameters as type arguments.&nbsp; This is not mandatory;
+it’s just the way this particular outer class uses the inner class.</font></td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+<p>The parameterized class <tt>TreeMap</tt> has two type parameters <tt>Key</tt>
+and <tt>Data</tt>; no requirements are imposed on either of these type
+variables.&nbsp; With this implementation we could create an <tt>TreeMap&lt;X,Y></tt>
+even if the key type <tt>X </tt>did not implement the <tt>Comparable&lt;X></tt>
+interface and had no <tt>compareTo()</tt> method.&nbsp; The invocation
+of <tt>compareTo()</tt>, or more precisely, the cast of the key object
+to the type <tt>Comparable&lt;Key> </tt>for the incomparable key type <tt>X</tt>,
+would then fail at runtime with a <tt>ClassCastException</tt>.
+<br>&nbsp;
+<table BORDER CELLPADDING=5 >
+<tr>
+<td BGCOLOR="#000000"><b><font color="#FFFFFF">Listing 4: Using the tree-based
+collection – <i>without</i> bounds</font></b></td>
+</tr>
+
+<tr>
+<td><tt>public final class X { ... }</tt>
+<br><tt>public final class Y { ... }</tt>
+<p><tt>public final class Test {</tt>
+<br><tt>&nbsp;public static void main(String[] argv) {</tt>
+<br><tt>&nbsp;&nbsp; TreeMap&lt;X,Y> tree = new TreeMap&lt;X,Y>();&nbsp;
+// </tt>compiles, although<tt> X </tt>is not<tt> Comparable</tt>
+<br><tt>&nbsp;&nbsp; ... add elements to the map ...</tt>
+<br><tt>&nbsp;&nbsp; X x = ... some key ...;</tt>
+<br><tt>&nbsp;&nbsp; tree.containsKey(x);&nbsp; // </tt><font color="#990000">fails
+runtime with a<tt> ClassCastException</tt></font>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<p>In order to allow for an early compile-time check, Java Generics has
+a language feature named <i>bounds</i>: type variables of a parameterized
+type can have one or several bounds.&nbsp; Bounds are interfaces or superclasses
+that a type variable is required to implement or extend. If a parameterized
+type is instantiated with a concrete type argument that does not implement
+the required interface(s) or the required superclass, then the compiler
+will catch that violation of the requirements and will issue an error message.
+<p>In our example, we could require that the key type of our <tt>TreeMap</tt>
+must implement the interface <tt>Comparable&lt;Key> </tt>by specifying
+a bound for the type variable <tt>Key</tt>.&nbsp; The modified implementation
+of <tt>TreeMap</tt> is shown in Listing 5 below
+<br>&nbsp;
+<table BORDER CELLPADDING=5 >
+<tr>
+<td BGCOLOR="#000000"><b><font color="#FFFFFF">Listing 5: Implementation
+of tree-based collection&nbsp; - <i>with</i> bounds</font></b></td>
+</tr>
+
+<tr>
+<td><tt>public class TreeMap&lt;<font color="#990000">Key extends Comparable&lt;Key></font>,Data>
+{</tt>
+<br><tt>&nbsp;&nbsp; static class Entry&lt;K,V> {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; K key;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; V value;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> left = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> right = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> parent;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; private transient Entry&lt;Key,Data> root = null;</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; private Entry&lt; Key,Data > getEntry(Key key) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;Key,Data> p = root;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Key k = key;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; while (p != null) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int
+cmp = <font color="#990000">k.compareTo(p.key)</font>;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if
+(cmp == 0)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return p;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else
+if (cmp &lt; 0)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+p = p.left;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+p = p.right;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return null;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public boolean containsKey(Key key) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return getEntry(key) != null;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<p>Now&nbsp; the attempt of using a key type that does not implement the
+<tt>Comparable</tt>
+interface will be rejected by the compiler, like in the example in Listing
+6 below.
+<br>&nbsp;
+<table BORDER CELLPADDING=5 >
+<tr>
+<td BGCOLOR="#000000"><b><font color="#FFFFFF">Listing 6: Using the tree-based
+collection – <i>with</i> bounds</font></b></td>
+</tr>
+
+<tr>
+<td><tt>public final class X { ... }</tt>
+<br><tt>public final class Y { ... }</tt>
+<br><tt>public final class Test {</tt>
+<br><tt>&nbsp;public static void main(String[] argv) {</tt>
+<br><tt>&nbsp;&nbsp; TreeMap&lt;X,Y> tree = new TreeMap&lt;X,Y>();&nbsp;
+// </tt><font color="#990000">compile-time error: type parameter <tt>X</tt>
+is not within its bound</font>
+<br><tt>&nbsp;&nbsp; ... add elements to the map ...</tt>
+<br><tt>&nbsp;&nbsp; X x = ... some key ...;</tt>
+<br><tt>&nbsp;&nbsp; tree.containsKey(x);</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<p>The primary purpose of bounds is to enable early compile-time checks.
+<ul>
+<li>
+Methods of a type variable <i>without bounds</i> can only be accessed by
+casting the type variable to a type that declares the desired methods;
+such a cast would fail at runtime if the concrete type does not have the
+desired methods.</li>
+
+<li>
+Methods of a type variable <i>with bounds </i>are directly accessible (without
+any casts) and the compiler would already detect at compile-time if the
+concrete type does not have the desired methods (“is not with its bounds”).</li>
+</ul>
+
+<p><br>Some additional syntax details:
+<p>A type variable can have several bounds.&nbsp; The syntax is: <tt>TypeVariable
+extends Bound<sub>1</sub> &amp; Bound<sub>2</sub> &amp; ... &amp; Bound<sub>n</sub></tt>
+<p>Here is an example:
+<p><tt>final class Pair&lt;A extends Comparable&lt;A> &amp; Cloneable&lt;A>,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+B extends Comparable&lt;B> &amp; Cloneable&lt;B>></tt>
+<br><tt>&nbsp;&nbsp; implements Comparable&lt;Pair&lt;A,B>>, Cloneable&lt;Pair&lt;A,B>>
+{ ... }</tt>
+<p>As the example above suggests, type variables can appear in their bounds.
+For instance, the type variable <tt>A</tt> is used as type argument to
+the parameterized interface <tt>Comparable</tt>, whose instantiation <tt>Comparable&lt;A></tt>
+is a bound of <tt>A</tt>.
+<p>There is a restriction regarding bounds that are instantiations of a
+parameterized interface: the different bounds must not be instantiations
+of the same parameterized interface.&nbsp; The following would be illegal:
+<p><tt>&nbsp;class SomeType&lt;T extends <font color="#990000">Comparable&lt;T>
+&amp; Comparable&lt;String> &amp; Comparable&lt;StringBuffer></font>></tt>
+<br><tt>&nbsp;{ ... }</tt>
+<p>This restriction stems from the way Java Generics are implemented and
+will be explained later in this article.
+<p>Classes can be bounds, too. The concrete type argument is then required
+to be a subclass of the bounding class or it can be the same class as the
+bounding class.&nbsp; Even final classes are permitted as bounds. Bounding
+classes, like interfaces, give access to non-static methods that the concrete
+type argument inherits from its superclass.&nbsp; Bounding classes do not
+give access to constructors and static methods. The bounding superclass
+must appear as the first bound in a list of bounds.&nbsp; Hence the syntax
+for specification of bounds is:
+<p><tt>&nbsp; TypeVariable implements Superclass &amp; Interface<sub>1</sub>
+&amp; Interface<sub>2</sub> &amp; ... &amp; Interface<sub>n</sub></tt>
+<br>&nbsp;
+<h3>
+<a NAME="Generic Methods"></a>Generic Methods</h3>
+Not only types can be parameterized. In addition to generic classes and
+interfaces, we can define generic methods. Static and non-static methods
+as well as constructors can be parameterized in pretty much the same way
+as we parameterized types in the previous sections.&nbsp; The syntax is
+a little different, see below.&nbsp; Everything said about type variables
+of parameterized types applies to type variables of parameterized methods
+in the exact same way.
+<p>Listing 7 shows the example of a parameterized static method <tt>max()</tt>:
+<br>&nbsp;
+<table BORDER CELLPADDING=5 >
+<tr>
+<td BGCOLOR="#000000"><b><font color="#FFFFFF">Listing 7: A parameterized
+method max()</font></b></td>
+</tr>
+
+<tr>
+<td><tt>interface Comparable&lt;A> {</tt>
+<br><tt>&nbsp; public int compareTo (A that);</tt>
+<br><tt>}</tt>
+<br><tt>final class Byte implements Comparable&lt;Byte> {</tt>
+<br><tt>&nbsp;private byte value;</tt>
+<br><tt>&nbsp;public Byte (byte value) { this.value = value; }</tt>
+<br><tt>&nbsp;public byte byteValue () { return value; }</tt>
+<br><tt>&nbsp;public int compareTo (Byte that) {</tt>
+<br><tt>&nbsp;&nbsp; return this.value - that.value;</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<br><tt>class Collections {</tt>
+<br><tt>&nbsp;public static &lt;<font color="#990000">A extends Comparable&lt;A></font>>
+A max (Collection&lt;A> xs) {</tt>
+<br><tt>&nbsp;&nbsp; Iterator&lt;A> xi = xs.iterator();</tt>
+<br><tt>&nbsp;&nbsp; A w = xi.next();</tt>
+<br><tt>&nbsp;&nbsp; while (xi.hasNext()) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; A x = xi.next();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; if (w.compareTo(x) &lt; 0) w = x;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; return w;</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<br><tt>final class Test {</tt>
+<br><tt>&nbsp;public static void main (String[ ] args) {</tt>
+<br><tt>&nbsp;&nbsp; LinkedList&lt;Byte> byteList = new LinkedList&lt;Byte>();</tt>
+<br><tt>&nbsp;&nbsp; byteList.add(new Byte((byte)0));</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; byteList.add(new Byte((byte)1));</tt>
+<br><tt>&nbsp;&nbsp; Byte y = Collections.max(byteList);</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<p>Parameterized methods are invoked like regular non-generic methods.&nbsp;
+The type parameters are inferred from the invocation context. In our example,
+the compiler would automatically invoke <tt>&lt;Byte>max()</tt>.&nbsp;
+The type inference algorithm is significantly more complex than this simple
+example suggests and exhaustive coverage of type inference is beyond the
+scope of this article.
+<br>&nbsp;
+<h3>
+<a NAME="Wildcard Instantiations of Parameterized Types"></a>Wildcard Instantiations
+of Parameterized Types</h3>
+For sake of completeness we want to briefly touch on wildcards. (For a
+more details discussion of wildcards see /<a href="#PRO2">PRO2</a>/). So
+far we have been instantiating parameterized types using a concrete type
+that replaces the type parameter in the instantiation.&nbsp; In addition,
+so-called wildcards can be used to instantiate a parameterized type.&nbsp;
+A wildcard instantiation looks like this:
+<p><tt>List&lt;? extends Number> ref = new LinkedList&lt;Integer>();</tt>
+<p>In this statement <tt>List&lt;? extends Number></tt> ist is a wildcard
+instantiation, while <tt>LinkedList&lt;Integer> </tt>is a regular instantiation.
+<p>There are 3 types of wildcards: “<tt>? extends Type</tt>”, “<tt>? super
+Type</tt>” and “<tt>?</tt>”.&nbsp; Each wildcard denotes a family of types.
+“<tt>? extends Number</tt>” for instance is the family of subtypes of type
+<tt>Number</tt>,
+“<tt>? super Integer</tt>” is the family of supertypes of type <tt>Integer</tt>,
+and “<tt>?</tt>” is the set of all types.&nbsp; Correspondingly, the wildcard
+instantiation of a parmeterized type stands for a set of instantiations;
+e.g. <tt>List&lt;? extends Number> </tt>refers to the set of instantiations
+of <tt>List</tt> for types that are subtypes of <tt>Number</tt>.
+<p>Wildcard instantiations can be used for declaration of reference variables,
+but they cannot be used for creation of objects.&nbsp; Reference variables
+of an wildcard instantiation type can refer to an object of a compatible
+type, though.&nbsp; Compatible in this sense are concrete instantiations
+from the family of instantiations denoted by the wildcard instantiation.&nbsp;
+In a way, this is similar to interfaces: we cannot create objects of an
+interface types, but a variable of an interface type can refer to an object
+of a compatible type, “compatible” meaning a type that implements the interface.&nbsp;
+Similarly, we cannot create objects of a wildcard instantiation type, but
+a variable of the wildcard instantiation type can refer to an object of
+a compatible type, “compatible” meaning a type from the corresponding family
+of instantiations.
+<p>Access to an object through a reference variable of a wildcard instantiation
+type is restricted.&nbsp; Through a wildcard instantiation with “extends“
+we must not invoke methods that take arguments of the type that the wildcard
+stands for.&nbsp; Here is an example:
+<p><tt>List&lt;? extends Number> list = new LinkedList&lt;Integer>();</tt>
+<br><tt>list.add(new Integer(25));&nbsp; // compile-time error</tt>
+<p>The <tt>add()</tt> method of type <tt>List</tt> takes an argument of
+the element type, which is the type parameter of the parameterized <tt>List</tt>
+type.&nbsp; Through a wildcard instantiation such as <tt>List&lt;? extends
+Number></tt> it is not permitted to invoke the <tt>add()</tt> method. Similar
+restrictions apply to wildcards with “super“: methods where the return
+type is the type that the wildcard stands for are prohibited. And for reference
+variables with a “<tt>?</tt>“ wildcard both restrictions apply.
+<p>This brief overview of wildcard instantiations is far from comprehensive;
+exhaustive coverage of wildcards is beyond the scope of this article.&nbsp;
+In practice, wildcard instantiations will most frequently show up as argument
+or return types in method declarations, and only rarely in the declaration
+of variables.&nbsp; The most useful wildcard is the “extends” wildcard.&nbsp;
+Examples for the use of this wildcard can be found in the J2SE 1.5 platform
+libraries; an example is the method <tt>boolean addAll(Collection&lt;?
+extends ElementType> c)</tt> of class <tt>java.util.List</tt>.&nbsp; It
+allows addition of elements to a <tt>List</tt> of element type <tt>ElementType</tt>,
+where the elements are taken from a collection of elements that are of
+a subtype of <tt>ElementType</tt>.
+<br>&nbsp;
+<h3>
+<a NAME="Summary of Java Generics Language Features"></a>Summary of Java
+Generics Language Features</h3>
+&nbsp;Now we have discussed all major language features related to Java
+generics:
+<blockquote>
+<li>
+parameterized types</li>
+
+<li>
+parameterized methods</li>
+
+<li>
+bounded type parameters</li>
+
+<li>
+wildcard instantiations</li>
+</blockquote>
+There are many more details not covered here.&nbsp; We want to use the
+remainder of the article to explore some of the underlying principles of
+Java generics, in particular the translation of paramterized types and
+methods into Java byte code.&nbsp; While this sounds pretty technical and
+mainly like a compiler builder’s concern, an understanding of these principles
+aids understanding of&nbsp; many of the less obvious effects related to
+Java generics.
+<br>&nbsp;
+<h2>
+<a NAME="Implementation of the Java Generics Language Features"></a>Implementation
+of the Java Generics Language Features</h2>
+How are Java Generics implemented?&nbsp; What does the Java compiler do
+with our Java source code that contains definitions and usages of parameterized
+types and methods? Well, as usual the Java compiler translates the Java
+source code into Java byte code.&nbsp; In the following, we intend to take
+a look under the hood of the compilation process in order to understand
+the effects and side effects of Java generics.
+<h3>
+<a NAME="Translation of Generics"></a>Translation of Generics</h3>
+A compiler that must translate a parameterized type or method (in any language)
+has in principle two choices:
+<ul>
+<li>
+<i>Code specialization</i>. The compiler generates a new representation
+for every instantiation of a parameterized type or method. For instance,
+the compiler would generate code for a list of integers and additional,
+different code for a list of strings.</li>
+
+<li>
+<i>Code sharing</i>. The compiler generates code for only one representation
+of a parameterized type or method and maps all the concrete instantiations
+of the generic type or method to the one unique representation, performing
+type checks and type conversions where needed.</li>
+</ul>
+Code specialization is the approach that C++ takes for its templates. The
+C++ compiler generates executable code for every instantiation of a template.
+The downside of code specialization of generic types is its potential for
+code bloat.&nbsp; A list of integers and a list of strings would be represented
+in the executable code as two implementations of two different types.
+<p>This is particularly wasteful in cases where the elements in a collection
+are references (or pointers), because all references (or pointers) are
+of the same size and internally have the same representation. There is
+no need for generation of mostly identical code for a list of references
+to integers and a list of references to strings.&nbsp; Both lists could
+internally be represented by a list of references to any type of object.
+The compiler just has to add a couple of casts whenever these references
+are passed in and out of the generic type or method. Since in Java most
+types are reference types, it deems natural that Java chooses code sharing
+as its technique for translation of generic types and methods.&nbsp;<font size=-1>
+[C#, by the way, uses both translation techniques for its generic types:
+code specialization for the value types and code sharing for the reference
+types.]</font>
+<p>One downside of code sharing is that it creates problems when primitive
+types are used&nbsp; as parameters of generic types or methods. Values
+of primitive type are of different size and require that different code
+is generated for a list of int and a list of double for instance. It’s
+not feasible to map both lists onto a single list implementation. There
+are several solutions to this problem:
+<ul>
+<li>
+<i>No primitive types</i>. Primitive types are prohibited as type arguments
+of parameterized types or methods, that is, the compiler rejects instantiations
+such as a <tt>List&lt;int></tt>.</li>
+
+<li>
+<i>Boxing</i>. Primitive type values are boxed automatically so that internally
+references to the boxed primitive value were used. (Boxing is the process
+of wrapping a primitive value into its corresponding reference type, and
+unboxing is the reverse (see /<a href="#BOX">BOX</a>/.) Naturally, boxing
+has an negative effect on performance due to the extra box and unbox operations.</li>
+</ul>
+Java Generics uses the first approach and restricts instantiation of generics
+to reference types. Hence a <tt>LinkedList&lt;int></tt> is illegal in Java.
+<font size=-1>[In
+C++ and C# primitive types are allowed as type arguments because these
+languages use code specialization (in C++ for all instantiations and in
+C# at least for instantiations on primitive types).]</font>
+<br>&nbsp;
+<h3>
+<a NAME="Type Erasure"></a>Type Erasure</h3>
+In the following we want to look into the details of the code sharing implementation
+of Java generics. The key question is: how exactly does the Java compiler
+map different instantiations of a parameterized&nbsp; type or method onto
+a single representation of the type or method?
+<p>The translation technique used by the Java compiler can be imagined
+as a translation from generic Java source code back into regular Java code.&nbsp;
+The translation technique is called <i>type erasure</i>: the compiler removes
+all occurrences of the type variables and replaces them by their leftmost
+bound or type <tt>Object</tt>, if no bound had been specified.&nbsp; For
+instance, the instantiations <tt>LinkedList&lt;Integer></tt> and a <tt>LinkedList&lt;String></tt>
+of our previous example (see Listing 1) would be translated into a <tt>LinkedList&lt;Object></tt>,
+or <tt>LinkedList</tt> for short, and the methods <tt>&lt;Integer>max()</tt>
+and <tt>&lt;String>max()</tt> (from Listing 7) would be translated to <tt>&lt;Comparable>max()</tt>.&nbsp;
+In addition to removal of all type variables and replacing them by their
+leftmost bound the compiler inserts a couple of casts in certain places
+and adds so-called <i>bridge methods</i> where needed.
+<p>The translation from generic Java code into regular Java code was deliberately
+chosen by the Java designers. One key requirement to all new language features
+in Java 1.5 is their compatbility with previous versions of Java.&nbsp;
+In particular it is required that a pre-1.5 Java virtual machine must be
+capable of executing 1.5 Java code.&nbsp; This is only achievable if the
+byte code resulting from a 1.5 Java source looks like regular byte code
+resulting from pre-1.5 Java code.&nbsp; Type erasure meets this requirement:
+after type erasure there is no difference any more between a parameterized
+and a regular type or method.
+<p>For explanatory reasons we described the type erasure as a translation
+not from generic Java code into regular non-generic Java code.&nbsp; This
+is not exactly true; the translation is from generic Java code directly
+to Java byte code.&nbsp;&nbsp; Despite of that we will refer to the type
+erasure process as a translation from generic Java to non-generic Java
+for the subsequent explanations.
+<p>Listing 8 below illustrates the translation by type erasure; is shows
+the type erasure of our previous example of generic types from Listing
+1.
+<br>&nbsp;
+<table BORDER CELLPADDING=5 >
+<tr>
+<td BGCOLOR="#000000"><b><font color="#FFFFFF">Listing 8:&nbsp; Parameterized
+types after type erasure</font></b></td>
+</tr>
+
+<tr>
+<td><tt>interface Collection {</tt>
+<br><tt>&nbsp;public void add (<font color="#CC0000">Object</font> x);</tt>
+<br><tt>&nbsp;public Iterator iterator ();</tt>
+<br><tt>}</tt>
+<br><tt>interface Iterator {</tt>
+<br><tt>&nbsp;public <font color="#990000">Object</font> next ();</tt>
+<br><tt>&nbsp;public boolean hasNext ();</tt>
+<br><tt>}</tt>
+<br><tt>class NoSuchElementException extends RuntimeException {}</tt>
+<p><tt>class LinkedList implements Collection {</tt>
+<br><tt>&nbsp;protected class Node {</tt>
+<br><tt>&nbsp;&nbsp; <font color="#990000">Object</font> elt;</tt>
+<br><tt>&nbsp;&nbsp; Node next = null;</tt>
+<br><tt>&nbsp;&nbsp; Node (<font color="#990000">Object</font> elt) { this.elt
+= elt; }</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>&nbsp;protected Node head = null, tail = null;</tt>
+<br><tt>&nbsp;public LinkedList () {}</tt>
+<br><tt>&nbsp;public void add (<font color="#990000">Object</font> elt)
+{</tt>
+<br><tt>&nbsp;&nbsp; if (head == null) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; head = new Node(elt);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; tail = head;</tt>
+<br><tt>&nbsp;&nbsp; } else {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; tail.next = new Node(elt);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; tail = tail.next;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>&nbsp;public Iterator iterator () {</tt>
+<br><tt>&nbsp;&nbsp; return new Iterator () {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; protected Node ptr = head;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public boolean hasNext () { return ptr != null;
+}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public <font color="#990000">Object</font> next
+() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (ptr != null) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#990000">Object</font>
+elt = ptr.elt;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ptr = ptr.next;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return elt;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } else {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; throw new NoSuchElementException
+();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; };</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<br><tt>final class Test {</tt>
+<br><tt>&nbsp;public static void main (String[ ] args) {</tt>
+<br><tt>&nbsp;&nbsp; LinkedList ys = new LinkedList();</tt>
+<br><tt>&nbsp;&nbsp; ys.add("zero"); ys.add("one");</tt>
+<br><tt>&nbsp;&nbsp; String y = <font color="#990000">(String)</font>ys.iterator().next();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<p>As you can see, all occurrences of the type variable <tt>A </tt>are
+replaced by type <tt>Object</tt>.&nbsp; The implementation of our generic
+collection is now exactly like an implementation that uses the traditional
+Java technique for genericity, namely implementation in terms of <tt>Object</tt>
+references.
+<p>The sample code also gives an example of an automatically inserted cast:
+in the <tt>main()</tt> method, where a linked list of strings is used,
+the compiler added a cast from <tt>Object</tt> to <tt>String</tt>.
+<p>Listing 9 below shows the type erasure of our parameterized <tt>max()
+</tt>method
+from Listing 7.
+<br>&nbsp;
+<table BORDER CELLPADDING=5 >
+<tr>
+<td BGCOLOR="#000000"><b><font color="#FFFFFF">Listing 9: Parameterized
+method after type erasure</font></b></td>
+</tr>
+
+<tr>
+<td><tt>interface Comparable {</tt>
+<br><tt>&nbsp; public int compareTo (<font color="#990000">Object</font>
+that);</tt>
+<br><tt>}</tt>
+<br><tt>final class Byte implements Comparable {</tt>
+<br><tt>&nbsp;private byte value;</tt>
+<br><tt>&nbsp;public Byte (byte value) { this.value = value; }</tt>
+<br><tt>&nbsp;public byte byteValue () { return value; }</tt>
+<br><tt>&nbsp;public int compareTo (Byte that) {</tt>
+<br><tt>&nbsp;&nbsp; return this.value - that.value;</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>&nbsp;public int compareTo (Object that) {</tt>
+<br><tt>&nbsp;&nbsp; return this.compareTo((Byte)that);</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<br><tt>class Collections {</tt>
+<br><tt>&nbsp;public static <font color="#990000">Comparable</font> max
+(Collection xs) {</tt>
+<br><tt>&nbsp;&nbsp; Iterator xi = xs.iterator();</tt>
+<br><tt>&nbsp;&nbsp; <font color="#990000">Comparable</font> w = <font color="#990000">(Comparable)</font>xi.next();</tt>
+<br><tt>&nbsp;&nbsp; while (xi.hasNext()) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; <font color="#990000">Comparable</font>
+x = <font color="#990000">(Comparable)</font>xi.next();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; if (w.compareTo(x) &lt; 0) w = x;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; return w;</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<br><tt>final class Test {</tt>
+<br><tt>&nbsp;public static void main (String[ ] args) {</tt>
+<br><tt>&nbsp;&nbsp; LinkedList ys = new LinkedList();</tt>
+<br><tt>&nbsp;&nbsp; ys.add(new Byte((byte)0));&nbsp;</tt>
+<br><tt>&nbsp;&nbsp; ys.add(new Byte((byte)1));</tt>
+<br><tt>&nbsp;&nbsp; Byte y = <font color="#990000">(Byte)</font>Collections.max(ys);</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<p>Again, all occurrences of type variables are replaced by either type
+<tt>Object</tt>
+(in the <tt>Comparable</tt> interface) or the leftmost bound (type <tt>Comparable</tt>
+in method <tt>max()</tt>). Again, we see the inserted cast from <tt>Object</tt>
+to <tt>Byte</tt> in the <tt>main()</tt> method where the&nbsp; generic
+method is invoked for a collection of <tt>Byte</tt>s. And we see an example
+of a bridge method in class <tt>Byte</tt>.
+<p>The compiler inserts bridge methods in subclasses to ensure overriding
+works correctly. In the example, class <tt>Byte</tt> implements interface
+<tt>Comparable&lt;Byte></tt>
+and must therefore override the superinterface’s
+<tt>compareTo() </tt>method.
+The compiler translates the <tt>compareTo()</tt> method of the generic
+interface <tt>Comparable&lt;A></tt> to a method that takes an <tt>Object</tt>,
+and translates the <tt>compareTo()</tt> method in class <tt>Byte</tt> to
+a method that takes a <tt>Byte</tt>. After this translation, method <tt>Byte.compareTo(Byte)</tt>
+is no overriding version of method <tt>Comparable&lt;Byte>.compareTo(Object)
+</tt>any
+longer, because the two methods have different signatures as a side effect
+of translation by erasure.&nbsp; In order to enable overriding the compiler
+adds a bridge method to the subclass.&nbsp; The bridge method has the same
+signature as the superclass’s method that must be overridden and delegates
+to the other methods in the derived class that was the result of translation
+by erasure.
+<br>&nbsp;
+<h2>
+<a NAME="Summary"></a>Summary</h2>
+In this article we gave an overview over all major language features related
+to parameterized types and methods.&nbsp; Naturally, coverage of a fairly
+complex language feature such as Java generics in an article like this
+cannot be exhaustive. There are many more details to be explored and understood
+before Java generics can be used in a reliable and effective manner (see
+for instance the articles on wildcards /<a href="#PRO2">PRO2</a>/). The
+greatest difficulties in using and understanding Java generics stem perhaps
+from the type erasure translation process, by which the compiler elides
+all occurrences of the type parameters.&nbsp; This leads to quite a number
+of surprising effects.&nbsp; Just to name one:&nbsp; arrays of parameterized
+types are prohibited in Java, that is, <tt>Comparable&lt;String>[]</tt>
+is an illegal type, while <tt>Comparable[]</tt> is permitted.&nbsp; This
+is suprising at best and turns out to be quite a nuisance in practice.&nbsp;
+It boils down to the fact that arrays are best avoided and replaced by
+collections as soon as the element type is a parameterized type.&nbsp;
+This realization and many other tips and techniques demand thorough exploration
+before the new language feature can be exploited to its capacity.&nbsp;
+Despite of the rough edges here and there, the addition of Java generics
+adds substantial expressive power to the Java programming language.&nbsp;
+Our own experience is: once you’ve been using generics for a while you’ll
+miss them badly if you have to return to non-generic Java with its unspecific
+types and countless casts and runtime checks.
+<br>&nbsp;
+<h2>
+<a NAME="References"></a>References</h2>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDK15"></a>/JDK15/&nbsp;</td>
+
+<td VALIGN=TOP><b><font face="Times New Roman, Times, serif"><font size=+0>JavaTM
+2 SDK, Standard Edition 1.5.0 Alpha</font></font></b>
+<br><font face="Times New Roman, Times, serif"><font size=+0>Download Early
+Release</font></font>
+<br><font face="Times New Roman, Times, serif"><font size=+0><a href="http://java.sun.com/developer/earlyAccess/j2sdk150_alpha/">http://java.sun.com/developer/earlyAccess/j2sdk150_alpha/</a></font></font></td>
+</tr>
+
+<tr>
+<td><a NAME="BOX"></a>/BOX/</td>
+
+<td><b>Extending the Java Programming Language with Enumerations, Autoboxing,
+Enhanced for loops and Static Import</b>
+<br>Java Specification Request 201
+<br><a href="http://jcp.org/aboutJava/communityprocess/review/jsr201/index.html">http://jcp.org/aboutJava/communityprocess/review/jsr201/index.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JSR14"></a>/JSR14/&nbsp;</td>
+
+<td><b>Adding Generics to the JavaTM Programming Language</b>
+<br>Java Specification Request 014
+<br><a href="http://jcp.org/en/jsr/detail?id=14">http://jcp.org/en/jsr/detail?id=14</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="SPC"></a>/SPC/&nbsp;</td>
+
+<td><b>Adding Generics to the JavaTM Programming Language</b>
+<br>Draft Specification, July 2003
+<br><a href="http://jcp.org/aboutJava/communityprocess/review/jsr014/index.html">http://jcp.org/aboutJava/communityprocess/review/jsr014/index.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="BRA"></a>/BRA/&nbsp;</td>
+
+<td><b>Making the future safe for the past: Adding Genericity to the java
+programming language</b>
+<br>Gilad Bracha, Martin Odersky, David Stoutamire and Philip Wadler
+<br>Proc. OOPSLA'98
+<br><a href="http://lamp.epfl.ch/~odersky/papers/oopsla98.ps.gz">http://lamp.epfl.ch/~odersky/papers/oopsla98.ps.gz</a>
+<br><a href="http://citeseer.nj.nec.com/bracha98making.html">http://citeseer.nj.nec.com/bracha98making.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="LAN"></a>/LAN/&nbsp;</td>
+
+<td><b>Links related to Java Generics</b>
+<br>Further references to articles, tutorials, conversations and other
+information related to Java Generics can be found on this website at <a href="http://www.langer.camelot.de/Resources/Links/JavaGenerics.htm">http://www.langer.camelot.de/Resources/Links/JavaGenerics.htm</a>.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="PRO"></a>/PRO1/</td>
+
+<td><b>Java Generics Language Features&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaPro Online, March 2004
+<br>The version of this article as published at the JavaPro Online site.
+<br><a href="http://www.ftponline.com/javapro/2004_03/online/jgen_kkreft_03_03_04">http://www.ftponline.com/javapro/2004_03/online/jgen_kkreft_03_03_04</a>
+<a href="http://www.ftponline.com/javapro/2004_03/online/j2ee_kkreft_03_10_04">http://www.ftponline.com/javapro/2004_03/online/j2ee_kkreft_03_10_04</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="PRO2"></a>/PRO2/</td>
+
+<td><b>Wildcard Instantiations of Parameterized Types</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaPro Online, May 2004
+<br>A follow-up article explaining wildcards in greater detail.&nbsp;
+<br><a href="http://www.AngelikaLanger.com/Articles/JavaPro/02.JavaGenericsWildcards/Wildcards.html">http://www.AngelikaLanger.com/Articles/JavaPro/02.JavaGenericsWildcards/Wildcards.html</a></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/J2SE1.5.html"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/J2SE1.5.html">Java
+5.0</a> </font></b>- New Features in J2SE 5.0
+<br><font color="#000000"><font size=-1>1 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<dir>
+<dir>&nbsp;</dir>
+</dir>
+
+</body>
+</html>

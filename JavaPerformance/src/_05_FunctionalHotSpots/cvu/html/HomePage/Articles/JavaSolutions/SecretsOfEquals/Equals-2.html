@@ -1,0 +1,847 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <title>Implementing equals() to allow Slice Comparison</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="JavaSolutions02"></a>
+<br><font color="#295AB5"><font size=+3>Secrets of equals() - Part 2</font></font>
+<br><font color="#295AB5"><font size=+1>How to implement a correct slice
+comparison in Java</font></font>
+<br>&nbsp;
+<p><font color="#295AB5"><font size=+2>JavaSolutions, August 2002</font></font>
+<br><font color="#295AB5"><font size=+1>Angelika Langer &amp; Klaus Kreft</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p><b><font face="Arial"><font size=+1>Implementing equals() To Allow Mixed-Type
+Comparison</font></font></b>
+<p>All objects in Java are equality-comparable via the <tt>equals()</tt>
+method because all classes inherit the <tt>equals()</tt> method from class
+<tt>Object</tt>
+. As a result, each time a programmer implements a new class, he or she
+must check whether the inherited version of <tt>equals()</tt> provides
+the correct semantics for the new class or whether the default implementation
+must be overridden. Naturally, any user-defined version of
+<tt>equals()</tt>
+should be correct. What does "correct" mean? It means meeting the requirements
+of the so-called equals contract, which is specified in JavaDoc of <tt>Object.equals</tt>
+.
+<p>In a previous article we discussed at length how easy it is to inadvertently
+provide incorrect implementations of <tt>equals()</tt>. The most common
+mistake you can find in publications and real-world source code is implementations
+that do not meet the transitivity requirement imposed by the equals contract:
+if one object is equal to a second, and the second is equal to a third
+object, then the first and the third object must be equal as well.
+<p>The core problem of a non-transitive implementation is that it attempts
+to allow comparison of objects that belong to the same class hierarchy.
+All the problems regarding transitivity go away as soon as you disallow
+mixed-type comparison and only allow comparison of objects of the exact
+same type. The same-type comparison is easy to implement: you check whether
+<tt>this</tt>
+object and the <tt>other</tt> object are of the same type by comparing
+their <tt>Class</tt> objects which you can obtain via <tt>getClass()</tt>
+. Here is an example:
+<dir><font face="Lucida Console"><font size=-2>public boolean equals(Object
+other) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; ...</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; if (this.getClass()
+!= other.getClass())</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; return
+false;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; else</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; // these
+objects can be compared; go and compare their fields</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; ...</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+This type of implementation of the <tt>equals()</tt> method is easy to
+get right; it is robust, easy to understand, easy to maintain, and for
+that reason the recommended way of implementing <tt>equals()</tt> - unless
+you need something else.
+<br>&nbsp;
+<br>&nbsp;
+<p><b><i><font face="Arial">The Need for Mixed-Type Comparison</font></i></b>
+<p>The idea of comparing objects from the same class hierarchy is not entirely
+off base. After all, objects from the same class hierarchy (and by class
+hierarchy we mean all classes derived from a common superclass other than
+<tt>Object</tt>
+) have something in common, namely at least that superclass part. For instance,
+in a class hierarchy, where <tt>Employee</tt> and <tt>Student</tt> are
+subclasses of a <tt>Person</tt>, representing roles of a person, it may
+make sense to compare an <tt>Employee</tt> to a <tt>Student</tt> to see
+whether they are the same <tt>Person</tt>. With an implementation of <tt>equals()</tt>
+that only allows same-type comparison an <tt>Employee</tt> and a <tt>Student</tt>
+would not be comparable. On the other hand, if you have a class hierarchy
+with a <tt>Fruit</tt> superclass and <tt>Apple</tt> and <tt>Pear</tt> subclasses,
+then you might find the comparison of an
+<tt>Apple</tt> and a <tt>Pear</tt>
+nonsensical.
+<p>Which type of comparability makes sense for a given class hierarchy
+depends entirely on the semantics of classes. Each type of comparability
+has side effects, each of which may or may not be desired (see <a href="#box">sidebar</a>
+on "<tt>equals()</tt> and its impact on the rest of your program"). The
+point is: same-type-comparison-only is easy to implement, but it may make
+sense to allow mixed-type comparison for certain class hierarchies. The
+question in these cases is: how can it be implemented correctly, so that
+it meets the requirements of the equals contract? As we demonstrated in
+a preceding article, providing a correct implementation is a non-trivial
+task. In this article we will show one way of doing it.
+<br>&nbsp;
+<p><a NAME="box"></a>
+<table BORDER CELLSPACING=2 CELLPADDING=5 WIDTH="100%" bordercolor="#000000" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP BGCOLOR="#000000"><b><font color="#FFFFFF"><tt>equals()</tt>
+and its impact on the rest of your program</font></b></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><tt>equals()</tt> is used by various other classes and its
+semantics, mixed-type comparison or same-type-comparison-only, influences
+the behavior of other components that you or others use in conjunction
+with your classes.&nbsp;
+<p>For instance, <tt>equals()</tt><font face="Lucida Console"> </font>is
+closely related to the <tt>HashSet</tt> collection of the JDK, because
+its implementation relies on the elements' <tt>equals()</tt> methods for
+its internal organization.&nbsp;
+<ul>
+<li>
+<i>Same-type-comparison-only implementation of </i><tt>equals()</tt> .
+With such an implementation of <tt>equals()</tt> you can store an <tt>Employee("Hanni
+Hanuta")</tt><font face="Lucida Console"> </font>and a <tt>Student("Hanni
+Hanuta")</tt> into the same <tt>HashSet</tt>, but retrieval from the collection
+will not work as expected. You will not find any of these two contained
+objects when you ask the <tt>HashSet</tt> whether it contains a <tt>Person("Hanni
+Hanuta")</tt>, because all three object are unequal to each other.&nbsp;</li>
+</ul>
+
+<ul>
+<li>
+<i>Mixed-type-comparison implementation of </i><tt>equals()</tt>. Conversely,
+with this type of <tt>equals()</tt>implementation you will have problems
+storing an <tt>Employee("Hanni Hanuta")</tt> <i>and</i> a <tt>Student("Hanni
+Hanuta")</tt> in the same <tt>HashSet</tt>. The <tt>HashSet</tt> will reject
+the second <tt>add()</tt> operation, because the collection already contains
+an element that compares equal to the new element.</li>
+</ul>
+Both effects might be surprising and this is not to say that any of them
+is incorrect or weird. It's just that the semantics of your <tt>equals()</tt>
+implementation has an impact on the behavior of other components that rely
+on the <tt>equals()</tt> method of your classes.</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<p><font face="Arial">The Semantics of a Mixed-Type Comparison</font>
+<p>The most common mistake in implementations of mixed-type comparison
+is the semantics of the comparison.
+<dir>Q: Under which circumstances do we consider two objects of different
+type from the same class hierarchy as equal?
+<p>A: If they have equal superclass parts.
+<p>Q: How about the subclass-specific parts?</dir>
+The problem is that the intransitive implementations of <tt>equals()</tt>
+do not care about the subclass-specific parts of the objects that they
+compare. Here is an example: say, we have a <tt>Point</tt> superclass and
+a <tt>ColoredPoint</tt> subclass. When we compare <tt>ColoredPoint(0,0,RED)</tt>
+to<font face="Lucida Console"> </font><tt>Point(0,0)</tt>, then the typical
+implementation says: yes, they are equals. If you then go on to compare
+<tt>Point(0,0)</tt>
+to a <tt>ColoredPoint(0,0,BLUE)</tt> , then they, too, will compare equal.
+But when we compare <tt>ColoredPoint(0,0,RED) </tt>and
+<tt>ColoredPoint(0,0,BLUE)</tt>,
+then they should compare equal because of the transitivity requirement
+of the equals contract, but in fact they compare unequal. What went wrong?
+<p>The crux lies in the subclass-specific color field. A <tt>Point</tt>
+object should only compare equal to a <tt>ColoredPoint</tt> object if the
+color field contains a default value. Under this rule, the three objects
+from the example above do not compare equal any longer. <tt>Point</tt>s
+and <tt>ColoredPoint</tt> s only compare equal when the <tt>ColoredPoint</tt>
+has a default color, that is, <tt>Point(0,0)</tt> is equal to one and only
+one <tt>ColoredPoint</tt> with the coordinates <tt>(0,0)</tt>.
+<p>Transitivity is preserved under this rule. It does not matter what this
+default color is. The only thing that counts is that for a transitive mixed-type
+comparison is that all the fields that cannot be compared (which are the
+subclass-specific fields) have well-defined default values. Hence the rule
+is:
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=5 WIDTH="886" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP>
+<blockquote><font face="Arial"><font size=-1>Two objects from the same
+class hierarchy compare equal if and only if they have</font></font></blockquote>
+
+<ul>
+<ul>
+<li>
+<font face="Arial"><font size=-1>equal values for all fields that they
+have in common (equal superclass part)&nbsp;</font></font></li>
+</ul>
+</ul>
+
+<dir>
+<dir><font face="Arial"><font size=-1>and</font></font></dir>
+</dir>
+
+<ul>
+<ul>
+<li>
+<font face="Arial"><font size=-1>default values for all other fields (default
+subclass-specific part).</font></font></li>
+</ul>
+</ul>
+</td>
+</tr>
+</table>
+
+<p>To make things a little more challenging, let us consider a slightly
+more complex class hierarchy and see whether the rule holds. Say, we have
+an additional subclass <tt>Point3D</tt> that is derived from class <tt>Point</tt>
+and that represents 3-dimensional points. Both <tt>ColoredPoint</tt> and
+<tt>Point3D</tt>
+belong to the same class hierarchy, class <tt>Point</tt> being the root
+class of that hierarchy. What does it mean to compare a
+<tt>ColoredPoint</tt>
+to a <tt>Point3D</tt>?
+<p>Under the rule above it means that a <tt>ColoredPoint</tt> and a <tt>Point3D</tt>
+compare equal if and only if they have the same <tt>Point</tt> part and
+default values for their subclass-specific parts, namely the color and
+the 3<sup>rd</sup> coordinate. For instance, if black is the default color
+and 0 the default coordinate, then <tt>Point(0,0)</tt> and <tt>ColoredPoint(0,0,BLACK)</tt>
+and <tt>Point3D(0,0,0)</tt> would be equal, but neither <tt>ColoredPoint(0,0,RED)</tt>
+nor <tt>Point3D(0,0,1)</tt> would be equal to <tt>Point(0,0)</tt>.
+<p>After these preliminaries let us implement it.
+<p><font face="Arial">Implementing the Mixed-Type Comparison</font>
+<p>The functionality that we aim to implement depends on the type of <tt>this</tt>
+object and the <tt>other</tt> object. There are four cases to distinguish
+between:
+<ol>
+<li>
+<tt>this</tt> and <tt>other</tt> are of the exact same type.</li>
+
+<br>All fields can and must be compared.</ol>
+
+<ol>
+<li>
+<tt>this</tt> is of a subtype of <tt>other</tt>.</li>
+
+<br>The <tt>other</tt> object is smaller than <tt>this</tt> object and
+only the superclass fields can be compared for equality; the subclass-specific
+fields of <tt>this</tt> object must have default values.
+<br>&nbsp;
+<li>
+<tt>this</tt> is of a supertype of <tt>other</tt>.</li>
+
+<br>The <tt>other</tt> object is the larger object that has subclass-specific
+fields that must have default values. This can be implemented easiest if
+we let the <tt>other</tt> object do the work, which gets us back to case
+(2) with the roles of <tt>this</tt> and <tt>other</tt> being switched.
+<br>&nbsp;
+<li>
+<tt>this</tt> and <tt>other</tt> are from different branches of the class
+hierarchy.</li>
+
+<br>Both objects have something in common, which must be compared for equality,
+and they both have subclass-specific fields, which must checked against
+the default values. This is the tricky part. First, we must identify the
+superclass that <tt>this</tt> and <tt>other</tt> have in common and second
+we must check the subclass-specific fields of both objects for default
+values.</ol>
+The principle of the implementation is the usual recursion: every class's
+implementation of <tt>equals()</tt> takes care of comparing its own fields
+and delegates to the superclass's implementation of <tt>equals()</tt> for
+comparison of the inherited fields. Comparing one's own fields comes in
+two flavors: either the <tt>other</tt> object has fields that <tt>this</tt>
+object can compare with its own fields, or not. The first case is relevant
+when <tt>this</tt> object is of the same type or of a subtype of the <tt>other</tt>
+object (see (1) and (2) in the list above); in this case compare <tt>this</tt>
+'s fields with <tt>other</tt>'s fields. The second case ("there is nothing
+to compare on this level because the <tt>other</tt> object is too different")
+happens in the cases (3) and (4) from the list above; in this case check
+that <tt>this</tt>'s fields have default values.
+<p>We will encapsulate the actual comparison of a class's own fields into
+a private helper method that every class in a class hierarchy must provide.
+Here is the sketch of an implementation of the helper method, which we
+named <tt>_compareFields()</tt>, for a class with two <tt>int</tt> fields:
+<dir><font face="Lucida Console"><font size=-2>public class MyClass extends
+MySuperClass {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; static final int</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; field1Default = 0,</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; field2Default = 0;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; private int field1
+= field1Default;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; private int field2
+= field2Default;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; ...</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; private boolean _compareFields(Object
+other) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; if (other
+instanceof MyClass) { // at least my type, check fields</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; if ( field1
+!= ((MyClass)other). field1</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|| field2 != ((MyClass)other). field2</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+)</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; } else
+{ // higher type, check defaults</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if ( field1 != field1Default</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|| field2 != field2Default</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+)</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; return
+true;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+Note, that <tt>_compareFields()</tt> is a <i>private</i> method in our
+sample implementation. This is intentionally so in order to make sure that
+the method remains class-specific and cannot be overridden in a subclass.
+<p>The implementation of the <tt>equals()</tt> method in principle calls
+the helper method and then delegates to <tt>super.equals()</tt>. However,
+matters are not that simple. This strategy would be fine for case (1) and
+(2) from the list above, but more work is needed to address case (3) and
+(4). Case (3), "<tt>this</tt> is of a supertype of <tt>other</tt>", can
+best be addressed by passing the bucket on the <tt>other</tt> object's
+<tt>equals()</tt>
+method. By switching the roles of <tt>this</tt> and <tt>other</tt> we simply
+reduce case (3) to case (2).<b> </b>Case (4), "<tt>this</tt> and <tt>other</tt>
+are from different branches of the class hierarchy", is the really challenging
+situation, where we must identify the superclass that both objects have
+in common and must navigate the class tree in a more sophisticated way
+than simply going straight up from the subclass to the superclass.
+<p>Before we look in the solution to case (4) let us take a look at the
+implementation of the <tt>equals()</tt> method itself.
+<dir><font face="Lucida Console"><font size=-2>public class MyClass extends
+MySuperClass {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; ...</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; public boolean equals(Object
+other) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; if (other
+== this) return true; // identical</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; if (other
+== null) return false; // null</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; if (!(other
+instanceof RootClass)) return false; // incomparable types</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; return
+_navigateClassHierarchy(other); // subtype of root; go and compare</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+The <tt>equals()</tt> method performs a couple of preliminary checks, like
+checking whether the other object is a <tt>null</tt> reference and whether
+the <tt>other</tt> object belongs to the same class hierarchy as <font face="Lucida Console">this</font>
+object. The assumption here is that the topmost superclass of the class
+hierarchy is a class named RootClass. After the preliminaries <tt>equals()</tt>
+delegates to another helper method named <tt>_navigateClassHierarchy()</tt>
+, which controls the class tree traversal and triggers the actual field
+comparison provided by the other helper method <tt>_compareFields()</tt>
+.
+<br>&nbsp;
+<br>&nbsp;
+<p><b>The Tree Traversal</b>
+<p>For purpose of illustration let us consider the following class hierarchy:
+<center>
+<p><img SRC="2.Folie1.JPG" NOSAVE height=374 width=500></center>
+
+<p>There are four relevant cases to consider, which are listed below. For
+each of the cases, the diagrams illustrate the location of <tt>thisObject</tt>
+and <tt>theOtherObject</tt> in the class hierarchy (see box around class
+name) and the size of each object in terms of the class slices it conmprises
+(see yellow box). For instance, in case (1), <tt>thisObject</tt> is an
+object of type <tt>MyClass</tt> and contains a <tt>MySuperClass</tt> and
+a <tt>MyClass</tt> part.
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=5 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<dir><font face="Lucida Console"><font size=-2>MyClass thisObject = new
+MyClass();</font></font>
+<br><font face="Lucida Console"><font size=-2>MyClass theOtherObject =
+null;</font></font></dir>
+</td>
+
+<td VALIGN=TOP WIDTH="50%">&nbsp;</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<dir><font face="Lucida Console"><font size=-2>// (1) this and other are
+of the exact same type&nbsp;</font></font>
+<br><font face="Lucida Console"><font size=-2>theOtherObject = new MyClass();</font></font></dir>
+<font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp; ...
+thisObject.equals(theOtherObject) ...</font></font></td>
+
+<td VALIGN=TOP WIDTH="50%"><img SRC="2.Folie2.JPG" NOSAVE height=374 width=500></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<dir><font face="Lucida Console"><font size=-2>// (2) this is of a subtype
+of other</font></font>
+<br><font face="Lucida Console"><font size=-2>theOtherObject = new MySuperClass();</font></font></dir>
+<font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp; ...
+thisObject.equals(theOtherObject) ...</font></font></td>
+
+<td VALIGN=TOP WIDTH="50%"><img SRC="2.Folie3.JPG" NOSAVE height=375 width=500></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<dir><font face="Lucida Console"><font size=-2>// (3) this is of a supertype
+of other</font></font>
+<br><font face="Lucida Console"><font size=-2>theOtherObject = new MySubClass_1
+();</font></font></dir>
+<font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp; ...
+thisObject.equals(theOtherObject) ...</font></font></td>
+
+<td VALIGN=TOP WIDTH="50%"><img SRC="2.Folie4.JPG" NOSAVE height=374 width=500></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<dir><font face="Lucida Console"><font size=-2>// (4) this and other are
+from different</font></font>
+<br><font face="Lucida Console"><font size=-2>// branches of the class
+hierarchy</font></font>
+<br><font face="Lucida Console"><font size=-2>thisObject = new MySubClass_1();</font></font>
+<br><font face="Lucida Console"><font size=-2>theOtherObject = new MySubClass_2();</font></font></dir>
+<font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp; ...
+thisObject.equals(theOtherObject) ...</font></font></td>
+
+<td VALIGN=TOP WIDTH="50%"><img SRC="2.Folie5.JPG" NOSAVE height=374 width=500></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<p>The algorithm is easy for the cases (1), "<tt>this</tt> and <tt>other</tt>
+are of the exact same type", and (2), "<tt>this</tt> is of a subtype of
+<tt>other</tt><font face="Lucida Console">"</font>.
+In these cases we will either compare <tt>this</tt>'s fields to <tt>other</tt>'s
+fields (1) or check <tt>this</tt>'s field against the default values (2).
+This is exactly what method <tt>_compareFields()</tt> does. Afterwards
+we delegate to the superclass for comparison of the inherited fields and
+start the recursive traversal up the class tree. Here is a first incomplete
+snippet of the helper method <tt>_navigateClassHierarchy()</tt>:
+<dir><font face="Lucida Console"><font size=-2>public class MyClass extends
+MySuperClass {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; ...</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; protected boolean
+_navigateClassHierarchy(Object other) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;
+...</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;
+// compare my fields</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;
+if(!_compareFields(other)) return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// pass the buck up</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return super._navigateClassHierarchy(other);</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+Case (3), "<tt>this</tt> is of a supertype of <tt>other</tt><font face="Lucida Console">
+"</font>, is similar to case (2), "<tt>this</tt> is of a subtype of <tt>other</tt><font face="Lucida Console">
+"</font>. If we switch the roles of <tt>this</tt> and <font face="Lucida Console">other</font>
+we can use the solution of case (2), which means that we simply call <tt>other</tt>'s
+<tt>_navigateClassHierarchy()</tt>
+method and provide the <tt>this</tt> object as an argument. Here is a more
+elaborate implementation of the tree navigation method:
+<dir><font face="Lucida Console"><font size=-2>public class MyClass extends
+MySuperClass {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; ...</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; protected boolean
+_navigateClassHierarchy(Object other) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; if (other
+instanceof MyClass)</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; { // switch
+roles</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return ((MyClass)other)._navigateClassHierarchy(this);</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; else</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; { // compare
+my fields</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if(!_compareFields(other)) return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// pass the buck up</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return super._navigateClassHierarchy(other);</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+Note, this implementation is still incomplete, since we haven't addressed
+case (4), "<tt>this</tt> and <tt>other</tt> are from different branches
+of the class hierarchy", yet.
+<p>In our example of a case (4) situation, <tt>this</tt> is a <tt>MySubClass_1</tt>
+object and <tt>other</tt> is a <tt>MySubSubClass</tt> object. Control flow
+in the tentative implementation of <tt>_navigateClassHierarchy()</tt> shown
+above will go to the <tt>else</tt>-branch because <tt>other</tt> is not
+an instance of <tt>MyClass</tt>. The _<tt>compareFields()</tt> method will
+correctly check whether <tt>this</tt>'s field have default values. Then
+control flow delegate to the superclass, that is, <tt>MyClass._navigateClassHierarchy()</tt>
+will be invoked.
+<p>This time <tt>other</tt><font face="Lucida Console"> </font><i>is</i>
+an instance of <tt>MyClass</tt>, because <tt>MyClass</tt> happens to be
+superclass that <tt>this</tt> and <tt>other</tt> have in common. Note,
+we have not yet checked whether the <tt>other</tt> object has default values
+for its own subclass-specific fields; in order words, we must still traverse
+the branch of the class tree from which the <tt>other</tt> objects stems.
+This can be achieved by switching roles and calling <tt>MySubSubClass._navigateClassHierarchy()</tt>
+. This happens to be exactly what the <tt>then</tt>-branch does anyway.
+So far, so good.
+<p>In <tt>MySubSubClass._navigateClassHierarchy()</tt> we will check for
+default values of the subsubclass-specific fields; we will move up the
+class tree and will process the subclass-specific fields, until we end
+up in <tt>MyClass._navigateClassHierarchy(</tt><font face="Lucida Console">)</font>
+again. With the implementation as it is, control flow would now descend
+down the other branch again, that we already traversed, that is, we will
+end up in an infinite loop.
+<p>To break the cycle we need to memorize that we already traversed that
+other branch of the tree. For this purpose we introduce a boolean flag,
+which we name <tt>reverseOrder</tt>, to maintain this extra piece of information.
+Here is the complete implementation of the <tt>_navigateClassHierarchy()</tt>
+method:
+<dir><font face="Lucida Console"><font size=-2>public class MyClass extends
+MySuperClass {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; ...</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; protected boolean
+_navigateClassHierarchy(Object other, boolean reverseOrder) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; if (other
+instanceof MyClass &amp;&amp; !reverseOrder)</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; { // reverse
+order</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return ((MyClass)other)._navigateClassHierarchy(this,true);</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; else</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; { // compare
+my fields</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if(!_compareFields(other)) return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// pass the buck up</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return super._navigateClassHierarchy(other,reverseOrder);</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+Before we switch the roles of <tt>this</tt> and <tt>other</tt> in order
+to traverse the other branch of the class tree we check whether we did
+it before. If so, we refrain from doing it again and instead start the
+normal straight ascent up the hierarchy from here on, since both subbranches
+have already been traversed. The boolean flag works like a so-called latch:
+it start with the initial value <tt>false</tt>, flips exactly once, namely
+when traversal of the other branch starts, and never changes its value
+again. It is handed from one <tt>_navigateClassHierarchy()</tt> method
+to the next each of which checks the flag in order to find out whether
+the other branch has already been traversed or not.
+<p>That's it! This is a way of implementing a correct mixed-type comparison.
+It is certainly not he only conceivable implementation, but no matter how
+you achieve the goal, it will take more than a simple <tt>instanceof</tt>
+test to get it right. The complete source code for the root class and one
+of the subclasses can be found in listings 1 and 2.
+<p>As with all implementations of <tt>equals()</tt>, no matter whether
+they are of the same-type-comparison-only flavor or of mixed-type-comparison
+implementations style, any new class in the class hierarchy must join the
+game and must employ the same mechanism for its implementation of <tt>equals()</tt>
+. In our case it means that all classes in the hierarchy must override
+the helper methods <tt>_navigateClassHierarchy()</tt> and <tt>_compareFields()</tt>
+. The <tt>equals()</tt> method itself is identical in all classes and need
+only be defined once in the root class.
+<p>The implementations of the <tt>_compareFields()</tt> methods are entirely
+class-specific and fully depend on the number and types of the fields that
+the respective class adds to the hierarchy. Note, that <tt>_compareFields()</tt>
+is a private method in our sample implementation. This is intentionally
+so in order to make sure that the method remains class-specific and cannot
+be overridden in a subclass. Alternatively we could have implemented a
+<tt>final</tt>
+method in each class that has a class-specific name using a naming scheme
+like <tt>_compare&lt;<i>classname</i>>Fields()</tt>.
+<p>The implementations of <tt>_navigateClassHierarchy()</tt> are mostly
+identical. This is really boilerplate code, that you would copy and paste.
+The few modifications are: the class name in the <tt>instanceof</tt> test
+and the cast expression must be changed; it is the name of respective class.
+And each implementation invokes its class's (<tt>private</tt> or <tt>final</tt>
+) <tt>_compareFields()</tt> method. As a refinement of our implementation
+one could factor out the commonalities into a single root-class-version
+of <tt>_navigateClassHierarchy()</tt>, using reflection to invoke the <tt>_compareFields()</tt>
+method, so that only the <tt>_compareFields()</tt> methods need to be provided
+when a new classes that is added to the hierarchy. We leave the refinement
+as an exercise to the reader since a comprehensive discussion is beyond
+the scope of this article.
+<p><font face="Arial">Acknowledgements</font>
+<p>The ideas discussed in this article were inspired by comments we received
+from readers of a preceding article on <tt>equals()</tt> (see /<a href="#Kreft">
+KRE</a> /). These readers were (in the order their emails arrived) Larry
+Kuenning <a href="mailto:larry.kuenning@qhpress.org">larry.kuenning@qhpress.org</a>
+, Mark Davis <a href="mailto:mark.davis@us.ibm.com">mark.davis@us.ibm.com</a>
+, and Frank Griswold <a href="mailto:griswolf@roguewave.com">griswolf@roguewave.com</a>
+. All three pointed out that there <i>is</i> a way of implementing <tt>equals()</tt>
+so that it performs a transitive mixed-type comparison. From their tentative
+first ideas and code snippets they sent we derived the solution that we
+explained in this article. Mark Davis's suggestion are the main foundation
+of this article; he precisely described the algorithm and provided most
+of the implementation. If you're interested in reading his article about
+<tt>equals()</tt>
+from his "Durable Java" column in Java Report look up his website (see
+/<a href="#Davis"> DAV</a> /).
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER CELLPADDING=5 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP>Listing 1: An implementation of a mixed-type comparison
+for the root of a class hierarchy</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>
+<dir>&nbsp;
+<br><font face="Lucida Console"><font size=-2>public class RootClass {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; static
+final int</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+a1Default = 0,</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+a2Default = 0;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; private
+int a1 = a1Default;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; private
+int a2 = a2Default;</font></font>
+<br>&nbsp;
+<p><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; public
+boolean equals(Object other) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (other == this) return true;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// identical</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (other == null) return false;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// null</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (! (other instanceof RootClass)) return false;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// incomparable types</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return _navigateClassHierarchy(other,false);</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; }</font></font>
+<p><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; protected
+boolean _navigateClassHierarchy(Object other, boolean reverseOrder) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (other instanceof RootClass &amp;&amp; !reverseOrder)&nbsp;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{&nbsp; // reverse order&nbsp;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return ((RootClass)other)._navigateClassHierarchy(this,true);</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+else&nbsp;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{&nbsp;&nbsp; // compare my fields&nbsp;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if(!_compareFields(other)) return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// since we are the root, succeed</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return true;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; }</font></font>
+<p><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; private
+boolean _compareFields(Object other) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (other instanceof RootClass) {&nbsp;&nbsp;&nbsp; // at least my type,
+check fields</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+RootClass myType = (RootClass)other;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (a1 != myType.a1</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|| a2 != myType.a2) return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+} else {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// check defaults</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (a1 != a1Default</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|| a2 != a2Default) return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return true;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER CELLPADDING=5 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP>Listing 2: An implementation of a mixed-type comparison
+for a subclass in a class hierarchy</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>
+<dir><font face="Lucida Console"><font size=-2>public class SubClass extends
+RootClass {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; static
+final int</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+b1Default = 0,</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+b2Default = 0;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; private
+int b1 = b1Default;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; private
+int b2 = b2Default;</font></font>
+<p><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; protected
+boolean _navigateClassHierarchy(Object other, boolean reverseOrder) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (other instanceof SubClass &amp;&amp; !reverseOrder)&nbsp;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{&nbsp; // reverse order&nbsp;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return ((SubClass)other)._navigateClassHierarchy(this,true);</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+else&nbsp;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{&nbsp;&nbsp; // compare my fields&nbsp;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if(!_compareFields(other)) return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// pass the buck up</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return super._navigateClassHierarchy(other,reverseOrder);</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; }</font></font>
+<p><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; private
+boolean _compareFields(Object other) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (other instanceof SubClass) {&nbsp;&nbsp;&nbsp; // at least my type,
+check fields</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+SubClass myType = (SubClass)other;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (b1 != myType.b1</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|| b2 != myType.b2) return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+} else {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// check defaults</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (b1 != b1Default</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|| b2 != b2Default) return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return true;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+</td>
+</tr>
+</table>
+
+<dir>
+<dir>&nbsp;</dir>
+</dir>
+<font face="Arial">References</font>
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft"></a>/KRE/&nbsp;</td>
+
+<td><b>Secrets of equals</b>
+<br>Klaus Kreft &amp; Angelika Langer&nbsp;
+<br>Java Solutions, April 2002
+<br>URL: <a href="http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals.html">http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals.html</a>&nbsp;
+or&nbsp;
+<br>URL: <a href="http://www.cuj.com/java/articles/a19.htm?topic=java">http://www.cuj.com/java/articles/a19.htm?topic=java</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Davis"></a>/DAV/</td>
+
+<td><b>Durable Java: Libert&eacute;, &Eacute;galit&eacute;, Fraternit&eacute;</b>
+<br>Mark Davis&nbsp;
+<br>Java Report, January 2000&nbsp;
+<br><a href="http://www.macchiato.com/columns/Durable5.html">http://www.macchiato.com/columns/Durable5.html</a></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Angelika Langer">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <title>Compile-Time Computations in C++</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="AbstractPolicyMixins"></a>&nbsp;
+<div ALIGN=right><table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 COLS=1 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">ABSTRACT</font></b></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=0 COLS=1 WIDTH="95%" >
+<tr>
+<td>Class and function templates add another dimension of programming power
+to the C++ language. Computation of constants, evaluation of expressions,
+polymorphic dispatch of functions are examples of tasks that can be solved
+at compile time rather than at run time - using templates. In this lecture,
+we explore advanced template programming techniques that can replace corresponding
+object oriented idioms and help eliminated the run time overhead of traditional
+object oriented programming.&nbsp;
+<ul>
+<li>
+Polymorphism is one of the classic ideas of object oriented programming.
+In C++, it typically involves inheritance and virtual function dispatch
+at run time. Using templates, polymorphic behavior can be dispatched at
+compile time already, thus eliminating any run time overhead.</li>
+
+<li>
+The strategy pattern deals with interchangeable algorithms and suggests
+an implementation technique that involves inheritance. The use of templates
+provides a run-time efficient alternative technique, sometimes referred
+to as policy mix-ins.</li>
+
+<li>
+The C++ template instantiator is a primitive recursive function evaluator.
+Certain expressions and constants can be computed recursively at compile
+time rather than at run time.</li>
+</ul>
+In this lecture, we explore function templates, function pointers, function
+object types, traits, the typename keyword, explicit function template
+argument specification, function template overloading, and other advanced
+template features.&nbsp;</td>
+</tr>
+</table></div>
+&nbsp;</td>
+</tr>
+</table></div>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">PREREQUISITES</font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLPADDING=5 WIDTH="95%" >
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Level:</font></i></b></td>
+
+<td>intermediate</td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td WIDTH="50%">2 hours</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><i><font color="#295AB5">Prerequisites:</font></i></b></td>
+
+<td WIDTH="50%">Attendants should be familiar with the concept and pre-standard
+language constructs for template programming in C++. Any knowledge of recently
+added template features is not required.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><b><i><font color="#295AB5">Presented at:</font></i></b></td>
+
+<td WIDTH="95%"><a href="PreviousEvents.html#C++WorldNYC98">C++ World</a>,
+New York, NY, August 1998
+<br><a href="PreviousEvents.html#AppDev">Application Development '99</a>,
+London, UK, July 1999&nbsp;</td>
+</tr>
+</table></div>
+
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=2 WIDTH="88%" >
+<tr>
+<td COLSPAN="2"><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar or
+skim through some further reading:</font></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Courses/Templates.htm"><img SRC="../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><font color="#000000"><a href="../Courses/Templates.htm">C++ Template
+Programming</a></font>
+<br><font color="#000000"><font size=-1>3-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+
+<td><b><i><font color="#295AB5">Paper</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Articles/Papers/TemplateProgramming/Paper.htm"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=27 width=31></a></td>
+
+<td><font color="#000000"><a href="../Articles/Papers/TemplateProgramming/Paper.htm">Compile
+Time Computations in C++ -</a></font>
+<br><font color="#000000"><a href="../Articles/Papers/TemplateProgramming/Paper.htm">Novel
+Template Programming Techniques</a></font>
+<br><font color="#000000"><font size=-1>short white paper (providing first
+insights)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

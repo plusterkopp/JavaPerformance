@@ -1,0 +1,161 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <title>Concurrency Control Techniques for Multi-Threaded Programs in C++ and Java</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="Abstract MT"></a>&nbsp;
+<div ALIGN=right><table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 COLS=1 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">ABSTRACT</font></b></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=0 COLS=1 WIDTH="95%" >
+<tr>
+<td>
+<ul>Understanding multithreading and its impact on software development
+is a demanding task. This lecture discusses the design of object-oriented,
+concurrent applications using multiple threads, and the implementation
+of such applications in C++ and Java. Naturally, a 3-hours presentation
+cannot cover all aspects relevant to multithreading. The talk instead focuses
+on one particularly important aspect: concurrency control techniques, among
+them mutual exclusion, guarded suspension, and more advanced techniques
+such as reader/writer synchronization. In order to implement these patterns
+in C++ or Java, one needs to know which concurrency control instruments
+are supported in each of the languages. Along with an introduction to the
+respective features in C++ and Java, strengths and weaknesses in both languages
+are discussed.&nbsp;
+<br>Not covered in this talk are thread activities and cooperative interaction
+e.g. starting threads, thread completion, termination policies. Also omitted
+are differences between thread APIs, as well as thread scheduling and priorities.
+These aspects are subject of a full-day seminar.</ul>
+
+<ul><b>Access to shared resources.</b> In multithreaded environments concurrently
+running components often share resources. Concurrent access to shared resources
+can corrupt the resource or put it into an inconsistent state if access
+for modification of the resource through two concurrent threads is interleaved.
+For this reason, one of the most urgent problem to be tackled in multithreaded
+programming is control of access to shared resources and, in particular,
+to shared data. The talk explains which data is shared, explicitly or implicitly,
+in C++ and Java, and suggests programming techniques for concurrency control
+in both languages. One of the suggested techniques is classification of
+access methods using the conflict set method.&nbsp;
+<br><b>Concurrency Control Techniques.</b> In order to control the access
+to shared data, multithreaded environments support concurrency control
+instruments like mutex and condition variable. The talk explains how these
+instruments can be used and discusses three typical control patterns and
+their implementation in object-oriented languages such as C++ and Java:
+monitor, guarded suspension, and reader/writer. Tips and tricks are provided
+for improving the design of a concurrent program. Performance tuning is
+suggested by avoiding useless notifications or unnecessary waiting or polling.
+Also, typical pitfalls are mentioned: the notorious nested monitor problem
+is explained.&nbsp;
+<br><b>Implementation Aspects.</b> The third part of the talk is devoted
+to implementation aspects such as programming techniques for turning existing
+classes into thread-safe classes or designing new classes especially for
+use in multithreaded systems. The decomposition into concurrency control
+and ground functionality is proposed and a discussion of combining both,
+via inheritance or delegation, completes the talk.</ul>
+</td>
+</tr>
+</table></div>
+&nbsp;</td>
+</tr>
+</table></div>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">PREREQUISITES</font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLPADDING=5 WIDTH="95%" >
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Level:</font></i></b></td>
+
+<td>intermediate</td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td WIDTH="50%">1.5-3.0 hours</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><i><font color="#295AB5">Prerequisites:</font></i></b></td>
+
+<td WIDTH="50%">working knowledge of C++ or Java;&nbsp;&nbsp; familiarity
+with concurrency control not required</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><b><i><font color="#295AB5">Presented at:</font></i></b></td>
+
+<td WIDTH="95%"><font color="#000000"><a href="PreviousEvents.html#SDEast97">Software
+Development</a>, Washington DC, </font>September 1997&nbsp;
+<br><font color="#000000"><a href="PreviousEvents.html#ObjWorld97">Object
+World</a>, Frankfurt, October 1997</font>
+<br><font color="#000000"><a href="PreviousEvents.html#SanJose97">C++ World</a>,
+San Jose CA, November 1997</font>
+<br><font color="#000000"><a href="PreviousEvents.html#Paris97">Object
+Expo France</a>, Paris, November 1997</font>
+<br><font color="#000000">C++ World / OOP, Munich, February 1998</font>
+(presented by Klaus Kreft)&nbsp;
+<br><a href="PreviousEvents.html#SDWest98">Software Development</a>, San
+Francisco CA, February 1998&nbsp;</td>
+</tr>
+</table></div>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=2 WIDTH="88%" >
+<tr>
+<td COLSPAN="2"><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar or
+skim through some further reading:</font></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminars</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Courses/ConcurrentJava.htm"><img SRC="../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><font color="#000000"><a href="../Courses/ConcurrentJava.htm">Concurrent
+Java</a></font>
+<br><font color="#000000"><font size=-1>3-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+
+<td VALIGN=TOP><b><i><font color="#295AB5">Paper</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Articles/JavaSpektrum.html"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=27 width=31></a></td>
+
+<td><font color="#000000"><a href="../Articles/JavaSpektrum.html">Effective
+Java</a></font>
+<br><font color="#000000"><font size=-1>column in JavaSPEKTRUM (in German)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+</body>
+</html>

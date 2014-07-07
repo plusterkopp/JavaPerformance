@@ -1,0 +1,1014 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Pre-Copyedit Version of Article in JavaSpektrum, March 2002">
+   <title>Implementing the equals() Method - Part 2</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="EffectiveJava02"></a>
+<br><font color="#295AB5"><font size=+3>Objektvergleich</font></font>
+<br><font color="#295AB5"><font size=+2>Wie, wann und warum implementiert
+man die equals()-Methode?</font></font>
+<p><font color="#295AB5"><font size=+2>Teil 2: Der Vergleichbarkeitstest</font></font>
+<p><font color="#295AB5"><font size=+2>JavaSPEKTRUM, M&auml;rz 2002</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<p><b>In diesem Artikel kn&uuml;pfen wir an den vorangegangenen Artikel
+(siehe <a href="#Kreft1">/KRE1/</a>) &uuml;ber equals()-Implementierungen
+an. Nach einen kurzen Wiederholung der Hauptaspekte des letzten Artikels
+konzentrieren wir uns auf den Vergleichbarkeitstest, den man im Rahmen
+einer equals()-Implementierung durchf&uuml;hren muss.&nbsp; Anhand von
+Beispielen aus Ver&ouml;ffentlichungen und dem JDK diskutieren wir die
+verschiedenen Aspekte des Vergleichbarkeitstest mittels getClass()-Methode
+und instanceof-Operator.</b>
+<h2>
+R&uuml;ckblick</h2>
+Objekte in Java kann man miteinander vergleichen, indem man die Methode
+equals() des einen Objekts aufruft und das andere Objekt als Argument mitgibt.
+Das Ergebnis ist ein boolscher Wert, der angibt, ob die beiden Objekte
+"gleich" sind. Ausnahmslos alle Klassen in Java definieren diese Methode.&nbsp;
+Die Implementierung der equals()-Methode ist entweder von der Superklasse
+Object geerbt oder wurde in der betreffenden Klasse &uuml;berschrieben.
+<p>Genau damit haben wir uns in der letzten Ausgabe dieser Kolumne besch&auml;ftigt:&nbsp;
+wie implementiert man equals() in korrekter Art und Weise, wenn die Defaultimplementierung
+aus Object nicht das Richtige tut. Wenn man eine neue Klasse in Java entwirft,
+dann muss man neben all den anderen Design-Entscheidungen auch noch entscheiden,
+ob die Klasse equals() &uuml;berschreiben muss oder nicht.&nbsp; Wir haben
+zwischen Value- und Entity-Typen unterschieden und festgestellt, dass Value-Typen
+&uuml;blicherweise die equals()-Methode &uuml;berschreiben m&uuml;ssen,
+wohingegen f&uuml;r Entity-Typen die geerbte Default-Implementierung aus
+Object ausreichend ist. Das liegt daran, dass Value-Objekte durch ihren
+Inhalt charakterisiert sind und "Gleichheit" im Sinne von equals() bedeutet
+daher f&uuml;r einen Value-Typ "Gleichheit des Inhalts".&nbsp; Das ist
+bei Entity-Typen anders.&nbsp; Dort bedeutet "Gleichheit", dass zwei Objekte
+identisch sind, d.h. nicht nur den gleichen Inhalt haben, sondern ein und
+dasselbe Objekt sind.
+<p>In der Implementierung der equals()-Methode ist man nicht v&ouml;llig
+frei, sondern die Implementierung muss den sogenannten "equals()-Contract"
+erf&uuml;llen. Den equals()-Contract findet man in der JDK JavaDoc unter
+Object.equals(). Er enth&auml;lt neben der Forderung der eigentlichen Funktionalit&auml;t,
+n&auml;mlich dass equals() auf Gleichheit zweier Objekte pr&uuml;fen soll,
+folgende 5 Regeln:
+<ul>
+<li>
+Jedes Objekt liefert beim Vergleich mit sich selbst true.</li>
+
+<li>
+Es ist egal, ob man x mit y vergleicht, oder y mit x; das Ergebnis ist
+dasselbe.</li>
+
+<li>
+Wenn x gleich y ist und y gleich z, dann sind auch x und z gleich.</li>
+
+<li>
+Man kann zwei Objekte beliebig oft miteinander vergleichen; es kommt immer
+dasselbe heraus, solange sich die Objekte nicht ver&auml;ndern.</li>
+
+<li>
+Alle Objekte sind von null verschieden.</li>
+</ul>
+Man sollte stets darauf achten, dass equals() konform zu diesen Regeln
+implementiert wird.&nbsp; Wenn eine Implementierung davon abweicht, dann
+sind Probleme unvermeidbar, weil sich alle Benutzer von equals() intuitiv
+auf die Eigenschaften verlassen, die der equals()-Contract formal beschreibt.
+<p>Wir haben im letzten Artikel eine Anleitung zum Implementieren von&nbsp;
+equals() gegeben.&nbsp; Hier noch einmal die wesentlichen Elemente:
+<br>&nbsp;
+<ul>
+<li>
+<i>Signatur</i>. Die equals()-Methode der eigenen Klasse sollte dieselbe
+Signatur haben wie Object.equals(), n&auml;mlich&nbsp; public boolean equals(Object
+other).</li>
+</ul>
+
+<ul>
+<li>
+<i>Alias-Pr&uuml;fung.</i> Aus Optimierungsgr&uuml;nden kann man als erstes
+auf Identit&auml;t von this und other pr&uuml;fen.</li>
+</ul>
+
+<blockquote><tt>public boolean equals(Object other) {</tt>
+<br><tt>&nbsp; if (this == other)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return true;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt></blockquote>
+
+<ul>
+<li>
+<i>Aufgabenteilung in Klassenhierarchien</i>. Direkte und indirekte Subklassen
+von Object &uuml;bernehmen unterschiedliche Aufgaben:</li>
+</ul>
+
+<ul>
+<li>
+<i>Indirekte Subklassen: Delegation an super</i>. Die Pr&uuml;fung, ob
+die geerbten Anteile des Objekts gleich sind, wird an die Superklasse delegiert.</li>
+
+<br>&nbsp;
+<p>&nbsp;
+<p><tt>boolean equals(Object other) {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; if (!super.equals(other))</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return false;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt></ul>
+
+<ul>
+<li>
+<i>Direkte Subklassen: Test auf null</i>. Es wird gepr&uuml;ft, ob other
+eine null-Referenz ist, damit sichergestellt ist, dass es nicht zu einer
+NullPointerException kommt.</li>
+</ul>
+
+<blockquote><tt>public boolean equals(Object other) {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; if (other == null)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return false;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt></blockquote>
+
+<ul>
+<li>
+<i>Direkte Subklassen: Test auf Vergleichbarkeit</i>. Es wird gepr&uuml;ft,
+ob this und other vergleichbar sind.&nbsp; Das ist der Fall, wenn sie vom
+selben Typ sind. Wir haben folgenden Test vorgeschlagen:</li>
+</ul>
+
+<ul><tt>public boolean equals(Object other) {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; if (other.getClass() != getClass())</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return false;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt>
+<p>Daneben gibt es andere Techniken, bei denen versucht wird, den Vergleich
+zwischen Sub- und Superobjekten zu erlauben.&nbsp; Diese anderen Techniken
+und ihre Vor- und Nachteile wollen wir in diesem Artikel im Detail betrachten.</ul>
+
+<ul>
+<li>
+<i>Vergleich der Felder</i>. Nach den f&uuml;r direkte und indirekte Klassen
+unterschiedlichen Aufgaben folgt bei allen Klassen der eigentliche Vergleich
+der Felder.</li>
+</ul>
+Am Ende, wenn alle Test erfolgreich waren, wird true zur&uuml;ckgegeben.
+<br>&nbsp;
+<p>Wenn man diesem Muster folgt, dann kann man sich beruhigt zur&uuml;cklehnen;
+die resultierenden Implementierungen von equals() sind konform zum equals()-Contract
+und damit garantiert korrekt.&nbsp; Allerdings gibt es Alternativen zu
+einigen der oben aufgef&uuml;hrten Aufgaben. Besonders heikel ist der Vergleichbarkeitstests,
+den wir mit Hilfe der getClass()-Methode vorgeschlagen haben. Im Folgenden
+sehen wir uns diese Alternativen n&auml;her an, insbesondere weil alternative
+L&ouml;sungen sehr h&auml;ufig vorkommen und leider fast ebenso h&auml;ufig
+inkorrekt oder stark situationsabh&auml;ngig und deshalb fragil sind.
+<br>&nbsp;
+<h2>
+Test auf Vergleichbarkeit</h2>
+Warum haben wir den Test auf Vergleichbarkeit &uuml;berhaupt gemacht? Die
+equals()-Methode akzeptiert ein Argument vom Typ Object, d.h. eine Referenz
+auf ein Objekt eines beliebigen Typs (ausgenommen sind nat&uuml;rlich primitiven
+Typen, da sie nicht von Objekt abgeleitet sind). Mit anderen Worten, es
+ist zun&auml;chst einmal nicht sicher gestellt, dass this und other vom
+selben Typ sind und &uuml;berhaupt miteinander verglichen werden k&ouml;nnen.&nbsp;
+Deshalb macht man den Test auf Vergleichbarkeit.
+<p>Wir haben einen sehr strengen Test gemacht, n&auml;mlich den Test auf
+Typgleichheit per getClass():
+<p><tt>public boolean equals(Object other) {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; if (other.getClass() != getClass())</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return false;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt>
+<p>Mit dieser Implementierung von equals() sind nur Objekte vom gleichen
+Typ miteinander vergleichbar.&nbsp; Das ist insofern etwas rigide, weil
+es unter Umst&auml;nden auch Sinn machen kann, Objekte unterschiedlichen
+Typs miteinander zu vergleichen.&nbsp; Beispielweise k&ouml;nnte man zulassen,
+dass Objekte von Sub- und Superklassen miteinander verglichen werden k&ouml;nnen.&nbsp;
+Immerhin haben Sub- und Superobjekte etwas gemeinsam, das man miteinander
+vergleichen k&ouml;nnte, n&auml;mlich die Felder der Superklasse.
+<br>&nbsp;
+<h2>
+Vergleich von Sub- und Superobjekten</h2>
+Betrachten wir also eine Klassenhierarchie und nehmen wir an, der Vergleichbarkeitstest
+in equals() sei so implementiert, wie wir es vorgeschlagen hatten, n&auml;mlich
+per getClass():
+<p><tt>class Super {</tt>
+<br><tt>&nbsp;public boolean equals(Object other) {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; if (other.getClass() != getClass())&nbsp; // Vergleichbarkeitstest</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return false;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<p><tt>class Sub extends Super {</tt>
+<br><tt>&nbsp;public boolean equals(Object other) {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (!super.equals(other))&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// Delegation an Superklasse</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return false;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<p>Man beachte, dass der Vergleichbarkeitstest nur in der direkten Subklasse
+von Object gemacht wird, weil nach der vorgeschlagenen Anleitung dieser
+Test wegen des rekursiven Aufrufs von equals() nur einmal, n&auml;mlich
+in der obersten Superklasse, gemacht werden muss. Dann liefert der Vergleich
+von Sub- und Superklassenobjekte immer das gleiche Ergebnis, n&auml;mlich
+false:
+<p><tt>Super s1 = new Super();</tt>
+<br><tt>Sub&nbsp;&nbsp; s2 = new Sub();</tt>
+<br><tt>... super.equals(sub) ...&nbsp; // immer false</tt>
+<p>Das liegt daran, dass beim Vergleich gepr&uuml;ft wird, ob sub.getClass()
+gleich super.getClass() ist, und das immer falsch, weil die beiden Objekte
+tats&auml;chlich von verschiedenem Typ sind. (getClass() ist eine Methode,
+die in Object definiert ist.&nbsp; Sie liefert ein eindeutiges Objekt vom
+Typ Class zur&uuml;ck, welches den dynamischen Typ des Objekts (d.h. den
+Typ zur Laufzeit im Gegensatz zum statischen Typ zur Compilezeit) repr&auml;sentiert.
+Objekte von verschiedenem Typ haben verschiedene Class-Objekte.)
+<p>Um zu erreichen, dass der Vergleich true liefert, wenn der Superklassenanteil
+der beiden Objekte gleich ist, muss equals() anders implementiert werden.&nbsp;
+Man pr&uuml;ft dann nicht mit der getClass()-Methode, sondern mit dem instanceof-Operator.
+(Der instanceof-Operator pr&uuml;ft, ob das Objekt&nbsp; auf der linken
+Seite vom gleichen oder von einem Subtyp des Typs auf der rechten Seite
+ist.) Hier ist ein typisches Beispiel:
+<p><tt>class Super {</tt>
+<br><tt>&nbsp;public boolean equals(Object other) {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; if (!other instanceof Super)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return false;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<br><tt>class Sub {</tt>
+<br><tt>&nbsp;public boolean equals(Object other) {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; if (!other instanceof Sub)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return false;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<p>Damit besteht die Chance, dass der Vergleich auch einmal true liefert,
+n&auml;mlich dann, wenn die gemeinsamen Felder gleich sind.
+<p><tt>Super s1 = new Super();</tt>
+<br><tt>Sub&nbsp;&nbsp; s2 = new Sub();</tt>
+<br><tt>... super.equals(sub) ...&nbsp; // m&ouml;glicherweise true</tt>
+<p>Der Vergleichbarkeitstest in equals() pr&uuml;ft auf sub instanceof
+Super, d.h. ob das Objekt sub von einem Typ ist, der gleich oder abgeleitet
+ist vom Typ Super.&nbsp; Das ist hier der Fall, und dann werden die &uuml;brigen
+Pr&uuml;fungen durchgef&uuml;hrt, um schlie&szlig;lich zu entscheiden,
+ob sub und super "gleich" sind.
+<p>Man beachte, dass es bei der Verwendung des instanceof-Operators nicht
+gen&uuml;gt, den Test nur einmal in der obersten Superklasse zu machen,
+weil hier "hard-coded" der Name der Klasse, f&uuml;r die das equals() jeweils
+implementiert wird, in die Pr&uuml;fung eingeht.
+<br>&nbsp;
+<h2>
+Das Symmetrie-Problem der instanceof-L&ouml;sung</h2>
+
+<p><br>Leider ist diese Implementierung inkorrekt: sie verletzt die Symmetrie-Anforderung
+aus dem equals()-Contract.&nbsp; Wenn man nicht super mit sub vergleicht,
+sondern umgekehrt, dann kommt u.U. ein anderes Ergebnis heraus, was nicht
+sein darf.
+<p><tt>Super s1 = new Super();</tt>
+<br><tt>Sub&nbsp;&nbsp; s2 = new Sub();</tt>
+<br><tt>... super.equals(sub) ...&nbsp; // m&ouml;glicherweise true</tt>
+<br><tt>... sub.equals(super) ...&nbsp; // immer false</tt>
+<p>Der Vergleichbarkeitstest im ersten Aufruf von equals() pr&uuml;ft auf
+sub instanceof Super, d.h. ob das Objekt sub von einem Typ ist, der gleich
+oder abgeleitet ist vom Typ Super.&nbsp; Das ist der Fall. Der Vergleichbarkeitstest
+im zweiten Aufruf von equals() pr&uuml;ft auf super instanceof Sub, d.h.
+ob das Objekt super von einem Typ ist, der gleich oder abgeleitet ist vom
+Typ Sub.&nbsp; Das ist nat&uuml;rlich falsch; deshalb kommt hier immer
+false heraus, ganz egal, ob die beiden Objekte einen gleichen Superklassenanteil
+haben, oder nicht.&nbsp; Das ist eine klare Verletzung der Symmetrieanforderung
+des equals()-Contract und diese Implementierung ist inkorrekt.
+<p>Wenn diese L&ouml;sung falsch ist, warum zeigen wir sie dann? Diese
+Art der Implementierung ist leider so weit verbreitet, dass wir sie in
+zahllosen Ver&ouml;ffentlichungen gesehen haben und auch in realem Source-Code,
+beispielsweise in fr&uuml;hen Versionen der JDK-Klasses.&nbsp; Heute ist
+dieses Symmetrie-Problem allgemein bekannt, aber leider gibt es immer noch
+unz&auml;hlige Beispiele inkorrekter und problematischer&nbsp; Implementierungen
+von equals(), die zwar nicht alle asymmetrisch sind, sondern andere Probleme
+haben, aber man findet sie sowohl in der g&auml;ngigen Literatur als auch
+in den Standard Bibliotheken des JDK.&nbsp; Schauen wir uns also einfach
+mal um.
+<h2>
+St&ouml;bern in B&uuml;chern und Source-Code</h2>
+Wir haben verschiedene B&uuml;cher aus dem Regal genommen und ge&ouml;ffnet.&nbsp;
+Wir haben public-domain Java-Source-Code angesehen. Dabei haben wir auf
+Anhieb ein ganze Reihe von problematischen Implementierungen gefunden.&nbsp;
+Wir haben nicht etwa verzweifelt nach pathologische F&auml;llen oder ganz
+besonders miserablen Ver&ouml;ffentlichen gesucht, sondern wir haben wahllos
+zugegriffen.&nbsp; Im Folgenden wollen wir eine Auswahl der gefundenen&nbsp;
+"Stilbl&uuml;ten" zeigen und daran die Problem von equals()-Implementierungen
+diskutieren. Das tun wir nicht, weil die genannten B&uuml;cher so besonders
+schlecht sind&nbsp; (das ist nicht der Fall; manche der B&uuml;cher sind
+sogar sehr, sehr gut und trotz der Fehler absolut empfehlenswert) oder
+weil wir nat&uuml;rlich immer alles besser wissen als James Gosling, sondern
+um zu zeigen, dass selbst Java-Gurus die Problematik korrekter equals()-Implementierungen
+und ihrer Folgen untersch&auml;tzen.&nbsp; Die Materie ist nicht-trivial
+und man muss ganz sorgf&auml;ltig nachdenken, wenn man sich zuk&uuml;nftigen
+&Auml;rger nach M&ouml;glichkeit ersparen will.
+<p>Wir betrachten Beispiele aus "Program Development in Java" von Barbara
+Liskov und John Guttag (siehe <a href="#Liskov">/LIS/</a>),&nbsp; "Effective
+Java" von Joshua Bloch (siehe <a href="#Bloch">/BLO/</a>), "Practical Java"
+von Peter Haggar (siehe <a href="#Haggar">/HAG/</a>), und aus dem JDK 1.3
+Sourcecode (siehe <a href="#JDK">/JDK/</a>; Autoren: James Gosling,&nbsp;
+Arthur van Hoff, Alan Liu).&nbsp;&nbsp; Listing 1 bis 4 zeigen die Beispiele.
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td>Listing 1: Barbara Liskov, "Program Development in Java", Seite 182,
+siehe&nbsp; <a href="#Liskov">/LIS/</a></td>
+</tr>
+
+<tr>
+<td><tt>public class Point3 extends Point2 {</tt>
+<br><tt>&nbsp;private int z;&nbsp;</tt>
+<br><tt>&nbsp;...</tt>
+<br><tt>&nbsp;public boolean equals(Object p) { // overriding definition</tt>
+<br><tt>&nbsp;&nbsp; if (p instanceof Point3) return equals((Point3)p);</tt>
+<br><tt>&nbsp;&nbsp; return super.equals();</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>&nbsp;public boolean equals(Point2 p) { // overriding definition</tt>
+<br><tt>&nbsp;&nbsp; if (p instanceof Point3) return equals((Point3)p);</tt>
+<br><tt>&nbsp;&nbsp; return super.equals();</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>&nbsp;public boolean equals(Point3 p) { // extra definition</tt>
+<br><tt>&nbsp;&nbsp; if (p==null || z!=p.z) return false;</tt>
+<br><tt>&nbsp;&nbsp; return super.equals();</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>&nbsp;...</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<table BORDER >
+<tr>
+<td>Listing 2: JDK 1.3, package java.util, class Date, Autoren: James Gosling,
+Arthur van Hoff, Alan Liu, siehe <a href="#JDK">/JDK/</a></td>
+</tr>
+
+<tr>
+<td><tt>public class Date implements java.io.Serializable, Cloneable, Comparable
+{</tt>
+<br><tt>&nbsp;&nbsp; private transient Calendar cal;</tt>
+<br><tt>&nbsp;&nbsp; private transient long fastTime;</tt>
+<br><tt>&nbsp;&nbsp; private static Calendar staticCal = null;</tt>
+<br><tt>&nbsp;&nbsp; // ... lots of static fields ...</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public long getTime() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return getTimeImpl();</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; private final long getTimeImpl() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return (cal == null) ? fastTime
+: cal.getTimeInMillis();</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public boolean equals(Object obj) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return obj instanceof Date
+&amp;&amp; getTime() == ((Date) obj).getTime();</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<table BORDER >
+<tr>
+<td>Listing 3: Josh Bloch, "Effective Java", Item 7 und Item 8, siehe <a href="#Bloch">/BLO/</a></td>
+</tr>
+
+<tr>
+<td><tt>public final class PhoneNumber {</tt>
+<br><tt>&nbsp;private final short areaCode;</tt>
+<br><tt>&nbsp;private final short exchange;</tt>
+<br><tt>&nbsp;private final short extension;</tt>
+<br><tt>&nbsp;...</tt>
+<br><tt>&nbsp;public boolean equals(Object o) {</tt>
+<br><tt>&nbsp;&nbsp; if (o==this)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return true;</tt>
+<br><tt>&nbsp;&nbsp; if (!(o instanceof PhoneNumber))</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return false;</tt>
+<br><tt>&nbsp;&nbsp; PhoneNumber pn = (PhoneNumber)o;</tt>
+<br><tt>&nbsp;&nbsp; return pn.extensions == extension &amp;&amp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pn.exchange&nbsp;&nbsp;
+== exchange&nbsp; &amp;&amp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pn.areaCode&nbsp;&nbsp;
+== areaCode;</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>&nbsp;...</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<table BORDER >
+<tr>
+<td>Listing 4: Peter Haggar, "Practical Java", Praxis 8 bis Praxis 14,
+siehe <a href="#Haggar">/HAG/</a></td>
+</tr>
+
+<tr>
+<td><tt>class Golfball {</tt>
+<br><tt>&nbsp; private String brand;</tt>
+<br><tt>&nbsp; private String make;</tt>
+<br><tt>&nbsp; private int compression;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; public String brand() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return brand;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; public boolean equals(object obj) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (this == obj)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return true;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (obj!=null &amp;&amp; getClass() == obj.getClass())</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Golfball gb = (Golfball)obj;
+// Classes are equal, downcast.</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (brand.equals(gb.brand())&nbsp;
+&amp;&amp;&nbsp; // Compare atrributes.</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make.equals(gb.make())
+&amp;&amp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compression
+== gb.compression())</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return true;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return false;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<br><tt>class MyGolfball extends Golfball {</tt>
+<br><tt>&nbsp;public final static byte TwoPiece = 0;</tt>
+<br><tt>&nbsp;public final static byte ThreePiece = 1;</tt>
+<br><tt>&nbsp;private byte ballConstruction;</tt>
+<br><tt>&nbsp;...</tt>
+<br><tt>&nbsp;public byte constuction() {</tt>
+<br><tt>&nbsp;&nbsp; return ballConstruction;</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>&nbsp;...</tt>
+<br><tt>&nbsp;public boolean equals(Object obj) {</tt>
+<br><tt>&nbsp;&nbsp; if (super.equals(obj))</tt>
+<br><tt>&nbsp;&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; MyGolfball bg = (MyGolfball)obj;&nbsp;
+// Classes equal, downcast.</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; if (ballConstruction == gb.construction())</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return true;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; return false;</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<p>Sehen wir uns die Beispiele einmal der Reihe nach an.
+<br>&nbsp;
+<h3>
+Listing 1: Eine inkorrekte Version von equals()</h3>
+Schon auf den ersten Blick f&auml;llt auf, dass Barbara Liskov eine interessante
+Kombination von &Uuml;berladen und &Uuml;berschreiben verwendet.&nbsp;
+Da gibt es nicht nur eine Version von equals(), sondern gleich mehrere,
+mit unterschiedlichen Signaturen.&nbsp; So kann man's auch machen.&nbsp;
+Das hier vorgeschlagen Verfahren ist aber ein relativ ungew&ouml;hnlicher
+Ansatz, der sowohl Vor- als auch Nachteile hat.&nbsp; Das wollen wir hier
+aber gar nicht diskutieren. Unser Interesse gilt im Moment dem Vergleichbarkeitstest.
+<p>Wenn man genau hinsieht, erkennt man, dass in dieser Implementierung
+equals() nicht transitiv&nbsp; und damit inkorrekt ist.&nbsp; Das Beispiel
+in Listing 1 zeigt eine Subklasse Point3, die von einer Superklasse Point2
+abgeleitet ist. Die Klasse Point3 hat drei &uuml;berladene Versionen von
+equals() zu bieten. Schauen wir mal, was passiert, wenn man diese equals()-Methoden
+benutzt. Nehmen wir an, wir haben Point2- und Point3-Objekte mit gleichem
+Superklassenanteil:
+<br>&nbsp;
+<table>
+<tr>
+<td><tt>Point2 origin(0,0);</tt>
+<br><tt>Point3 p1(0,0,-1);</tt>
+<br><tt>Point3 p2(0,0,1);</tt></td>
+
+<td><img SRC="image002.gif" NOSAVE height=117 width=156></td>
+</tr>
+</table>
+
+<p>Wenn wir diese Objekte miteinander vergleichen, ergibt sich das Folgende:
+<p><tt>System.out.println(p1.equals(origin));&nbsp; // ruft Point3.equals(Point2)</tt>
+<br><tt>System.out.println(origin.equals(p2));&nbsp; // ruft Point2.equals(Point2)</tt>
+<br><tt>System.out.println(p1.equals(p2));&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// ruft Point3.equals(Point3)</tt>
+<p>Man w&uuml;rde erwarten, dass alle drei Objekte gleich sind, weil sie
+den gleichen Superklassenanteil enthalten, und daher folgende Ausgabe erwarten:
+<blockquote><tt>true</tt>
+<br><tt>true</tt>
+<br><tt>true</tt></blockquote>
+Statt dessen ergibt sich folgende Ausgabe:
+<blockquote><tt>true</tt>
+<br><tt>true</tt>
+<br><tt>false</tt></blockquote>
+Gem&auml;&szlig; dieser equals()-Implementierung sind die Point3-Objekte
+p1 und p2 nicht gleich, obwohl sie beide gleich mit dem Point2-Objekt origin
+sind. Nach den Regeln der Transitivit&auml;t m&uuml;ssten die Point3-Objekte
+p1 und p2 aber gleich sein, da der Vergleich mit einem dritten Objekt in
+beiden F&auml;llen true liefert.&nbsp; Diese equals()-Implementierung ist
+nicht transitiv und verletzt den equals()-Contract und ist damit inkorrekt.&nbsp;
+Ist das ein Problem?&nbsp; Es ist doch offensichtlich, dass p1 und p2 nicht
+gleich sind.&nbsp; Vielleicht ist der ganze equals()-Contract Bl&ouml;dsinn
+... ?!?!?
+<p>Der equals()-Contract ist keinesfalls bl&ouml;dsinnig; das Beispiel
+ist vielleicht etwas zu simpel.&nbsp; Man stelle sich eine geringf&uuml;gig
+komplexere Situation vor, in der drei Superklassen-Referenzen miteinander
+verglichen werden, ohne dass man wei&szlig;, welche Art von Objekt da genau
+referenziert wird.&nbsp; Wenn man drei Point2-Referenzen miteinander vergleicht
+und zwei der Vergleiche true liefern, aber der dritte liefert pl&ouml;tzlich
+false, dann ist das schon sehr &uuml;berraschend und kann leicht zu Fehlern
+f&uuml;hren.
+<p>Worin besteht also genau das Problem?&nbsp; Die Verletzung der Transitivit&auml;tsanforderung
+stammt daher, dass hier verschiedene Implementierungen von equals() gerufen
+werden und diese verschiedenen Implementierungen unterschiedliche Semantik
+haben.&nbsp; Sehen wir uns das noch einmal im Detail an.
+<p>Im ersten Vergleich p1.equals(origin) wird die Methode Point3.equals(Point2)
+gerufen.&nbsp; Sie ist wie folgt implementiert:
+<p><tt>public class Point3 extends Point2 {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; public boolean equals(Point2 p) { // overriding definition</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (p instanceof Point3) return equals((Point3)p);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return super.equals();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt>
+<p>Die Methode Point3.equals(Point2) pr&uuml;ft, ob das andere Objekt (also
+origin) von einem Typ ist der ein Subtyp von Point3 ist.&nbsp; Das ist
+falsch; es ist genau anders herum: der Typ von origin ist der Supertyp
+von this. Das Ergebnis des Test ist also false; dann wird super.equals()
+gerufen.&nbsp; Die Implementierung von super.equals(), welches&nbsp; in
+diesem Fall Point2.equals(Point2) ist, wird in Listing 1 nicht gezeigt,
+aber man kann annehmen, dass sie der gleichen Logik folgt.&nbsp; Die Methode
+Point2.equals(Point2) vergleicht Point2-Objekte miteinander, in diesem
+Falle origin mit dem Superklassenanteil von p1. Das Ergebnis ist erwartungsgem&auml;&szlig;
+true. Dasselbe ergibt sich, wenn origin mit p2 verglichen wird. Beide Vergleiche
+sind gemischte Vergleiche zwischen Super- und Subobjekten.&nbsp; Die Semantik
+dieser "mixed-type"-Vergleiche ist der Vergleich der Superklassenanteile
+der beteiligten Objekte, was wir im Folgenden als "slice comparison" bezeichnen
+werden.
+<p>F&uuml;r den&nbsp; dritten Vergleich p1.equals(p2) wird die Methode
+Point3.equals(Point3) gerufen.&nbsp; Dieser Vergleich m&uuml;sste nun nach
+den Regeln der Transitivit&auml;t true liefert.&nbsp; Das tut er aber nicht.&nbsp;
+Die beiden Objekte sind ja auch nicht gleich.&nbsp; Was stimmt hier also
+nicht?&nbsp; Die Methode Point3.equals(Point3) f&uuml;hrt einen ganz anderen
+Vergleich durch als die Methode Point3.equals(Point2), die in den beiden
+"mixed-type"-Vergleichen verwendet wurde. Die Methode Point3.equals(Point3)
+macht einen "same-type"-Vergleich, d.h. sie vergleicht Objekte desselben
+Typs und vergleicht dabei die gesamten Objekte, nicht nur den Superklassenanteil
+davon.&nbsp; Semantisch ist das ein ganz anderer Vergleich.
+<p>Und genau hier liegt das Problem.&nbsp; Alle beteiligten Methoden hei&szlig;en
+equals(), aber sie machen ganz unterschiedliche Dinge.&nbsp; Je nach Konstellation
+wird mal die Superklassen-Variante von equals() gerufen, die beim "mixed-type"-Vergleich
+nur Superklassenanteile vergleicht, und mal wird die Subklassen-Variante
+von equals() gerufen, die alle Felder in Betracht zieht und deshalb zu
+anderen, inkompatiblen Ergebnissen kommt.&nbsp; Es ist konzeptionell nicht
+m&ouml;glich, einen korrekten, transitiven Vergleich&nbsp; von Sub- und
+Superklassenobjekte zu definieren, wenn mal nur die Superklassenanteile
+und mal die gesamten Subobjekte betrachtet werden.&nbsp; Der Widerspruch
+ist weder theoretisch noch praktisch aufzul&ouml;sen.&nbsp; Das hei&szlig;t,
+solche Implementierungen wie die aus Listing 1 sind immer inkorrekt, da
+sie nicht transitiv sind.
+<p>Wenn man "mixed-type"-Vergleiche in Klassenhierarchien zulassen will,
+dann m&uuml;ssen alle Vergleiche in der gesamte Hierarchie dieselbe Semantik
+haben.&nbsp; Man k&ouml;nnte beispielsweise eine isEqualToPoint2()-Methode
+definieren, die in der Superklasse Point2 als final definiert ist und daher
+in Subklassen nicht &uuml;berschrieben werden kann. Diese isEqualToPoint2()-Methode
+w&uuml;rde die Point2-Anteile von Point-Objekten jeder Art vergleicht.&nbsp;
+Das w&auml;re auf allen Stufen der Hierarchie derselbe Vergleich.&nbsp;
+Dann w&auml;ren auch p1 und p2 aus unserem Beispiel "gleich" im Sinne von
+isEqualToPoint2(), weil ja nur die Superklassenanteile verglichen w&uuml;rden.&nbsp;
+Eine solche Vergleichsmethode erf&uuml;llt alle Kriterien des equals()-Contract,
+mit der winzigen Einschr&auml;nkung, dass sie einen vielleicht etwas eigenartigen
+Begriff von Gleichheit implementiert, n&auml;mlich die Gleichheit des Superklassenanteils
+aller Point-Objekte. Deshalb haben wir die Methode auch nicht equals()
+genannt.
+<p><b>Fazit:</b> Symmetrische Implementierungen von equals(), die den Vergleich
+von Sub- und Superobjekten per instanceof-Operator zulassen und in den
+verschiedenen Stufen der Klassenhierarchie &uuml;berschrieben werden, sind
+immer intransitiv und damit inkorrekt. Implementierungen von equals(),
+die nur den Vergleich von Objekten gleichen Typs per getClass()-Methode
+zulassen, sind dagegen unkritisch: sie haben das oben beschilderte&nbsp;
+Intransitivit&auml;tsproblem nicht.
+<br>Asymmetrische Implementierungen von equals() mit instanceof haben wir
+bis jetzt noch nicht betrachtet; das tun wir im n&auml;chsten Abschnitt.&nbsp;
+Asymmetrische Implementierungen k&ouml;nnen transitiv sein, aber sie sind
+nat&uuml;rlich auch nicht korrekt, wegen der fehlenden Symmetrie.
+<h3>
+Listing 2: Eine weit verbreitete, aber dennoch fragw&uuml;rdige Version
+von equals()</h3>
+Nun, die Implementierung in Listing 1 war ohnehin etwas exotisch, schon
+allein durch den Mix von &Uuml;berladen und &Uuml;berschreiben.&nbsp; Vielleicht
+war das ja ein Ausrei&szlig;er.&nbsp; Schauen wir uns mal was Reelles an
+und sehen uns Klassen aus den JDK-Bibliotheken an.&nbsp; Ein typisches
+Beispiel ist in Listing 2 gezeigt.
+<p>Es handelt sich um das Beispiel einer non-final Klasse die einen Value-Typ
+repr&auml;sentiert, n&auml;mlich die Klasse Date. Die Klasse Date mit ihrer
+Implementierung der equals()-Methode ist zun&auml;chst einmal korrekt,
+so wie sie ist.&nbsp; Probleme sind aber zu erwarten, sobald jemand von
+der Klasse Date ableitet.&nbsp; Man beachte, dass die Klasse Date offenbar
+bewusst als potentielle Superklasse deklariert ist; sie ist n&auml;mlich
+nicht als final deklariert.&nbsp; Dann leiten wir doch einmal eine Subklasse
+ab und sehen, was passiert.
+<p>Nehmen wir an, die Subklasse hat zus&auml;tzliche Felder und muss aus
+diesem Grunde die Implementierung von Date.equals() &uuml;berschreiben,
+so dass auch die neuen Felder in den Vergleich eingehen.&nbsp; Hier ist
+eine vorstellbare Subklasse NamedDate:
+<p><tt>public class NamedDate extends Date {</tt>
+<br><tt>&nbsp; private String name;</tt>
+<br><tt>&nbsp; public boolean equals(Object other) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (other instanceof NamedDate &amp;&amp; !name.equals(((NamedDate)other).name))</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return false;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return super.equals(other));</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Nat&uuml;rlich kann man NamedDate.equals() auch anders implementieren,
+aber wir folgen hier dem Stil, den die Superklasse Date nahelegt. Zur Erinnerung,
+hier die Implementierung von Date.equals():
+<p><tt>public class Date {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; public boolean equals(Object obj) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return obj instanceof Date &amp;&amp; getTime()
+== ((Date) obj).getTime();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Beide Versionen von equals() benutzen den instanceof-Operator und lassen
+den "mixed-type"-Vergleich zu.&nbsp; Betrachten wir ein Beispiel:
+<br>&nbsp;
+<table>
+<tr>
+<td><tt>NamedDate EndOfMillenium = new NamedDate(99,11,31,"end of 2nd millenium
+AC");</tt>
+<br><tt>NamedDate TheEnd&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= new NamedDate(99,11,31,"end of the world");</tt>
+<br><tt>Date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NewYearsEve&nbsp;&nbsp;&nbsp;
+= new Date(99,11,31);</tt></td>
+
+<td><img SRC="image004.gif" NOSAVE height=167 width=223></td>
+</tr>
+</table>
+
+<p><tt>EndOfMillenium.equals(NewYearsEve)&nbsp;&nbsp; // slice comparison:
+true</tt>
+<br><tt>NewYearsEve.equals(TheEnd)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// slice comparison: true</tt>
+<br><tt>EndOfMillenium.equals(TheEnd)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// whole-object comparison: false</tt>
+<p>Wir beobachten dasselbe Transitivit&auml;tsproblem wie in Listing 1.&nbsp;
+Das liegt daran, dass Date.equals() den Vergleich von Sub- mit Superobjekten
+erlaubt, aber jede Subklasse mit Wahrscheinlichkeit equals() &uuml;berschreiben
+wird und damit einen semantisch anderen Vergleich implementieren wird.&nbsp;
+Und dann gibt es die oben schon ausf&uuml;hrlich geschilderten Probleme.
+<p>Vielleicht war es ja falsch, die equals()-Methode der Subklasse NamedDate
+mit Hilfe des instanceof-Operators zu implementieren.&nbsp; Wie w&auml;re
+es denn, wenn man NamedDate.equals() mit Hilfe von getClass() implementierte?&nbsp;
+Das w&auml;re auch inkorrekt, denn dann&nbsp; w&auml;re equals() nicht
+mehr symmetrisch. Man k&ouml;nnte Date-Objekte zwar mit NamedDate-Objekten
+per Date.equals() vergleichen, aber umgekehrt per NamedDate.equals() geht
+es nicht, oder genauer gesagt, es kommt immer false heraus, egal ob die
+beiden Objekte die gleichen Superklassenfelder haben oder nicht.&nbsp;
+Das ist eine Verletzung der Symmetrie-Anforderung aus dem equals()-Contract
+und damit also auch falsch.
+<p>Die Autoren dieser Date-Klasse h&auml;tten ihren Nutzern den &Auml;rger
+mit inkorrekten Implementierungen von equals() in Subklassen ersparen k&ouml;nnen
+und die Date-Klasse oder zumindest die Methode Date.equals() als final
+deklarieren k&ouml;nnen.&nbsp; Dann w&auml;re die Klasse Date keine Superklasse
+oder aber man k&ouml;nnte zwar ableiten, aber equals() nicht &uuml;berschreiben.
+In beiden F&auml;llen w&auml;re das Transitivit&auml;tsproblem ausgeschlossen.&nbsp;
+Leider habe die Autoren das nicht getan.&nbsp; Also muss man als JDK-Benutzer
+aufpassen, dass man nicht in diese Falle tappt: man sollte von solchen
+Bibliotheksklassen wie Date, die in ihrer Implementierung von equals()
+den instanceof-Operator verwenden, nur mit allergr&ouml;&szlig;ter Vorsicht
+ableiten.&nbsp; Wenn man ableiten will, muss&nbsp; man auf jeden Fall erst
+einmal den Source-Code der anvisierten Superklasse studieren und feststellen,
+wie equals() dort &uuml;berhaupt implementiert ist; in der JavaDoc steht
+dazu &uuml;blicherweise &uuml;berhaupt nichts.
+<p>Wenn man dann wei&szlig;, dass das equals() der Klasse, von der man
+ableiten will, den instanceof-Operator verwendet, dann macht eine Subklasse
+nur Sinn, wenn sie keine zus&auml;tzlichen Felder definiert und auch sonst
+nichts hinzuf&uuml;gt, was eine neue Version von equals() erfordern w&uuml;rde.&nbsp;
+Nur dann, wenn&nbsp; das Superklassen-equals() in der Subklasse nicht &uuml;berschrieben
+werden muss, macht eine Subklasse &uuml;berhaupt Sinn. (Tipp: als Autor
+einer solchen Subklasse sollte man mit R&uuml;cksicht auf seine eigenen
+Nutzer den Fehler nicht wiederholen und seine Subklasse als final deklarieren
+oder ein Dummy-equals() implementieren, welches final ist und nichts weiter
+tut, als an super.equals() zu delegieren.)
+<p>Man fragt sich, warum diese Fallen im JDK so zahlreich sind.&nbsp; Die
+Klasse Date ist lediglich ein wahllos herausgegriffenes Beispiel; es gibt
+viele davon im JDK 1.3.&nbsp; Einer der Java-Gurus bei Sun (n&auml;mlich
+Joshua Bloch, der Autor von "Effective Java" und Entwickler des Collection-Frameworks)
+hat dazu in einem privaten Email gesagt, man habe ja erst vor kurzem &uuml;berhaupt
+erkannt, dass das ein Problem sei mit dem instanceof-Test in den non-final
+Klassen. Und au&szlig;erdem sei das ja eigentlich auch gar kein Problem;
+es k&auml;me schlie&szlig;lich so gut wie nie vor, dass man beim Ableiten
+neue Felder hinzuf&uuml;gt.&nbsp; (Siehe dazu auch Item 14 aus seinem Buch
+<a href="#Bloch">/BLO/</a>.)&nbsp;
+So selten ist das Hinzuf&uuml;gen von Feldern beim Definieren von Subklassen
+unserer Erfahrung nach nicht, aber f&uuml;r gewisse Projekte mag Joshua
+Bloch's Einsch&auml;tzung trotzdem richtig sein.
+<p>Wir w&uuml;rden aber dennoch empfehlen, den Implementierungsstil von
+JDK-Klassen wie Date f&uuml;r eigene Klassen nicht bedenkenlos nachzuahmen.&nbsp;
+Man vermeidet viel Aufwand und Kopfschmerzen, wenn man Klassen gar nicht
+erst als potentielle Superklassen zul&auml;sst, d.h. eine Klasse sollte
+normalerweise final sein, es sei denn, sie ist wirklich als Superklasse
+gemeint.&nbsp; Das Design von Superklassen ist deutlich aufwendiger und
+schwieriger als das Design "normaler" non-final Klassen.&nbsp; Man muss
+nicht nur bei der equals()-Methode von Superklassen besonders aufpassen;
+das gleiche gilt auch f&uuml;r die clone()-Methode eine Superklasse. Es
+muss generell fein s&auml;uberlich dokumentiert werden, wie und wann und
+unter welchen Umst&auml;nden non-final Methoden in den Implementierungen
+anderer Methoden der Superklasse verwendet werden und was von diesen non-final
+Methoden erwartet wird; schlie&szlig;lich muss das der Autor einer Subklasse
+wissen und beachten, falls er die Methoden in seiner Subklasse &uuml;berschreibt.
+Da in Java alle Klassen per Default non-final und damit potentielle Superklassen
+sind, passiert es relativ h&auml;ufig, dass der Autor einer non-final Klasse
+&uuml;berhaupt nicht dar&uuml;ber nachgedacht hat, ob seine Klasse als
+Superklasse taugt, sondern die Klasse ist nur "zuf&auml;llig" eine potentielle
+Superklasse. Ob eine solche Klasse zum Ableiten geeignet ist, ist fraglich.
+<p>Zur&uuml;ck zu unseren Literaturstudien.&nbsp; Sehen wir uns die verbleibenden
+beiden Beispiele an.
+<h3>
+Listing 3: Eine korrekte Version von equals()</h3>
+Das ist das Beispiel einer PhoneNumber-Klasse, die man im Buch von Joshua
+Bloch findet. Die Implementierung von equals() verwendet zwar den instanceof-Test,
+aber der ist hier unproblematisch, weil die Klasse final ist. Joshua Bloch
+vermeidet so alle oben diskutierten Transitivit&auml;tsprobleme.&nbsp;
+Die L&ouml;sung ist korrekt, aber in ihrer Benutzbarkeit auf final-Klassen
+beschr&auml;nkt.
+<br>&nbsp;
+<h3>
+Listing 4: Noch eine korrekte Version von equals()</h3>
+Das ist ein Beispiel aus dem Buch von Peter Haggar.&nbsp; Wir sehen in
+Listing 4 das Beispiel einer Superklasse Golfball und ihrer Subklasse MyGolfball.
+Die Subklasse &uuml;berschreibt equals(), weil sie Subklassen-spezifische
+Felder hat.&nbsp; Die Superklasse benutzt nicht den instanceof-Test, sondern
+verwendet getClass():
+<p><tt>class Golfball {</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public boolean equals(object obj) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; if (this == obj)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return true;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; if (obj!=null &amp;&amp; getClass() ==
+obj.getClass())</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Golfball gb = (Golfball)obj;
+// Classes are equal, downcast.</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (brand.equals(gb.brand())&nbsp;
+&amp;&amp;&nbsp; // Compare atrributes.</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+make.equals(gb.make()) &amp;&amp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+compression == gb.compression())</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return true;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return false;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<br><tt>class MyGolfball extends Golfball {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; public boolean equals(Object obj) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (super.equals(obj))</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; MyGolfball gb = (MyGolfball)obj;&nbsp;
+// Classes equal, downcast.</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (ballConstruction == gb.construction())</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return true;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return false;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Das ist genau die Art von Implementierung, die wir empfehlen w&uuml;rden.
+Der fundamentale Unterschied zu all den anderen betrachteten Beispielen
+ist, dass hier der Vergleich von Golfball- mit MyGolfball-Objekten grunds&auml;tzlich
+fehlschl&auml;gt.&nbsp; Hier ist ein Beispiel:
+<br>&nbsp;
+<table>
+<tr>
+<td><tt>Golfball original = new Golfball("xyz", "abc",100);</tt>
+<br><tt>MyGolfball gb1 = new MyGolfball("xyz", "abc", 100, MyGolfball.TwoPiece);</tt>
+<br><tt>MyGolfball gb2 = new MyGolfball("xyz", "abc", 100, MyGolfball.ThreePiece);</tt></td>
+
+<td><img SRC="image006.gif" NOSAVE height=163 width=218></td>
+</tr>
+</table>
+
+<p><tt>gb1.equals(original)&nbsp; // mixed-type comparison: yields false</tt>
+<br><tt>original.equals(gb2)&nbsp; // mixed-type comparison: yields false</tt>
+<br><tt>gb1.equals(gb2)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // same-type
+comparison:&nbsp; yields false</tt>
+<p>Diese Art der Implementierung ist korrekt und erf&uuml;llt alle Anforderungen
+des equals()-Contract.&nbsp; In Klassenhierarchien, in denen equals() &uuml;berschrieben
+werden kann und muss, ist das die sinnvollste Strategie.
+<p><b>Anmerkung: </b>Man kann im &uuml;brigen die beiden Implementierungstechniken
+(instanceof vs. getClass()) nicht innerhalb einer Klassenhierarchie mischen.&nbsp;
+W&uuml;rden wir beispielsweise versuchen, die NamedDate-Klasse (siehe Listing
+2 und anschlie&szlig;ende Diskussion)&nbsp; mit getClass() zu implementieren,
+w&auml;hrend die Superklasse Date den instanceof-Operator verwendet, dann
+produzieren wir ein asymmetrisches equals() f&uuml;r diese Klassenhierarchie:
+ein NamedDate lie&szlig;e sich mit einem Date vergleichen, aber nicht umgekehrt.&nbsp;
+Der Designer der Superklasse tr&auml;gt also gro&szlig;e Verantwortung:
+er legt die Implementierungsstrategie f&uuml;r die equals()-Methoden in
+der gesamte Hierarchie fest.
+<br>&nbsp;
+<h2>
+Schlussfolgerung</h2>
+Es gibt zwei M&ouml;glichkeiten, den Vergleichbarkeitstest in equals()
+zu machen: mit Hilfe der getClass()-Methode oder mit Hilfe des instanceof-Operators.
+<ul>
+<li>
+Die getClass()-Technik ist robust und unproblematisch und daher zu empfehlen.</li>
+
+<li>
+Die instanceof-Technik ist weit verbreitet, macht aber nur bei Klassen
+Sinn, die final sind.</li>
+</ul>
+
+<p><br>Man findet in der Literatur und auch in der Praxis viele non-final
+Klassen, die trotz der Transitivit&auml;tsprobleme den instanceof-Test
+in ihrer non-final Methode equals() machen. Das Ableiten von solchen Klassen
+ist &auml;u&szlig;erst fehleranf&auml;llig und sollte grunds&auml;tzlich
+vermieden werden. (Man kann in vielen F&auml;llen bei der Definition neuer
+Klassen Ableitung durch Delegation ersetzen; es muss nicht immer Vererbung
+sein.)
+<p>F&uuml;r die Implementierung eigener Klassen h&auml;lt man sich am besten
+an die obige Regel: bei final-Klassen ist es egal, wie man den Vergleichbarkeitstest
+in equals() macht, und bei non-final Klassen nehme man getClass().
+<br>&nbsp;
+<h2>
+Ausblick</h2>
+Wir haben in diesem und dem vorangegangenen Artikel einige Aspekte der
+Implementierung von equals() besprochen.&nbsp; Das Thema ist damit noch
+nicht ersch&ouml;pfend behandelt.&nbsp; Wir haben zum Beispiel bislang
+kaum erw&auml;hnt, dass equals() nicht allein auf der Welt ist und Querbez&uuml;ge
+zu anderen Infrastruktur-Methoden wie hashCode() und compareTo() hat. Die
+Implementierungen dieser Methoden m&uuml;ssen konsistent zu equals() sein.&nbsp;
+Mehr dar&uuml;ber beim n&auml;chsten Mal (/<a href="#Kreft3">KRE3</a>/).
+<br>&nbsp;
+<br>&nbsp;
+<h2>
+Literaturverweise</h2>
+
+<table CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP><a NAME="Kreft1"></a>/KRE1/&nbsp;</td>
+
+<td VALIGN=TOP><b>Wie, wann und warum implementiert man die equals()-Methode?&nbsp;</b>
+<br><b>Teil 1: Die Prinzipien der Implementierung von equals()</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>Java Spektrum, Januar 2002
+<br>URL: <a href="http://www.langer.camelot.de/Articles/JavaSpektrum/01.Equals-Part1/01.Equals1.html">http://www.langer.camelot.de/Articles/JavaSpektrum/01.Equals-Part1/01.Equals1.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft2"></a>/KRE2/</td>
+
+<td><b>Wie, wann und warum implementiert man die equals()-Methode?&nbsp;</b>
+<br><b>Teil 2: Der Vergleichbarkeitstest&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>Java Spektrum, M&auml;rz 2002
+<br>URL: <a href="http://www.langer.camelot.de/Articles/JavaSpektrum/02.Equals-Part2/02.Equals2.html">http://www.langer.camelot.de/Articles/JavaSpektrum/02.Equals-Part2/02.Equals2.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft3"></a>/KRE3/</td>
+
+<td><b>Wie, wann und warum implementiert man die hashCode()-Methode?&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>Java Spektrum, Mai 2002
+<br>URL: <a href="http://www.langer.camelot.de/Articles/JavaSpektrum/02.Equals-Part2/02.Equals2.html">http://www.langer.camelot.de/Articles/JavaSpektrum/03.HashCode/03.HashCode.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft4"></a>/KRE4/</td>
+
+<td><b><font face="Times New Roman, Times, serif"><font size=+0>Secrets
+of equals()</font></font></b>
+<br><b><font face="Times New Roman, Times, serif"><font size=+0>Part 1:
+Not all implementations of equals() are equal</font></font></b>
+<br>Angelika Langer &amp; Klaus Kreft
+<br>Java Solutions, April 2002
+<br>URL: <a href="http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals.html">http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft5"></a>/KRE5/</td>
+
+<td><b><font face="Times New Roman, Times, serif"><font size=+0>Secrets
+of equals()</font></font></b>
+<br><b><font face="Times New Roman, Times, serif"><font size=+0>Part 2:
+How to implement a correct slice comparison in Java</font></font></b>
+<br>Angelika Langer &amp; Klaus Kreft
+<br>Java Solutions, August 2002
+<br>URL: <a href="http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals-2.html">http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals-2.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Davies"></a>/DAV/</td>
+
+<td><b>Durable Java: Libert&eacute;, &Eacute;galit&eacute;, Fraternit&eacute;</b>
+<br>Mark Davis&nbsp;
+<br>Java Report, January 2000&nbsp;
+<br>URL: <a href="http://www.macchiato.com/columns/Durable5.html">http://www.macchiato.com/columns/Durable5.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Bloch"></a>/BLO/&nbsp;</td>
+
+<td><b>Effective Java Programming Language Guide</b>
+<br>Josh Bloch&nbsp;
+<br>Addison-Wesley, June 2001&nbsp;
+<br>ISBN: 0201310058</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Bloch"></a>/BLO2/</td>
+
+<td>Joshua Bloch's comment on instanceof versus getClass in equals methods:
+<br><b>A Conversation with Josh Bloch</b>
+<br>by Bill Venners
+<br>URL: <a href="http://www.artima.com/intv/bloch17.html">http://www.artima.com/intv/bloch17.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Haggar"></a>/HAG/&nbsp;</td>
+
+<td><b>Practical Java: Programming Language Guide</b>
+<br>Peter Haggar&nbsp;
+<br>Addison-Wesley, March 2000&nbsp;
+<br>ISBN 0201616467</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Liskov"></a>/LIS/&nbsp;</td>
+
+<td><b>Program Development in Java: Abstraction, Specification, and Object-Oriented
+Design</b>
+<br>Barbara Liskov with John Guttag&nbsp;
+<br>Addison-Wesley, January 2000&nbsp;
+<br>ISBN: 0201657686</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="GOF"></a>/GOF/&nbsp;</td>
+
+<td><b>Design Patterns: Elements of Reusable Object-Oriented Software</b>
+<br>Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides&nbsp;
+<br>Addison-Wesley, January 1995&nbsp;
+<br>ISBN: 0201633612</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDK"></a>/JDK/&nbsp;</td>
+
+<td><b>Java 2 Platform, Standard Edition v1.3.1</b>
+<br>URL: <a href="http://java.sun.com/j2se/1.3/">http://java.sun.com/j2se/1.3/</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDOC"></a>/JDOC/&nbsp;</td>
+
+<td><b>Java 2 Platform, Standard Edition, v 1.3.1 - API Specification</b>
+<br>URL: <a href="http://java.sun.com/j2se/1.3/docs/api/index.html">http://java.sun.com/j2se/1.3/docs/api/index.html</a></td>
+</tr>
+
+<tr>
+<td></td>
+
+<td></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

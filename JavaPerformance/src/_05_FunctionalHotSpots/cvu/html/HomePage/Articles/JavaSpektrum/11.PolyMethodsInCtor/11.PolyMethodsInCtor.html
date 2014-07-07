@@ -1,0 +1,871 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Pre-Copyedit Version of Article in JavaSpektrum, November 2003">
+   <meta name="KeyWords" content="final polymorphism Effective Java">
+   <title>Polymorphic Methods and Constructors</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="EffectiveJava11"></a>
+<br><font color="#295AB5"><font size=+3>Polymorphe Methodenaufrufe und
+Konstruktoren</font></font>
+<br><font color="#295AB5"><font size=+2>Warum man den Aufruf von non-final
+Methoden w&auml;hrend der Initialisierung von Objekten vermeiden sollte</font></font>
+<p><font color="#295AB5"><font size=+2>JavaSPEKTRUM, November 2003</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p><b>Der Aufruf von polymorphen Methoden w&auml;hrend der Initialisierungsphase
+eines Objekts kann zu &Uuml;berraschungen f&uuml;hren. Deshalb gibt es
+die Regel: „Man soll keine non-final Methoden im Konstruktor aufrufen.“&nbsp;
+In diesem Artikel wollen wir uns ansehen, warum diese Regel sinnvoll ist
+und wie genau die Initialisierung von Objekten in Java funktioniert.</b>
+<br>&nbsp;
+<br>&nbsp;
+<h2>
+Ein problematisches Beispiel</h2>
+Beginnen wir mit einem Fallbeispiel, an dem man sehen kann, da&szlig; die
+Konstruktion von Objekten in Klassenhierarchien bisweilen zu &Uuml;berraschungen
+f&uuml;hren kann. Wir betrachten eine Hierarchie von Klassen, die das Personal
+einer Firma abbilden: eine Superklasse StaffMember f&uuml;r „normale“ Mitarbeiter
+und eine abgeleitete Klasse BoardMember f&uuml;r die Mitglieder des Vorstands.
+Der wesentliche Unterschied besteht darin, da&szlig; Mitglieder des Vorstands
+einen Bonus auf ihre Entlohnung bekommen; deshalb hat die Klasse BoardMember
+ein zus&auml;tzliches Feld. Hier eine verk&uuml;rzte Form dieser Klassen:
+<p><tt>public class StaffMember {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private Person person;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private long salary;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private OrgUnit department;</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; public StaffMember(Person p, long s, OrgUnit
+o) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; person = p;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; salary = s;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; department = o;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; o.addMember(this);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public long getCompensation() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return salary;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<br><tt>public class BoardMember extends StaffMember {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private long bonus;</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; public BoardMember(Person p, long s,long b, OrgUnit
+o) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; super(p,s,o);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; bonus = b;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public long getCompensation() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return super.getCompensation()+bonus;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Neben den hier gezeigten Klassen gibt es ein Klasse OrgUnit, welche
+die Abteilungen der Firma repr&auml;sentiert. Was diese Klasse genau tut,
+ist hier unerheblich.&nbsp; Wichtig ist in unserem Zusammenhang nur, da&szlig;
+jeder Mitarbeiter bei seiner Organisationseinheit registriert wird.&nbsp;
+Das geschieht im Konstruktor der Klasse StaffMember &uuml;ber die Methode
+OrgUnit.addMember(). Hier eine verk&uuml;rzte Form dieser Klasse OrgUnit:
+<p><tt>public class OrgUnit {</tt>
+<br><tt>&nbsp;private String name;</tt>
+<br><tt>&nbsp;private Set members = new TreeSet();</tt>
+<br><tt>&nbsp;private long cost;</tt>
+<p><tt>&nbsp;public final void addMember(StaffMember m) {</tt>
+<br><tt>&nbsp; members.add(m);</tt>
+<br><tt>&nbsp; cost += m.getCompensation();</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<p>Nun ergibt sich folgender Effekt: wenn man Angestellte und Vorstandsmitglieder
+konstruiert und den verschiedenen Organisationseinheiten zuordnet, wird
+man feststellen, da&szlig; etwas mit den Gehaltsberechnungen nicht stimmt.&nbsp;
+Hier ein Testprogramm:
+<p><tt>public final class Corporation {</tt>
+<br><tt>&nbsp;private Set units = new HashSet();</tt>
+<p><tt>&nbsp;public Corporation()&nbsp; {</tt>
+<br><tt>&nbsp; OrgUnit dep = new OrgUnit("Development");</tt>
+<br><tt>&nbsp; units.add(dep);</tt>
+<br><tt>&nbsp; new StaffMember(new Person("Helmut", "Hunter"),3000000,dep);</tt>
+<br><tt>&nbsp; new StaffMember(new Person("Lorrie", "Lindon"),3000000,dep);</tt>
+<br><tt>&nbsp; new StaffMember(new Person("Jeremy", "Jordan"),4000000,dep);</tt>
+<p><tt>&nbsp; dep = new OrgUnit("Board");</tt>
+<br><tt>&nbsp; units.add(dep);</tt>
+<br><tt>&nbsp; new BoardMember(new Person("Vito", "Voracious"),100000000,500000,dep);</tt>
+<br><tt>&nbsp; new BoardMember(new Person("Mona", "Malicious"),100000000,300000,dep);</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>&nbsp;public static void main(String[] args) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Corporation corp = new Corporation();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; System.out.println(corp);</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<p>Hier die Ausgabe, die das Testprogramm produziert, unter der Annahme,
+da&szlig; entsprechende toString()-Methoden implementiert wurden:
+<p><tt>corporation.OrgUnit:</tt>
+<br><tt>name: Development</tt>
+<br><tt>cost: 100000 USD</tt>
+<br><tt>&nbsp;Helmut Hunter ( Development ) [ 30000 USD ] ID: #28904249</tt>
+<br><tt>&nbsp;Jeremy Jordan ( Development ) [ 40000 USD ] ID: #26208195</tt>
+<br><tt>&nbsp;Lorrie Lindon ( Development ) [ 30000 USD ] ID: #12115735</tt>
+<p><tt>corporation. OrgUnit:</tt>
+<br><tt>name: Board</tt>
+<br><tt>cost: 2000000 USD</tt>
+<br><tt>&nbsp;Mona Malicious ( Board ) [ 1003000 USD ] ID: #20876681</tt>
+<br><tt>&nbsp;Vito Voracious ( Board ) [ 1005000 USD ] ID: #29240677</tt>
+<p>Die Vorstandsmitglieder bekommen zwar ihren Gehaltsbonus, aber in den
+Gesamtkosten der Organisationseinheit ist offenbar nur das Grundgehalt
+ber&uuml;cksichtigt.&nbsp; Wie kann das passieren?
+<br>&nbsp;
+<h2>
+Problemanalyse</h2>
+Das Problem entsteht bei der Konstruktion der Vorstandsmitglieder.&nbsp;
+Der Konstruktor der Klasse BoardMember ruft zun&auml;chst einmal einen
+Superklassenkonstruktor auf.&nbsp; Danach wird das Bonus-Feld initialisiert.&nbsp;
+Im Superklassenkonstruktor, d.h. im Konstruktor der Klasse StaffMember,
+werden die Felder der Klasse StaffMember initialisiert und danach wird
+die addMember()-Methode der Organisationseinheit aufgerufen.&nbsp; In der
+addMember()-Methode der Klasse OrgUnit wird das BoardMember-Objekt in den
+Set der Mitarbeiter eingeh&auml;ngt und die Gesamtkosten der Abteilung
+werden um das Gehalt des neuen Mitglieds erh&ouml;ht.
+<p>Damit sind ohne jeden Zweifel beim Verlassen des BoardMember-Konstruktors
+alle Felder des BoardMember-Objekts korrekt initialisiert. Die Methode
+getCompensation() der Klasse BoardMember wird korrekt das Gehalt inklusive
+Bonus berechnen. Warum stimmen dann die Gesamtkosten der Organisationseinheit
+nicht?&nbsp; Dort wurde doch auch die Methode getCompensation() der Klasse
+BoardMember aufgerufen.
+<p>Das Problem liegt darin, da&szlig; die Methode getCompensation() w&auml;hrend
+der Konstruktion des BoardMember-Objekts aufgerufen wird, und zwar zu einem
+Zeitpunkt, zu dem das BoardMember-Objekt noch gar nicht fertig ist.&nbsp;
+Ein Teil des Objekts, n&auml;mlich das Bonus-Feld, ist zu jenem Zeitpunkt
+noch nicht initialisiert und hat noch immer den Wert 0. Die Methode getCompensation()
+greift auf das noch nicht initialisierte Bonus-Feld zu und berechnet das
+Gehalt folgerichtig mit Bonus 0.
+<p>Um das nachzuvollziehen sehen wir uns einmal im Detail an, wie Objekte
+in Java konstruiert werden.
+<br>&nbsp;
+<h2>
+Objektkonstruktion in Java</h2>
+Die Konstruktion eines Objekts l&auml;uft in Java wie folgt ab:
+<ol>
+<li>
+Speicherbeschaffung. Das Laufzeitsystem beschafft Speicher in der richtigen
+Menge, d.h. soviel Speicher, wie f&uuml;r die Felder des Objekts gebraucht
+wird.&nbsp; Der Speicher ist zun&auml;chst einmal v&ouml;llig uninitialisiert
+und die Felder haben zuf&auml;llige Inhalte.</li>
+
+<li>
+Defaultinitialisierung.&nbsp; Das Laufzeitsystem initialisiert den beschafften
+Speicher mit vordefinierten Initialwerten, d.h. alle Felder des Objekts
+werden mit Defaultwerten belegt.&nbsp; Die Initialwerte sind abh&auml;ngig
+von Typ der Felder und k&ouml;nnen der Tabelle „Defaultwerte“ entnommen
+werden.</li>
+
+<li>
+Superklassenkonstruktor. Ein Konstruktor der Superklasse wird gerufen.
+Das ist entweder implizit der Defaultkonstruktor oder explizit ein Konstruktor
+mit Argumenten, der &uuml;ber super(…) angesto&szlig;en wird. Hier geht
+eine Rekursion los, die sukzessive alle Superklassenkonstruktoren bis hinauf
+zu Object aufruft.&nbsp; Danach sind alle geerbten Felder initialisiert.</li>
+
+<li>
+Explizite Initialisierung. Alle Felder, die in der betreffenden Klasse
+definiert sind und f&uuml;r es eine Initialisierung gibt, bekommen ihre
+expliziten Initialwerte zugewiesen. Danach sind alle Felder (die geerbten
+und die eigenen Felder) initialisiert.</li>
+
+<li>
+Konstruktor-Body. Die eigentlichen Anweisungen des Konstruktors werden
+ausgef&uuml;hrt.</li>
+</ol>
+
+<ol>&nbsp;
+<table BORDER >
+<tr BGCOLOR="#FFFF99">
+<td><b>Type</b></td>
+
+<td><b>Default Value</b></td>
+</tr>
+
+<tr>
+<td><tt>byte</tt></td>
+
+<td><tt>(byte) 0</tt></td>
+</tr>
+
+<tr>
+<td><tt>short</tt></td>
+
+<td><tt>(short) 0</tt></td>
+</tr>
+
+<tr>
+<td><tt>int</tt></td>
+
+<td><tt>0</tt></td>
+</tr>
+
+<tr>
+<td><tt>long</tt></td>
+
+<td><tt>0L</tt></td>
+</tr>
+
+<tr>
+<td><tt>float</tt></td>
+
+<td><tt>0.0f</tt></td>
+</tr>
+
+<tr>
+<td><tt>double</tt></td>
+
+<td><tt>0.0d</tt></td>
+</tr>
+
+<tr>
+<td><tt>char&nbsp;</tt></td>
+
+<td><tt>'\u0000'</tt></td>
+</tr>
+
+<tr>
+<td><tt>boolean</tt></td>
+
+<td><tt>false</tt></td>
+</tr>
+
+<tr>
+<td>reference</td>
+
+<td><tt>null</tt></td>
+</tr>
+</table>
+<i>Tabelle 1: Defaultwert</i></ol>
+Es gibt noch ein paar zus&auml;tzliche Details, die wir der Einfachheit
+halber oben unterschlagen haben:
+<ul>
+<li>
+<b>Alternativer Konstruktor. </b>In Phase (3) kann anstelle des Superklassenkonstruktors
+auch ein anderer Konstruktor derselben Klasse &uuml;ber this(…) aufgerufen
+werden.&nbsp; Dieser alternative Konstruktor f&uuml;hrt dann seinerseits
+noch einmal eine Phase (3) durch, d.h. er ruft einen Superklassenkonstruktor
+oder einen weiteren alternativen Konstruktor derselben Klasse auf. Nach
+der Phase (3), d.h. wenn all Superklassenkonstruktoren bis hinauf zum Konstruktor
+von Object ausgef&uuml;hrt worden sind, erfolgt in Phase (4) die explizite
+Initialisierung der Felder der Klasse und in Phase (5) die Ausf&uuml;hrung
+der Anweisungen im Konstruktor-Body. Damit ist der alternative Konstruktor
+mit seiner Arbeit fertig und der Kontrollflu&szlig; kehrt zum urspr&uuml;nglichen
+Konstruktor zur&uuml;ck.&nbsp; Im urspr&uuml;nglichen Konstruktor geht
+es nun nicht mit Phase (4), sondern mit Phase (5) weiter, weil Phase (4),&nbsp;
+die explizite Initialisierung der Felder der Klasse, bereits im alternativen
+Konstruktor erledigt wurde.</li>
+
+<li>
+<b>Instance Initializer. </b>Alle Initialisierungen in Phase (4) werden
+in der Reihenfolge gemacht, in der sie in der Klassendefinition auftauchen.
+Dabei werden nicht nur die expliziten Initialisierungen der Felder vorgenommen
+(die sogenannten „instance variable initializer“), sondern es werden auch
+die relativ ungebr&auml;uchlichen „instance initializer“ ausgef&uuml;hrt
+(siehe /<a href="#JLS">JLS</a>/ &sect;8.8.5.1).&nbsp; Instance Initializer
+werden eigentlich nur in anonymen inneren Klassen verwendet, weil anonyme
+Klassen keinen Namen haben und man deshalb keinen Konstruktor f&uuml;r
+eine anonyme Klasse schreiben kann. Anstelle eines Defaultkonstruktors
+schreibt man f&uuml;r eine anonyme Klasse einen Instance Initializer, falls
+einer ben&ouml;tigt wird.</li>
+</ul>
+Betrachten wir ein einfaches Beispiel, an dem man den gesamten Vorgang
+der Initialisierung studieren kann:
+<p><tt>class Elem2D {</tt>
+<br><tt>&nbsp; private int x = -1;</tt>
+<br><tt>&nbsp; private int y;</tt>
+<br><tt>&nbsp; public Elem2D() { y = 1; }</tt>
+<br><tt>}</tt>
+<p><tt>class ColoredElem2D extends Elem2D {</tt>
+<br><tt>&nbsp; private int color = 0xFF00FF;</tt>
+<br><tt>}</tt>
+<p><tt>...</tt>
+<br><tt>ColoredElem2D elem = new ColoredElem2D();</tt>
+<br><tt>...</tt>
+<p>Wenn ein Objekt vom Subtyp ColoredElem2D erzeugt wird, dann erfolgt
+die Konstruktion in folgenden Schritten:
+<ul>
+<li>
+Speicherbeschaffung f&uuml;r alle 3 Felder der Klasse ColoredElem2D sowie
+f&uuml;r alle von Object geerbten Felder</li>
+
+<li>
+Defaultinitialisierung aller Felder mit 0</li>
+
+<li>
+Aufruf des Defaultkonstruktors von ColoredElem2D</li>
+
+<ul>
+<li>
+Aufruf von super(), d.h. des Defaultkonstruktors von Elem2D</li>
+
+<ul>
+<li>
+Aufruf von super(), d.h. des Defaultkonstruktors von Object</li>
+
+<li>
+Explizite Initialisierung der Felder von Object</li>
+
+<li>
+Konstruktor-Body des Defaultkonstruktors von Object</li>
+</ul>
+
+<li>
+Explizite Initialisierung der Felder von Elem2D , d.h. hier wird x&nbsp;
+mit -1 initialisiert</li>
+
+<li>
+Konstruktor-Body des Defaultkonstruktors von Elem2D, d.h. hier wird y mit
+1 initialisiert</li>
+</ul>
+
+<li>
+Explizite Initialisierung der Felder von ColoredElem2D, d.h. hier wird
+color initialisiert</li>
+
+<li>
+Konstruktor-Body des Defaultkonstruktors von ColoredElem2D; ist in diesem
+Falle leer</li>
+</ul>
+Betrachten wir ein komplizierteres Beispiel mit Instance Initializer und
+dem Aufruf eines alternativen Konstruktors &uuml;ber this(...):
+<p><tt>class Elem3D {</tt>
+<br><tt>&nbsp; private int x;</tt>
+<br><tt>&nbsp; private int y;</tt>
+<br><tt>&nbsp; private int z = 3; // instance variable initializer</tt>
+<br><tt>&nbsp; { x = z; }&nbsp;&nbsp;&nbsp; // instance initializer</tt>
+<br><tt>&nbsp; public Elem3D()</tt>
+<br><tt>&nbsp; { y = (x+z)*2}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// constructor body</tt>
+<br><tt>}</tt>
+<p><tt>class ColoredElem3D extends Elem3D {</tt>
+<br><tt>&nbsp; private int color;</tt>
+<p><tt>&nbsp; ColoredElem3D(int x, int y, int z, int col) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; super(x,y,z);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; color = col ;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; ColoredElem3D() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; this(x,y,z,0xFF00FF);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p><tt>...</tt>
+<br><tt>ColoredElem3D elem = new ColoredElem3D();</tt>
+<br><tt>...</tt>
+<p>Wenn ein Objekt vom Subtyp ColoredElem3D erzeugt wird, dann erfolgt
+die Konstruktion in folgenden Schritten:
+<ul>
+<li>
+Speicherbeschaffung f&uuml;r alle 4 Felder der Klasse ColoredElem3D sowie
+f&uuml;r alle von Object geerbten Felder</li>
+
+<li>
+Defaultinitialisierung aller Felder mit 0</li>
+
+<li>
+Aufruf des Defaultkonstruktors von ColoredElem3D</li>
+
+<ul>
+<li>
+Aufruf von this(...), d.h. eines alternativen Konstruktors von ColoredElem3D</li>
+
+<ul>
+<li>
+Aufruf von super(...), d.h. eines Konstruktors von Elem3D</li>
+
+<ul>
+<li>
+Aufruf von super(), d.h. des Defaultkonstruktors von Object</li>
+
+<li>
+Explizite Initialisierung der Felder von Object</li>
+
+<li>
+Konstruktor-Body des Defaultkonstruktors von Object</li>
+</ul>
+
+<li>
+Explizite Initialisierung der Felder von Elem3D</li>
+
+<br>Es wird zuerst z mit 3 initialisiert, so wie im Initialisierungsausdruck
+angegeben. Dann wird der Instance Initializer ausgef&uuml;hrt; dabei wird
+x mit dem Inhalt von z initialisiert.
+<li>
+Konstruktor-Body des Defaultkonstruktors von Elem3D, d.h. hier wird y initialisiert</li>
+</ul>
+
+<li>
+Explizite Initialisierung der Felder von ColoredElem3D; in diesem Falle
+ist nichts zu tun</li>
+
+<li>
+Konstruktor-Body des alternativen Konstruktors von ColoredElem3D, hier
+wird color initialisiert</li>
+</ul>
+
+<li>
+Konstruktor-Body des Defaultkonstruktors von ColoredElem3D; ist in diesem
+Falle leer</li>
+</ul>
+Wie man sieht, kann die Abfolge der einzelnen Initialisierungen beliebig
+kompliziert werden.&nbsp; Wenn man sich bez&uuml;glich der Reihenfolge
+nicht sicher ist, dann empfiehlt es sich, Abh&auml;ngigkeiten zwischen
+den Initialisierungsschritten zu vermeiden. In obigem Beispiel wurde zum
+Zwecke der Veranschaulichung ganz gezielt die Initialisierungsreihenfolge
+f&uuml;r die Felder ausgenutzt.&nbsp; Das ist nicht unbedingt zur Nachahmung
+empfohlen.&nbsp; Wenn Abh&auml;ngigkeiten zwischen den Initialisierungen
+der einzelnen Felder nicht vermieden werden k&ouml;nnen, dann ist h&auml;ufig
+am besten, alle Felder im Konstruktor-Body zu initialisieren.
+<p>Kehren wir zu unserem Ausgangspunkt zur&uuml;ck. Unser Problem in&nbsp;
+der Fallstudie stammt vom Aufruf einer polymorphen Methode w&auml;hrend
+der Konstruktion.&nbsp; Sehen wir uns also an, wie polymorphe Methoden
+im Konstruktionsproze&szlig; behandelt werden.
+<br>&nbsp;
+<h2>
+Aufruf polymorpher Methoden w&auml;hrend der Konstruktion</h2>
+W&auml;hrend der Konstruktion k&ouml;nnen Methoden aufgerufen werden. Dabei
+ist es auch erlaubt, nicht-statische Methoden der eigenen Klasse aufzurufen.
+Von Interesse f&uuml;r unser Problem sind dabei diejenigen Methoden eine
+Klasse, die in Subklassen redefiniert werden k&ouml;nnen, d.h. alle nicht-statischen
+Methoden, die weder private noch final sind. Solche redefinierbaren Methoden
+k&ouml;nnen in einem Superklassenkonstruktor aufgerufen werden, und das
+ist auch nicht weiter problematisch, solange nur Superklassenobjekte erzeugt
+werden.&nbsp; Wenn ein Superklassenobjekt konstruiert wird, dann wird w&auml;hrend
+der Konstruktion die Superklassenvariante der fraglichen Methode aufgerufen,
+und es passiert genau das, was man erwartet.
+<p>Der Superklassenkonstruktor wird aber nicht nur f&uuml;r die Konstruktion
+von Superklassenobjekten verwendet, sondern wird auch w&auml;hrend der
+Konstruktion von Subklassenobjekten aufgerufen. Wenn man sich die Abfolge
+der Aktionen w&auml;hrend der Konstruktion eines Subklassenobjekts noch
+einmal anschaut, dann stellt man fest, da&szlig; entweder explizit &uuml;ber
+super(...) oder implizit vom Compiler ein Konstruktor der Superklasse angesto&szlig;en
+wird. Dann ergibt sich eine interessante Situation, wenn dieser Superklassenkonstruktor
+eine redefinierte Methode aufruft: dem Compiler stehen f&uuml;r den Aufruf
+sowohl die Variante der Methode aus der Superklasse als auch die Variante
+der Methode aus der Subklasse zur Verf&uuml;gung.&nbsp; Er entscheidet,
+welche der beiden Methoden gerufen wird, abh&auml;ngig vom Typ des Objekts,
+auf dem die Methode angesto&szlig;en wird.&nbsp; W&auml;hrend der Konstruktion
+eines Subklassenobjekts wird er also die Subklassenvariante der redefinierten
+Methode aufrufen. Die Subklassenvariante greift unter Umst&auml;nden auf
+subklassenspezifische Felder zu. Nun ist die Frage: in welchem Zustand
+sind diese Subklassenfelder zum Zeitpunkt des Aufrufs? Schlie&szlig;lich
+befinden wird uns gerade mitten im Proze&szlig; der Initialisierung des
+Subklassenobjekts. Sind alle Felder schon ordnungsgem&auml;&szlig; initialisiert,
+wenn die Subklassenvariante der Methode gerufen wird, oder nicht? Oder
+l&auml;&szlig;t sich das vielleicht gar nicht vorhersagen?
+<p>Ob die m&ouml;glicherweise benutzen Felder des Subklassenobjekts bereits
+ordnungsgem&auml;&szlig; initialisiert sind, h&auml;ngt davon ab, zu welchem
+Zeitpunkt w&auml;hrend der Konstruktion die fragliche Methode aufgerufen
+wird. Sehen wir uns an, was da genau passiert. Betrachten wir dazu ein
+einfaches Beispiel:
+<p><tt>class Elem2D {</tt>
+<br><tt>&nbsp; private int x = -1;</tt>
+<br><tt>&nbsp; private int y;</tt>
+<br><tt>&nbsp; public Elem2D() { y = calculateY(); }</tt>
+<br><tt>&nbsp; protected int calculateY() { return 2*(x+1) ; }</tt>
+<br><tt>}</tt>
+<p><tt>class Elem3D extends Elem2D {</tt>
+<br><tt>&nbsp; private int z = 1;</tt>
+<br><tt>&nbsp; protected int calculateY() { return 2*(x+z); }</tt>
+<br><tt>}</tt>
+<p><tt>...</tt>
+<br><tt>Elem3D elem = new Elem3D();</tt>
+<br><tt>...</tt>
+<p>Wenn ein Objekt vom Subtyp Elem3D erzeugt wird, dann erfolgt die Konstruktion
+wie bereits zuvor erl&auml;utert in folgenden Schritten:
+<ul>
+<li>
+Speicherbeschaffung f&uuml;r alle Felder</li>
+
+<li>
+Defaultinitialisierung aller Felder mit 0</li>
+
+<li>
+Aufruf des Defaultkonstruktors von Elem3D</li>
+
+<ul>
+<li>
+Aufruf von super(), d.h. des Defaultkonstruktors von Elem2D</li>
+
+<ul>
+<li>
+Aufruf von super(), d.h. des Defaultkonstruktors von Object</li>
+
+<li>
+Explizite Initialisierung der Felder von Object</li>
+
+<li>
+Konstruktor-Body des Defaultkonstruktors von Object</li>
+</ul>
+
+<li>
+Explizite Initialisierung der Felder von Elem2D , d.h. hier wird x&nbsp;
+mit -1 initialisiert</li>
+
+<li>
+Konstruktor-Body des Defaultkonstruktors von Elem2D, d.h. hier wird y mit
+dem Ergebnis von&nbsp; calculateY() initialisiert</li>
+</ul>
+
+<li>
+Explizite Initialisierung der Felder von Elem3D, d.h. hier wird z mit 1
+initialisiert</li>
+
+<li>
+Konstruktor-Body des Defaultkonstruktors von Elem3D; ist in diesem Falle
+leer</li>
+</ul>
+Die Methode calculateY(), die hier gerufen wird, ist die Variante aus der
+Subklasse Elem3D.&nbsp; Diese greift auf das Feld z zu, das aber zu diesem
+Zeitpunkt noch nicht explizit initialisiert wurde und noch immer den Wert
+0 hat.&nbsp; Die Berechnung wird daher ein vermutlich unerwartetes Ergebnis
+liefern. Das liegt daran, da&szlig; die Methode auf einem halb initialisierten
+Objekt aufgerufen wird.&nbsp; Das l&auml;&szlig;t sich auch gar nicht verhindern,
+weil die Methode calculateY() aus dem Superklassenkonstruktor heraus aufgerufen
+wird, und der Superklassenkonstruktor l&auml;uft immer als erstes ab, lange
+bevor die Felder der Subklasse initialisiert werden.&nbsp; Es handelt sich
+also um einen systematischen, reproduzierbaren Effekt.&nbsp; Der Ablauf
+der Initialisierung von Objekten ist in Java genau so wie oben beschrieben
+festgelegt und das bedeutet, da&szlig; &uuml;berschriebene Methoden, die
+aus Superklassenkonstruktoren heraus aufgerufen werden, auf halbfertigen
+Subklassenobjekten arbeiten.
+<p>Die &Uuml;berraschung r&uuml;hrt daher, da&szlig; die Verwendung von
+halbfertigen Objekten nicht den Konventionen der Objektorientierung entspricht.
+Die Grundidee in der Objektorientierung ist eigentlich, da&szlig; jede
+Methode eines Objekts das Objekt von einem konsistenten Zustand in einen
+anderen konsistenten Zustand &uuml;berf&uuml;hrt.&nbsp; Der Konstruktor
+hat dabei die besondere Aufgabe, den ersten konsistenten Zustand herzustellen.
+Alle Methode, au&szlig;er dem Konstruktor, k&ouml;nnen immer davon ausgehen,
+da&szlig; sie auf einem konsistenten Objekt aufgerufen werden. Das genau
+ist aber in unserem Beispiel nicht der Fall.&nbsp; Die Methode calculateY()
+der Klasse Elem2D wird auf einem inkonsistenten, halbfertigen Objekt aufgerufen.
+Darauf ist die Methode nicht vorbereitet und das Ergebnis d&uuml;rfte &uuml;berraschend
+oder gar fehlerhaft, sein.&nbsp; Was kann man in solchen F&auml;llen tun?
+<p>Theoretisch k&ouml;nnte man die fragliche Methode darauf vorbereiten,
+mit inkonsistenten Objekte fertig zu werden.&nbsp; Das macht aber nur in
+seltenen Ausnahmef&auml;llen Sinn.&nbsp; Bestenfalls k&ouml;nnte man eine
+Konsistenzpr&uuml;fung machen und eine Exception werfen, wenn das Objekt
+inkonsistent ist. Das h&auml;tte aber zur Folge, da&szlig; jede Konstruktion
+von Subklassenobjekten grunds&auml;tzlich fehlschl&auml;gt. Keine gute
+Idee.
+<p>Aus diesen &Uuml;berlegungen ergibt sich die Empfehlung, die in vielen
+B&uuml;chern zu finden ist (siehe /<a href="#Vermeulen">VER</a>/, /<a href="#Haggar">HAG</a>/,
+/<a href="#Bloch">BLO</a>/):
+<blockquote><font face="Arial,Helvetica"><font size=-1>Man soll niemals
+&uuml;berschreibbare Methoden in einem Konstruktor aufrufen</font></font>.</blockquote>
+Die Regel ist sinnvoll und sollte auf jeden Fall beherzigt werden.&nbsp;
+Haben wir diese Regel in unserem problematischen Beispiel der Organisationseinheit
+mit ihren Mitarbeitern verletzt? Kehren wir zur Fallstudie zur&uuml;ck.
+<h2>
+Zur&uuml;ck zum problematischen Beispiel</h2>
+Sehen wir uns die Konstruktoren aus unserer Fallstudie noch einmal an.
+<p><tt>public class StaffMember {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private Person person = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private long salary = 0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private OrgUnit department = null;</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; public StaffMember(Person p, long s, OrgUnit
+o) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; person = p;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; salary = s;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; department = o;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; o.addMember(this);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public long getCompensation() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return salary;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<br><tt>public class BoardMember extends StaffMember {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private long bonus = 0;</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; public BoardMember(Person p, long s,long b, OrgUnit
+o) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; super(p,s,o);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; bonus = b;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public long getCompensation() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return super.getCompensation()+bonus;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Wenn ein Objekt vom Subtyp BoardMember erzeugt wird, dann erfolgt die
+Konstruktion wie bereits zuvor erl&auml;utert in folgenden Schritten:
+<ul>
+<li>
+Speicherbeschaffung f&uuml;r alle Felder</li>
+
+<li>
+Defaultinitialisierung aller Felder mit 0 bzw. null</li>
+
+<li>
+Aufruf des Konstruktors von BoardMember</li>
+
+<ul>
+<li>
+Aufruf von super(...), d.h. eines Konstruktors von StaffMember</li>
+
+<ul>
+<li>
+Aufruf von super(), d.h. des Defaultkonstruktors von Object</li>
+
+<li>
+Explizite Initialisierung der Felder von Object</li>
+
+<li>
+Konstruktor-Body des Defaultkonstruktors von Object</li>
+</ul>
+
+<li>
+Explizite Initialisierung der Felder von StaffMember; entf&auml;llt in
+diesem Fall</li>
+
+<li>
+Konstruktor-Body des Konstruktors von StaffMember, d.h. hier werden person,
+salary und department&nbsp; mit ihren eigentlichen Initialwerten initialisiert
+und es wird die Methode OrgUnit.addMember() gerufen</li>
+</ul>
+
+<li>
+Explizite Initialisierung der Felder von BoardMember; entf&auml;llt in
+diesem Fall</li>
+
+<li>
+Konstruktor-Body des Defaultkonstruktors von BoardMember; hier wird bonus
+mit seinem eigentlichen Initialwert initialisiert</li>
+</ul>
+Eigentlich haben wir nirgendwo gegen die Regel versto&szlig;en, da&szlig;
+&uuml;berschreibbare Methoden nicht in Konstruktoren aufgerufen werden
+sollen.&nbsp; Die einzige Methode, die im Konstruktor gerufen wird, ist
+die Methode addMember() der Klasse OrgUnit. Aber diese Methode ist final
+und damit nicht &uuml;berschreibbar. Wo ist das Problem? Hier zur Erinnerung
+noch einmal die Klasse OrgUnit:
+<p><tt>public class OrgUnit {</tt>
+<br><tt>&nbsp;private String name;</tt>
+<br><tt>&nbsp;private Set members = new TreeSet();</tt>
+<br><tt>&nbsp;private long cost;</tt>
+<p><tt>&nbsp;public final void addMember(StaffMember m) {</tt>
+<br><tt>&nbsp; members.add(m);</tt>
+<br><tt>&nbsp; cost += m.getCompensation();</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<p>Das Problem kommt daher, da&szlig; die Regel „Man soll niemals &uuml;berschreibbare
+Methoden in einem Konstruktor aufrufen.“ etwas verk&uuml;rzt ist. Eigentlich
+m&uuml;&szlig;te es hei&szlig;en: „Man soll niemals &uuml;berschreibbare
+Methoden der eigenen Klasse in einem Konstruktor aufrufen – auch nicht
+indirekt.“ In unserer Fallstudie haben wird die this-Referenz als Argument
+an eine Methode einer anderen Klasse &uuml;bergeben, die die this-Referenz
+verwendet hat, um eine &uuml;berschreibbare Methode unserer Klasse aufzurufen.
+Wir haben also auf Umwegen eine &uuml;berschreibbare Methode unserer eigenen
+Klasse w&auml;hrend der Konstruktion aufgerufen, und das f&uuml;hrt dann
+zu Problemen.
+<p>Au&szlig;erdem gibt die Methode getCompensation() die this-Referenz
+an die Methode TreeSet.add() weiter.&nbsp; Was macht die add()-Methode
+der TreeSet-Klasse eigentlich mit unserem unfertigen Objekt?&nbsp; Sie
+wird die compareTo()-Methode unserer Subklasse rufen, die wiederum das
+noch nicht initialisierte Bonus-Feld f&uuml;r den Vergleich heranziehen
+wird, und auch das wird zu Fehlern f&uuml;hren, die vielleicht nicht sofort,
+sondern erst irgendwann sp&auml;ter auffallen werden.
+<p>Was macht man also, wenn man eine solche problematische Situation entdeckt
+hat? Leider gibt es meistens keine einfache L&ouml;sung, die ohne ein Redesign
+der Klassenhierarchie und der an der Konstruktion beteiligten Methoden
+ausk&auml;me. Es empfiehlt sich also, bereits beim Design einer non-final-Klasse
+darauf zu achten, da&szlig; keine &uuml;berschreibbaren Methoden der eigenen
+Klasse direkt oder indirekt aus dem Konstruktor heraus aufgerufen werden.&nbsp;
+Wenn man in Versuchung ist, es dennoch zu tun, dann sollte man sein&nbsp;
+Design sofort noch einmal &uuml;berdenken.
+<p>Nun ist die Weitergabe der this-Referenz w&auml;hrend der Konstruktion
+durchaus g&auml;ngige Praxis, typischerweise im Zusammenhang mit Registrierungen,
+die w&auml;hrend der Konstruktion durchgef&uuml;hrt werden.&nbsp; In dynamischen
+System kommt es h&auml;ufiger vor, da&szlig; sich Objekte w&auml;hrend
+der Konstruktion bei einer anderen logischen Einheit im System anmelden,
+damit sie sp&auml;ter unter bestimmten Umst&auml;nden zur&uuml;ckgerufen
+werden; das bezeichnet man als Callback-Registrierung. Dabei wird, wie
+in unserem Beispiel, die this-Referenz auf ein noch unfertiges Objekt zur
+Registrierung weiter gegeben.
+<p>Callback-Registrierung w&auml;hrend der Konstruktion ist solange unproblematisch,
+wie keine Vererbung im Spiel ist. Dann kann man die Registrierung als letzte
+Anweisung im Konstruktor-Body machen, also dann, wenn das Objekt bereits
+fertig initialisiert ist. Sobald Subklassen existieren, kann es unter Umst&auml;nden
+nicht mehr gew&auml;hrleistet werden, da&szlig; die Registrierung erst
+ganz am Ende statt findet.&nbsp; Dann wird in der Tat ein halbfertiges
+Objekt registriert.&nbsp; Solange die this-Referenz nur herumgereicht und
+irgendwo gespeichert wird, ist das ungef&auml;hrlich. Man mu&szlig; aber
+darauf achten, da&szlig; die Methode, die die this-Referenz auf ein noch
+unfertiges Objekt bekommt, diese Referenz nicht zum Aufruf von Methoden
+oder zum Zugriff auf die Felder des Objekts verwendet.&nbsp; Bei einer
+typischen Callback-Registierung ist das auch nicht der Fall.&nbsp; Methoden
+des registrierten Objekts werden typischerweise erst sehr viel sp&auml;ter,
+nach Beendigung der Konstruktion, gerufen.
+<p>In unserem Beispiel haben wir genau das mi&szlig;achtet. Wir haben die
+this-Referenz auf ein noch unfertiges Objekt an die Registrierungsmethode
+OrgUnit.addMember() &uuml;bergeben und die hat sofort eine Methode des
+halbfertigen Objekts aufgerufen, was zu den erl&auml;uterten Problemen
+gef&uuml;hrt hat.
+<br>&nbsp;
+<h2>
+Zusammenfassung</h2>
+Konstruktoren arbeiten w&auml;hrend der Konstruktion auf unfertigen Objekten
+und sollten deshalb &auml;u&szlig;erst vorsichtig sein beim Zugriff auf
+m&ouml;glicherweise noch nicht initialisierte Teile des Objekts.&nbsp;
+Problematisch ist es&nbsp; insbesondere, wenn Superklassenkonstruktoren
+&uuml;berschreibbare Methoden (d.h. non-final oder non-private Methoden)
+der eigenen Klasse direkt oder indirekt aufrufen.&nbsp; Die Superklassenkonstruktoren
+werden relativ fr&uuml;h w&auml;hrend der Objekterzeugung gerufen und finden
+daher ein unfertiges Objekt vor.&nbsp; Wenn sie &uuml;berschriebene Methoden
+aufrufen, dann greifen diese Methoden unter Umst&auml;nden die auf die
+noch nicht initialisierten Felder des unfertigen Objekts zugreifen. Das
+ist normalerweise ein Problem, das man nur vermeiden kann, indem man w&auml;hrend
+der Objekterzeugung weder direkt noch indirekt &uuml;berschreibbare Methoden
+aufruft.
+<br>&nbsp;
+<h2>
+Leserzuschrift</h2>
+Ganz offensichtlich ist das ganze Problem keineswegs akademischer Natur,
+wie der folgende Leserbrief zeigt:
+<br>&nbsp;
+<table BORDER >
+<tr BGCOLOR="#FFFF99">
+<td><b>Leserbrief</b></td>
+</tr>
+
+<tr>
+<td>
+<blockquote>&nbsp;
+<br>Hallo Herr Kreft,
+<p>ihr Artikel in "Java Spektrum" 6/2003 hat mir sehr gut gefallen, weil
+er &uuml;ber eine wirklich &uuml;ble "Falle" aufkl&auml;rt, in die auch
+professionelle Entwickler tappen. Deshalb hier noch ein erg&auml;nzendes
+Beispiel f&uuml;r genau diesen Fehler, welches seit mehreren releases in
+Suns SDK schlummert, und zwar in der Swing-API.
+<p>In den ersten Swing-releases reagierten Instanzen von JInternalFrame
+nicht auf das event JInternalFrameOpen und waren per default sichtbar.
+Um ein JInternalFrameOpen-event zu erzwingen, &auml;nderte man ab SDK 1.2.1
+das default-Verhalten indem man am Ende des default-constructors (quick
+and very dirty!!!)einen Aufruf der nicht-finalen Methode setVisible( false
+) einf&uuml;gte. Damit waren die Entwickler gezwungen einen expliziten
+Aufruf setVisible( true ) zu verwenden, in welchem dann das event JInternalFrameOpen
+generiert wird.
+<p>Wenn nun in von JInternalFrame abgeleiteten Klassen die Methode setVisible(
+boolean ) &uuml;berschrieben wird, was &uuml;blich ist, um aktuelle Parameter
+zu setzen oder den Frame zu registrieren, schl&auml;gt die Falle zu! Es
+kommt n&auml;mlich zu einem Aufruf der Methode setVisible( boolean ) der
+child-Klasse im super-constructor ohne Initialisierung der Klassenvariablen
+der child-Klasseninstanz, was mitunter zu wahrhaft seltsamen Ergebnissen
+und einer aufwendigen Fehlersuche f&uuml;hrt. Ein m&ouml;gliches workaround:
+Ein&nbsp; expliziter Aufruf von setVisible( false) der child-Klasse an
+einer "ungef&auml;hrlichen" Stelle, wobei es mitunter schwierig ist, eine
+solche zu finden.
+<p>Trotz direkter Meldung an die Swing-Entwickler und Beschreibung des
+Fehlers in Suns Java-Developer-Forum findet sich dieser Fehler auch noch
+im SDK 1.4.1 . Vielleicht hilft diese Info ja, ihn ein wenig mehr zu "popularisieren".
+<p>Mit freundlichen Gr&uuml;&szlig;en!
+<p>Helmut Schwigon</blockquote>
+</td>
+</tr>
+</table>
+
+<h2>
+</h2>
+&nbsp;
+<h2>
+Literaturverweise</h2>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft1"></a>/KRE/</td>
+
+<td VALIGN=TOP><b>Die Implementierung von clone(), Teil 1 und 2&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaSpektrum, September 2002 und November 2002&nbsp;
+<br><a href="../05.Clone-Part1/05.Clone-Part1.html">http://www.langer.camelot.de/Articles/JavaSpektrum/05.Clone-Part1/05.Clone-Part1.html</a>
+<br><a href="../06.Clone-Part2/06.Clone-Part2.html">http://www.langer.camelot.de/Articles/JavaSpektrum/06.Clone-Part2/06.Clone-Part2.html</a></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td><a NAME="Kreft1"></a>/KRE1/</td>
+
+<td><b>Unver&auml;nderliche Typen in Java (Teil 1-2)&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaSpektrum, M&auml;rz + Juli 2003
+<br><a href="../08.Immutability-Part1/08.Immutability-Part1.html">http://www.langer.camelot.de/Articles/JavaSpektrum/08.Immutability-Part1/08.Immutability-Part1.html</a>
+<br><a href="../09.Immutability-Part2/09.Immutability-Part2.html">http://www.langer.camelot.de/Articles/JavaSpektrum/09.Immutability-Part2/09.Immutability-Part2.html</a></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td><a NAME="Kreft2"></a>/KRE2/</td>
+
+<td><b>final Klassen und final Methoden</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaSpektrum, September 2003
+<br><a href="../10.NonPolymorphicClasses/10.NonPolymorphicClasses.html">http://www.langer.camelot.de/Articles/JavaSpektrum/10.NonPolymorphicClasses/10.NonPolymorphicClasses.html</a></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td><a NAME="Vermeulen"></a>/VER/</td>
+
+<td><b>The Elements of Java Style&nbsp;</b>
+<br>Al Vermeulen, et.al.
+<br>Cambridge University Press, 2000
+<br>Rule 81, p. 70</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td><a NAME="Haggar"></a>/HAG/&nbsp;</td>
+
+<td><b>Practical Java&nbsp;</b>
+<br>Peter Haggar
+<br>Addison Wesley, 2000
+<br>Praxis 68, p. 239</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td><a NAME="Bloch"></a>/BLO/</td>
+
+<td><b>Effective Java&nbsp;</b>
+<br>Joshua Bloch
+<br>Addison Wesley, 2001
+<br>Item 15, p. 80</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JLS"></a>/JLS/</td>
+
+<td><b>Java Language Specification, 2nd Edition</b>
+<br><a href="http://java.sun.com/docs/books/jls/second_edition/html/j.title.doc.html">http://java.sun.com/docs/books/jls/second_edition/html/j.title.doc.html</a></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

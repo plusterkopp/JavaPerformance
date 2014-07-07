@@ -1,0 +1,295 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="FORMATTER" content="Microsoft FrontPage 2.0">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <meta name="KeyWords" content="C++ Traps Pitfalls Effective C++ Sequence PointMemory Leak">
+   <title>Reliable C++</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="ReliableCppCourse"></a>
+<br><b><font face="Arial"><font color="#295AB5">COURSE DESCRIPTION</font></font></b>&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=5 CELLPADDING=2 WIDTH="98%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 CELLSPACING=0 CELLPADDING=3 COLS=1 WIDTH="98%" >
+<tr>
+<td><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p><b>A seminar for software engineers who want to master the complexity
+of C++. The seminar provides insights into frequently neglected language
+details, thereby creating an awareness of traps and pitfalls in the language,
+and explains strategies for achieving a higher degree of reliability and
+robustness of C++ programs.</b>
+<p>This is a seminar for software professionals who develop safety-critical
+components and need to produce reliable software that must meet highest
+quality requirements. The focus is on the core of the language rather than
+the latest language features such as templates, exception handling or the
+STL.&nbsp; Topics include correct allocation and deallocation of memory,
+elimination of invalid pointers and memory leaks, efficient and correct
+copying and assignment of objects, preservation of object validity, const
+correctness, name lookup and overload resolution of redefined functions,
+implict type conversions, expression evaluation and sequence points.
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p><font color="#295AB5">The course is designed and conducted by Angelika
+Langer and backed by years of experience in teaching&nbsp; C++ related
+topics and more than a decade of real-world experience in industrial software
+development. Angelika Langer is a freelance trainer/consultant in the area
+of object-oriented software development in C++ and Java. She is member
+of the ANSI C++ standards committee since 1993, columnist of C++ Report,
+and a recognized speaker at OO conferences.&nbsp;</font>
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350></td>
+</tr>
+</table>
+&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 CELLSPACING=0 CELLPADDING=5 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="35%"><b><i><font color="#295AB5">Prerequisite Courses
+and Skills:</font></i></b></td>
+
+<td VALIGN=TOP WIDTH="65%">Introductory C++ course, or equivalent experience.&nbsp;
+One year of programming experience using C++.</td>
+</tr>
+
+<tr>
+<td WIDTH="50%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td WIDTH="50%">3 days</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="50%"><b><i><font color="#295AB5">Exercises:</font></i></b></td>
+
+<td WIDTH="50%">Workshops, walk-throughs, and code reviews.&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="100%" >
+<tr>
+<td>Attendants should feel comfortable with the basics of the language
+and be open for deepening their knowledge of traditional C++.&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<p><b><font face="Arial"><font color="#295AB5"><font size=+0>PERFORMANCE
+OBJECTIVES</font></font></font></b>
+<table BORDER=0 CELLSPACING=4 CELLPADDING=0 >
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Explore, in depth, potential pitfalls in C++</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Allocate and deallocate memory correctly</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Eliminate invalid pointers and memory leaks</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Understand the concept of constness in C++</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Understand implict type conversions in C++</td>
+</tr>
+</table>
+
+<p><b><font face="Arial"><font color="#295AB5"><font size=+0>BUSINESS OBJECTIVES</font></font></font></b>
+<table BORDER=0 CELLSPACING=4 CELLPADDING=0 >
+<tr>
+<td VALIGN=TOP><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Preparation of the C++ professional with skills to construct reliable
+and robust business solutions</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Meeting highest safety and reliability requirements</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>High-quality software</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Bug-free programs</td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table></div>
+
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial"><font color="#295AB5">COURSE OVERVIEW</font></font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLPADDING=2 WIDTH="98%" >
+<tr>
+<td VALIGN=TOP WIDTH="33%"><b>Managing the Lifetime of Objects</b>
+<ul>
+<li>
+Correct Initialization and Destruction of Objects</li>
+
+<li>
+Destructors in Inheritance Hierarchies</li>
+
+<li>
+Efficient Argument and Return Value Passing</li>
+
+<li>
+Pointers vs. References vs. Values</li>
+
+<li>
+Temporary Objects</li>
+
+<li>
+Initialization of Global and Static Data</li>
+
+<li>
+The Schwarz Counter Idiom</li>
+</ul>
+<b>Pointers and Memory Management</b>
+<ul>
+<li>
+Correct Allocation and Deallocation of Memory</li>
+
+<li>
+Elimination of Invalid Pointers and Memory Leaks</li>
+
+<li>
+Safe Copying and Assignment of Objects</li>
+
+<li>
+Reference Counting</li>
+</ul>
+</td>
+
+<td VALIGN=BASELINE WIDTH="33%"><b>Data Access and Object Integrity</b>
+<ul>
+<li>
+Maintenance of Object Validity</li>
+
+<li>
+Const Member Functions</li>
+
+<li>
+Immutability and Object Integrity</li>
+
+<li>
+Logical vs. Physical Constness</li>
+</ul>
+<b>Predictable Programs - Avoid Surprises</b>
+<ul>
+<li>
+Expression Evaluation and Sequence Points</li>
+
+<li>
+Function Redefinition and Overload Resolution</li>
+
+<li>
+Name Lookup in Class Hierarchies</li>
+
+<li>
+Virtual vs. Non-Virtual Member Functions</li>
+
+<li>
+Implicit Type Conversions</li>
+
+<li>
+Standard and User-Defined Conversions</li>
+
+<li>
+New-Style Casts</li>
+
+<li>
+Class Scope and Virtual Function Table</li>
+
+<li>
+Assignment and Comparison in Hierarchies of Value Types</li>
+
+<br>&nbsp;
+<p>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;</ul>
+</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial"><font color="#295AB5">FURTHER READING</font></font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+
+<table BORDER=0 CELLSPACING=10 CELLPADDING=2 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP WIDTH="60%"><a NAME="ReadingEffectiveJava"></a><font color="#000000">To
+get an impression of some topics covered in this course check out the sample
+reading:&nbsp;</font>
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=TOP WIDTH="50"><a href="../Articles/VSJ/SequencePoints/SequencePoints.html"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=27 width=31></a></td>
+
+<td NOWRAP><a href="../Articles/VSJ/SequencePoints/SequencePoints.html">Sequence
+Points and Expression Evaluation</a>
+<br><font color="#000000"><font size=-1>Article published in VSJ</font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>
+<center><a href="../Articles/Elektronik/ReliableC++/ResourceAllocation.html"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=27 width=31></a></center>
+</td>
+
+<td VALIGN=TOP><font color="#000000"><a href="../Articles/Elektronik/ReliableC++/ResourceAllocation.html">Fehlerfreies
+Programmieren in C++</a></font>
+<br><font color="#000000"><font size=-1>This article is only available
+in German</font>.</font></td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+</body>
+</html>

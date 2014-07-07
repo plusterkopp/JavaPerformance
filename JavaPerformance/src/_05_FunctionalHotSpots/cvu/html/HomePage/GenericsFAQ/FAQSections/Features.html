@@ -1,0 +1,485 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <meta name="KeyWords" content="Java Generics parameterized type parameterized methodwildcard">
+   <title>Java Generics FAQs - Language Features of Java Generics</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+
+<h1>
+<a NAME="Top"></a><a NAME="FAQFeatures"></a><a NAME="Language Features of Java Generics"></a>Language
+Features of Java Generics</h1>
+<font size=-2>&copy; Copyright 2004-2005 by Angelika Langer.&nbsp; All
+Rights Reserved.</font>
+<table CELLPADDING=10 WIDTH="100%" >
+<tr>
+<td COLSPAN="2"><font size=+0><a href="#Which language features are related to Java generics?">Which
+language features are related to Java generics?</a></font>
+<p><img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p><a NAME="Parameterized Types"></a><font size=+0><a href="ParameterizedTypes.html">Generic
+Types</a></font>
+<ul><a NAME="Parameterized Types Fundamentals"></a><font size=+0><a href="ParameterizedTypes.html#Fundamentals of Parameterized Types">Fundamentals</a></font>
+<blockquote>
+<li>
+<font size=+0><a href="ParameterizedTypes.html#What is a parameterized (or generic) type?">What
+is a parameterized or generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#How is a parameterized type defined?">How
+do I define a generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#Are there any types that cannot have type parameters?">Are
+there any types that cannot have type parameters?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#How is a parameterized type instantiated?">How
+is a generic type instantiated?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#Why do instantiations of a parameterized type share the same runtime type?">Why
+do instantiations of a generic type share the same runtime type?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#Can I cast to a parameterized type?">Can
+I cast to a parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#Can I use parameterized types in exception handling?">Can
+I use parameterized types in exception handling?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#Can parameterized types have static members?">Can
+generic types have static members?</a></font></li>
+</blockquote>
+<a NAME="Concrete Instantiations"></a><font size=+0><a href="ParameterizedTypes.html#Concrete Instantiations">Concrete
+Instantiations</a></font>
+<blockquote>
+<li>
+<font size=+0><a href="ParameterizedTypes.html#What is a concrete instantiation?">What
+is a concrete instantiation?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#Are different concrete instantiations of the same parameterized type compatible?">Are
+different concrete instantiations of the same generic type compatible?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#Can I use a concrete instantiation of a parameterized type like any other type?">Can
+I use a concrete parameterized type like any other type?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#Can I create an array whose component type is a concrete instantiation of a parameterized type?">Can
+I create an array whose component type is a concrete parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#Can I declare a reference variable of an array type whose component type is a concrete instantiation">Can
+I declare a reference variable of an array type whose component type is
+a concrete parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#How can I work around the restriction that there are no arrays whose component type is a concrete instantiation of a">How
+can I work around the restriction that there are no arrays whose component
+type is a concrete parameterized type?</a></font></li>
+
+<li>
+<a href="ParameterizedTypes.html#Why is there no class literal for the concrete instantiation of a parameterized type?">Why
+is there no class literal for the concrete parameterized type?</a></li>
+</blockquote>
+<a NAME="Raw Types"></a><font size=+0><a href="ParameterizedTypes.html#Raw Types">Raw
+Types</a></font>
+<blockquote>
+<li>
+<font size=+0><a href="ParameterizedTypes.html#What is the raw type?">What
+is the raw type?</a></font></li>
+
+<li>
+<a href="ParameterizedTypes.html#Why are raw types permitted?">Why are
+raw types permitted?</a></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#Can I use a raw type like any other type?">Can
+I use a raw type like any other type?</a></font></li>
+</blockquote>
+<a NAME="Wildcard Instantiations"></a><font size=+0><a href="ParameterizedTypes.html#WIldcard Instantiations">Wildcard
+Instantiations</a></font>
+<blockquote>
+<li>
+<font size=+0><a href="ParameterizedTypes.html#What is a wildcard instantiation?">What
+is a wildcard instantiation?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#What is an unbounded wildcard instantiation?">What
+is the unbounded wildcard instantiation?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#What is the difference between the unbounded wildcard instantiation and the raw type?">What
+is the difference between the unbounded wildcard parameterized type and
+the raw type?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#Which methods and fields are accessible/inaccessible through a reference variable of a wildcard type?">Which
+methods and fields are accessible/inaccessible through a reference variable
+of a wildcard type?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#Can I use a wildcard instantiation like any other type?">Can
+I use a wildcard parmeterized type like any other type?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#Can I create an object whose type is a wildcard instantiation of a parameterized type?">Can
+I create an object whose type is a wildcard parameterized type?</a></font></li>
+
+<li>
+<a href="ParameterizedTypes.html#Can I create an array whose component type is a wildcard instantiation of a parameterized type?">Can
+I create an array whose component type is a wildcard parameterized type?</a></li>
+
+<li>
+<a href="ParameterizedTypes.html#Can I declare a reference variable of an array type whose component type is a bounded wildcard instantiation of a">Can
+I declare a reference variable of an array type whose component type is
+a bounded wildcard parameterized type?</a></li>
+
+<li>
+<a href="ParameterizedTypes.html#Why is it allowed to create an array whose component type is an unbounded wildcard instantiation?">Why
+is it allowed to create an array whose component type is an unbounded wildcard
+parameterized type?</a></li>
+
+<li>
+<a href="ParameterizedTypes.html#Can I declare a reference variable of an array type whose component type is an unbounded wildcard instantiation of a">Can
+I declare a reference variable of an array type whose component type is
+an unbounded wildcard parameterized type?</a></li>
+
+<li>
+<font size=+0><a href="ParameterizedTypes.html#Can I derive from a wildcard instantiation of a parameterized type?">Can
+I derive from a wildcard parameterized type?</a></font></li>
+
+<li>
+<a href="ParameterizedTypes.html#Why is there no class literal for wildcard instantiations of a parameterized type?">Why
+is there no class literal for wildcard parameterized type?</a></li>
+</blockquote>
+</ul>
+
+<p><br><img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p><a NAME="Parameterized Methods"></a><font size=+0><a href="ParameterizedTypes.html">Generic
+Methods</a></font>
+<ul><a NAME="Parameterized Methods Fundamentals"></a><font size=+0><a href="ParameterizedMethods.html#Fundamentals">Fundamentals</a></font>
+<blockquote>
+<li>
+<font size=+0><a href="ParameterizedMethods.html#What is a parameterized (or generic) method?">What
+is a generic method?</a></font></li>
+
+<li>
+<font size=+0><a href="ParameterizedMethods.html#How do I invoke a parameterized method?">How
+do I invoke a generic method?</a></font></li>
+</blockquote>
+</ul>
+
+<p><br><img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p><a NAME="Type Parameters"></a><font size=+0><a href="TypeParameters.html">Type
+Parameters</a></font>
+<ul><a NAME="Type Parameter Fundamentals"></a><font size=+0><a href="TypeParameters.html#Fundamentals">Fundamentals</a></font>
+<blockquote>
+<li>
+<font size=+0><a href="TypeParameters.html#What is a type parameter?">What
+is a type parameter?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeParameters.html#Where is a type parameter visible (or invisible)?">Where
+is a type parameter visible (or invisible)?</a></font></li>
+</blockquote>
+<a NAME="Type Parameter Bounds"></a><font size=+0><a href="TypeParameters.html#Bounds">Type
+Parameter Bounds</a></font>
+<blockquote>
+<li>
+<font size=+0><a href="TypeParameters.html#What is a type parameter bound?">What
+is a type parameter bound?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeParameters.html#Which types are permitted as type parameter  bounds?">Which
+types are permitted as type parameter&nbsp; bounds?</a></font></li>
+
+<li>
+<a href="TypeParameters.html#Can I use a type parameter as a type parameter bound?">Can
+I use a type parameter as a type parameter bound?</a></li>
+
+<li>
+<a href="TypeParameters.html#Can I use different instantiations of a same parameterized type as bounds of a type parameter?">Can
+I use different instantiations of a same generic type as bounds of a type
+parameter?</a></li>
+
+<li>
+<a href="TypeParameters.html#How can work around the restriction that a type parameter cannot have different instantiations of a same">How
+can work around the restriction that a type parameter cannot have different
+instantiations of a same generic type as its bounds?</a></li>
+
+<li>
+<font size=+0><a href="TypeParameters.html#Does a bound that is a class type give access to all its public members?">Does
+a bound that is a class type give access to all its public members?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeParameters.html#How do I decrypt Enum?">How
+do I decrypt "<tt>Enum&lt;E extends Enum&lt;E>></tt>"?</a></font></li>
+</blockquote>
+<a NAME="Type Parameter Usage"></a><font size=+0><a href="TypeParameters.html#Usage">Usage</a></font>
+<blockquote>
+<li>
+<font size=+0><a href="TypeParameters.html#Can I use a type parameter like a type?">Can
+I use a type parameter like a type?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeParameters.html#Can I create an object whose type is a type parameter?">Can
+I create an object whose type is a type parameter?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeParameters.html#Can I create an array whose component type is a type parameter?">Can
+I create an array whose component type is a type parameter?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeParameters.html#Can I cast to the type that the type parameter stands for?">Can
+I cast to the type that the type parameter stands for?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeParameters.html#Can I use a type parameter in exception handling?">Can
+I use a type parameter in exception handling?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeParameters.html#Can I derive from a type parameter?">Can
+I derive from a type parameter?</a></font></li>
+
+<li>
+<a href="TypeParameters.html#Why is there no class literal for a type parameter?">Why
+is there no class literal for a type parameter?</a></li>
+</blockquote>
+<a NAME="Scope"></a><a href="TypeParameters.html#Scope">Scope</a>
+<blockquote>
+<li>
+<font size=+0><a href="TypeParameters.html#Where is a type parameter visible (or invisible)?">Where
+is a type parameter visible (or invisible)?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeParameters.html#Can I use a type parameter as part of its own bounds or in the declaration of other type parameters?">Can
+I use a type parameter as part of its own bounds or in the declaration
+of other type parameters?</a></font></li>
+
+<li>
+<a href="TypeParameters.html#Can I use the type parameter of an outer type as part of the bounds of the type parameter of an inner type or a method?">Can
+I use the type parameter of an outer type as part of the bounds of the
+type parameter of an inner type or a method?</a></li>
+</blockquote>
+<a NAME="Static Context"></a><font size=+0><a href="TypeParameters.html#Static Context">Static
+Context</a></font>
+<blockquote>
+<li>
+<font size=+0><a href="TypeParameters.html#Is there one instances of a static field per instantiation of a parameterized type?">Is
+there one instances of a static field per instantiation of a generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeParameters.html#Why can't I use a type parameter in any static context of the parameterized class?">Why
+can't I use a type parameter in any static context of the generic class?</a></font></li>
+</blockquote>
+</ul>
+
+<p><br><img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p><a NAME="Type Arguments"></a><a href="TypeArguments.html">Type Arguments</a>
+<ul><a NAME="Type Arguments Fundamentals"></a><font size=+0><a href="TypeArguments.html#Fundamentals">Fundamentals</a></font>
+<blockquote>
+<li>
+<font size=+0><a href="TypeArguments.html#What is a type argument?">What
+is a type argument?</a></font></li>
+
+<li>
+<a href="TypeArguments.html#Which types are permitted as type arguments?">Which
+types are permitted as type arguments?</a></li>
+
+<li>
+<font size=+0><a href="TypeArguments.html#Are primitive types permitted as type arguments?">Are
+primitive types permitted as type arguments?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeArguments.html#Are wildcards are permitted as type arguments?">Are
+wildcards permitted as type arguments?</a></font></li>
+
+<li>
+<a href="TypeArguments.html#Are type parameters permitted as type arguments?">Are
+type parameters permitted as type arguments?</a></li>
+
+<li>
+<a href="TypeArguments.html#Do bounds restrict the set of types that can be used as type arguments?">Do
+type parameter bounds restrict the set of types that can be used as type
+arguments?</a></li>
+
+<li>
+<font size=+0><a href="TypeArguments.html#Do I have to specify a type argument when I want to use a parameterized type?">Do
+I have to specify a type argument when I want to use a generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeArguments.html#Do I have to specify a type argument when I want to invoke a parameterized method?">Do
+I have to specify a type argument when I want to invoke a generic method?</a></font></li>
+</blockquote>
+<a NAME="Wildcards"></a><font size=+0><a href="TypeArguments.html#Wildcards">Wildcards</a></font>
+<ul>
+<li>
+<font size=+0><a href="TypeArguments.html#What is a wildcard?">What is
+a wildcard?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeArguments.html#What is an unbounded wildcard?">What
+is an unbounded wildcard?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeArguments.html#What is a bounded wildcard?">What
+is a bounded wildcard?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeArguments.html#What do multilevel wildcards mean?">What
+do multi-level wildcards mean?</a></font></li>
+</ul>
+
+<p><br><a NAME="Wildcard"></a><font size=+0><a href="TypeArguments.html#Wildcard Bounds">Wildcard
+Bounds</a></font>
+<ul>
+<li>
+<font size=+0><a href="TypeArguments.html#What is a wildcard bound?">What
+is a wildcard bound?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeArguments.html#Which types are permitted as wildcard bounds?">Which
+types are permitted as wildcard bounds?</a></font></li>
+
+<li>
+<font size=+0><a href="TypeArguments.html#What is the difference between a wildcard bound and a type parameter bound?">What
+is the difference between a wildcard bound and a type parameter bound?</a></font></li>
+</ul>
+</ul>
+
+<p><br><img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350></td>
+</tr>
+
+<tr>
+<td></td>
+</tr>
+</table>
+<img SRC="../../Images/bar.gif" NOSAVE height=5 width=600><a NAME="FAQ001"></a>
+<h2>
+<a NAME="Which language features are related to Java generics?"></a><font face="Arial,Helvetica"><font size=+0>Which
+language features are related to Java generics?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Features for definition and use of generic
+types and methods.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Java Generics support definition and use of generic types
+and methods.&nbsp; It provides language features for the following purposes:
+<ul>
+<li>
+definition of a generic type</li>
+
+<li>
+definition of a generic method</li>
+</ul>
+
+<ul>
+<li>
+type parameters</li>
+
+<ul>
+<li>
+type parameter bounds</li>
+</ul>
+
+<li>
+type arguments</li>
+
+<ul>
+<li>
+wildcards</li>
+
+<li>
+wildcard bounds</li>
+
+<li>
+wildcard capture</li>
+</ul>
+
+<li>
+instantiation of a generic type</li>
+
+<ul>
+<li>
+raw type</li>
+</ul>
+
+<ul>
+<li>
+concrete instantiation</li>
+
+<li>
+wildcard instantiation</li>
+</ul>
+
+<li>
+instantiation of a generic method</li>
+
+<ul>
+<li>
+automatic type inference</li>
+
+<li>
+explicit type argument specification</li>
+</ul>
+</ul>
+</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#Wildcard">FAQ001</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#What is a parameterized (or generic) type?">What
+is a parameterized or generic type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedMethods.html#What is a parameterized (or generic) method?">What
+is a generic method?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeParameters.html#What is a type parameter?">What
+is a type parameter?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeParameters.html#What is a bounded type parameter?">What
+is a bounded type parameter?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeArguments.html#What is a type argument?">What
+is a type argument?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeArguments.html#What is a wildcard?">What
+is a wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeArguments.html#What is a bounded wildcard?">What
+is a bounded wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is the capture of a wildcard?">What
+is the capture of a wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#How is a parameterized type instantiated?">How
+is a generic type instantiated?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#What is the raw type?">What
+is the raw type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#What is a concrete instantiation?">What
+is a concrete instantiation?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#What is a wildcard instantiation?">What
+is a wildcard instantiation?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedMethods.html#How do I invoke a parameterized method?">How
+is a generic method instantiated?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is type argument inference?">What
+is type argument inference?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What explicit type argument specification?">What
+explicit type argument specification?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>
+<hr WIDTH="100%">
+<br><font face="Arial,Helvetica"><font size=-2><a href="../JavaGenericsFAQ.html#TOC">CONTENT<a href="../JavaGenericsFAQ.html#TOC"><img SRC="../../Images/bluebullet.gif" NOSAVE height=6 width=4></a></a><font color="#666666"><a href="Fundamentals.html">PREVIOUS<a href="Fundamentals.html"><img SRC="../../Images/bluebullet.gif" NOSAVE height=6 width=4></a></a></font><a href="ParameterizedTypes.html">NEXT<a href="ParameterizedTypes.html"><img SRC="../../Images/bluebullet.gif" NOSAVE height=6 width=4></a></a><a href="Index.html#IDX">INDEX</a></font></font>
+</body>
+</html>

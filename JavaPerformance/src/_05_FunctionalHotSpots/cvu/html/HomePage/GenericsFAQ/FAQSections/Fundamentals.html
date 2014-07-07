@@ -1,0 +1,280 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <meta name="KeyWords" content="Java Generics parameterized type parameterized methodwildcard">
+   <title>Java Generics FAQs - Fundamentals of Java Generics</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+
+<h1>
+<a NAME="Top"></a><a NAME="FAQFundamentals"></a><a NAME="Fundamentals of Java Generics"></a>Fundamentals
+of Java Generics</h1>
+<font size=-2>&copy; Copyright&nbsp; 2004 by Angelika Langer.&nbsp; All
+Rights Reserved.</font>
+<table CELLPADDING=10 WIDTH="100%" >
+<tr>
+<td COLSPAN="2"><font size=+0><a href="#What are Java generics?">What are
+Java generics?</a></font>
+<br><font size=+0><a href="#What is the pirmary purpose of Java generics?">What
+is the primary purpose of Java generics?</a></font>
+<br><font size=+0><a href="#What is the benefit of using Java generics?">What
+is the benefit of using Java generics?</a></font>
+<br><font size=+0><a href="#What does type-safety mean?">What does type-safety
+mean?</a></font></td>
+</tr>
+</table>
+
+<p><img SRC="../../Images/bar.gif" NOSAVE height=5 width=600><a NAME="FAQ001"></a>
+<h2>
+<a NAME="What are Java generics?"></a><font face="Arial,Helvetica"><font size=+0>What
+are Java generics?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Java Generics are a language feature
+that allows for definition and use of generic types and methods.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">"Java Generics" is a technical term denoting a set of language
+features related to the definition and use of <i>generic types and methods</i>.
+Generic types or methods differ from regular types and methods in that
+they have type parameters.&nbsp;
+<p>Examples of generic types can be found in the collection framework of
+the J2SE 5.0 plattform libraries. A class like <tt>LinkedList&lt;E></tt>
+is a generic type.&nbsp; It has a type parameter <tt>E</tt> that represents
+the type of the elements stored in the list.&nbsp; Instead of just using
+a
+<tt>LinkedList</tt>, not saying anything about the type of elements the
+list contains, we can use a <tt>LinkedList&lt;String> or </tt>a <tt>LinkedList&lt;Integer></tt>,
+thereby specifying that we mean a list of strings or integral values respectively.&nbsp;&nbsp;
+<p>Generic types are instantiated to form <i>parameterized types</i> by
+providing actual type arguments that replace the formal type parameters.&nbsp;
+A class like <tt>LinkedList&lt;E></tt> is a generic type, that has a type
+parameter <tt>E</tt>. Instantiations, such as <tt>LinkedList&lt;String>
+or </tt>a <tt>LinkedList&lt;Integer></tt>, are called parameterized types,
+and <tt>String</tt> and <tt>Integer</tt> are the respective actual type
+arguments.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ001">#FAQ001</a></font></font></td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="Features.html#Language Features of Java Generics">Language
+Features of Java Generics</a></font></font></td>
+</tr>
+</table>
+
+<h2>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ002"></a></h2>
+
+<h2>
+<a NAME="What is the pirmary purpose of Java generics?"></a><b><font face="Arial,Helvetica"><font size=+0>What
+is the primary purpose of Java generics?</font></font></b></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Java Generics were invented primarily
+for implementation of generic collections.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">The need for generic types stems mainly from the implementation
+and use of collections, like the ones in the Java collection framework.&nbsp;
+Programmers often want to specify that a collection contains elements of
+a certain type, such as a list of integral values or a list of strings.&nbsp;
+The collection framework in non-generic Java did not offer any homogenous
+collections of elements of the same type.&nbsp; Instead, all collections
+were holding <tt>Object</tt> references and for that reason they were potentially
+heterogenous, that is, a mix of objects of different types.&nbsp; This
+was also visible in the collection APIs: the non-generic collections accepted
+objects of arbitrary type for insertion into the collection and returned
+an <tt>Object</tt> reference when an element was retrieved from the collection
+(see package <tt><a href="http://java.sun.com/j2se/1.4.2/docs/api/java/util/package-summary.html">java.util</a></tt>
+in Java 1.4).&nbsp;
+<p>In non-generic Java, homogenous collections of elements had required
+implementation of different classes, such as a class <tt>IntegerList</tt>
+and a class <tt>StringList</tt> for holding integral values and strings
+respectively. Naturally, implementing a separate collection class for&nbsp;
+every conceivable element type is neither feasible nor desirable.&nbsp;
+A more reasonable goal is to have a single implementation of the collection
+class and use it to hold elements of different types.&nbsp; In other words,
+rather than implementing a class <tt>IntegerList</tt> and <tt>StringList</tt>,
+we want to have one generic implementation <tt>List</tt> that can be used
+in either case.
+<p>This is what generics are for: implementation of one generic class that
+can be instantiated for a variety of types.&nbsp; There is one generic
+class <tt>List</tt> in the generic collection framework (see package <tt><a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/package-summary.html">java.util</a></tt>
+in Java 5.0).&nbsp; It permits specification of <tt>List&lt;Integer></tt>,
+<tt>List&lt;String></tt>,
+etc. each of which is a homogenous collection of integral values, strings,
+etc.&nbsp; In generic Java, the generic class
+<tt>List</tt> is a so-called
+<i>generic
+class</i> that has a type parameter.&nbsp; Uses such as
+<tt>List&lt;Integer></tt>
+and <tt>List&lt;String></tt> are so-called <i>parameterized types</i>.&nbsp;
+They are <i>instantiations</i> of the generic class, where the type parameter
+is replaced by the concrete type arguments <tt>Integer</tt> and <tt>String</tt>.&nbsp;
+<p>The use of the Java generics language features were initially motivated
+by the need to have a mechanism for efficient implementation of homogenous
+collections, but the language feature is not restricted to collections.
+The J2SE 5.0 platform libraries contains numerous examples of generic types
+and methods that have nothing to do with collections.&nbsp; Examples are
+the weak and soft references in package <tt><a href="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/ref/package-summary.html">java.lang.ref</a></tt>,
+which are special purpose references to objects of a particular type represented
+by a type parameter.&nbsp; Or the interface <tt>Callable</tt> in package
+<tt><a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/concurrent/Callable.html">java.util.concurrent</a></tt>,
+which represents a task and has a <tt>call</tt> method that returns a result
+of a particular type represented by a type parameter. Even class <tt>Class</tt>
+in package <tt><a href="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Class.html">java.lang</a></tt>
+is a generic class since Java 5.0, whose type parameter denotes the type
+that the <tt>Class</tt> object represents.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ002">#FAQ002</a></font></font></td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is the benefit of using Java generics?">What
+is the benefit of using Java generics?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#What is a parameterized (or generic) type?">What
+is a parameterized or generic type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#How is a parameterized type instantiated?">How
+is a generic type instantiated?</a></font></font></td>
+</tr>
+</table>
+
+<p><img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ003"></a>
+<h2>
+<a NAME="What is the benefit of using Java generics?"></a><font face="Arial,Helvetica"><font size=+0>What
+is the benefit of using Java generics?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Early error detection at compile time.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Using a parameterized type such as <tt>LinkedList&lt;String></tt>,
+instead of <tt>LinkedList</tt>, enables the compiler to perform more type
+checks and requires fewer dynamic casts. This way errors are detected earlier,
+in the sense that they are reported at compile-time by means of a compiler
+error message rather than at runtime by means of an exception.&nbsp;
+<p>Consider the example of a <tt>LinkedList&lt;String></tt>. The type <tt>LinkedList&lt;String></tt>
+expresses that the list is a homogenous list of elements of type <tt>String</tt>.&nbsp;
+Based on the stronger information the compiler performs type checks in
+order to ensure that a <tt>LinkedList&lt;String></tt> contains only strings
+as elements. Any attempt to add an alien element is rejected with a compiler
+error message.
+<p>Example (using a parameterized type):
+<blockquote><tt>LinkedList&lt;String> list = new LinkedList&lt;String>();</tt>
+<br><tt>list.add("abc");&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // fine</tt>
+<br><tt>list.add(new Date());&nbsp; // error</tt></blockquote>
+Using a plain <tt>LinkedList</tt>, the compiler had not issued any message
+and both elements would have been added to the list. This is because the
+non-parameterized <tt>LinkedList</tt> does not mandate that all elements
+must be of the same or any particular type. A non-parameterized list is
+a sequence of elements of type <tt>Object</tt> and hence arbitrary.
+<p>Same example (using a non-parameterized type):
+<blockquote><tt>LinkedList list = new LinkedList();</tt>
+<br><tt>list.add("abc");&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // fine</tt>
+<br><tt>list.add(new Date());&nbsp; // fine as well</tt></blockquote>
+
+<p><br>Since it is ensured that a <tt>LinkedList&lt;String></tt> contains
+strings it is not necessary to cast an element retrieved from the list
+to type <tt>String</tt>.
+<p>Example (using a parameterized type):
+<blockquote><tt>LinkedList&lt;String> list = new LinkedList&lt;String>();</tt>
+<br><tt>list.add("abc");&nbsp;</tt>
+<br><tt>String s = list.get(0);&nbsp; // no cast needed</tt></blockquote>
+Using a plain <tt>LinkedList</tt>, there is no knowledge and no guarantee
+regarding the type of the element retrieved.&nbsp; All retrieval methods
+return&nbsp; an <tt>Object</tt> reference, which must be cast down to the
+actual type of the element retrieved.
+<p>Same example (using a non-parameterized type):
+<blockquote><tt>LinkedList list = new LinkedList();</tt>
+<br><tt>list.add("abc");&nbsp;</tt>
+<br><tt>String s = (String)list.get(0);&nbsp; // cast required</tt></blockquote>
+The cast would fail at runtime with a <tt>ClassCastException</tt> in case
+the element retrieved is not of type <tt>String</tt>.&nbsp; This type of
+runtime failure cannot happen with a parameterized list because the compiler
+already prevents insertion of an alien element into the sequence.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ003">#FAQ003</a></font></font></td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#What is a parameterized (or generic) type?">What
+is a parameterized or generic type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#How is a parameterized type instantiated?">How
+is a generic type instantiated?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ004"></a>
+<br>&nbsp;
+<h2>
+<a NAME="What does type-safety mean?"></a><font face="Arial,Helvetica"><font size=+0>What
+does type-safety mean?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>In Java, a program is considered type-safe
+if it compiles without errors and warnings and does not raise any unexpected
+ClassCastExceptions at runtime.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">The idea is that a well-formed program enables the compiler
+to perform enough type checks based on static type information that no
+unexpected type error can occur at runtime.&nbsp; An unexpected type error
+in this sense is a <tt>ClassCastException</tt> being raised without any
+visible cast expression in the source code.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ004">#FAQ004</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How does the compiler translate Java generics?">How
+does the compiler translate Java generics?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Why does the compiler add casts when it translates generics?">Why
+does the compiler add casts when it translates generics?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>
+<hr WIDTH="100%">
+<br><font face="Arial,Helvetica"><font size=-2><a href="../JavaGenericsFAQ.html#TOC">CONTENT<img SRC="../../Images/bluebullet.gif" NOSAVE height=6 width=4></a>&nbsp;
+<font color="#666666"><a href="../JavaGenericsFAQ.html">PREVIOUS<img SRC="../../Images/bluebullet.gif" NOSAVE height=6 width=4></a></font>
+
+<a href="Features.html">NEXT<img SRC="../../Images/bluebullet.gif" NOSAVE height=6 width=4></a>
+
+<a href="Index.html#IDX">INDEX</a></font></font>
+</body>
+</html>

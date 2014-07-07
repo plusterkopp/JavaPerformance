@@ -1,0 +1,1443 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <meta name="KeyWords" content="Java Generics parameterized type parameterized methodwildcard">
+   <title>Java Generics FAQs - Type Arguments</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+
+<h1>
+<a NAME="Top"></a><a NAME="FAQTypeArguments"></a><a NAME="Type Arguments"></a>Type
+Arguments</h1>
+<font size=-2>&copy; Copyright 2004-2005 by Angelika Langer.&nbsp; All
+Rights Reserved.</font>
+<table CELLPADDING=10 WIDTH="100%" >
+<tr>
+<td COLSPAN="2"><font size=+0><a href="#Fundamentals">Fundamentals</a></font>
+<ul>
+<li>
+<font size=+0><a href="#What is a type argument?">What is a type argument?</a></font></li>
+
+<li>
+<a href="#Which types are permitted as type arguments?">Which types are
+permitted as type arguments?</a></li>
+
+<li>
+<font size=+0><a href="#Are primitive types permitted as type arguments?">Are
+primitive types permitted as type arguments?</a></font></li>
+
+<li>
+<font size=+0><a href="#Are wildcards are permitted as type arguments?">Are
+wildcards permitted as type arguments?</a></font></li>
+
+<li>
+<a href="#Are type parameters permitted as type arguments?">Are type parameters
+permitted as type arguments?</a></li>
+
+<li>
+<a href="#Do bounds restrict the set of types that can be used as type arguments?">Do
+type parameter bounds restrict the set of types that can be used as type
+arguments?</a></li>
+
+<li>
+<font size=+0><a href="#Do I have to specify a type argument when I want to use a parameterized type?">Do
+I have to specify a type argument when I want to use a generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="#Do I have to specify a type argument when I want to invoke a parameterized method?">Do
+I have to specify a type argument when I want to invoke a generic method?</a></font></li>
+</ul>
+<font size=+0><a href="#Wildcards">Wildcards</a></font>
+<ul>
+<li>
+<font size=+0><a href="#What is a wildcard?">What is a wildcard?</a></font></li>
+
+<li>
+<font size=+0><a href="#What is an unbounded wildcard?">What is an unbounded
+wildcard?</a></font></li>
+
+<li>
+<font size=+0><a href="#What is a bounded wildcard?">What is a bounded
+wildcard?</a></font></li>
+
+<li>
+<font size=+0><a href="#What do multilevel wildcards mean?">What do multi-level
+wildcards mean?</a></font></li>
+
+<li>
+<a href="#If a wildcard appears repeatedly in a type argument section, does it stand for the same type">If
+a wildcard appears repeatedly in a type argument section, does it stand
+for the same type?</a></li>
+</ul>
+<font size=+0><a href="#Wildcard Bounds">Wildcard Bounds</a></font>
+<ul>
+<li>
+<font size=+0><a href="#What is a wildcard bound?">What is a wildcard bound?</a></font></li>
+
+<li>
+<font size=+0><a href="#Which types are permitted as wildcard bounds?">Which
+types are permitted as wildcard bounds?</a></font></li>
+
+<li>
+<font size=+0><a href="#What is the difference between a wildcard bound and a type parameter bound?">What
+is the difference between a wildcard bound and a type parameter bound?</a></font></li>
+</ul>
+</td>
+</tr>
+
+<tr>
+<td></td>
+</tr>
+</table>
+
+<h1>
+<img SRC="../../Images/bar.gif" NOSAVE height=5 width=600></h1>
+
+<h2>
+Type Arguments</h2>
+<img SRC="../../Images/bar.gif" NOSAVE height=5 width=600>
+<br>&nbsp;
+<h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450></h3>
+
+<h3>
+<a NAME="Fundamentals"></a>Fundamentals</h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450><a NAME="FAQ001"></a>
+<h2>
+<a NAME="What is a type argument?"></a><font face="Arial,Helvetica"><font size=+0>What
+is a type argument?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>A reference type or a wildcard that is
+used for instantiation of a generic type or a reference type used for instantiation
+of a generic method.&nbsp; A type argument replaces the type parameter
+used in the implementation of the generic type or method.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Generic types and methods have formal type parameters,
+which are replaced by actual type arguments when the parameterized type
+or method is instantiated.&nbsp;
+<p>Example (of a generic type):
+<blockquote><tt>class Box<b><font color="#000099">&lt;T></font></b> {</tt>
+<br><tt>&nbsp; private <b><font color="#000099">T</font></b> theObject;</tt>
+<br><tt>&nbsp; public Box(<b><font color="#000099">T</font></b> arg) {
+theObject = arg; }</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt>
+<br><tt>class Test {</tt>
+<br><tt>&nbsp; public static void main(String[] args) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Box<b><font color="#000099">&lt;String></font></b>
+box = new Box<b><font color="#000099">&lt;String></font></b>("Jack");</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+In the example we see a generic class <tt>Box</tt> with one formal type
+parameter <tt>T.</tt> This formal type parameter is replaced by actual
+type argument <tt>String</tt>, when the <tt>Box</tt> type is used in the
+test program.
+<p>There are a couple of rules for type arguments:
+<ul>
+<li>
+The actual type arguments of a generic type are&nbsp;</li>
+
+<ul>
+<li>
+reference types,&nbsp;</li>
+
+<li>
+wildcards, or&nbsp;</li>
+
+<li>
+parameterized types (i.e. instantiations of other generic types).&nbsp;</li>
+</ul>
+
+<li>
+Generic methods cannot be instantiated using wildcards as actual type arguments.&nbsp;</li>
+
+<li>
+Type parameters are permitted as actual type arguments.</li>
+
+<li>
+Primitive types are not permitted as type arguments.</li>
+
+<li>
+Type arguments must be within bounds.&nbsp;</li>
+</ul>
+</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ001">#FAQ001</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard?">What
+is a wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeParameters.html#What is a type parameter?">What
+is a type parameter?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Which types are permitted as type arguments?">Which
+types are permitted as type arguments?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Are primitive types permitted as type arguments?">Are
+primitive types permitted as type arguments?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Are wildcards are permitted as type arguments?">Are
+wildcards permitted as type arguments?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Are type parameters permitted as type arguments?">Are
+type parameters permitted as type arguments?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Do bounds restrict the set of types that can be used as type arguments?">Do
+type parameter bounds restrict the set of types that can be used as type
+arguments?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ002"></a>
+<h2>
+<a NAME="Which types are permitted as type arguments?"></a><font face="Arial,Helvetica"><font size=+0>Which
+types are permitted as type arguments?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>All references types including parameterized
+types, but no primitive types.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">All reference types can be used a type arguments of a parameterized
+type or method.&nbsp; This includes classes, interfaces, enum types, nested
+and inner types, and array types.&nbsp; Only primitive types cannot be
+used as type argument.
+<p>Example (of types as type arguments of a parameterized type):
+<blockquote><tt>List&lt;<b><font color="#000099">int</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l0;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>List&lt;<b><font color="#000099">String</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l1;</tt>
+<br><tt>List&lt;<b><font color="#000099">Runnable</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l2;</tt>
+<br><tt>List&lt;<b><font color="#000099">TimeUnit</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l3;</tt>
+<br><tt>List&lt;<b><font color="#000099">Comparable</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l4;</tt>
+<br><tt>List&lt;<b><font color="#000099">Thread.State</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l5;</tt>
+<br><tt>List&lt;<b><font color="#000099">int[]</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l6;</tt>
+<br><tt>List&lt;<b><font color="#000099">Object[]</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l7;</tt>
+<br><tt>List&lt;<b><font color="#000099">Callable&lt;String></font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l8;</tt>
+<br><tt>List&lt;<b><font color="#000099">Comparable&lt;? super Long></font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l9;</tt>
+<br><tt>List&lt;<b><font color="#000099">Class&lt;? extends Number></font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l10;</tt>
+<br><tt>List&lt;<b><font color="#000099">Map.Entry&lt;?,?></font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l11;</tt></blockquote>
+The code sample shows that primitive types such as <tt>int</tt> are not
+permitted as type argument.&nbsp;
+<p>Class types, such as <tt>String</tt>, and interface types, such as <tt>Runnable</tt>,
+are permitted as type arguments.&nbsp; Enum types, such as <tt>TimeUnit</tt>
+(see <tt><a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/concurrent/TimeUnit.html">java.util.concurrent.TimeUnit</a></tt>)
+are also permitted as type arguments.&nbsp;
+<p>Raw types are permitted as type arguments; <tt><font color="#000000">Comparable</font></tt>
+is an example.
+<p><tt>Thread.State</tt> is an example of a nested type;&nbsp; <tt>Thread.State
+</tt>is
+an enum type nested into the <tt>Thread</tt> class.&nbsp; Non-static inner
+types are also permitted.&nbsp;
+<p>An array type, such as <tt>int[]</tt> and <tt>Object[]</tt>, is permitted
+as type arguments of a parameterized type or method.&nbsp;
+<p>Parameterized types are permitted as type arguments, including concrete
+parameterized types such as <tt>Callable&lt;String></tt>,&nbsp; bounded
+wildcard parameterized types such as <tt>Comparable&lt;? super Long>
+</tt>and
+<tt>Class&lt;?
+extends Number></tt>, and unbounded wildcard parameterized types such as
+<tt>Map.Entry&lt;?,?></tt>.
+<br>&nbsp;
+<p>The same types are permitted as explicit type arguments of a generic
+method.
+<p>Example (of types as type arguments of a generic method):
+<blockquote><tt>List&lt;?> list;</tt>
+<br><tt>list = Collections.&lt;<b><font color="#000099">int</font></b>>emptyList();</tt>
+<br><tt>list = Collections.&lt;<b><font color="#000099">String</font></b>>emptyList();</tt>
+<br><tt>list = Collections.&lt;<b><font color="#000099">Runnable</font></b>>emptyList();</tt>
+<br><tt>list = Collections.&lt;<b><font color="#000099">TimeUnit</font></b>>emptyList();</tt>
+<br><tt>list = Collections.&lt;<b><font color="#000099">Comparable</font></b>>emptyList();</tt>
+<br><tt>list = Collections.&lt;<b><font color="#000099">Thread.State</font></b>>emptyList();</tt>
+<br><tt>list = Collections.&lt;<b><font color="#000099">int[]</font></b>>emptyList();</tt>
+<br><tt>list = Collections.&lt;<b><font color="#000099">Object[]</font></b>>emptyList();</tt>
+<br><tt>list = Collections.&lt;<b><font color="#000099">Callable&lt;String></font></b>>emptyList();</tt>
+<br><tt>list = Collections.&lt;<b><font color="#000099">Comparable&lt;?
+super Long></font></b>>emptyList();</tt>
+<br><tt>list = Collections.&lt;<b><font color="#000099">Class&lt;? extends
+Number></font></b>>emptyList();</tt>
+<br><tt>list = Collections.&lt;<b><font color="#000099">Map.Entry&lt;?,?></font></b>>emptyList();</tt></blockquote>
+</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ002">#FAQ002</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is a type argument?">What
+is a type argument?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ003"></a>
+<h2>
+<a NAME="Are primitive types permitted as type arguments?"></a><font face="Arial,Helvetica"><font size=+0>Are
+primitive types permitted as type arguments?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No. Only reference types can be used
+as type arguments.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">A parameterized type such as <tt>List&lt;int></tt> or <tt>Set&lt;short></tt>
+is illegal.&nbsp; Only reference types can be used for instantiation of
+generic types and methods. Instead of <tt>List&lt;int></tt> we must declare
+a <tt>List&lt;Integer</tt>>, using the corresponding wrapper type as the
+type argument.
+<p>The lack of primitive type instantiations is not a major restriction
+in practice (except for performance reasons), because autoboxing and auto-unboxing
+hides most of the nuisance of wrapping and unwrapping primitive values
+into their corresponding wrapper types.
+<p>Example (of autoboxing):
+<blockquote><tt>int[] array = {1,2,3,4,5,6,7,8,9,10};</tt>
+<br><tt>List&lt;Integer> list = new LinkedList&lt;Integer>();</tt>
+<br><tt>for (int i : array)&nbsp;</tt>
+<br><tt>&nbsp; list.add(i);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#999900">//
+autoboxing</font></b></tt>
+<br><tt>for (int i=0;i&lt;list.size();i++)</tt>
+<br><tt>&nbsp; array[i] = list.get(i);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#999900">//
+auto-unboxing</font></b></tt></blockquote>
+Here we insert primitive type <tt>int</tt> values to the list of <tt>Integer</tt>s,
+relying on autoboxing, which is the automatic conversion from the primitve
+type to the corresponding wrapper type. Similarly, we extract primitive
+type <tt>int </tt>values from the list,&nbsp; relying on auto-unboxing,
+which is the automatic conversion from the wrapper type to the corresponding
+primitive type.&nbsp;
+<br>&nbsp;
+<p>Note, that the lack of primitive type instantiations incurs a performance
+penalty.&nbsp; Autoboxing and -unboxing make the use of wrapper type instantiations
+of generic types very convenient and concise in the source code.&nbsp;
+But the concise notation hides the fact that behind the curtain the virtual
+machine creates and uses lots of wrapper objects, each of which must be
+allocated and later garbage collected. The higher performance of direct
+use of primitive type values is cannot be achieved with generic types.&nbsp;
+Only a regular type can provide the optimal performance of using primitive
+type values.
+<p>Example:
+<blockquote><tt>class Box<b><font color="#000099">&lt;T></font></b> {</tt>
+<br><tt>&nbsp; private <b><font color="#000099">T</font></b> theObject;</tt>
+<br><tt>&nbsp; public Box(<b><font color="#000099">T</font></b> arg) {
+theObject = arg; }</tt>
+<br><tt>&nbsp; public <b><font color="#000099">T</font></b> get() { return
+theObject; }</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt>
+<br><tt>class BoxOfLong {</tt>
+<br><tt>&nbsp; private <b><font color="#000099">long</font></b> theObject;</tt>
+<br><tt>&nbsp; public BoxOfLong(<b><font color="#000099">long</font></b>
+arg) { theObject = arg; }</tt>
+<br><tt>&nbsp; public <b><font color="#000099">long</font></b> get() {
+return theObject; }</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt>
+<br><tt>class Test {</tt>
+<br><tt>&nbsp; public static void main(String[] args) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; long result;</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; Box<b><font color="#000099">&lt;Long></font></b>
+box = new Box<b><font color="#000099">&lt;Long></font></b>(0L);&nbsp; <b><font color="#999900">//
+autoboxing</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; result = box.get();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+<b><font color="#999900">// auto-unboxing</font></b></tt>
+<p><tt>&nbsp;&nbsp;&nbsp; Box<b><font color="#000099">&lt;long></font></b>
+box = new Box<b><font color="#000099">&lt;long></font></b>(0L);&nbsp; <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; result = box.get();</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; BoxOfLong box = new BoxOfLong(0L);&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; result = box.get();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+The example illustrates that the instantiation of the <tt>Box</tt> type
+for type <tt>Long</tt> leads to the inevitable overhead of boxing and unboxing.&nbsp;
+The instantiation on the primitive type <tt>long</tt> does not help, because
+it is illegal.&nbsp; Only a dedicated <tt>BoxOfLong</tt> type eliminates
+the overhead by using the primitive type <tt>long</tt>.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ003">#FAQ003</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is a type argument?">What
+is a type argument?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Which types are permitted as type arguments?">Which
+types are permitted as type arguments?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ004"></a>
+<h2>
+<a NAME="Are wildcards are permitted as type arguments?"></a><font face="Arial,Helvetica"><font size=+0>Are
+wildcards permitted as type arguments?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>For instantiation of a generic type,
+yes. For instantiation of a generic method, no.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">A wildcard is a syntactic constructs that denotes a family
+of types.
+<p>All wildcards can be used a type arguments of a parameterized type.&nbsp;
+This includes the unbounded wildcard as well as wildcards with an upper
+or lower bound.&nbsp;
+<p>Examples:
+<blockquote><tt>List&lt;<b><font color="#000099">?</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l0;&nbsp;</tt>
+<br><tt>List&lt;<b><font color="#000099">? extends Number</font></b>>&nbsp;
+l1;</tt>
+<br><tt>List&lt;<b><font color="#000099">? super Long</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l2;</tt></blockquote>
+Wildcards can<i>not</i> be used as type arguments of a generic method.
+<p>Examples:
+<blockquote><tt>list = Collections.&lt;<b><font color="#000099">?</font></b>>emptyList();&nbsp;&nbsp;&nbsp;&nbsp;
+
+<b><font color="#660000">//error</font></b></tt>
+<br><tt>list = Collections.&lt;<b><font color="#000099">? extends Number</font></b>>emptyList();
+<b><font color="#660000">//error</font></b></tt>
+<br><tt>list = Collections.&lt;<b><font color="#000099">? super Long</font></b>>emptyList();
+<b><font color="#660000">//error</font></b></tt></blockquote>
+</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ004">#FAQ004</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard?">What
+is a wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is an unbounded wildcard?">What
+is an unbounded wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is a bounded wildcard?">What
+is a bounded wildcard?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ005"></a>
+<h2>
+<a NAME="Are type parameters permitted as type arguments?"></a><font face="Arial,Helvetica"><font size=+0>Are
+type parameters permitted as type arguments?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Yes.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Type parameters of a generic type or method can be used
+as arguments of parameterized types or methods.
+<p>Example (of instantiations of a generic type using a type parameter
+as type argument):
+<blockquote><tt>class someClass<b><font color="#000099">&lt;T></font></b>
+{</tt>
+<br><tt>&nbsp; public List&lt;T> someMethod() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; List&lt;<b><font color="#000099">T</font></b>>
+list = Collections.&lt;<b><font color="#000099">T</font></b>>emptyList();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return list;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public static <b><font color="#000099">&lt;S></font></b>
+void anotherMethod(S arg) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; List&lt;<b><font color="#000099">S</font></b>>
+list = Collections.&lt;<b><font color="#000099">S</font></b>>emptyList();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+The example above demonstrates how the type parameter <tt>T</tt> of the
+enclosing generic class and the type parameter <tt>S</tt> of a generic
+method can be used as type argument to both a parameterized type, namely
+<tt>List</tt>,
+and a generic method, namely <tt>emptyList</tt>.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ005">#FAQ005</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is a type argument?">What
+is a type argument?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeParameters.html#What is a type parameter?">What
+is a type parameter?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedMethods.html#What is a parameterized (or generic) method?">What
+is a parameterized (or generic) method?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#What is a parameterized (or generic) type?">What
+is a parameterized (or generic) type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ006"></a>
+<h2>
+<a NAME="Do bounds restrict the set of types that can be used as type arguments?"></a><font face="Arial,Helvetica"><font size=+0>Do
+type parameter bounds restrict the set of types that can be used as type
+arguments?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Yes, type arguments must be within bounds.&nbsp;</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">When a formal type parameter was declared with one or several
+bounds then the actual type argument must be a subtype of all of the bounds
+specified for the respective formal type parameter.
+<p>Examples (using types from the packages
+<tt><a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/concurrent/Delayed.html">java.util</a></tt>
+and <tt><a href="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/package-summary.html">java.lang</a></tt>):
+<blockquote><tt><nobr>class Wrapper&lt;T extends Comparable<font color="#000099">&lt;T></font>>
+implements Comparable<font color="#000099">&lt;Wrapper&lt;T>></font> {</nobr></tt>
+<br><tt><nobr>&nbsp; private final T theObject;</nobr></tt>
+<br><tt><nobr>&nbsp; public Wrapper(T t) { theObject = t; }</nobr></tt>
+<br><tt><nobr>&nbsp; public T getWrapper() { return theObject; }</nobr></tt>
+<br><tt><nobr>&nbsp; public int compareTo(Wrapper<font color="#000099">&lt;T></font>
+other) { return theObject.compareTo(other.theObject); }</nobr></tt>
+<br><tt><nobr>}</nobr></tt>
+<br>
+<hr WIDTH="100%">
+<br><tt><nobr>Wrapper<font color="#000099">&lt;String></font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+wrapper1 = new Wrapper<font color="#000099">&lt;String></font>("Oystein");</nobr></tt>
+<br><tt><nobr>Wrapper<font color="#000099">&lt;? extends Number></font>
+wrapper2 = new Wrapper<font color="#000099">&lt;Long></font>(0L);</nobr></tt>
+<br><tt><nobr>Wrapper<font color="#000099">&lt;?></font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+wrapper3 = new Wrapper<font color="#000099">&lt;Date></font>(new Date());</nobr></tt>
+<br><tt><nobr>Wrapper<font color="#000099">&lt;Number></font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+wrapper4 = new Wrapper<font color="#000099">&lt;Number></font>(new Long(0L));&nbsp;
+// error</nobr></tt>
+<br><tt><nobr>Wrapper<font color="#000099">&lt;int>&nbsp;</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+wrapper5 = new Wrapper<font color="#000099">&lt;int></font>(5);&nbsp; //
+error</nobr></tt></blockquote>
+<tt>Comparable&lt;T></tt> uses a type parameter as its type argument.&nbsp;
+<br><tt>Comparable&lt;Wrapper&lt;T>></tt> uses an instantiation of a parameterized
+type as type argument.
+<br><tt>Wrapper&lt;String></tt> and <tt>Wrapper&lt;Long> </tt>have concrete
+reference types as type arguments.&nbsp;
+<br><tt>Wrapper&lt;? extends Number></tt> and <tt>Wrapper&lt;?></tt> use
+wildcards as type arguments.&nbsp;
+<br><tt>Wrapper&lt;Number></tt> is illegal because <tt>Number</tt> is not
+a subtype of <tt>Comparable&lt;Number></tt> and is not within bounds.&nbsp;
+<br><tt>Wrapper&lt;int></tt> is illegal because primitive types are not
+allowed as type arguments.&nbsp;</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ006">#FAQ006</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TypeParameters.html#What is a type parameter?">What
+is a type parameter?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeParameters.html#What is a bounded type parameter?">What
+is a bounded type parameter?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ007"></a>
+<h2>
+<a NAME="Do I have to specify a type argument when I want to use a parameterized type?"></a><font face="Arial,Helvetica"><font size=+0>Do
+I have to specify a type argument when I want to use a generic type?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No; you can use the so-called raw type,
+which is the generic type without type arguments.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">A generic type without any type arguments is called a <i>raw
+type</i>. Examples of raw types are <tt>List</tt>, <tt>Set</tt>,
+<tt>Comparable</tt>,
+<tt>Iterable</tt>,
+etc. (examples are taken from the packages
+<tt><a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/concurrent/Delayed.html">java.util</a></tt>and
+<tt><a href="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/package-summary.html">java.lang</a></tt>).
+<p>Raw types are permitted for compatilibity between generic and non-generic
+(legacy) Java APIs. The use of raw types in code written after the introduction
+of genericity into the Java programming language is strongly discouraged.&nbsp;
+<p>According to the Java Language Specification, it is possible that future
+versions of the Java programming language will disallow the use of raw
+types.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ007">#FAQ007</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#What is the raw type?">What
+is the raw type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#Can I use a raw type like any other type?">Can
+I use a raw type like any other type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How does the raw type relate to instantiations of the corresponding parameterized type?">How
+does the raw type relate to instantiations of the corresponding generic
+type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="MoreInformation.html#Where can I find a specification of the Java generics language features?">Where
+can I find a specification of the Java generics language features?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ008"></a>
+<p><a NAME="Do I have to specify a type argument when I want to invoke a parameterized method?"></a><b><font face="Arial,Helvetica"><font size=+0>Do
+I have to specify a type argument when I want to invoke a generic method?</font></font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No; a generic method can be used without
+type arguments.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">A generic method can be invoked like a regular method,
+that is, without specification of the type arguments.&nbsp; In such a case
+the compiler will automatically infer the type arguments from the static
+types of the method arguments or the context of the method invocation.&nbsp;
+This process is known as <i>type argument inference</i>.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ008">#FAQ008</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is type argument inference?">What
+is type argument inference?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What explicit type argument specification?">What
+is explicit type argument specification?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>&nbsp;
+<h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450></h3>
+
+<h3>
+<a NAME="Wildcards"></a>Wildcards</h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450><a NAME="FAQ101"></a>
+<h2>
+<a NAME="What is a wildcard?"></a><font face="Arial,Helvetica"><font size=+0>What
+is a wildcard?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>A syntactic construct that denotes a
+family of types.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">A wildcard describes a family of types.&nbsp; There are
+3 different flavors of wildcards:
+<ul>
+<li>
+"<tt>?</tt>" - the unbounded wildcard. It stands for the family of <i>all</i>
+types.</li>
+
+<li>
+"<tt>? extends Type</tt> " - a wildcard with an upper bound. It stands
+for the family of all types that are subtypes of <tt>Type</tt>, type <tt>Type</tt>
+being included.</li>
+
+<li>
+"<tt>? super Type</tt> " - a wildcard with a lower bound. It stands for
+the family of all types that are supertypes of <tt>Type</tt>, type <tt>Type</tt>
+being included.</li>
+</ul>
+Wildcards are used to declare so-called <i>wildcard parameterized types,</i>
+where a wildcard is used as an argument for instantiation of generic types.
+Wildcards are useful in situations where no or only partial knowledge about
+the type argument of a parameterized type is required.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ101">#FAQ101</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#What is a wildcard instantiation?">What
+is a wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#If a wildcard appears repeatedly in a type argument section, does it stand for the same type">If
+a wildcard appears repeatedly in a type argument section, does it stand
+for the same type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard bound?">What
+is a wildcard bound?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is an unbounded wildcard?">What
+is an unbounded wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is a bounded wildcard?">What
+is a bounded wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Which super-subset relationships exist among wildcards?">Which
+super-subset relationships exist among wildcards?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ102"></a>
+<h2>
+<a NAME="What is an unbounded wildcard?"></a><font face="Arial,Helvetica"><font size=+0>What
+is an unbounded wildcard?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>A wildcard without a bound.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">The unbounded wildcard looks like "<tt>?</tt>" and stands
+for the family of <i>all</i> types.
+<p>The unbounded wildcard is used as argument for instantiations of generic
+types.&nbsp; The unbounded wildcard is useful in situations where no knowledge
+about the type argument of a parameterized type is needed.
+<p>Example:
+<blockquote><tt>void printCollection(Collection&lt;?> c){&nbsp;&nbsp; //
+a wildcard instantiation</tt>
+<br><tt>&nbsp; for (Object o : c){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; System.out.println(o);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+The <tt>printCollection</tt> method does not require any particular properties
+of the elements contained in the collection that it prints. For this reason
+it declares its argument using an unbounded wildcard parameterized type,
+saying that any type of collection regardless of the element type is welcome.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ102">#FAQ102</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard?">What
+is a wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#What is a wildcard instantiation?">What
+is a wildcard instantiation?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#What is an unbounded wildcard instantiation?">What
+is an unbounded wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do unbounded wildcard instantiations of a parameterized type relate to other instantiations of the same type?">How
+do unbounded wildcard instantiations of a parameterized type relate to
+other instantiations of the same generic type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Which super-subset relationships exist among wildcards?">Which
+super-subset relationships exist among wildcards?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ103"></a>
+<h2>
+<a NAME="What is a bounded wildcard?"></a><font face="Arial,Helvetica"><font size=+0>What
+is a bounded wildcard?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>A wildcard with either an upper or a
+lower bound.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">A wildcard with an upper bound looks like "<tt>? extends
+Type</tt> " and stands for the family of all types that are subtypes of
+<tt>Type</tt>,
+type <tt>Type</tt> being included.&nbsp; <tt>Type</tt> is called the <i>upper
+bound</i>.
+<p>A wildcard with a lower bound looks like "<tt>? super Type</tt> " and
+stands for the family of all types that are supertypes of <tt>Type</tt>,
+type <tt>Type</tt> being included. <tt>Type</tt> is called the <i>lower
+bound</i>.
+<p>Bounded wildcards are used as arguments for instantiation of generic
+types.&nbsp; Bounded wildcards are useful in situations where only partial
+knowledge about the type argument of a parameterized type is needed.
+<p>Example (of a very restrictive implementation of a <tt>copy</tt> method):
+<blockquote><tt>public class Collections {</tt>
+<br><tt>&nbsp; public static &lt;T> void copy&nbsp;</tt>
+<br><tt>&nbsp; (List&lt;T> dest, List&lt;T> src) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for (int i=0; i&lt;src.size(); i++)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dest.set(i,src.get(i));</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+This implementation of a <tt>copy</tt> method is more restrictive than
+it need to be, because it requires that both input and output collection
+must be lists with the exact same element type. For instance, the following
+invocation would lead to an error message:
+<p>Example (of illegal use of the <tt>copy</tt> method):
+<blockquote><tt>List&lt;Object> output = new ArrayList&lt;Object>();</tt>
+<br><tt>List&lt;Long>&nbsp;&nbsp;&nbsp; input = new ArrayList&lt;Long>();</tt>
+<br><tt>...</tt>
+<br><tt>Collections.copy(output,input);&nbsp; // error: illegal argument
+types</tt></blockquote>
+The invocation of the <tt>copy</tt> method is rejected because the implementation
+above demands that both list must be of the same type.&nbsp; If <i>both</i>
+list were of type <tt>List&lt;Object></tt>, for instance, the method call
+were accepted and the compiler would deduce that the type parameter <tt>T</tt>
+must be replaced by the type argument <tt>Object</tt>. Since in our code
+snippet the two arguments are different types of lists the compiler does
+not know which type argument to deduce and rejects the method call with
+an error message.
+<p>We could try to relax the method's requirements to the argument types
+and declare the method as follows:
+<p>Example (of a relaxed <tt>copy</tt> method):
+<blockquote><tt>public class Collections {</tt>
+<br><tt>&nbsp; public static void copy&nbsp;</tt>
+<br><tt>&nbsp; (List&lt;?> dest, List&lt;?> src) {&nbsp; // using unbounded
+wildcards</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for (int i=0; i&lt;src.size(); i++)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dest.set(i,src.get(i));</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+Given the relaxed <tt>copy</tt> method we can pass any type of list as
+arguments to the <tt>copy</tt> method, even entirely nonsensical arguments
+such as a <tt>List&lt;String></tt> and a <tt>List&lt;Long></tt>.&nbsp;
+<p>Example (of using the relaxed <tt>copy</tt> method):
+<blockquote><tt>List&lt;Object> output = new ArrayList&lt;Object>();</tt>
+<br><tt>List&lt;Long>&nbsp;&nbsp;&nbsp; input = new ArrayList&lt;Long>();</tt>
+<br><tt>...</tt>
+<br><tt>Collections.copy(output,input);&nbsp; // compiles</tt>
+<p><tt>List&lt;String> output = new ArrayList&lt;String>();</tt>
+<br><tt>List&lt;Long>&nbsp;&nbsp;&nbsp; input = new ArrayList&lt;Long>();</tt>
+<br><tt>...</tt>
+<br><tt>Collections.copy(output,input);&nbsp; // compiles as well (!) and
+crashes at runtime</tt></blockquote>
+This is not quite what we want. We would like to permit sensible method
+arguments and prevent nonsensical ones. What we really want is an output
+list that can store all elements from the input list. This goal can be
+achieved by means of bounded wildcards, as in the following implementation
+of the <tt>copy</tt> method:
+<p>Example (of an implementation of the <tt>copy</tt> method that uses
+bounded wildcards):
+<blockquote><tt>public class Collections {</tt>
+<br><tt>&nbsp; public static &lt;T> void copy&nbsp;</tt>
+<br><tt>&nbsp; (List&lt;? super T> dest, List&lt;? extends T> src) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for (int i=0; i&lt;src.size(); i++)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dest.set(i,src.get(i));</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+In this implementation we require that a type <tt>T</tt> exists that is
+subtype of the output list's element type and supertype of the input list's
+element type.&nbsp; We express this by means of wildcards: the output list
+is required to have an element type with a lower bound <tt>T</tt> and the
+input list must have an element type with an upper bound <tt>T</tt>.
+<p>Example (of using the <tt>copy</tt> method with wildcards):
+<blockquote><tt>List&lt;Object> output = new ArrayList&lt;Object>();</tt>
+<br><tt>List&lt;Long>&nbsp;&nbsp;&nbsp; input = new ArrayList&lt;Long>();</tt>
+<br><tt>...</tt>
+<br><tt>Collections.copy(output,input);&nbsp; // fine; T:= Number &amp;
+Serializabe &amp; Comparable&lt;Number></tt>
+<p><tt>List&lt;String> output = new ArrayList&lt;String>();</tt>
+<br><tt>List&lt;Long>&nbsp;&nbsp;&nbsp; input = new ArrayList&lt;Long>();</tt>
+<br><tt>...</tt>
+<br><tt>Collections.copy(output,input);&nbsp; // error</tt>
+<br>&nbsp;</blockquote>
+In the first method call the types <tt>Number</tt>, <tt>Serializable</tt>
+and <tt>Comparable&lt;Number></tt> are supertypes of <tt>Long</tt> and
+subtypes of <tt>Object</tt>.&nbsp; Hence the compiler can use any of the
+3 types as type argument.&nbsp; The second method call is rejected by the
+compiler, because there is no type that is subtype of <tt>String</tt> and
+supertype of <tt>Long</tt>.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ103">#FAQ103</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard?">What
+is a wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#What is a wildcard instantiation?">What
+is a wildcard instantiation?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do wildcard instantiations with an upper bound relate to other instantiations of the same type?How do wildcard instantiations with an upper bound relate to other instantiations of the same type?">How
+do wildcard instantiations with an upper bound relate to other instantiations
+of the same generic type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do wildcard instantiations with a lower bound relate to other instantiations of the same type?">How
+do wildcard instantiations with a lower bound relate to other instantiations
+of the same generic type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Which super-subset relationships exist among wildcards?">Which
+super-subset relationships exist among wildcards?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard bound?">What
+is a wildcard bound?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Which types are permitted as wildcard bounds?">Which
+types are permitted as wildcard bounds?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is the difference between a wildcard bound and a type parameter bound?">What
+is the difference between a wildcard bound and a type parameter bound?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ProgrammingIdioms.html#What is the difference">What
+is the difference between a Collection&lt;?> and a Collection&lt;Object>?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ104"></a>
+<h2>
+<a NAME="What do multilevel wildcards mean?"></a><font face="Arial,Helvetica"><font size=+0>What
+do multi-level wildcards mean?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>It depends.&nbsp;</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">A multi-level wildcard is a wildcard that appears as the
+type argument of a type argument. The instantiations <tt>Collection&lt;Pair&lt;String,?>></tt>
+and <tt>Collection&lt;? extends Pair&lt;String,?>></tt> are examples of
+multi-level wildcards. Multi-level wildcard parameterized types are inherently
+difficult to interpret, because the wildcard can appear on different levels.&nbsp;
+For illustration, let us discuss the difference between a <tt>Collection&lt;Pair&lt;String,?>></tt>
+and a <tt>Collection&lt;? extends Pair&lt;String,?>></tt>.&nbsp; For sake
+of simplicity, let us assume <tt>Pair</tt> is a <tt>final</tt> class.
+<p>The type <tt>Collection&lt;Pair&lt;String,?>></tt> is a concrete instantiation
+of the generic <tt>Collection</tt> interface.&nbsp; It is a heterogenous
+collection of pairs of different types.&nbsp; It can contain elements of
+type <tt>Pair&lt;String,Long></tt>,
+<tt>Pair&lt;String,Date></tt>,
+<tt>Pair&lt;String,Object></tt>,
+<tt>Pair&lt;String,String></tt>,
+and so on and so forth. In other words,
+<tt>Collection&lt;Pair&lt;String,?>></tt>
+contains a mix of pairs of different types of the form <tt>Pair&lt;String,?></tt>.
+<p>The type&nbsp; <tt>Collection&lt;? extends Pair&lt;String,?>></tt> is
+a wildcard parameterized type; it does NOT stand for a concrete parameterized
+type.&nbsp; It stands for a representative from the family of collections
+that are instantiations of the <tt>Collection</tt> interface, where the
+type argument is of the form <tt>Pair&lt;String,?></tt>.&nbsp; Compatible
+instantiations are <tt>Collection&lt;Pair&lt;String,Long>></tt>, <tt>Collection&lt;Pair&lt;String,String>></tt>,
+<tt>Collection&lt;Pair&lt;String,Object>></tt>,
+or <tt>Collection&lt;Pair&lt;String,?>></tt>. In other words, we do not
+know which instantiation of <tt>Collection</tt> it stands for.
+<p>As a rule of thumb, you have to read multi-level wildcards top-down.&nbsp;
+<p>If the top-level type argument is a concrete type then the instantiation
+is a concrete type, probably a mixed bag of something, if the wildcard
+appears further down on a lower level.&nbsp; In this sense, a <tt>Collection&lt;Pair&lt;String,?>>
+</tt>is
+a collection of pairs of a certain form, that has lots of concrete subtypes.
+It's similar to a <tt>Collection&lt;Object></tt>, which is a collection
+of a concrete type that has lots of subtypes and is a mixed bag of something
+that is a subtype of <tt>Object</tt>.
+<p>If the top-level type argument is a wildcard, then the type is not concrete.&nbsp;
+It is a placeholder for a representative from a family of types. In this
+sense, a <tt>Collection&lt;? extends Pair&lt;String,?>> </tt>is a placeholder
+for a collection instantiated for a particular unknown pair type of a certain
+form. It's similar to a <tt>Collection&lt;?></tt>, which is a placeholder
+for a specific instantiation of the <tt>Collection</tt> interface, but
+it is not a concrete type.
+<br>&nbsp;
+<p>If we give up the simplification that <tt>Pair</tt> is a <tt>final</tt>
+class, then we must also consider subtypes of <tt>Pair</tt>.&nbsp;
+<p><tt>Collection&lt;Pair&lt;String,?>></tt> is then a heterogenous collection
+of pairs of different types of the form <tt>Pair&lt;String,?></tt>, <i>or
+subtypes thereof</i>. It can contain elements of type <tt>Pair&lt;String,Long></tt>,
+<tt>Pair&lt;String,Date></tt>,
+but also elements of type <tt>SubTypeOfPair&lt;String,Date></tt>, <tt>SubTypeOfPair&lt;String,Object></tt>,
+and so on and so forth.
+<p><tt>Collection&lt;? extends Pair&lt;String,?>> </tt>stands for a representative
+from the family of collections that are instantiations of the <tt>Collection</tt>
+interface, where the type argument is of the form <tt>Pair&lt;String,?></tt>,
+<i>or
+subtypes thereof</i>. Compatible parameterized types are <tt>Collection&lt;Pair&lt;String,Long>></tt>,
+<tt>Collection&lt;Pair&lt;String,Object>></tt>,
+but also <tt>Collection&lt;SubTypeOfPair&lt;String,Object>></tt>, or <tt>Collection&lt;SubTypeOfPair&lt;String,?>></tt>.&nbsp;</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ104">#FAQ104</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="ProgrammingIdioms.html#What is the difference">What
+is the difference between a Collection&lt;?> and a Collection&lt;Object>?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Which super-subset relationships exist among wildcards?">Which
+super-subset relationships exist among wildcards?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ105"></a>
+<h2>
+<a NAME="If a wildcard appears repeatedly in a type argument section, does it stand for the same type"></a><font face="Arial,Helvetica"><font size=+0>If
+a wildcard appears repeatedly in a type argument section, does it stand
+for the same type?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No, each occurrence can stand for a different
+type.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">If the same wildcard appears repeatedly in a type argument
+section each occurrence of the wildcard refers to a potentially different
+type.&nbsp; It is similar to wildcards in a regular expression: in "s??"
+the wildcard need not stand for the same character.&nbsp; "see", but also
+"sea" or "sew" or "saw" would be matching expressions. Each question mark
+stands for a potentially different character. The same holds for wildcards
+in Java generics.
+<p>Example (using the same wildcard repeatedly):
+<blockquote><tt>Pair&lt;<b>?</b>,<b>?</b>> couple = new Pair&lt;<b>String</b>,<b>String</b>>("Orpheus","Eurydike");</tt>
+<br><tt>Pair&lt;<b>?</b>,<b><font color="#000066">?</font></b>> xmas&nbsp;&nbsp;
+= new Pair&lt;<b>String</b>,<b><font color="#000066">Date</font></b>>("Xmas",
+new Date(104,11,24));</tt></blockquote>
+In the example above, the wildcard "<tt>?</tt>" can stand for the same
+type, such as <tt>String</tt>, but it need not do so.&nbsp; Each wildcard
+can stand for a different type, such as <tt>String</tt> and <tt>Date</tt>
+for instance.
+<p>Conversely, different wildcards need not stand for different types.&nbsp;
+If the type families denoted by the two different wildcards overlap, then
+the two different wildcards can stand for the same concrete type.
+<p>Example (using different wildcards):
+<blockquote><tt>Pair&lt;<b>? extends Appendable</b>,<b><font color="#000066">?
+extends CharSequence</font></b>> textPlusSuffix</tt>
+<br><tt>&nbsp; = new Pair&lt;<b>StringBuilder</b>,<b><font color="#000066">String</font></b>>(new
+StringBuilder("log"), ".txt");</tt>
+<p><tt>Pair&lt;<b>? extends Appendable</b>,<b><font color="#000066">? extends
+CharSequence</font></b>> textPlusText</tt>
+<br><tt>&nbsp; = new Pair&lt;<b>StringBuilder</b>,<b>StringBuilder</b>>(new
+StringBuilder("log"), new StringBuilder(".txt"));</tt></blockquote>
+In the examples above, the different wildcards "<tt>? extends Appendable</tt>"
+and "<tt>? extends CharSequence</tt>" can stand for different types, such
+as <tt>StringBuilder</tt> and <tt>String</tt>, but they can equally well
+stand for the same type, such as <tt>StringBulder</tt>, provided the bounds
+permit it.&nbsp;
+<p>
+<hr WIDTH="100%">
+<p>Below are a couple of examples where the same wildcard appears repeatedly
+and where the compiler rightly issues an error message.
+<p>In the first example the wildcard appears twice in an parameterized
+type, namely in <tt>Pair&lt;?,?></tt>.
+<p>Example #1 (demonstrating the incompatibility of one wildcard to another):
+<blockquote><tt>class Pair&lt;S,T> {</tt>
+<br><tt>&nbsp; private S first;</tt>
+<br><tt>&nbsp; private T second;</tt>
+<br><tt>&nbsp; public Pair(S s,T t) { first = s; second = t; }</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; public static void flip(<b><font color="#000000">Pair&lt;</font><font color="#000066">?</font><font color="#000000">,</font><font color="#000099">?</font><font color="#000000">></font></b>
+pair) {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Object tmp = pair.first;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; pair.first = pair.second;&nbsp; <b><font color="#990000">//
+error: imcompatible types</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; pair.second = tmp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<b><font color="#990000">// error: imcompatible types</font></b></tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<br><tt>class Test {</tt>
+<br><tt>&nbsp; public static void test() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Pair&lt;?,?> xmas = new Pair&lt;<b><font color="#000066">String</font></b>,<b><font color="#000066">Date</font></b>>("Xmas",new
+Date(104,11,24));</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Pair.flip(xmas);&nbsp;</tt>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp; Pair&lt;?,?> name = new Pair&lt;<b><font color="#000066">String</font></b>,<b><font color="#000066">String</font></b>>("Yves","Meyer");</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Pair.flip(name);&nbsp;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+The fields of the <tt>Pair&lt;?,?></tt> may be of different types. For
+instance, when the <tt>flip</tt> method is invoked with an argument of
+type <tt>Pair&lt;String,Date></tt>, then <tt>first</tt> would be of type
+<tt>String</tt>,
+while <tt>second</tt> is of type <tt>Date</tt>,&nbsp; and the fields cannot
+be assigned to each other.&nbsp; Even if the <tt>flip</tt> method is invoked
+with an argument of type <tt>Pair&lt;String,String></tt>, i.e. both wildcards
+stand for the same type, namely <tt>String</tt>, the compiler does not
+know this inside the implementation of the <tt>flip</tt> method.&nbsp;
+For this reason the compiler issues an error message in the implementation
+of the <tt>flip</tt> method when the two fields of unknown - and potentially
+different types - are assigned to each other.
+<p>In the second example the wildcard appears in an two instantiations
+of the same generic type, namely in <tt>Collection&lt;?></tt>.
+<p>Example #2 (demonstrating the imcompatibility of one wildcard to another):
+<blockquote><tt>class Utilities {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public static void add(<b>Collection&lt;<font color="#000099">?</font>></b>
+list1, <b>Collection&lt;<font color="#000099">?</font>></b> list2) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for (Object o : list1)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; list2.add(o);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<b><font color="#990000">// error: imcompatible types</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<br><tt>class Test {</tt>
+<br><tt>&nbsp; public static void test() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Collection&lt;?> dates&nbsp;&nbsp; = new LinkedList&lt;<b><font color="#000066">Date</font></b>>();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Collection&lt;?> strings = new LinkedList&lt;<b><font color="#000066">String</font></b>>();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; add(dates,strings);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; add(strings,strings);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+The two collections contain elements of two potentially different unknown
+types.&nbsp; The compiler complains when elements from one collection are
+passed to the other collection, because the types of the elements might
+be incompatible.
+<p>In the third example the wildcard appears in an two instantiations of
+two different generic type, namely in <tt>Collection&lt;? extends CharSequence>
+</tt>and <tt>Class&lt;? extends CharSequence></tt>.
+<p>Example #3 (demonstrating the imcompatibility of one wildcard to another):
+<blockquote><tt>class Utilities {</tt>
+<br><tt>&nbsp; public static void method(<b>Collection&lt;<font color="#000066">?
+extends CharSequence</font>></b> coll,&nbsp;</tt>
+<br><b><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Class&nbsp;&nbsp;&nbsp;&nbsp; &lt;<font color="#000066">? extends CharSequence</font>></tt></b><tt>
+type) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; coll.add(type.newInstance()); <b><font color="#990000">//
+error: imcompatible types</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<br><tt>class Test {</tt>
+<br><tt>&nbsp; public static void test() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; List&lt;<b><font color="#000066">StringBuilder</font></b>>
+stringList = new LinkedList&lt;StringBuilder>();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; method(stringList, <b><font color="#000066">String</font></b>.class);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+The <tt>newInstance</tt> method of class <tt>Class&lt;? extends CharSequence></tt>
+creates an object of an unknown subtype of <tt>CharSequence</tt>, while
+the collection <tt>Collection&lt;? extends CharSequence> </tt>holds elements
+of a potentially different subtype of <tt>CharSequence</tt>. The compiler
+complains when the newly created object is passed to the collection, because
+the collection might hold objects of an imcompatible type.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ105">#FAQ105</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#What is a wildcard instantiation?">What
+is a wildcard instantiation?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ProgrammingIdioms.html#How can I make sure that the same wildcard stand for the same type?">How
+can I make sure that the same wildcard stand for the same type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard bound?">What
+is a wildcard bound?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is an unbounded wildcard?">What
+is an unbounded wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is a bounded wildcard?">What
+is a bounded wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Which super-subset relationships exist among wildcards?">Which
+super-subset relationships exist among wildcards?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>&nbsp;
+<h1>
+<img SRC="../../Images/bar.gif" NOSAVE height=5 width=600></h1>
+
+<h2>
+<a NAME="Wildcard Bounds"></a>Wildcard Bounds</h2>
+<img SRC="../../Images/bar.gif" NOSAVE height=5 width=600><a NAME="FAQ201"></a>
+<br>&nbsp;
+<h2>
+<a NAME="What is a wildcard bound?"></a><font face="Arial,Helvetica"><font size=+0>What
+is a wildcard bound?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>A reference type that is used to further
+describe the family of types denoted by a wildcard.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">A wildcard can be unbounded, in which case it is denoted
+as "<tt>?</tt>".&nbsp; The unbounded wildcard stands for the family of
+<i>all</i>
+types.
+<p>Alternatively a wildcard can have a bound.&nbsp; There are two types
+of bounds: upper and lower bounds.&nbsp; The syntax for a bounded wildcard
+is either "<tt>? extends <i>SuperType</i></tt>" (wildcard with upper bound)
+or "<tt>? super <i>SubType</i></tt>" (wildcard with lower bound).&nbsp;
+The terms "upper" and "lower" stem from the way, in which inheritance relationships
+between types are denoted in modeling languages such as UML for instance.
+<blockquote><img SRC="../Diagrams/bounds.jpg" NOSAVE height=110 width=80></blockquote>
+The bound shrinks the family of types that the wildcard stands for. For
+instance, the wildcard "<tt>? extends Number</tt>" stands for the family
+of subtypes of <tt>Numbe</tt>;&nbsp; type <tt>Number</tt> itself is included
+in the family.&nbsp; The wildcard "<tt>? super Long</tt>"&nbsp; stands
+for the family of supertypes of <tt>Long</tt>;&nbsp; type <tt>Long</tt>
+itself is included.
+<p>Note, a wildcard can have only one bound. In can neither have both an
+upper <i>and</i> a lower bound nor several upper or lower bounds.&nbsp;
+Constructs such as "<tt>? super Long extends Number</tt>"&nbsp; or&nbsp;
+"<tt>? extends Comparable&lt;String> &amp; Cloneable</tt>" are illegal.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ201">#FAQ201</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard?">What
+is a wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Which types are permitted as wildcard bounds?">Which
+types are permitted as wildcard bounds?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is the difference between a wildcard bound and a type parameter bound?">What
+is the difference between a wildcard bound and a type parameter bound?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ202"></a>
+<h2>
+<a NAME="Which types are permitted as wildcard bounds?"></a><font face="Arial,Helvetica"><font size=+0>Which
+types are permitted as wildcard bounds?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>All references types including parameterized
+types, but no primitive types.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">All reference types can be used a wildcard bound.&nbsp;
+This includes classes, interfaces, enum types, nested and inner types,
+and array types.&nbsp; Only primitive types cannot be used as wildcard
+bound.
+<p>Example (of wildcard bounds):
+<blockquote><tt>List&lt;? extends <b><font color="#000099">int</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l0;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>List&lt;? extends <b><font color="#000099">String</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l1;</tt>
+<br><tt>List&lt;? extends <b><font color="#000099">Runnable</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l2;</tt>
+<br><tt>List&lt;? extends <b><font color="#000099">TimeUnit</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l3;</tt>
+<br><tt>List&lt;? extends <b><font color="#000099">Comparable</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l4;</tt>
+<br><tt>List&lt;? extends <b><font color="#000099">Thread.State</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l5;</tt>
+<br><tt>List&lt;? extends <b><font color="#000099">int[]</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l6;</tt>
+<br><tt>List&lt;? extends <b><font color="#000099">Object[]</font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l7;</tt>
+<br><tt>List&lt;? extends <b><font color="#000099">Callable&lt;String></font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l8;</tt>
+<br><tt>List&lt;? extends <b><font color="#000099">Comparable&lt;? super
+Long></font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l9;</tt>
+<br><tt>List&lt;? extends <b><font color="#000099">Class&lt;? extends Number></font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l10;</tt>
+<br><tt>List&lt;? extends <b><font color="#000099">Map.Entry&lt;?,?></font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l11;</tt>
+<br><tt>List&lt;? extends <b><font color="#000099">Enum&lt;?></font></b>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+l12;</tt></blockquote>
+The example only shows the various reference types as upper bound of a
+wildcard, but these type are permitted as lower bound as well.
+<p>We can see that primitive types such as <tt>int</tt> are not permitted
+as wildcard bound.&nbsp;
+<p>Class types, such as <tt>String</tt>, and interface types, such as <tt>Runnable</tt>,
+are permitted as wildcard bound.&nbsp; Enum types, such as <tt>TimeUnit</tt>
+(see <tt><a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/concurrent/TimeUnit.html">java.util.concurrent.TimeUnit</a></tt>)
+are also permitted as wildcard bound.&nbsp; Note, that even types that
+do not have subtypes, such as final classes and enum types, can be used
+as upper bound.&nbsp; The resulting family of types has exactly one member
+then. For instance, "<tt>? extends <font color="#000000">String</font></tt>"
+stands for the type family consisting of the type <tt>String</tt> alone.&nbsp;
+Following the same line of logic, the wildcard "<tt>? super Object</tt>"
+is permitted, too, although class <tt>Object</tt> does not have a supertype.&nbsp;
+The resulting type family consists of type <tt>Object</tt> alone.
+<p>Raw types are permitted as wildcard bound; <tt><font color="#000000">Comparable</font></tt>
+is an example.
+<p><tt>Thread.State</tt> is an example of a nested type;&nbsp; <tt>Thread.State
+</tt>is
+an enum type nested into the <tt>Thread</tt> class.&nbsp; Non-static inner
+types are also permitted.&nbsp;
+<p>An array type, such as <tt>int[]</tt> and <tt>Object[]</tt>, is permitted
+as wildcard bound. Wildcards with an array type as a bound denote the family
+of all sub- or supertypes of the wildcard type.&nbsp; For instance, "<tt>?
+extends Object[]</tt>" is the family of all array types whose component
+type is a reference type.&nbsp; <tt>int[]</tt> does not belong to that
+family, but <tt>Integer[] </tt>does. Similarly, "<tt>? super Number[]</tt>"
+is the family of all supertypes of the array type, such as <tt>Object[]</tt>,
+but also <tt>Object</tt>, <tt>Cloneable</tt> and <tt>Serializable</tt>.
+<p>Parameterized types are permitted as wildcard bound, including concrete
+parameterized types such as <tt>Callable&lt;String></tt>,&nbsp; bounded
+wildcard parameterized types such as <tt>Comparable&lt;? super Long>
+</tt>and
+<tt>Class&lt;?
+extends Number></tt>, and unbounded wildcard parameterized types such as
+<tt>Map.Entry&lt;?,?></tt>.&nbsp; Even the premordial supertype of all
+enum types, namely class <tt>Enum</tt>, can be used as wildcard bound.
+<br>&nbsp;</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ202">#FAQ202</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard?">What
+is a wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard bound?">What
+is a wildcard bound?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ203"></a>
+<h2>
+<a NAME="What is the difference between a wildcard bound and a type parameter bound?"></a><font face="Arial,Helvetica"><font size=+0>What
+is the difference between a wildcard bound and a type parameter bound?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>A wildcard can have only one bound, while
+a type parameter can have several bounds.&nbsp;</i></b>
+<br><b><i>A wildcard can have a lower or an upper bound, while there is
+no such thing as a lower bound for a type parameter.&nbsp;</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Wildcard bounds and type parameter bounds are often confused,
+because they are both called bounds and have in part similar syntax.
+<p>Example (of type parameter bound and wildcard bound):
+<blockquote><tt>class Box&lt;<b><font color="#000000">T </font><font color="#000099">extends
+Comparable&lt;T> &amp; Cloneable</font></b>>&nbsp;</tt>
+<br><tt>&nbsp; implements Comparable&lt;Box&lt;T>>, Cloneable {</tt>
+<p><tt>&nbsp; private T theObject;</tt>
+<br><tt>&nbsp; public Box(T arg)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{ theObject = arg; }&nbsp;</tt>
+<br><tt>&nbsp; public Box(Box&lt;<b><font color="#000000">? </font><font color="#000099">extends
+T</font></b>> box) { theObject = box.theObject; }</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; public int compareTo(Box&lt;T> other) { ... }</tt>
+<br><tt>&nbsp; public Box&lt;T> clone()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{ ... }</tt>
+<br><tt>}</tt></blockquote>
+The code sample above shows a type parameter <tt>T</tt> with two bounds,
+namely <tt>Comparable&lt;T> </tt>and <tt>Cloneable</tt>, and a wildcard
+with an upper bound <tt>T</tt>.
+<p>The type parameter bounds give access to their non-static methods.&nbsp;
+For instance, in the example above, the bound <tt>Comparable&lt;T></tt>
+makes is possible that the <tt>compareTo</tt> method can be invoked on
+variables of type <tt>T</tt>.&nbsp; In other words, the compiler would
+accept an expression such as <tt>theObject.compareTo(other.theObject).</tt>
+<p>The wildcard bound describes the family of types that the wildcard stands
+for. In the example, the wildcard "<tt>? extends T</tt>" denotes the family
+of all subtypes of <tt>T</tt>.&nbsp; It is used in the argument type of
+a constructor and permits that box objects of a box type from the family
+<tt>Box&lt;?
+extends T></tt> can be supplied as constructor arguments.&nbsp; It allows
+that a <tt>Box&lt;Number></tt> can be constructed from a <tt>Box&lt;Long></tt>,
+for instance.
+<p>The syntax is similar and yet different:
+<br>&nbsp;
+<table BORDER=0 CELLPADDING=5 >
+<tr BGCOLOR="#C0C0C0">
+<td></td>
+
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF">Syntax</font></font></b></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td VALIGN=TOP><b>type parameter bound</b></td>
+
+<td><tt>TypeParameter extends Class &amp; Interface<sub>1</sub> &amp; ...
+&amp; Interface<sub>N</sub></tt></td>
+</tr>
+
+<tr>
+<td><b>wildcard bound</b></td>
+
+<td></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>
+<blockquote><b><nobr>upper bound</nobr></b>
+<br><b><nobr>lower bound</nobr></b></blockquote>
+</td>
+
+<td><tt><nobr>? extends SuperType</nobr></tt>
+<br><tt><nobr>? super&nbsp;&nbsp; SubType</nobr></tt></td>
+</tr>
+
+<tr>
+<td></td>
+
+<td></td>
+</tr>
+</table>
+
+<p>A wildcard can have only one bound, either&nbsp; a lower or an upper
+bound.&nbsp; A list of wildcard bounds is not permitted.
+<p>A type parameter, in constrast, can have several bounds, but there is
+no such thing as a lower bound for a type parameter.&nbsp;</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ203">#FAQ203</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard?">What
+is a wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard bound?">What
+is a wildcard bound?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeParameters.html#What is a type parameter?">What
+is a type parameter?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeParameters.html#What is a type parameter bound?">What
+is a type parameter bound?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>
+<hr WIDTH="100%">
+<br><font face="Arial,Helvetica"><font size=-2><a href="../JavaGenericsFAQ.html#TOC">CONTENT<a href="../JavaGenericsFAQ.html#TOC"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><font color="#666666"><a href="TypeParameters.html">PREVIOUS<a href="../JavaGenericsFAQ.html#TOC"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a></font><a href="ProgrammingIdioms.html">NEXT<a href="../JavaGenericsFAQ.html#TOC"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="Index.html#IDX">INDEX</a></font></font>
+</body>
+</html>

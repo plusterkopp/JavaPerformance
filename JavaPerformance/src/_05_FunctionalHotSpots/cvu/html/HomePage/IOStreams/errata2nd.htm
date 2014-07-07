@@ -1,0 +1,681 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer and Klaus Kreft">
+   <title>Errata (2nd Printing)</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="IOStreamsErrata2ndPrinting"></a>
+<br>&nbsp;
+<table BORDER=0 CELLPADDING=10 WIDTH="100%" >
+<tr>
+<td>Thanks to everybody who took the time to send us an email to draw our
+attention to mistakes and typos in the book. We thank our readers for reading
+the book so carefully and attentively that you could spot the flaws. Thanks
+a lot!
+<p>Below is a list of errors that have have been identified and have not
+yet been corrected in the second printing. For a list of errors in the
+first printing click <a href="errata1st.htm">here</a>.&nbsp;
+<p>Feel free to send us <font face="Arial,Helvetica"><font size=-2><a href="mailto:langer@camelot.de">EMAIL</a></font></font>
+as soon as you detect another mistake.
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=3 WIDTH="75%" >
+<tr VALIGN=TOP>
+<td><a href="#71">page 71</a>
+<br><a href="#118">page 118</a>
+<br><a href="#148">page 148 &amp; 161</a>
+<br><a href="errata2nd.htm#149">page 149</a>
+<br><a href="#157">page 157 &amp; 159</a>
+<br><a href="#162">page 162</a>
+<br><a href="#163">page 163&amp;164</a>
+<br><a href="#169">page 169</a>
+<br><a href="#171">page 171</a>
+<br><a href="#173">page 173</a>
+<br><a href="#174">page 174</a>
+<br><a href="#215">page 215</a>
+<br><a href="#220">page 220</a>
+<br><a href="#233">page 233</a>
+<br><a href="#240">page 240</a></td>
+
+<td><a href="#241">page 241</a>
+<br><a href="#280">page 280</a>
+<br><a href="#303">page 303</a>
+<br><a href="#330">page 330</a>
+<br><a href="#470">page 470</a>
+<br><a href="#490">page 490-491</a>
+<br><a href="#491">page 491</a>
+<br><a href="#503">page 503-505</a>
+<br><a href="#505">page 505</a>
+<br><a href="#509">page 509</a>
+<br><a href="#510">page 510</a>
+<br><a href="#514">page 514</a>
+<br><a href="#564">page 564</a>
+<br><a href="#566">page 566</a>
+<br><a href="#572">page 572</a></td>
+
+<td></td>
+</tr>
+</table>
+<img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="71"></a><b>page 71:</b>
+<br><i>The last paragraph on this page contains two typos.&nbsp;</i>
+<p><tt><b>RETRIEVAL AND REPLACEMENT.</b> </tt>The concrete stream classes
+also add another version of the retrieval function<tt> rdbuf()</tt>, which
+hides the<tt> rdbuf() </tt>function inherited from class <tt>basic_ios&lt;></tt>.
+The two functions differ in their return type. The inherited version returns
+a pointer to the stream base class<tt> basic_streambuf&lt;<b><blink><font color="#FF6666">class</font></blink></b>
+charT, class Traits></tt>. The added version returns a pointer to a concrete
+stream buffer type, such as <tt>basic_filebuf&lt;<b><blink><font color="#FF6666">class</font></blink></b>
+charT, class Traits></tt>. This is the pointer to the contained concrete
+stream buffer object. The subsequent section explains the subtle differences
+in more detail.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Chandra Shekhar Kumar, Member
+Of Technical Staff, Vistaar Systems Pvt. Ltd., January 2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="118"></a><b>page 118:</b>
+<br><i>The code sample contains a number of typos. Class istringstream
+does not have tellp and seekp member functions.&nbsp; They are called tellg
+and seekg.</i>
+<p><tt>&nbsp;istringstream buf;</tt>
+<br><tt>&nbsp;// fill string stream&nbsp;</tt>
+<br><tt>&nbsp;// read input until a position of interest and memorize the
+position</tt>
+<br><tt>&nbsp;istringstream::pos_type p = buf.<b><blink><font color="#FF6666">tellg</font></blink></b>();</tt>
+<br><tt>&nbsp;if (p != istringstream::pos_type(-1))</tt>
+<br><tt>&nbsp;{&nbsp; // <b><blink><font color="#FF6666">tellg</font></blink></b>()
+was successful</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; // read further input</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>&nbsp;// return to the point of interest</tt>
+<br><tt>&nbsp;buf.<b><blink><font color="#FF6666">seekg</font></blink></b>(p);</tt>
+<br><tt>&nbsp;// return to beginning of stream</tt>
+<br><tt>&nbsp;buf.seekg(0,ios_base::beg);</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Klaus Wittlich, Cologne Germany,
+December 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="148"></a><b>page 148 &amp; 161:</b>
+<br><i>The constructor of class <tt>date</tt> is incorrect. The fields
+<tt>tm_wday</tt>
+and <tt>tm_yday</tt> of <tt>struct tm</tt> are initialized to <tt>0</tt>,
+which is incorrect for arbitrary dates. The correct values for these fields
+can be computed by means of the C library function <tt>mktime</tt>. Change
+constructor to:</i>
+<p><i>On page 148:</i>
+<p><tt>&nbsp;&nbsp;&nbsp; date(int d, int m, int y)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tm_date.tm_mday = d;
+tm_date.tm_mon = m-1; tm_date.tm_year = y-1900;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tm_date.tm_sec = tm_date.tm_min
+= tm_date.tm_hour = 0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tm_date.tm_wday = tm_date.tm_yday
+= 0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tm_date.tm_isdst = 0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><blink><font color="#FF6666">mktime(&amp;tm_date);</font></blink></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<p><i>On page 161:</i>
+<p><tt>&nbsp;&nbsp;&nbsp; date(int d, int m, int y)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tm_date.tm_mday = d;
+tm_date.tm_mon = m-1; tm_date.tm_year = y-1900;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tm_date.tm_sec = tm_date.tm_min
+= tm_date.tm_hour = 0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tm_date.tm_wday = tm_date.tm_yday
+= 0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tm_date.tm_isdst = 0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ok = (<b><blink><font color="#FF6666">(mktime(&amp;tm_date)!=time_t(-1))
+&amp;&amp; valid()</font></blink></b>) ? true : false;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Klaus Wittlich, Cologne Germany,
+February 2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="149"></a><b>page 149:</b>
+<br><i>The code sample contains a typo. Change to:</i>
+<p><tt>template&lt;class charT, <b><blink><font color="#FF6666">class</font></blink></b>
+Traits></tt>
+<br><tt>friend basic_istream&lt;charT,Traits>&amp;</tt>
+<br><tt>operator>> (basic_istream&lt;charT,Traits>&amp; is, date&amp; dat);</tt>
+<p><tt>template&lt;class charT, <b><blink><font color="#FF6666">class</font></blink></b>
+Traits></tt>
+<br><tt>friend basic_ostream&lt;charT,Traits>&amp;</tt>
+<br><tt>operator&lt;&lt; (basic_ostream&lt;charT,Traits>&amp; os, const
+date&amp; dat);</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Don McCliman, December 2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="157"></a><b>page 157&amp;159:</b>
+<br><i>The initialization of <tt>iostate</tt> variables is incorrect. <tt>ios_base::iostate</tt>
+is an implementation-definded type and there need not be an initial value<tt>0
+</tt>defined.&nbsp;
+One should use <tt>ios_base::goodbit </tt>as an initial value instead.
+Change to:</i>
+<p>page 157: The extractor:
+<br><tt><font size=-1>template&lt;class charT, class Traits></font></tt>
+<br><tt><font size=-1>basic_istream&lt;charT, Traits>&amp;</font></tt>
+<br><tt><font size=-1>operator>> (basic_istream&lt;charT, Traits >&amp;
+is, date&amp; dat)</font></tt>
+<br><tt><font size=-1>{</font></tt>
+<br><tt><font size=-1>&nbsp; if (!is.good()) return is;</font></tt>
+<br><tt><font size=-1>&nbsp; ios_base::iostate err = <b><blink><font color="#FF6666">ios_base::goodbit</font></blink></b>;</font></tt>
+<br><tt><font size=-1>&nbsp; use_facet&lt;time_get&lt;charT,istreambuf_iterator&lt;charT,Traits>
+> >(is.getloc())</font></tt>
+<br><tt><font size=-1>&nbsp; .get_date(is, istreambuf_iterator&lt;charT,Traits>(),is,
+err, &amp;dat.tm_date);</font></tt>
+<br><tt><font size=-1>&nbsp; return is;</font></tt>
+<br><tt><font size=-1>}</font></tt>
+<p>page 159: The extractor:
+<br><tt><font size=-1>template&lt;class charT, class Traits></font></tt>
+<br><tt><font size=-1>basic_istream&lt;charT, Traits>&amp;</font></tt>
+<br><tt><font size=-1>operator>> (basic_istream&lt;charT, Traits >&amp;
+is, date&amp; dat)</font></tt>
+<br><tt><font size=-1>{</font></tt>
+<br><tt><font size=-1>&nbsp; if (!is.good()) return is;</font></tt>
+<br><tt><font size=-1>&nbsp; ios_base::iostate err = <b><blink><font color="#FF6666">ios_base::goodbit</font></blink></b>;</font></tt>
+<br><tt><font size=-1>&nbsp; typename basic_istream&lt;charT,Traits>::sentry
+ipfx(is);</font></tt>
+<br><tt><font size=-1>&nbsp; if(ipfx)</font></tt>
+<br><tt><font size=-1>&nbsp; {</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp;&nbsp; use_facet&lt;time_get&lt;charT,istreambuf_iterator&lt;charT,Traits>
+> >(is.getloc())</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp;&nbsp; .get_date(is, istreambuf_iterator&lt;charT,Traits>(),is,
+err, &amp;dat.tm_date);</font></tt>
+<br><tt><font size=-1>&nbsp; }</font></tt>
+<br><tt><font size=-1>&nbsp; return is;</font></tt>
+<br><tt><font size=-1>}</font></tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Helmut Zeisel, March 2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="162"></a><b>page 162:</b>
+<br><i>The code sample contains a typo. Change to:</i>
+<p><tt>template&lt;class charT, <b><blink><font color="#FF6666">class</font></blink></b>
+Traits></tt>
+<br><tt>friend basic_istream&lt;charT,Traits>&amp;</tt>
+<br><tt>operator>> (basic_istream&lt;charT,Traits>&amp; is, date&amp; dat);</tt>
+<p><tt>template&lt;class charT, <b><blink><font color="#FF6666">class</font></blink></b>
+Traits></tt>
+<br><tt>friend basic_ostream&lt;charT,Traits>&amp;</tt>
+<br><tt>operator&lt;&lt; (basic_ostream&lt;charT,Traits>&amp; os, const
+date&amp; dat);</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Klaus Wittlich, Cologne Germany,
+December 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="163"></a><b>page 163&amp;164:</b>
+<br><i>The initialization of <tt>iostate</tt> variables is incorrect. <tt>ios_base::iostate</tt>
+is an implementation-definded type and there need not be an initial value
+<tt>0
+</tt>defined.&nbsp;
+One should use <tt>ios_base::goodbit </tt>as an initial value instead.
+Change to:</i>
+<p>page 163: The extractor:
+<br><tt>template&lt;class charT, class Traits></tt>
+<br><tt>basic_istream&lt;charT, Traits>&amp;</tt>
+<br><tt>operator>> (basic_istream&lt;charT, Traits >&amp; is, date&amp;
+dat)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; if (!is.good()) return is;</tt>
+<br><tt>&nbsp; ios_base::iostate err = <b><blink><font color="#FF6666">ios_base::goodbit</font></blink></b>;</tt>
+<br><tt>&nbsp; ...</tt>
+<p>page 164: The inserter:
+<br><tt>template&lt;class charT, class Traits></tt>
+<br><tt>basic_ostream&lt;charT, Traits>&amp;</tt>
+<br><tt>operator&lt;&lt; (basic_ostream&lt;charT, Traits >&amp; os, const
+date&amp; dat)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; if (!os.good()) return os;</tt>
+<br><tt>&nbsp; ios_base::iostate err = <b><blink><font color="#FF6666">ios_base::goodbit</font></blink></b>;</tt>
+<br><tt>&nbsp; ...</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Helmut Zeisel, March 2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="169"></a><b>page 169:</b>
+<br><i>The code sample contains a typo. Change to:</i>
+<p><tt>cout &lt;&lt; "A date like Dec 2, 1978" &lt;&lt; " is needed: ";</tt>
+<br><tt>date d;</tt>
+<br><tt>cin.exceptions(ios_base::badbit | ios_base::failbit);</tt>
+<br><tt>try { cin >> d; }</tt>
+<br><tt>catch (ios_base::failure&amp;)</tt>
+<br><tt>{ <b><blink><font color="#FF6666">cerr</font></blink></b> &lt;&lt;
+"date extraction failed" &lt;&lt; endl; throw; }</tt>
+<br><tt>cout &lt;&lt; "This is the specified date in US notation: " &lt;&lt;
+d &lt;&lt; endl;</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Klaus Wittlich, Cologne Germany,
+December 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="171"></a><b>page 171:</b>
+<br><i>The initialization of <tt>iostate</tt> variables is incorrect. <tt>ios_base::iostate</tt>
+is an implementation-definded type and there need not be an initial value
+<tt>0
+</tt>defined.&nbsp;
+One should use <tt>ios_base::goodbit </tt>as an initial value instead.
+Change to:</i>
+<p>The extractor:
+<br><tt>template &lt;class charT, class Traits, class Argument></tt>
+<br><tt>basic_istream&lt;charT, Traits>&amp; g_extractor</tt>
+<br><tt>(basic_istream&lt;charT, Traits>&amp; is, Argument&amp; arg)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; ios_base::iostate err = <b><blink><font color="#FF6666">ios_base::goodbit</font></blink></b>;</tt>
+<br><tt>&nbsp; ...</tt>
+<p>The inserter:
+<br><tt>template &lt;class charT, class Traits></tt>
+<br><tt>basic_ostream&lt;charT, Traits>&amp; g_inserter</tt>
+<br><tt>(basic_ostream&lt;charT, Traits>&amp; os, const Argument&amp; dat)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; ios_base::iostate err = <b><blink><font color="#FF6666">ios_base::goodbit</font></blink></b>;</tt>
+<br><tt>&nbsp; ...</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Helmut Zeisel, March 2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="173"></a><b>page 173:</b>
+<br><i>The code sample contains a couple of mistakes. Change to:</i>
+<p><tt>template &lt;class charT, class Traits></tt>
+<br><tt>ios_base::iostate get_from(basic_istream&lt;charT, Traits>&amp;
+is)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; ios_base::iostate err = <b><blink><font color="#FF6666">ios_base::goodbit</font></blink></b>;</tt>
+<br><tt>&nbsp; use_facet&lt;<b><blink><font color="#FF6666">time_get&lt;charT>
+</font></blink></b>>(is.getloc()).get_date</tt>
+<br><tt>&nbsp;&nbsp; (is, istreambuf_iterator&lt;<b><blink><font color="#FF6666">charT</font></blink></b>,
+char_traits&lt;<b><blink><font color="#FF6666">charT</font></blink></b>>
+>() ,is, err, &amp;tm_date);</tt>
+<br><tt>&nbsp; if (!(*this) || err)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return ios_base::failbit;</tt>
+<br><tt>&nbsp; else</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return ios_base::goodbit;</tt>
+<br><tt>}</tt>
+<p><tt>template &lt;class charT, class Traits></tt>
+<br><tt>ios_base::iostate print_on(basic_ostream&lt;charT, Traits>&amp;
+os) const</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; char const * const patt = "%x";</tt>
+<br><tt>&nbsp; char fmt[3];</tt>
+<br><tt>&nbsp; basic_stringbuf&lt;charT,Traits> sb;</tt>
+<br><tt>&nbsp; ios_base::iostate err = <b><blink><font color="#FF6666">ios_base::goodbit</font></blink></b>;</tt>
+<br><tt>&nbsp; ...</tt>
+<p><font face="Trebuchet MS"><font size=-2>errors found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Klaus Wittlich, Cologne Germany,
+December 2001 and Helmut Zeisel, March 2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="174"></a><b>page 174:</b>
+<br><i>Part of the sample code for the inserter is incorrect because the
+<tt>fill_n</tt>
+algorithm does not return the advanced output itertor as we had assumed,
+but returns void instead. The corresponding code must be corrected to:&nbsp;</i>
+<p><font face="Courier New,Courier"><font size=-1>else</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; if (os.flags()
+&amp; ios_base::left)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; {</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+sink = copy(s.begin(), s.end(), sink);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; <b><blink><font color="#FF6666">fill_n(sink,charToPad,os.fill());</font></blink></b></font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; }</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; else</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; {</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; <b><blink><font color="#FF6666">fill_n(sink,charToPad,os.fill());</font></blink></b></font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+sink = copy(s.begin(), s.end(), sink);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; }</font></font>
+<br><font face="Courier New,Courier"><font size=-1>}</font></font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Steffen Lottermoser, January
+2003</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="215"></a><b>page 215:</b>
+<br><i>Incorrect reference in footnote 15. Change to:</i>
+<p>15. We use function <tt>try</tt> blocks for catching exception in these
+constructors.&nbsp; If you are not familiar with function <tt>try</tt>
+blocks, see section <b><blink><font color="#FF6666">G.9</font></blink></b>,
+Function <tt>try</tt> Blocks, for further explanation.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Helmut Zeisel, March 2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="220"></a><b>page 220:</b>
+<br><i>Incorrect references to appendix. Change to:</i>
+<p>This kind of cast is called a <i>downcast</i> and is performed via the
+<tt>dynamic_cast</tt>
+operator. Section <b><blink><font color="#FF6666">G.8</font></blink></b>,
+Dynamic Cast, in appendix G explains the dynamic cast and related issues.
+<p>Such a cast is called a <i>peer class cast</i> (see section <b><blink><font color="#FF6666">G.8</font></blink></b>,
+Dynamic Cast, in appendix G for further explanations) and can be safely
+performed via the <tt>dynamic_cast</tt> operator.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Helmut Zeisel, March 2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="233"></a><b>page 233:</b>
+<br><i>Typo in code sample on bottom of page. Change to:</i>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; template &lt;class charT, class traits></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; unbuffered_streambuf&lt;charT,traits>::int_type</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; unbuffered_streambuf&lt;charT,traits>::<b><blink><font color="#FF6666">pbackfail(int_type
+c)</font></blink></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (!takeFromBuf)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if (!traits_type::eq_int_type(c, traits_type::eof()))</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+charBuf = traits_type::to_char_type(c);</tt>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+takeFromBuf = true;</tt>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return traits_type::to_int_type(charBuf);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return traits_type::eof();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Angelika Langer, December 2002
+and Trebor A. Rude, February 2003</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="240"></a><b>page 240:</b>
+<br><i>An error has been introduced in the second printing. Change the
+signature of function <tt>underflow()</tt> to:</i>
+<p><tt>template &lt;class charT, class traits></tt>
+<br><tt><b><blink><font color="#FF6666">typename traits::int_type</font></blink></b>
+inbuf&lt;charT,traits>::underflow()</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Angelika Langer, May 2003</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="241"></a><b>page 241:</b>
+<br><i>The call to the <tt>min()</tt> algorithm in function <tt>buffer_in()</tt>
+requires a type conversion for the first argument. <tt>gptr()-eback()</tt>
+is of type <tt>int </tt>and<tt> pbSize </tt>is of type&nbsp;<tt> streamsize</tt>,
+but the <tt>min() </tt>algorithm asks for arguments of the same type. One
+option would be casting the <tt>int</tt> argument to type <tt>streamsize</tt>.&nbsp;
+Another option is explicit template argument specification for the <tt>min()
+</tt>template.&nbsp;
+We prefer the latter. Change the code to:</i>
+<p><tt>// determine number of putback characters</tt>
+<br><tt>streamsize numPutbacks = min<b><blink><font color="#FF6666">&lt;streamsize></font></blink></b>(gptr()
+- eback(), pbSize);</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Michael Harbeck, Siemens AG,
+Germany, May 2003</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="280"></a><b>page 280:</b>
+<br><i>Add a footnote to the example on page 280:</i>
+<p><tt>ctype&lt;char></tt>’s character classification member functions
+are based on a table, in which the character encoding is the key and a
+bitmask value of type <tt>ctype_base::mask </tt>is the value. The bitmask
+values indicate all classification criteria to which the character conforms.
+For example, a lowercase letter such as k is associated with the bit mask
+value
+<p><tt>&nbsp; ctype_base::alpha | ctype_base::lower | ctype_base::print<b><sup><blink><font color="#FF6666">1</font></blink></sup></b></tt>
+<p><tt><sup><b><blink><font color="#FF6666">1</font></blink></b> </sup></tt><font color="#000000"><font size=-1>There
+is an ambiguity in the C++ standard regarding the meaning of the character
+classification flags used by the ctype facet. The standard does not specify
+how or if the various character properties relate to each other in any
+way. The result of this ambiguity in the standard is that different implementations
+of the standard library do different things. Some implementations (e.g.
+SGI)&nbsp; require that you specify all character properties like in the
+example above: a lower case character would be classified as <tt>ctype_base::alpha
+| ctype_base::lower | ctype_base::print. </tt>Other implementations (e.g.
+Microsoft) allow that you only specify some of the properties and leave
+out others because they are implied: for a lower case character you would
+only have to specify <tt>ctype_base::alpha | ctype_base::lower</tt>; the
+property <tt>ctype_base::print </tt>can be omitted because all alphabetic
+characters are implicitly printable.&nbsp;</font></font>
+<p><font face="Trebuchet MS"><font size=-2>brought to our attention by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Matt Austern, April 2002 at
+the ACCU conference in Warwick, UK</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="303"></a><b>page 303:</b>
+<br><i>Typo in table 6-4. Change to:</i>
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<tr>
+<td>ctype</td>
+
+<td><tt>ctype_byname &lt;char></tt></td>
+
+<td><tt>ctype_byname &lt;wchar_t></tt></td>
+</tr>
+
+<tr>
+<td></td>
+
+<td><tt>codecvt_byname&lt;char,char, mbstate_t></tt></td>
+
+<td><tt><b><blink><font color="#FF6666">codecvt_byname</font></blink></b>&lt;wchar_t,char,</tt>
+<br><tt>mbstate_t></tt></td>
+</tr>
+</table>
+
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Helmut Zeisel, March 2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="330"></a><b>page 330:</b>
+<br><i>Missing arguments in call to narrow in code sample. Change to:</i>
+<p><tt>template &lt;class CharT></tt>
+<br><tt>class umlaut : public ctype_byname&lt;CharT></tt>
+<br><tt>{</tt>
+<br><tt>protected:</tt>
+<br><tt>&nbsp; virtual bool do_is_umlaut(CharT c) const</tt>
+<br><tt>&nbsp; { switch(<b><blink><font color="#FF6666">narrow(c,'?')</font></blink></b>)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; { case '&auml;': case '&ouml;': case '&uuml;':</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case '&Auml;': case '&Ouml;': case
+'&Uuml;': return true;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; default: return false;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp; explicit umlaut(size_t refs = 0) : ctype_byname&lt;CharT>("German",refs)
+{}</tt>
+<br><tt>&nbsp; bool is_umlaut(CharT c) const { return do_is_umlaut(c);
+}</tt>
+<br><tt>};</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Helmut Zeisel, March 2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="470"></a><b>page 470:</b>
+<br><i>The return type of showmanyc()is incorrect, due to a defect in the
+standard. Change to:</i>
+<p><tt>virtual <b><blink><font color="#FF6666">streamsize</font></blink></b>
+showmanyc();</tt>
+<p>Overrides the base class functionality if it is able to determine more
+available characters.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Christopher Currie, December
+2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="490"></a><b>page 490-491:</b>
+<br><i>The same typo in the description of all global functions: the functions
+return the reference to the stream, that is, i<tt>s</tt> instead of <tt>*this</tt>.&nbsp;</i>
+<p><i>Change the last two sentences in the description of the first 3 functions
+in the section </i><b><font face="Arial,Helvetica"><font size=-1>GLOBAL
+FUNCTIONS</font></font></b><i> to:</i>
+<p>The return value is <b><tt><blink><font color="#FF6666">is</font></blink></tt></b>.
+Failures are indicated by the stream state of <tt>is</tt>.
+<p><i>Change the last three sentences in the description of the remaining
+3 functions in the section </i><b><font face="Arial,Helvetica"><font size=-1>GLOBAL
+FUNCTIONS</font></font></b><i> to:</i>
+<p>When no characters are transferred, failure will be indicated by the
+state of <b><tt><blink><font color="#FF6666">is</font></blink></tt></b>,
+and <tt>*s</tt> will contain only the end-of-string character. The operation
+calls <tt>is.width(0)</tt> in any case. Returns <b><tt><blink><font color="#FF6666">is</font></blink></tt></b>.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Achim Kupferoth, Germany, December
+2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="491"></a><b>page 491:</b>
+<br><i>Typos in the description ofthe input stream manipulator <tt>ws</tt>.
+The manipulator is available not only for tiny character streams, but for
+any type of stream. Change to:</i>
+<p><b><font face="Arial,Helvetica"><font size=-1>INPUT STREAM MANIPULATORS</font></font></b>
+<p><tt>template &lt;<blink><font color="#FF6666">class charT,</font></blink>
+class traits></tt>
+<br><tt>&nbsp; basic_istream&lt;<blink><font color="#FF6666">charT</font></blink>,<blink><font color="#FF6666">traits</font></blink>>&amp;
+ws</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; (basic_istream&lt;<blink><font color="#FF6666">charT</font></blink>,<blink><font color="#FF6666">traits</font></blink>>&amp;
+is);</tt>
+<br>Manipulator that extracts whitespace characters from the input stream
+<tt>is</tt>.
+Extraction stops when the next character in the input stream is is not
+a whitespace character or no more characters are available. If the extraction
+stops because no more characters are available, <tt>ios_base::eofbit
+</tt>is
+set for <tt>is</tt>.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Achim Kupferoth, Germany, December
+2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="503"></a><b>page 503-505:</b>
+<br><i>The same typo in the description of all global functions: the functions
+return the reference to the stream, that is, <tt>os</tt> instead of <tt>*os</tt>.&nbsp;
+Change the last two sentences in the description of all functions in the
+section </i><b><font face="Arial,Helvetica"><font size=-1>GLOBAL FUNCTIONS</font></font></b><i>
+to:</i>
+<p>The return value is <b><tt><blink><font color="#FF6666">os</font></blink></tt></b>.
+Failures are indicated by the stream state of <tt>os</tt>.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Achim Kupferoth, Germany, December
+2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="505"></a><b>page 505:</b>
+<br><i>Typos in the description ofthe output stream manipulators. The manipulators
+are available not only for tiny character streams, but for any type of
+stream. Also, the character traits do not have a function <tt>eos()</tt>
+that would supply an end-of-string character; the end-of-string character
+is the default-constructed character of a character type. Change to:</i>
+<p><b><font face="Arial,Helvetica"><font size=-1>OUTPUT STREAM MANIPULATORS</font></font></b>
+<p><tt>template &lt;<blink><font color="#FF6666">class charT, </font></blink>class
+traits></tt>
+<br><tt>&nbsp; basic_ostream&lt;<blink><font color="#FF6666">charT</font></blink>,<blink><font color="#FF6666">traits</font></blink>>&amp;
+endl</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; (basic_ostream&lt;<blink><font color="#FF6666">charT</font></blink>,<blink><font color="#FF6666">traits</font></blink>>&amp;
+os);</tt>
+<br>Manipulator that calls first <tt>os.put(os.widen('\n'))</tt> and then
+<tt>os.flush()</tt>.
+Returns <tt>os</tt>.
+<p><tt>template &lt;<blink><font color="#FF6666">class charT,</font></blink>
+class traits></tt>
+<br><tt>&nbsp; basic_ostream&lt;<blink><font color="#FF6666">charT</font></blink>,<blink><font color="#FF6666">traits</font></blink>>&amp;
+ends</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; (basic_ostream&lt;<blink><font color="#FF6666">charT</font></blink>,<blink><font color="#FF6666">traits</font></blink>>&amp;
+os);</tt>
+<br>Manipulator that calls <tt>os.put(<blink><font color="#FF6666">charT()</font></blink>)</tt>
+and returns <tt>os</tt>.
+<p><tt>template &lt;<blink><font color="#FF6666">class charT,</font></blink>
+class traits></tt>
+<br><tt>&nbsp; basic_ostream&lt;<blink><font color="#FF6666">charT</font></blink>,<blink><font color="#FF6666">traits</font></blink>>&amp;
+flush</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; (basic_ostream&lt;<blink><font color="#FF6666">charT</font></blink>,<blink><font color="#FF6666">traits</font></blink>>&amp;
+os);</tt>
+<br>Manipulator that calls <tt>os.flush()</tt> and returns <tt>os</tt>.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Achim Kupferoth, Germany, December
+2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="509"></a><b>page 509:</b>
+<br><i>The return type of showmanyc()is incorrect, due to a defect in the
+standard. Change to:</i>
+<p><tt>// <b>get area</b>:</tt>
+<br><tt>char_type* eback() const;</tt>
+<br><tt>char_type* gptr() const;</tt>
+<br><tt>char_type* egptr() const;</tt>
+<br><tt>void gbump(int n);</tt>
+<br><tt>void setg(char_type* gbeg, char_type* gnext, char_type* gend);</tt>
+<br><tt>virtual <b><blink><font color="#FF6666">streamsize</font></blink></b>
+showmanyc();</tt>
+<br><tt>virtual streamsize xsgetn(char_type* s, streamsize n);</tt>
+<br><tt>virtual int_type underflow();</tt>
+<br><tt>virtual int_type uflow();</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Christopher Currie, December
+2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="510"></a><b>page 510:</b>
+<br><i>Under the section called "Get Area" function "inavail" should be
+"in_avail".&nbsp;</i>
+<p><b><font face="Arial,Helvetica"><font size=-1>GET AREA</font></font></b>
+<br><tt>streamsize <b><blink><font color="#FF6666">in_avail</font></blink></b>();</tt>
+<br>Returns the number of bytes available, i.e. <tt>egptr()-gptr()</tt>.
+If the get area does not exist or is empty (i.e. <tt>gptr()== 0 || eback()>=
+gptr()</tt>) <tt>this->showmanyc()</tt> is called and returns the result
+of this call.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Robert W. Hand, December 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="514"></a><b>page 514:</b>
+<br><i>The return type of showmanyc()is incorrect, due to a defect in the
+standard. Change to:</i>
+<p><tt>virtual <b><blink><font color="#FF6666">streamsize</font></blink></b>
+showmanyc();</tt>
+<p>Returns an estimation of the number of characters that are at least
+available from the input sequence or –1. If the operation returns –1, calls
+to <tt>this->underflow() </tt>and <tt>this->uflow()</tt> will fail. Otherwise
+the returned number of characters can be made available by one or more
+calls to <tt>this->underflow()</tt> or <tt>this->uflow()</tt>. The concrete
+handling depends on the specific derived class. <tt>basic_streambuf&lt;charT,
+traits>::showmanyc() </tt>always returns 0.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Christopher Currie, December
+2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="514"></a><b>page 514:</b>
+<br><i>The description of uflow() is perhaps a little too short. Change
+to:</i>
+<p><tt>virtual int_type <b>uflow</b>();</tt>
+<p>Handles the situation where the get area does not exist or is empty
+(i.e., <tt>gptr()== 0 || gptr() >= egptr()</tt>) and behaves like <tt>underflow()</tt>,
+but additionally increases the next pointer of the get area. The concrete
+handling depends on the specific derived class.
+<br><tt>basic_streambuf&lt;charT,traits>::uflow() </tt>always returns the
+failure indication <tt>traits_type::eof()</tt><b><blink><font color="#FF6666">,
+because it calls <tt>basic_streambuf&lt;charT,traits>::underflow()</tt>,
+which returns <tt>traits::eof()</tt>.&nbsp;</font></blink></b>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Michael Harbeck, Siemens AG,
+Germany, May 2003</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="564"></a><b>page 564:</b>
+<br><i>Typo in paragraph STAGE 1. Change to:</i>
+<p><tt>%p</tt>, if the extracted value is <b><blink><font color="#FF6666">stored</font></blink></b>
+as void*.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Helmut Zeisel, March 2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="566"></a><b>page 566:</b>
+<br><i>Typo in paragraph A.2 Parsing of bool Values. We used the logic
+<tt>&amp;&amp;</tt>
+operator where the bitwise <tt>&amp;</tt> operator was meant. Change to:</i>
+<p>If <tt>(str.flags() <b><blink><font color="#FF6666"><font size=+1>&amp;</font></font></blink></b>ios_base::boolalpha)==0</tt>,
+...
+<br>If <tt>(str.flags() <b><blink><font color="#FF6666"><font size=+1>&amp;</font></font></blink></b>ios_base::boolalpha)!=0</tt>,
+...
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Torsten Rennett, Ingenieurb&uuml;ro
+RENNETT, Germany, May 2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450>
+<br><a NAME="572"></a><b>page 572:</b>
+<br><i>Typos in the description of Stage 3, where<tt> ios_base::internal</tt>
+is mentioned. Change to:</i>
+<p>If <tt>(str.flags() &amp; ios_base::<b><blink><font color="#FF6666">adjustfield</font></blink></b>)
+== ios_base::<b><blink><font color="#FF6666">internal</font></blink></b></tt>,
+and a sign occurs in the character sequence created in stage 2, padding
+is done after the sign.
+<br>If <tt>(str.flags() &amp; ios_base::<b><blink><font color="#FF6666">adjustfield</font></blink></b>)
+== ios_base::<b><blink><font color="#FF6666">internal</font></blink></b></tt>,
+and a sign occurs in the character sequence created in stage <b><blink><font color="#FF6666">2</font></blink></b>
+began with <tt>0x</tt> or <tt>0X</tt>, padding is done after these two
+characters.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Achim Kupferoth, Germany, December
+2002</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 BORDER=0 height=1 width=450></td>
+</tr>
+
+<tr>
+<td></td>
+</tr>
+</table>
+<font size=-1></font>
+</body>
+</html>

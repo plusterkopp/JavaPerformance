@@ -1,0 +1,125 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Angelika Langer">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <title>Effective Java - Implementing equals()</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="AbstractEquals"></a>&nbsp;
+<div ALIGN=right><table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 COLS=1 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">ABSTRACT</font></b></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=0 COLS=1 WIDTH="95%" >
+<tr>
+<td>Functions such as equals(), compareTo(), hashCode(), clone(), and finalize()
+belong to the basic infrastructure that practically every class type must
+provide.&nbsp; Yet it is amazing how little agreement there is in the Java
+community as how to implement them correctly. Java gurus, such as recognized
+authors and experienced Java developers, are in serious disagreement regarding
+correct implementation of these methods.&nbsp;
+<p>In this tutorial we look into the semantics and implementation of the
+equals() method. For illustration of the related difficulties and misconceptions
+we study a number of implementations of equals() that have been published
+by recognized authors in their books or by experienced Java developers
+in commonly available Java source code. We will find that some of the implementations
+are incorrect, others are correct, and some are debatable and fragile.
+We aim to explain the different underlying strategies and to evaluate their
+up- and downsides. Eventually we condense our conclusions to a set of guidelines
+that help Java programmers to avoid common mistakes and to provide correct
+and robust implementations of equals().</td>
+</tr>
+</table></div>
+&nbsp;</td>
+</tr>
+</table></div>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">PREREQUISITES</font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLPADDING=5 WIDTH="95%" >
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Level:</font></i></b></td>
+
+<td>intermediate</td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td WIDTH="50%">90 min</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><i><font color="#295AB5">Prerequisites:</font></i></b></td>
+
+<td WIDTH="50%">Attendants should be familiar with the basic concepts of
+Java.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><b><i><font color="#295AB5">Presented at:</font></i></b></td>
+
+<td WIDTH="95%"><a href="PreviousEvents.html#JaCC2002">ACCU Conference
+2002</a>, Oxford, UK, April 2002
+<br><a href="PreviousEvents.html#OOPEurope">OOP Europe 2002</a>, Amsterdam,
+Netherlands, June 2002&nbsp;</td>
+</tr>
+</table></div>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=2 WIDTH="88%" >
+<tr>
+<td COLSPAN="2"><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar or
+skim through some further reading:</font></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminars</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Courses/EffectiveJava.htm"><img SRC="../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><a href="../Courses/EffectiveJava.htm">Effective Java&nbsp;</a>
+<br><font color="#000000"><font size=-1>4 day seminar&nbsp;</font></font>
+<br><font color="#000000"><font size=-1>(open enrollment and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+
+<td VALIGN=TOP><b><i><font color="#295AB5">Papers</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Articles/JavaSolutions/SecretsOfEquals/Equals.html"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=27 width=31></a></td>
+
+<td><a href="../Articles/JavaSolutions/SecretsOfEquals/Equals.html">Secrets
+of equals()</a>
+<br><font color="#000000"><font size=-1>pulished in Java Solutions - A
+Supplement of C/C++ Users Journal</font></font>
+<br><font color="#000000"><font size=-1>(April 2002)&nbsp;</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+</body>
+</html>

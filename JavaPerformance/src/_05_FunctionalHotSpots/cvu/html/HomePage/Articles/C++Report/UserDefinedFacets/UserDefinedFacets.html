@@ -1,0 +1,795 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <title>User-Defined Facets</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CppReportUserDefinedFacets"></a>
+<br><font color="#295AB5"><font size=+3>User-Defined Facets</font></font>
+<br><font color="#295AB5"><font size=+2>Extending the Locale Framework</font></font>
+<p><font color="#295AB5"><font size=+2>C++ Report, February 1998</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font><font color="#295AB5"><font size=+1></font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p>Locales and facets in the standard C++ library together form an extensible
+framework for support of internationalization. A short recap: A locale
+is a class that represents a container of facets; a facet is a class that
+contains information and provides functionality related to a certain aspect
+of internationalization. The standard library contains a number of standard
+facets. They support classification of characters, collation of character
+sequences, character code conversion, retrieval of message texts from message
+catalogues, and the parsing and formatting of structured information like
+numbers, monetary values, date, and time. The locale framework as a whole
+is designed to be extensible: user-defined facet types can be added. Locales
+are used by standard iostreams for parsing and formatting of numeric values
+and for code conversion.
+<p>In this article we will show you how user-defined facets can be added
+to the locale framework. We will demonstrate the technique of building
+facet classes and their usage in conjunction with the input and output
+streams of the standard library.
+<h2>
+<b><font size=+1>A facet for international address formats</font></b></h2>
+Locales are designed in a way that they can hold any information that varies
+on cultural conventions. All kinds of examples are conceivable, for instance:
+conversion of date and time according to time zones, types and sizes of
+paper sheets and envelopes, parsing and formatting of telephone numbers,
+conversion of weights and measures, and many more. In this column we will
+pick an arbitrary example: international address formats. Imagine a program
+that prints the address labels for an international mail order service.
+It should be capable to handle the differences between address formats.
+To illustrate the issue, we'll show you two examples of address formats.
+Most readers will probably be familiar with the US American way of formatting
+addresses. Here is the general pattern and an example for addresses in
+private mail exchange:
+<blockquote><tt><font size=-1>&lt;FirstName> &lt;SecondName> &lt;LastName></font></tt>
+<br><tt><font size=-1>&lt;Address1></font></tt>
+<br><tt><font size=-1>&lt;Address2></font></tt>
+<br><tt><font size=-1>&lt;City>, &lt;State> &lt;PostalCode></font></tt>
+<br><tt><font size=-1>[&lt;Country>]</font></tt>
+<br><tt><font size=-1>Angelika Sigrid Langer</font></tt>
+<br><tt><font size=-1>728 NW 12<sup>TH</sup> Street</font></tt>
+<br><tt><font size=-1>Corvallis, OR 97330</font></tt>
+<br><tt><font size=-1>U.S.A.</font></tt></blockquote>
+Now, in Germany addresses have a slightly different format: It is, for
+instance, not customary to print a person's second name. A country code
+is placed in front of the zip code separated by a hyphen. States are irrelevant.
+And so on and so forth. Here is the general pattern and an example of an
+address in Germany:
+<blockquote><tt><font size=-1>&lt;FirstName> &lt;LastName></font></tt>
+<br><tt><font size=-1>&lt;Address1></font></tt>
+<br><tt><font size=-1>&lt;Address2></font></tt>
+<br><tt><font size=-1>&lt;blank line></font></tt>
+<br><tt><font size=-1>[&lt;CountryCode>]-&lt;PostalCode> &lt;City></font></tt>
+<br><tt><font size=-1>Angelika Langer</font></tt>
+<br><tt><font size=-1>Weidener Stra&szlig;e 5</font></tt>
+<br><tt><font size=-1>D-81737 M&uuml;nchen</font></tt></blockquote>
+Of course, we cannot show you how to build a full-fledged address formatting
+facet in this article. Instead we will drastically simplify matters. We
+want to focus on the techniques of building any kind of user-defined facet,
+of integrating it into the standard locale framework, and of using it with
+standard iostreams. The address formatting facet is just an example for
+a generally applicable programming technique.
+<br>&nbsp;
+<h3>
+<b>The address class</b></h3>
+We start the implementation by introducing a simple address class. Actually
+it is a class template, because we want that the address representation
+is so flexible that it can consist of either wide or narrow character strings.
+For instance, it shall be capable of representing Japanese addresses that
+contain Kanji characters.
+<br>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=5 WIDTH="919" BORDERCOLOR="#000000" >
+<tr>
+<td VALIGN=TOP><font face="Courier New"><font size=-2>template&lt;class
+charT></font></font>
+<br><font face="Courier New"><font size=-2>class address</font></font>
+<br><font face="Courier New"><font size=-2>{</font></font>
+<blockquote><font face="Courier New"><font size=-2>friend ostream&amp;
+operator&lt;&lt;(ostream&amp; os, const address&lt;charT>&amp; ad);</font></font>
+<br><font face="Courier New"><font size=-2>typedef basic_string&lt;charT>
+String;</font></font>
+<p><font face="Courier New"><font size=-2>public:</font></font>
+<blockquote><font face="Courier New"><font size=-2>address(const String&amp;
+firstname, const String&amp; secname, const String&amp; lastname,</font></font>
+<br><font face="Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+const String&amp; address1, const String&amp; address2,&nbsp;</font></font>
+<br><font face="Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+const String&amp; town, const String&amp; zipcode,&nbsp;</font></font>
+<br><font face="Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+const String&amp; state, const String&amp; country, const String&amp; cntrycode)</font></font>
+<br><font face="Courier New"><font size=-2>: firstname_(firstname), secname_(secname),
+lastname_(lastname),address1_(address1),</font></font>
+<br><font face="Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+address2_(address2), town_(town), zipcode_(zipcode), state_(state),</font></font>
+<br><font face="Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+country_(country), cntrycode_(cntrycode) {}</font></font></blockquote>
+<font face="Courier New"><font size=-2>private:</font></font>
+<blockquote><font face="Courier New"><font size=-2>String firstname_;</font></font>
+<br><font face="Courier New"><font size=-2>String secname_;</font></font>
+<br><font face="Courier New"><font size=-2>String lastname_;</font></font>
+<br><font face="Courier New"><font size=-2>String address1_;</font></font>
+<br><font face="Courier New"><font size=-2>String address2_;</font></font>
+<br><font face="Courier New"><font size=-2>String town_;</font></font>
+<br><font face="Courier New"><font size=-2>String zipcode_;</font></font>
+<br><font face="Courier New"><font size=-2>String state_;</font></font>
+<br><font face="Courier New"><font size=-2>String country_;</font></font>
+<br><font face="Courier New"><font size=-2>String cntrycode_;</font></font></blockquote>
+</blockquote>
+<font face="Courier New"><font size=-2>};</font></font></td>
+</tr>
+</table>
+
+<center>
+<p><a NAME="_Ref397862666"></a><i><font size=-1>Listing 1: An address class</font></i></center>
+
+<p>The address class contains private data members that hold the various
+elements of an address. The constructor initializes these elements. An<font face="Courier,Courier New">operator&lt;&lt;()</font>,
+also called
+<i>inserter</i>, shall print addresses according to a stream's
+current locale object. It is a friend function of the address class.We
+will see its implementation later.
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+<b>The address formatting facet</b></h3>
+Now we come to the design and implementation of the address facet. In a
+previous article (/<a href="#1">1</a>/) we described the locale framework
+and explained that facets must have the following two properties: Facets
+have to be subclasses of class<font face="Courier,Courier New"> locale::facet.</font>
+Additionally, they must contain a <i>facet identification</i> in form of
+a static data member that is declared as <font face="Courier,Courier New">static
+locale::id id;</font> This identification is used for maintenance and retrieval
+of facets from a locale and identifies an entire family of facets: All
+facets with the same identification belong to the same facet family. A
+locale cannot contain two facets with identical identification. Hence,
+facets from the same family can only be replacements of each other. New
+types of facets can be added by either deriving from existing facet types,
+in which case the facet identification is inherited and the new facet belongs
+to an already existing facet family, or by defining a new facet class that
+has a facet identification of its own, in which case a new facet family
+is introduced.
+<p>In our example, address formatting shall be present in a locale additional
+to other internationalization facilities and is not meant to replace any
+existing information. Hence, we define a new facet family for address formatting
+by building a new facet type with an identification of its own.
+<p>Following the naming conventions of the standard, we call our address
+facet <font face="Courier,Courier New">address_put</font> because it handles
+the formatting of addresses. This is in line with the names of the standard
+facets <font face="Courier,Courier New">num_put</font> (formatting of numeric
+values), <font face="Courier,Courier New">money_put </font>(formatting
+of monetary values), and <font face="Courier,Courier New">time_put </font>(formatting
+of time and date). The formatting operation is a member function called
+<font face="Courier,Courier New">put()</font>.
+<p>For the implementation of <font face="Courier,Courier New">address_put</font>
+we follow the design and implementation idioms for formatting facets, that
+are established in the standard library:
+<ul>
+<li>
+<i>Output iterators</i>. Formatting operations in the standard library,
+like <font face="Courier,Courier New">num_put&lt;charT>::put(),</font>
+take an iterator to the begin of the output sequence as an argument. This
+approach allows a flexible solution and fits smoothly into the overall
+concept of the entire standard library, where iterators are used as generic
+connectors between independent components. (See <a href="#sidebar">sidebar</a>
+on stream and stream buffer iterators for more information.) In line with
+this policy we, too, use an output iterator to designate the target location
+of the formatted address string.</li>
+
+<br>In the standard library, the type of this output iterator is a template
+argument of the respective facet class template. By default, the output
+iterator type is a so-called <i>output stream buffer iterator</i>. It allows
+direct access to a stream buffer and is a sensible default for use of facets
+in iostreams. (See sidebar on stream and stream buffer iterators for more
+information.) We adopt this policy for the <font face="Courier,Courier New">address_put</font>
+facet and make it a class template taking the output iterator type as a
+template argument.
+<li>
+<i>Public and virtual protected interface</i>. An idiom used in many places
+throughout the standard library is delegation to protected virtual member
+functions. A public member function <font face="Courier,Courier New">foo()</font>
+calls a protected virtual function <font face="Courier,Courier New">do_foo(),</font>
+which does the real work. Derived classes can only overwrrite the protected
+virtual member function. Hence, the public member functioncan contain certain
+functionality that must not be changed in derived classes. A typical example
+for such functionality is the acquisition and release of a mutex lock,
+which would be needed to allow use of this facet in a multi-threaded environment.</li>
+
+<br>In our example, the public interface of the <font face="Courier,Courier New">address_put</font>
+class template contains a member function <font face="Courier,Courier New">put(),</font>
+which calls a protected virtual function <font face="Courier,Courier New">do_put(),</font>
+which does the real work. These functions take the output iterator that
+specifies the target location, and all elements that form the address (e.g.
+name, city, etc.) as parameters.</ul>
+Listing 2 shows the implementation of the <font face="Courier,Courier New">address_put</font>
+facet.
+<br>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=5 WIDTH="973" BORDERCOLOR="#000000" >
+<tr>
+<td VALIGN=TOP><font face="Courier New"><font size=-2>template&lt;class
+charT, class OutIter = ostreambuf_iterator&lt;charT> ></font></font>
+<br><font face="Courier New"><font size=-2>class address_put : public locale::facet&nbsp;</font></font>
+<br><font face="Courier New"><font size=-2>{</font></font>
+<blockquote><font face="Courier New"><font size=-2>typedef basic_string&lt;charT>
+String;</font></font></blockquote>
+<font face="Courier New"><font size=-2>public:</font></font>
+<blockquote><font face="Courier New"><font size=-2>typedef OutIter iter_type;</font></font>
+<br><font face="Courier New"><font size=-2>static locale::id id;</font></font>
+<br><font face="Courier New"><font size=-2>address_put(size_t refs = 0)
+: locale::facet(refs) {}</font></font>
+<br><font face="Courier New"><font size=-2>void put(OutIter oi,</font></font>
+<br><font face="Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+const String&amp; firstname, const String&amp; secname, const String&amp;
+lastname,</font></font>
+<br><font face="Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+const String&amp; address1, const String&amp; address2,</font></font>
+<br><font face="Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+const String&amp; town, const String&amp; zipcode, const String&amp; state,</font></font>
+<br><font face="Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+const String&amp; country, const String&amp; cntrycode) const</font></font>
+<br><font face="Courier New"><font size=-2>{&nbsp;</font></font>
+<blockquote><font face="Courier New"><font size=-2>do_put(oi, firstname,
+secondname, lastname,&nbsp;</font></font>
+<br><font face="Courier New"><font size=-2>address1, address2, town, zipcode,
+country, cntrycode);&nbsp;</font></font></blockquote>
+<font face="Courier New"><font size=-2>}</font></font></blockquote>
+<font face="Courier New"><font size=-2>protected:</font></font>
+<blockquote><font face="Courier New"><font size=-2>virtual void do_put
+(OutIter oi,</font></font>
+<br><font face="Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+const String&amp; firstname, const String&amp; secname, const String&amp;
+lastname,</font></font>
+<br><font face="Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+const String&amp; address1, const String&amp; address2,</font></font>
+<br><font face="Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+const String&amp; town, const String&amp; zipcode, const String&amp; state,</font></font>
+<br><font face="Courier New"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+const String&amp; country, const String&amp; cntrycode) const;</font></font>
+<br><font face="Courier New"><font size=-2>void put_string(OutIter oi,
+String s) const</font></font>
+<br><font face="Courier New"><font size=-2>{</font></font>
+<blockquote><font face="Courier New"><font size=-2>typename String::iterator
+si, end;</font></font>
+<br><font face="Courier New"><font size=-2>for (si=s.begin(), end= s.end();
+si!=end ; si++, oi++)</font></font>
+<br><font face="Courier New"><font size=-2>*oi = *si;</font></font></blockquote>
+<font face="Courier New"><font size=-2>}</font></font></blockquote>
+<font face="Courier New"><font size=-2>};</font></font></td>
+</tr>
+</table>
+
+<center>
+<p><a NAME="_Ref397862670"></a><a NAME="_Ref398354803"></a><i><font size=-1>Listing
+2: The address formatting facet</font></i></center>
+
+<p>In Listing 2:<b> The address formatting facet</b> above, you can see
+the design decisions made so far:
+<ul>
+<li>
+The new facet type is a class derived from<i> </i><font face="Courier,Courier New">locale::facet</font>
+with an identification of its own.</li>
+
+<li>
+It's a class template taking the character type and the output iterator
+type as parameters.</li>
+
+<li>
+It has a public<font face="Courier,Courier New"> put()</font> and a protected
+<font face="Courier,Courier New">do_put()</font>
+function. (The member function <font face="Courier,Courier New">put_string()</font>
+is a helper function that writes strings to an output iterator.)</li>
+</ul>
+Design options rejected, for sake of simplicity, were:
+<ul>
+<li>
+The patterns for international address formats could have been encapsulated
+into an <font face="Courier,Courier New">addresspunct</font> facet, similar
+to a <font face="Courier,Courier New">numpunct</font> or <font face="Courier,Courier New">moneypunct</font>
+facet. The "punct" facets in the standard library are used by related formatting
+and parsing facets for finding rules, pattern, and other information. We
+decided in favor of an alternative technique and put the knowledge about
+specific address pattern directly into the respective formatting operations,
+rather than factoring it out into a separate facet. This technique can
+be found in the standard library, too. It is demonstrated by the standard
+time and date facets <font face="Courier,Courier New">time_put</font> and
+<font face="Courier,Courier New">time_get</font>,
+which, unlike <font face="Courier,Courier New">num_put/num_get</font> and
+<font face="Courier,Courier New">money_put/money_get,</font>
+do not rely on a <font face="Courier,Courier New">timepunct</font> facet.</li>
+</ul>
+<b>Facets for different cultural areas</b>
+<p>So far, we've left open how a facet comes to represent the knowledge
+of a certain cultural area, i.e. what turns our address facet into a German
+or a US address facet? In the standard library, facets support the concept
+of <i>locale names</i>. These are strings that specify a cultural area,
+e.g. De_DE (for Germany) or En_US (for US English). The "byname" facets,
+like <font face="Courier,Courier New">num_put_byname</font>, <font face="Courier,Courier New">time_put_byname</font>,
+etc. take a locale name as argument to their constructor. They have the
+knowledge to retrieve the respective culture-dependent information from
+somewhere. "Somewhere" can be a database, or a couple of files, or anything
+else that a (library) vendor ships to provide the required information.
+It fully depends on the implementation of the facet. The C++ standard does
+not impose any requirements with regard to the maintenance of culture-dependent
+data. Not even the locale names are standardized.
+<p>To keep our example focused on extending the standard locale framework
+rather than the maintenance of culture-dependent data, we are going to
+use a different solution. Instead of putting all the intelligence into
+a "byname" facet, which would also force us into dealing with the maintenance
+of address format patterns in general, we derive an address facet for each
+specific cultural area from the base class template<font face="Courier,Courier New">
+address_put.</font> Also, we restrict the demonstration to US and German
+address formatting.
+<p>As we do not prefer any particular way of formatting over others, we
+refrain from defining a default formatting. For this reason we make the
+base class template an abstract base class by turning its <font face="Courier,Courier New">address_put&lt;>::do_put()</font>
+function into a pure virtual function with no implementation.
+<p>The derived class templates <font face="Courier,Courier New">US_address_put</font>
+and <font face="Courier,Courier New">German_address_put</font> can be found
+in Listing 3.
+<br>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=5 WIDTH="704" BORDERCOLOR="#000000" >
+<tr>
+<td VALIGN=TOP><font face="Courier New"><font size=-2>template&lt;class
+charT, class OutIter = ostreambuf_iterator&lt;charT> ></font></font>
+<br><font face="Courier New"><font size=-2>class address_put : public locale::facet&nbsp;</font></font>
+<br><font face="Courier New"><font size=-2>{</font></font>
+<blockquote><font size=-1>... // as in Listing 2:<b><i> The address formatting
+facet</i></b></font></blockquote>
+<font face="Courier New"><font size=-2>protected:</font></font>
+<blockquote><font face="Courier New"><font size=-2>virtual void do_put
+(OutIter oi,</font></font>
+<br><font face="Courier New"><font size=-2>const String&amp; firstname,
+const String&amp; secname, const String&amp; lastname,</font></font>
+<br><font face="Courier New"><font size=-2>const String&amp; address1,
+const String&amp; address2,</font></font>
+<br><font face="Courier New"><font size=-2>const String&amp; town, const
+String&amp; zipcode, const String&amp; state,</font></font>
+<br><font face="Courier New"><font size=-2>const String&amp; country, const
+String&amp; cntrycode) const = 0;</font></font></blockquote>
+<font face="Courier New"><font size=-2>};</font></font>
+<p><font face="Courier New"><font size=-2>template&lt;class charT, class
+OutIter = ostreambuf_iterator&lt;charT> ></font></font>
+<br><font face="Courier New"><font size=-2>class US_address_put : public
+address_put&lt;charT, OutIter>&nbsp;</font></font>
+<br><font face="Courier New"><font size=-2>{</font></font>
+<br><font face="Courier New"><font size=-2>public:</font></font>
+<blockquote><font face="Courier New"><font size=-2>US_address_put(size_t
+refs = 0) : address_put&lt;charT,OutIter>(refs) {}</font></font></blockquote>
+<font face="Courier New"><font size=-2>protected:</font></font>
+<blockquote><font face="Courier New"><font size=-2>void do_put(OutIter
+oi,</font></font>
+<br><font face="Courier New"><font size=-2>const String&amp; firstname,
+const String&amp; secname, const String&amp; lastname,</font></font>
+<br><font face="Courier New"><font size=-2>const String&amp; address1,
+const String&amp; address2,</font></font>
+<br><font face="Courier New"><font size=-2>const String&amp; town, const
+String&amp; zipcode, const String&amp; state,</font></font>
+<br><font face="Courier New"><font size=-2>const String&amp; country, const
+String&amp; cntrycode) const</font></font>
+<br><font face="Courier New"><font size=-2>{</font></font>
+<blockquote><font face="Courier New"><font size=-2>String s(firstname);</font></font>
+<br><font face="Courier New"><font size=-2>s.append(" ").append(secname).append("
+").append(lastname)</font></font>
+<br><font face="Courier New"><font size=-2>.append("\n");</font></font>
+<br><font face="Courier New"><font size=-2>s.append(address1).append("\n");</font></font>
+<br><font face="Courier New"><font size=-2>s.append(address2).append("\n");</font></font>
+<br><font face="Courier New"><font size=-2>s.append(town).append(", ").append(state).append("
+").append(zipcode)</font></font>
+<br><font face="Courier New"><font size=-2>.append("\n");</font></font>
+<br><font face="Courier New"><font size=-2>s.append(country).append("\n");</font></font>
+<br><font face="Courier New"><font size=-2>put_string(oi,s);</font></font></blockquote>
+<font face="Courier New"><font size=-2>}</font></font></blockquote>
+<font face="Courier New"><font size=-2>};</font></font>
+<p><font face="Courier New"><font size=-2>template&lt;class charT, class
+OutIter = ostreambuf_iterator&lt;charT> ></font></font>
+<br><font face="Courier New"><font size=-2>class German_address_put : public
+address_put&lt;charT, OutIter>&nbsp;</font></font>
+<br><font face="Courier New"><font size=-2>{</font></font>
+<br><font face="Courier New"><font size=-2>public:</font></font>
+<blockquote><font face="Courier New"><font size=-2>German_address_put(size_t
+refs = 0) : address_put&lt;charT,OutIter>(refs) {}</font></font></blockquote>
+<font face="Courier New"><font size=-2>protected:</font></font>
+<blockquote><font face="Courier New"><font size=-2>void do_put(OutIter
+oi,</font></font>
+<br><font face="Courier New"><font size=-2>const String&amp; firstname,
+const String&amp; secname, const String&amp; lastname,</font></font>
+<br><font face="Courier New"><font size=-2>const String&amp; address1,
+const String&amp; address2,</font></font>
+<br><font face="Courier New"><font size=-2>const String&amp; town, const
+String&amp; zipcode, const String&amp; state,</font></font>
+<br><font face="Courier New"><font size=-2>const String&amp; country, const
+String&amp; cntrycode) const</font></font>
+<br><font face="Courier New"><font size=-2>{</font></font>
+<blockquote><font face="Courier New"><font size=-2>String s(firstname);</font></font>
+<br><font face="Courier New"><font size=-2>s.append(" ").append(lastname).append("\n");</font></font>
+<br><font face="Courier New"><font size=-2>s.append(address1).append("\n");</font></font>
+<br><font face="Courier New"><font size=-2>s.append(address2).append("\n");</font></font>
+<br><font face="Courier New"><font size=-2>s.append("\n");</font></font>
+<br><font face="Courier New"><font size=-2>s.append(cntrycode).append("-").append(zipcode).append("
+").append(town)</font></font>
+<br><font face="Courier New"><font size=-2>.append("\n");</font></font>
+<br><font face="Courier New"><font size=-2>put_string(oi,s);</font></font></blockquote>
+<font face="Courier New"><font size=-2>}</font></font></blockquote>
+<font face="Courier New"><font size=-2>};</font></font></td>
+</tr>
+</table>
+
+<center>
+<p><a NAME="_Ref397940870"></a><i><font size=-1>Listing 3: The US and the
+German address formatting facets</font></i></center>
+
+<p>The core of these address facets is the implementation of the respective<font face="Courier,Courier New">do_put()
+</font>function.
+<font face="Courier,Courier New">do_put()
+</font>concatenates
+the address elements to one large address string, according to US and German
+address formatting rules respectively. The helper function
+<font face="Courier,Courier New">address_put&lt;>::put_string()
+</font>then
+writes the formatted string to the output iterator.
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+<b>The address inserter</b></h3>
+Eventually, we are going to implement the already mentioned stream inserter
+for the address class. Its implementation, shown in Listing 4:<i> The inserter
+for addresses</i>, is a simplified one, focused on the usage of the newly
+defined <font face="Courier,Courier New">address_put</font> facet.
+<br>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=5 WIDTH="691" BORDERCOLOR="#000000" >
+<tr>
+<td VALIGN=TOP><font face="Courier,Courier New"><font size=-2>friend ostream&amp;
+operator&lt;&lt;(ostream&amp; os, const address&lt;charT>&amp; ad)</font></font>
+<br><font face="Courier,Courier New"><font size=-2>{</font></font>
+<blockquote><font face="Courier,Courier New"><font size=-2>locale loc =
+os.getloc();</font></font>
+<br><font face="Courier,Courier New"><font size=-2>try</font></font>
+<br><font face="Courier,Courier New"><font size=-2>{</font></font>
+<blockquote><font face="Courier,Courier New"><font size=-2>const address_put&lt;charT>&amp;
+apFacet = use_facet&lt;address_put&lt;charT> > (loc);</font></font>
+<br><font face="Courier,Courier New"><font size=-2>apFacet.put(os, ad.firstname_,
+ad.secname_, ad.lastname,</font></font>
+<br><font face="Courier,Courier New"><font size=-2>ad.address1_, ad.address2_,
+ad.town_, ad.zipcode_, ad.state_&nbsp;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>ad.country_, ad.cntrycode);</font></font></blockquote>
+<font face="Courier,Courier New"><font size=-2>}</font></font>
+<br><font face="Courier,Courier New"><font size=-2>catch (bad_cast&amp;)</font></font>
+<br><font face="Courier,Courier New"><font size=-2>{</font></font>
+<blockquote><font face="Courier,Courier New"><font size=-2>// locale does
+not contain a address_put facet ;</font></font></blockquote>
+<font face="Courier,Courier New"><font size=-2>}</font></font>
+<br><font face="Courier,Courier New"><font size=-2>return (os);</font></font></blockquote>
+<font face="Courier,Courier New"><font size=-2>}&nbsp;</font></font></td>
+</tr>
+</table>
+
+<center>
+<p><a NAME="_Ref398355145"></a><i><font size=-1>Listing 4: The inserter
+for addresses</font></i></center>
+
+<p>For culture-sensitive address formatting, the inserter must retrieve
+the address formatting facet from the stream's current locale. Streams
+have a member function<i> </i><font face="Courier,Courier New">getloc()</font>
+that returns the stream's locale object. From that locale the address facet
+can be retrieved via the template function <font face="Courier,Courier New">use_facet&lt;Facet>(),</font>
+as was explained in /<a href="#1">1</a>/. Note, that the user-defined address
+formatting facet <font face="Courier,Courier New">address_put</font> is
+retrieved in the exactly the same way as it would be done for any standard
+facet.
+<p>The inserter then calls the facet's <font face="Courier,Courier New">put()</font>
+function and delegates the actual formatting to it. All the elements of
+an address are passed as arguments to the <font face="Courier,Courier New">put()</font>
+function. The first argument to <font face="Courier,Courier New">put()</font>
+is expected to be the iterator designating the begin of the output sequence.
+A stream buffer iterator pointing to the current position of the output
+stream can be created from a reference to an output stream. (See sidebar
+on stream and stream buffer iterators for more information.) Hence we pass
+in the stream itself. The implicit conversion mechanism for function arguments
+in C++ cares for construction of an output stream buffer iterator.
+<br>&nbsp;
+<h3>
+<b>Equipping locales with address facets</b></h3>
+
+<p><br>We have seen above how a an<font face="Courier,Courier New"> address_put</font>
+facet is retrieved from a locale object. In addition to retrieval, we need
+to consider ways and means of storing address facets in locale objects
+in the first place. In /1/ we explained that locales are immutable objects.
+Facets are stuffed into a locale when the locale object is created and
+cannot be replaced or added later on. Locale objects are build by composition:
+You start off with the copy of an existing locale and replace and add facets
+to create a new locale object.
+<p>In our example, we want to equip a "standard" locale, i.e. one that
+contains all standard facets for a cultural environment, with an additional
+address formatting facet.
+<p>A standard locale can be created by means of the following constructor:
+<br>&nbsp;
+<blockquote><tt>explicit locale(const char* name);</tt></blockquote>
+
+<p><br>It constructs a locale object, that contains all standard facets
+for a cultural environment specified by the locale name.
+<p>A new locale object containing all facets from an existing locale object,
+plus an additional new facet, can be composed via the following locale
+member template constructor:
+<dir><tt>template&lt;class Facet> locale(const locale&amp; other, Facet*
+facetPtr);</tt></dir>
+To add an <font face="Courier,Courier New">US_address_put</font> facet
+object to the locale that contains all standard US facets, we have to write:
+<dir><tt>locale usLocaleWithAddressPut(locale("En_US"), new US_address_put&lt;char,
+osIter>);</tt></dir>
+
+<h3>
+<b>Putting the pieces together</b></h3>
+
+<p><br>Listing 5: <i>Printing an address according to international address
+formats </i>shows a function that puts all the elements together. It receives
+an output stream, an address, and a locale name. The output stream is temporarily
+"imbued" with a locale that has an address facet, before the address is
+eventually inserted into the stream.
+<br>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=5 WIDTH="926" BORDERCOLOR="#000000" >
+<tr>
+<td VALIGN=TOP><font face="Courier,Courier New"><font size=-2>void printAddressWithoutFactory(ostream&amp;
+os, const address&lt;char>&amp; add, const string locname)</font></font>
+<br><font face="Courier,Courier New"><font size=-2>{</font></font>
+<blockquote><font face="Courier,Courier New"><font size=-2>locale::facet*
+addr_put = 0;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>if (locname == "En_US")</font></font>
+<blockquote><font face="Courier,Courier New"><font size=-2>addr_put = new
+US_address_put&lt;char>;</font></font></blockquote>
+<font face="Courier,Courier New"><font size=-2>else if (locname == "De_DE")</font></font>
+<blockquote><font face="Courier,Courier New"><font size=-2>addr_put = new
+German_address_put&lt;char>;</font></font></blockquote>
+<font face="Courier,Courier New"><font size=-2>if (addr_put)</font></font>
+<br><font face="Courier,Courier New"><font size=-2>{&nbsp;</font></font>
+<blockquote><font face="Courier,Courier New"><font size=-2>locale original
+= os.imbue(locale(locale(locname.c_str()),addr_put));</font></font>
+<br><font face="Courier,Courier New"><font size=-2>os &lt;&lt; add &lt;&lt;endl;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>os.imbue(original);</font></font></blockquote>
+<font face="Courier,Courier New"><font size=-2>}</font></font>
+<br><font face="Courier,Courier New"><font size=-2>else&nbsp;</font></font>
+<blockquote><font face="Courier,Courier New"><font size=-2>os &lt;&lt;
+add &lt;&lt;endl;</font></font></blockquote>
+</blockquote>
+<font face="Courier,Courier New"><font size=-2>}</font></font></td>
+</tr>
+</table>
+
+<center>
+<p><a NAME="_Ref399560886"></a><i><font size=-1>Listing 5:&nbsp;<a NAME="_Ref397942030"></a>Printing
+an address according to international address formats</font></i></center>
+
+<p><br>
+<br>
+<h2>
+<b>Summary</b></h2>
+In this column we demonstrated a technique for adding arbitrary, user-defined
+facets to the locale framework in the standard library and their usage
+in conjunction with iostreams. The example of choice was an address formatting
+facet. The technique itself, however, is more general and can be applied
+to arbitrary facet types. Here is a wrap-up of the essentials:
+<dir><i>Mandatory.</i> It is required that a user-defined facet type is
+derived from class <font face="Courier,Courier New">locale::facet</font>
+and has a facet identification in form of a static data member named <font face="Courier,Courier New">id</font>
+of type <font face="Courier,Courier New">locale::id</font>.
+<p><i>Recommended</i>. (1) A facet name should follow the naming conventions
+of the standard facets.
+<ol>
+<li>
+Formatting and parsing operations should access source or destination via
+iterators. Formatting and parsing facets should be templatized on the iterator
+type and use stream buffer iterators as a default.</li>
+
+<li VALUE="1">
+Public member function should delegate to protected member functions.</li>
+</ol>
+</dir>
+
+<h2>
+<b>References</b></h2>
+
+<ol>
+<li>
+<a NAME="1"></a>Klaus Kreft &amp; Angelika Langer</li>
+
+<br>The Locale Framework
+<br>C++ Report, September 1997</ol>
+
+<ol>
+<li>
+<a NAME="2"></a>Klaus Kreft &amp; Angelika Langer</li>
+
+<br>Standard C++ Locale II - The Standard Facets
+<br>C++ Report, November 1997</ol>
+
+<ol>
+<li>
+X/Open Consortium.</li>
+
+<br>X/Open Guide: Internationalization Guide</ol>
+
+<ol>
+<li>
+Nadine Kano</li>
+
+<br>Developing International Software for Windows 95 and Windows NT
+<br>Microsoft Press</ol>
+
+<ol>
+<li>
+David Schmitt</li>
+
+<br>International Programming for Windows
+<br>Microsoft Press , April 2000</ol>
+
+<ol>
+<li>
+Erich Gamma, et. al.</li>
+
+<br>Design Patters: elements of reusable object-oriented software
+<br>Addison-Wesley</ol>
+
+<ol>
+<li>
+INTERNATIONAL STANDARD</li>
+
+<br>Programming languages - C++
+<br>ISO/IEC IS 14882:1998(E)</ol>
+
+<table BORDER CELLSPACING=2 CELLPADDING=5 WIDTH="960" BORDERCOLOR="#000000" >
+<tr>
+<td VALIGN=TOP BGCOLOR="#000000">
+<h1>
+<a NAME="sidebar"></a><b><font color="#FFFFFF"><font size=+1>Sidebar: Stream
+and Stream Buffer Iterators</font></font></b></h1>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP BGCOLOR="#EAEAEA">
+<h1>
+<b><font size=+1>Iterators in general</font></b></h1>
+<b>I</b>terators are pointer-like objects that allow to traverse a sequence
+of elements of the same type and to access these elements without any further
+knowledge of the sequence and the way it is organized. Iterators were introduced
+into the Standard C++ Library with the adoption of the STL (= the Standard
+Template Library) as part of the standard. Therefore, iterators are typically
+used for access to the library’s generic containers, such as <font size=-2><font face="Courier,Courier New">list&lt;class
+T></font>, <font face="Courier,Courier New">map&lt;class T></font>, and
+<font face="Courier,Courier New">vector&lt;class
+T></font>.&nbsp;</font>
+<p><b><font size=+1>Iterator categories</font></b>
+<p>According to their properties, iterator are classified into five iterator
+categories. Their characteristics in brevity:
+<ul>
+<li>
+<b>Input iterators</b> allow algorithms to advance the iterator and give
+"read only" access to the value.</li>
+
+<li>
+<b>Output iterators</b> allow algorithms to advance the iterator and give
+"write only" access to the value.</li>
+
+<li>
+<b>Forward iterators</b> combine read and write access, but only in one
+direction (i.e., forward).</li>
+
+<li>
+<b>Bi-directional iterators</b> allow algorithms to traverse the sequence
+in both directions, forward and backward.</li>
+
+<li>
+<b>Random access iterators</b> allow jumps and "pointer arithmetics".</li>
+</ul>
+Each category adds new features to the previous one. The iterator categories
+obey the following order:
+<center>
+<p><img SRC="Image12.gif" height=134 width=164></center>
+
+<p>Note that an iterator category is an abstraction. It represents a set
+of requirements to an iterator.&nbsp;
+<p><b>Iterator ranges</b>
+<p>Related to iterators is the notion of iterator ranges. An iterator range
+is a pair of iterators. The first iterator designates the begin of a sequence;
+the second iterator points to the element past the end of the sequence.
+It is important to keep in mind that the end iterator is always pointing
+to the past-the-end element of a sequence, which need not be a valid, accessible
+element. Therefore, never dereference the end iterator!</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP BGCOLOR="#EAEAEA"><b>Stream and Stream Buffer Iterators</b>
+<p>The principle of accessing collections of elements through iterators
+was extended to sequences other than the STL containers. Stream iterators
+and stream buffer iterators are examples of such extensions. They fall
+into the input and output iterator categories.
+<p><i>Creation of the begin iterator.</i> A stream or stream buffer iterator
+pointing to the current position of an output or input stream can be created
+from the stream itself. This is possible because stream and stream buffer
+iterators have a constructor taking a reference to a stream object.&nbsp;
+<p><i>Creation of the end iterator</i>. An input stream or stream buffer
+iterator designating the end of an input stream can be created via the
+default constructor for input stream or stream buffer iterators. Default
+constructors of iterators by convention always create an iterator pointing
+to the position one step past the end of the sequence.
+<p>Stream iterators allow to see a stream as a sequence of elements of
+type <font face="Courier,Courier New">T</font>, that are extracted from
+or inserted to a stream while traversing the stream. The stream iterator
+types in the standard library are<font face="Courier,Courier New"> istream_iterator
+</font>and
+<font face="Courier,Courier New">ostream_iterator</font>.
+Here is a example for using stream iterators. All elements of a vector
+are read from the input stream <font face="Courier,Courier New">cin</font>
+and written to the output stream <font face="Courier,Courier New">cout</font>:
+<dir><font face="Courier,Courier New"><font size=-1>vector&lt;string> names;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>istream_iterator&lt;string>
+begin(cin),end();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>for (istream_iterator&lt;string>
+i = begin; i != end; i++)</font></font>
+<dir><font face="Courier,Courier New"><font size=-1>names.push_back(*i);</font></font></dir>
+<font face="Courier,Courier New"><font size=-1>ostream_iterator&lt;string>
+out(cout,"\n");</font></font>
+<br><font face="Courier,Courier New"><font size=-1>for (vector&lt;string>::iterator
+i = names.begin(); i != names.end(); i++,out++)</font></font>
+<dir><font face="Courier,Courier New"><font size=-1>*out = *i;</font></font></dir>
+</dir>
+Stream buffer iterators see a stream buffer as a sequence of characters
+and thus allow to traverse a stream buffer character by character. All
+formatting and parsing facets in the Standard C++ Library access their
+source or destination directly via stream buffer iterators. The stream
+buffer iterator types in the standard library are <font face="Courier,Courier New">istreambuf_iterator</font>
+and <font face="Courier,Courier New">ostreambuf_iterator.</font>
+<p>Formatting operations, like <font face="Courier,Courier New">num_put&lt;charT>::put(),</font>
+take one iterator, the iterator to the begin of the output sequence. Parsing
+operations like <font face="Courier,Courier New">num_get&lt;charT>::get()</font>
+take an iterator range designating begin and end of the subsequence of
+characters to be parsed.</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+<font size=-1></font>
+<br>&nbsp;
+</body>
+</html>

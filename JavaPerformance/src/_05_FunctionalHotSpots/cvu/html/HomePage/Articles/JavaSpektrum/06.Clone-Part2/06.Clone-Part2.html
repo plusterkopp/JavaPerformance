@@ -1,0 +1,764 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Pre-Copyedit Version of Article in JavaSpektrum, November 2002">
+   <meta name="KeyWords" content="Java clone copy Effective Java">
+   <title>Implementing the clone() Method  - Part 2</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="EffectiveJava06"></a>
+<br><font color="#295AB5"><font size=+3>Das Kopieren von Objekten in Java</font></font>
+<br><font color="#295AB5"><font size=+2>Teil 2: Wie implementiert man die
+clone() Methode?</font></font>
+<p><font color="#295AB5"><font size=+2>JavaSPEKTRUM, November 2002</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p><b>Im letzten Artikel /<a href="#Kreft1">KRE1</a>/ dieser Serie haben
+wir uns angesehen, warum das Kopieren in Java &uuml;berhaupt eine Rolle
+spielt. Wir haben verschiedene Kopier-Techniken gesehen (im wesentlichen
+Klonen und Copy-Konstruktion) und festgestellt, dass es empfehlenswert
+ist, zumindest f&uuml;r ver&auml;nderliche Value-Typen die clone()-Methode
+immer zu implementieren.&nbsp; Wir haben die Anforderung an clone() (den
+sogenannten clone()-Contract) gesehen und uns &uuml;berlegt, wie tief eine
+Kopie sinnvollerweise sein sollte.</b>
+<p><b>Worauf man achten muss, wenn man clone()implementiert, werden wir
+in der dieser Ausgabe der Kolumne untersuchen.</b>
+<br><b>Insbesondere in Klassenhierarchien ergeben sich weitere Anforderungen
+und Komplikationen, die wir uns im Detail ansehen werden. Dabei werden
+wir die besondere Rolle untersuchen, die Object.clone() bei der Implementierung
+von clone() spielt. Wir werden au&szlig;erdem sehen, wo die Copy-Konstruktion
+als Alternative zum Klonen ihre Grenzen hat. Und schlie&szlig;lich werden
+wir noch zeigen, dass final-Felder beim Klonen besondere Probleme bereiten.</b>
+<br>&nbsp;
+<h2>
+<b>Prinzipien der Implementierung von clone()</b></h2>
+Versuchen wir uns an einer Implementierung von clone(). Beginnen wir mit
+der Signatur.
+<h3>
+Die Signatur von clone() und die CloneNotSupportedException</h3>
+Ein Klasse, die die clone()-Methode implementieren will, muss normalerweise
+das Cloneable-Interface implementieren. Das Cloneable-Interface ist ein
+leeres Marker-Interface, das dazu verwendet wird, um klonbare von nicht-klonbaren
+Objekten zu unterscheiden.&nbsp; Da das Cloneable-Interface leer ist, gibt
+es keine zwingende Vorschrift, was die Signatur der clone()-Methode einer
+Klasse angeht.&nbsp; Aus diesem Grunde verwenden viele Programmierer die
+Signatur von Object.clone(), n&auml;mlich
+<p><tt>Object clone() throws CloneNotSupportedException;</tt>
+<p>Den Return- und den Argumenttyp betreffend gibt es keine Diskussionen.
+Man will die protected Version der Superklasse Object mit einer public
+Version &uuml;berschreiben, also m&uuml;ssen Returntyp und Argumentenliste
+exakt dieselben sein wie in Object.clone().&nbsp; Aber &uuml;ber die Exception-Liste
+kann man geteilter Meinung sein.
+<p>Es ist ein offensichtlicher Widerspruch, in einer Klasse eine public-Methode
+clone() zu implementieren, gerade mit dem Ziel, das Klonen zu unterst&uuml;tzen,
+und dann gleichzeitig zu sagen: diese Klasse unterst&uuml;tzt das Klonen
+eigentlich gar nicht und wird unter Umst&auml;nden eine CloneNotSupportedException
+werfen. Das ist unlogisch und aus diesem Grunde deklariert man die clone()-Methode
+typischerweise als Methode, die keine checked Exceptions wirft (und damit
+insbesondere keine CloneNotSupportedException).<sup>[<a href="#1">1</a>]</sup>
+<p><a NAME="1"></a>[1] <font size=-2>Zu den Vor- und Nachteilen von unchecked
+und checked Exceptions und deren Verwendung aus Design-Sicht findet man
+interessante &Uuml;berlegungen in Buch von Barbara Liskov (siehe /<a href="#Liskov">LIS</a>/).</font>
+<p>In der Praxis findet man trotz des offensichtlichen Widerspruchs Implementierungen
+von clone(), die zwar deklarieren, dass sie eine CloneNotSupportedException
+werfen k&ouml;nnten, aber dann niemals eine solche werfen.&nbsp; Wegen
+dieser verwirrenden Situation werden wir den n&auml;chsten Beitrag in dieser
+Kolumne ausschlie&szlig;lich der CloneNotSupportedException widmen. In
+diesem Artikel wollen wir clone() implementieren und wir werden es aus
+oben geschilderten Gr&uuml;nden ohne throws-Klausel deklarieren und auch
+so implementieren.
+<br>&nbsp;
+<h3>
+Die Funktionalit&auml;t von clone()</h3>
+Die Anforderungen an die Funktionalit&auml;t von clone() haben wir uns
+im letzten Artikel bereits angesehen.&nbsp; Im wesentlichen bestehen sie
+darin, dass clone() ein neues Objekt anlegen muss, das inhaltlich gleich
+dem Original, aber vom Original unabh&auml;ngig&nbsp; ist.
+<p>Dabei bedeutet "unabh&auml;ngig", dass die Kopie so tief sein muss,
+dass jedwede Manipulation des Klons das Original nicht betrifft und umgekehrt.&nbsp;
+Das l&auml;uft darauf hinaus, dass alle Referenzen verfolgt und die referenzierten
+Objekte kopiert werden m&uuml;ssen, es sei denn, sie sind unver&auml;nderlich.&nbsp;
+Im Falle von unver&auml;nderlichen Feldern reicht es, nur die Referenzen,
+nicht aber die referenzierten Objekte zu kopieren.
+<p>Die geforderte "inhaltliche Gleichheit" bedeutet "Gleichheit im Sinne
+von equals()", d.h. der Vergleich von Klon und Original mit Hilfe von equals()muss
+true liefern.
+<p>Um die geforderte Funktionalit&auml;t zu liefern, m&uuml;ssen folgende
+Aufgaben von der Implementierung einer clone()-Methode erledigt werden:
+<ul>
+<li>
+Die Methode muss Speicher beschaffen f&uuml;r den Klon.</li>
+
+<li>
+Sie muss alle relevanten Felder in ausreichender Tiefe kopieren.</li>
+
+<li>
+</li>
+</ul>
+
+<h4>
+Speicherbeschaffung</h4>
+F&uuml;r die Speicherbeschaffung ist Object.clone() zust&auml;ndig. Deshalb
+muss jede Implementierung von clone() als erstes super.clone() aufrufen,
+damit rekursiv am Ende Object.clone() angesto&szlig;en wird.&nbsp; Object.clone()
+beschafft den Speicher f&uuml;rs gesamte Objekt (abh&auml;ngig vom Laufzeittyp)
+und f&uuml;llt diesen Speicher mit einer bitweise Kopie des Originals.&nbsp;
+Die Details der Speicherbeschaffung und -initialisierung sehen wir uns
+sp&auml;ter noch an.
+<p>Wir haben im letzten Artikel schon festgestellt, dass diese bitweise
+Kopie nur in wenigsten F&auml;llen eine ausreichend tiefe Kopie ist. Immer
+wenn die Klasse Felder hat, die Referenzen auf modifizierbare Objekte sind,
+dann m&uuml;ssen sich die clone()-Methoden der Subklassen anschlie&szlig;end
+noch um das Herstellen der hinreichend tiefen Kopie k&uuml;mmern.
+<br>&nbsp;
+<h4>
+Kopieren der relevanten Felder</h4>
+Jede clone()-Methode muss also super.clone() aufrufen und sich danach um
+die Felder der eigenen Klasse k&uuml;mmern. F&uuml;r die Felder von primitiven
+Typ ist nichts zu tun, weil Object.clone() diese Felder bereits mit einer
+Kopie der Felder des Originals gef&uuml;llt hat, was f&uuml;r primitive
+Felder ausreichend ist.&nbsp; Bei den Feldern, die Referenzen sind, k&ouml;nnen
+diejenigen ignoriert werden, die auf unver&auml;nderliche Objekte zeigen.
+Sie sind bereits durch Object.clone() in ausreichender Tiefe kopiert worden,
+indem die Adresse kopiert wurde.&nbsp; Dadurch kommt es zwar zu einem Object-Sharing
+zwischen Klon und Original, weil beide auf dasselbe unver&auml;nderliche
+Objekt verweisen. Aber das ist unproblematisch, weil das gemeinsam referenzierte
+Objekt sich niemals &auml;ndern kann. Es bleiben also nur noch die Felder
+&uuml;brig, die auf ver&auml;nderliche Objekte verweisen.&nbsp; Diese Felder
+m&uuml;ssen nach dem Aufruf von super.clone() in ausreichender Tiefe kopiert
+werden.
+<br>&nbsp;
+<h4>
+Die besonderen Eigenschaften von Object.clone()</h4>
+Schauen wir uns die Speicherbeschaffung durch Object.clone() noch einmal
+an.&nbsp; Kann man den Speicher nicht auch einfach per new beschaffen statt
+Object.clone() zu rufen? Das funktioniert in der Tat bei Klassen, die als
+final deklariert sind, macht aber bei einer non-final Klasse keinen Sinn.&nbsp;
+Sehen wir uns das fehlerhafte Beispiel einer non-final Klasse an:
+<p><tt>class MyClass {</tt>
+<br><tt>&nbsp;&nbsp; private int aField;</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public Object clone() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; MyClass tmp = new MyClass();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; tmp.aField = aField;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; ... copy all remaining fields to tmp ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return tmp;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Soweit ist das noch in Ordnung, aber sobald eine Subklasse abgeleitet
+wird, gibt es Probleme:
+<p><tt>class MySubClass extends MyClass {</tt>
+<br><tt>&nbsp;&nbsp; private Object anotherField;</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public Object clone() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; MySubClass tmp = ... allocate memory ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; ... copy all fields to tmp ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return tmp;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Diese Subklasse muss Speicher f&uuml;r den Klon beschaffen und dann
+noch alle Felder kopiere, um den Klon zur Kopie des Originals zu machen.
+Dazu m&uuml;ssen nicht nur die eigenen Felder kopiert werden, sondern auch
+die von der Superklasse geerbten Felder.&nbsp; Auf die geerbten Felder,
+die in der Superklasse als private deklariert sind, hat die Subklasse keinen
+Zugriff, deshalb muss sie an die entsprechende Methode der Superklasse
+delegieren. Man w&uuml;rde also super.clone() rufen wollen, insbesondere
+da super.clone() sowieso Speicher beschafft. Hier ist der Versuch eines
+Aufrufs von super.clone():
+<p><tt>class MySubClass extends MyClass {</tt>
+<br><tt>&nbsp;&nbsp; private Object anotherField;</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public Object clone() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; MySubClass tmp = (MySubClass) super.clone();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; ... copy all fields to tmp ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return tmp;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Diese Implementierung wird nat&uuml;rlich eine ClassCastException ausl&ouml;sen,
+weil super.clone() zwar eine Object-Referenz zur&uuml;ck gibt, die aber
+auf ein Objekt vom Supertyp MyClass verweist. Die Methode MyClass.clone()
+beschafft zwar Speicher, aber nicht genug; sie erzeugt ein kleineres Objekt,
+n&auml;mlich ein Superklassen-Objekt.&nbsp; Was wir aber brauchen, ist
+die Beschaffung von Speicher f&uuml;r das gr&ouml;&szlig;ere Subklassen-Objekt.&nbsp;
+Das kann die Superklassen-Methode MyClass.clone() aber nicht leisten, weil
+die Superklasse keine Kenntnis vom der abgeleiteten Subklasse hat.
+<p>Die Methode Object.clone() hingegen hat die besondere Eigenschaft, dass
+sie Speicher in der richtigen Menge abh&auml;ngig vom Laufzeittyp des Objekts
+beschafft und das ganze Objekt bereits als bitweise Kopie des Originals
+f&uuml;llt.&nbsp; Das Ergebnis von Object.clone() ist ein Objekt vom richtigen
+Typ in der richtigen Gr&ouml;&szlig;e mit teilweise n&uuml;tzlichem Inhalt.&nbsp;
+Weil Object.clone() diese besondere Funktionalit&auml;t hat, sollte man
+daf&uuml;r sorgen, dass diese Methode auch aufgerufen wird, damit sie ihre
+Aufgaben &uuml;bernehmen kann.&nbsp; Man kann sich sicher auch alternative
+Implementierungen von clone() &uuml;berlegen, die ohne Object.clone() auskommen
+und Speicher mit new beschaffen, vielleicht unter Verwendung von Reflection,
+und irgendwelche F&uuml;ll-Methoden aus den Superklassen aufrufen.&nbsp;
+Verglichen mit dem eleganten Mechanismus &uuml;ber Object.clone() d&uuml;rfte
+das allerdings eher ineffizient und umst&auml;ndlich zu warten sein.
+<p>Die Regel ist daher: jede potentielle Superklasse, d.h. jede non-final
+Klasse, muss in ihrer Implementierung von clone() daf&uuml;r sorgen, dass
+Speicher f&uuml;r das gesamte Objekt, das von this referenziert wird, beschafft
+wird, also nicht nur f&uuml;r ein Teil-Objekt vom eigenen Typ.&nbsp; Und
+das ist in effizienter Weise nur mit Hilfe von Object.clone() m&ouml;glich.
+Deshalb sollte jede Implementierung von clone() als erstes super.clone()
+aufrufen.
+<p>Die non-final Klasse aus unserem obigen Beispiel darf also nicht so
+aussehen:
+<p><tt>class MyClass {</tt>
+<br><tt>&nbsp;&nbsp; private int aField;</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public Object clone() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; MyClass tmp = new MyClass();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; tmp.aField = aField;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; ... copy all remaining fields to tmp ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return tmp;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Sondern sie sollte so aussehen:
+<p><tt>class MyClass {</tt>
+<br><tt>&nbsp;&nbsp; private int aField;</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public Object clone() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; try {&nbsp; MyClass tmp = (MyClass) super.clone();
+} catch (CloneNotSupportedException e) {}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; tmp.aField = aField;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; ... copy all remaining fields to tmp ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return tmp;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Mit dieser Implementierung von clone() l&auml;sst sich dann auch die
+Subklasse &uuml;bersetzen, weil super.clone() in diesem Falle tats&auml;chlich
+ein Objekt vom Subklassen-Typ liefert:
+<p><tt>class MySubClass extends MyClass {</tt>
+<br><tt>&nbsp;&nbsp; private Object anotherField;</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public Object clone() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; MySubClass tmp = (MySubClass) super.clone();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; ... copy all fields to tmp ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return tmp;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Wie man an diesem Beispiel wieder einmal sieht, f&auml;llt potentiellen
+Superklassen, d.h. non-final Klassen, die Verantwortung f&uuml;r die gesamte
+Subhierarchie zu.&nbsp; Wenn in einer non-final Klasse clone() falsch implementiert
+ist, dann haben die Subklassen praktisch keine Chance mehr, eine korrekte
+Implementierung von clone() zu liefern.&nbsp; In unserem Beispiel hatte
+die Superklasse den Speicher f&uuml;r den Klon falsch beschafft, n&auml;mlich
+&uuml;ber new und nicht &uuml;ber Object.clone(). Das ist ein Fehler und
+f&uuml;hrt zu Problemen in den Subklassen-Implementierungen von clone().
+Aber es k&ouml;nnte ja auch noch schlimmer sein: was passiert, wenn eine
+potentielle Superklasse nicht cloneable ist und die Methode clone() &uuml;berhaupt
+nicht implementiert?
+<br>&nbsp;
+<h3>
+Non-Cloneable Superklassen</h3>
+Wenn eine non-final Klasse clone() nicht implementiert, dann ist das u.U.
+eine gravierende Einschr&auml;nkung f&uuml;r die Subklassen.&nbsp; Betrachten
+wir ein Beispiel aus dem JDK: dort gibt es die Klasse java.util.Observable.&nbsp;
+Bei einem Observable-Objekt k&ouml;nnen sich Observer-Objekte registrieren
+lassen, damit sie sp&auml;ter unter bestimmten Umst&auml;nden notifiziert
+werden. Ein Observable-Objekt enth&auml;lt zum Zwecke der Notifizierung
+ein Array von Observer-Objekten.
+<p>Die Klasse Observable ist explizit als Superklasse entworfen, aber sie
+ist nicht cloneable und sie hat auch keine Implementierung der clone()-Methode.
+Observable ist also eine non-cloneable Superklasse. Stellen wir uns nun
+vor, wir wollen von Observable ableiten und die Subklasse soll cloneable
+sein.
+<center>
+<p><img SRC="diagram.gif" NOSAVE height=119 width=158>
+<p><i><font size=-1>Abbildung 1: Vererbungsbeziehungen f&uuml;r eine cloneable
+and observable Klasse</font></i></center>
+
+<p>Eine Implementierung einer solchen Subklasse k&ouml;nnte wie folgt aussehen:
+<p><tt>class Subclass extends java.util.Observable implements Cloneable
+{</tt>
+<br><tt>&nbsp; private Object aField;</tt>
+<p><tt>&nbsp; public Object clone() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; try {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Subclass tmp = (Subclass) super.clone();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tmp.aField = aField.clone();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; } catch (CloneNotSupportedException) { ... }</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Es wird korrekterweise super.clone() gerufen, um den Speicher zu beschaffen
+und die Superklassen-Anteile in angemessener Tiefe zu kopieren.&nbsp; Da
+die Superklasse Observable aber keine Implementierung von clone() hat,
+ist super.clone() direkt Object.clone().&nbsp; Es wird nun zwar Speicher
+f&uuml;r ein Subclass-Objekt beschafft und dieser Speicher wird mit einer
+bit-weisen Kopie des Original-Subclass-Objekts gef&uuml;llt, aber das reicht
+nicht aus. Die Superklasse Observable enth&auml;lt ein privates Array von
+Observer-Objekten und dieses Array wird nat&uuml;rlich nicht kopiert.&nbsp;
+Die bit-weise Kopie kopiert lediglich die Adresse des Arrays, so das Original
+und Klon auf dasselbe Array verweisen.&nbsp; Das ist keine gen&uuml;gend
+tiefe Kopie und die Subklasse hat auch keine Chance, eine gen&uuml;gend
+tiefe Kopie zu erzeugen, weil sie keinen Zugriff auf das private Observer-Array
+der Superklasse Observable hat.
+<p>Das Beispiel zeigt, dass eine Superklasse, die keine clone()-Methode
+anbietet, ihre Subklassen gravierend einschr&auml;nkt: die Subklassen k&ouml;nnen
+dann u.U. ebenfalls keine clone()-Methode implementieren.
+<p>Unter gewissen Umst&auml;nden muss es nicht zu Problemen f&uuml;hren,
+wenn eine Superklasse keine clone()-Methode hat.&nbsp; Wenn etwa alle Felder
+der Superklasse von primitivem Typ sind, dann ist die von Object.clone()
+erzeugte bit-weise Kopie bereits gen&uuml;gend tief.&nbsp; Das gleiche
+gilt, wenn die Superklasse nur Felder hat, die auf unver&auml;nderliche
+Objekte verweisen. Aber in allen anderen F&auml;llen wirkt sich das Fehlen
+einer clone()-Methode auf die Subklasse aus: sie kann dann auch nicht cloneable
+sein.
+<p><b>Fazit: </b>Alle non-final Klassen, die Value-Type<sup>[<a href="#2">2</a>]&nbsp;</sup>
+repr&auml;sentieren und nicht-statische Felder haben, welche Referenzen
+auf ver&auml;nderliche Objekte oder Arrays von ver&auml;nderlichen Objekte
+sind, sollten eine Implementierung von clone() haben, welche super.clone()
+ruft und alle ihre Felder in gen&uuml;gender Tiefe kopiert.&nbsp; Diese
+Implementierung von clone() muss nicht einmal als public Methode angeboten
+werden und die non-final Klasse muss auch nicht cloneable sein.&nbsp; Es
+gen&uuml;gt, wenn eine korrekte Implementierung von clone() als protected
+Methode zur Verf&uuml;gung steht, damit Subklassen ihrerseits cloneable
+werden k&ouml;nnen und ihre clone()-Methode mit Hilfe der protected clone()-Methode
+der Superklasse implementieren k&ouml;nnen.
+<p><a NAME="2"></a>[2] <font size=-2>Die Unterscheidung zwischen Value-
+und Entity-Typen haben wir bereits in einem vorangegangenen Artikel beschrieben
+(sieh /<a href="#Kreft2">KRE2</a>/), als wir &uuml;berlegt haben, welche
+Klassen equals() implementieren m&uuml;ssen (Value-Typen) und f&uuml;r
+welche Typen das nicht n&ouml;tig ist (Entity-Typen).&nbsp; equals(), hashCode(),
+compareTo() und auch clone() sind Methoden, die nur f&uuml;r Value-Typen
+von Bedeutung sind, weil sich die Semantik dieser Methoden um den Inhalt
+des Objekts dreht.&nbsp; Bei Entity-Typen ist der Inhalt des Objekt nicht
+von so herausragender Bedeutung, so dass Entity-Typen meistens keine dieser
+Methoden implementieren.</font>
+<br>&nbsp;
+<h3>
+Verwendung von non-final Methoden in clone()</h3>
+
+<p><br>Noch ein Hinweis zur Implementierung von clone() in non-final Klassen:
+die clone()-Methode sollte keine non-final Methoden rufen. Solche Methoden
+k&ouml;nnten in Subklassen redefiniert werden und auf subklassen-spezifische
+Felder zugreifen, die zum Zeitpunkt des Aufrufs noch gar keine sinnvollen
+Wert haben.
+<p>Betrachten wir ein Beispiel: eine non-final Klasse, die in ihrer Implementierung
+von clone() eine non-final Methode sanityCheck() ruft.&nbsp; Die Methode
+sanityCheck() pr&uuml;ft die logische Konsistenz des Objekts und wirft
+im Fehlerfall die unchecked Exception IllegalStateException, die einfach
+von clone() einfach durchgelassen wird; aber das ist hier ohne Bedeutung.
+<p><tt>class SuperClass implements Cloneable {</tt>
+<br><tt>&nbsp; ... private fields ...</tt>
+<p><tt>&nbsp; protected void sanityCheck() throws IllegalStateException
+{ ... }</tt>
+<p><tt>&nbsp; public Object clone() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; try { SuperClass tmp = (SuperClass) super.clone();
+} catch (CloneNotSupportedException e) {}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; tmp.sanityCheck();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ... create deep-enough copies of fields ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return tmp;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Ein Subklasse dieser Klasse wird unter Umst&auml;nden die non-final
+Methode sanityCheck() &uuml;berschreiben und kann dabei auf eigene Felder
+zugreifen:
+<p><tt>class SubClass extend SuperClass {</tt>
+<br><tt>&nbsp; private Object aReference;</tt>
+<p><tt>&nbsp; ... constructors and stuff ...</tt>
+<p><tt>&nbsp; protected void sanityCheck() throws IllegalStateException
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ... access fields of aReference...</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public Object clone() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; SubClass tmp = (SubClass) super.clone();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; tmp.sanityCheck();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; tmp.aReference = aReference.clone();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Wenn nun SubClass.clone() gerufen wird, dann wird zuerst super.clone(),
+d.h. SuperClass.clone(), gerufen, welches tmp.sanityCheck() anst&ouml;&szlig;t.&nbsp;
+Das Objekt tmp wurde von Object.clone() erzeugt und ist korrekterweise
+ein SubClass-Objekt.&nbsp; Es wird daher die Methode SubClass.sanityCheck()
+gerufen.&nbsp; Diese Methode greift auf Felder zu, die per aReference zu
+erreichen sind.&nbsp; Allerdings hat aReference noch nicht seinen endg&uuml;ltigen
+Wert zugewiesen bekommen; das geschieht erst im nachfolgenden Statement.&nbsp;
+Es ist zu vermuten, dass die Methode sanityCheck()&nbsp; daher ein fehlerhaftes
+Ergebnis liefern wird.
+<p>Ganz allgemein kann es vorkommen, dass non-final Methoden, die in clone()
+gerufen werden, den Klon in halbfertigem Zustand antreffen, weil subklassen-spezifische
+Felder noch nicht&nbsp; ihren endg&uuml;ltigen Wert haben.&nbsp; Das ist
+ein Problem, welches auch bei Konstruktoren auftritt (und das wir hier
+nicht weiter vertiefen wollen).&nbsp; Bei Konstruktoren gibt es die Empfehlung,
+den Aufruf von non-final Methoden zu vermeiden, und das gleiche gilt auch
+hier.
+<p><b>Fazit</b>: In der Implementierung von clone() vermeide man den Aufruf
+von non-final Methoden auf dem halbfertigen Klon.
+<br>&nbsp;
+<h3>
+Copy-Konstruktion vs. clone()</h3>
+Im letzten Artikel dieser Kolumne hatten wir neben clone() andere Methoden
+zur Erzeugung von Kopien von Objekten in Java erw&auml;hnt und gesagt,
+dass die clone())-Methode die empfohlene Technik sei. Sehen wir uns das
+noch einmal genauer an.
+<p>Eine der popul&auml;rsten dieser alternativen Kopier-Mechanismen ist
+die Copy-Konstruktion. Klassen mit Copy-Konstruktor haben eine Konstruktor,
+der ein Objekt vom eigenen Typ als Argument akzeptiert und ein neues Objekt
+mit gleichem Inhalt erzeugt. Das sieht auf den ersten Blick genauso aus
+wie die Funktionalit&auml;t von clone().&nbsp; Welchen Nachteil hat das
+gegen&uuml;ber clone()? Hier ist eine solche Klasse Person, die nicht cloneable
+ist, aber einen Copy.-Konstruktor hat:
+<p><tt>class Person {</tt>
+<br><tt>&nbsp; private String name;</tt>
+<br><tt>&nbsp; private Date birthday;</tt>
+<br><tt>&nbsp; public Person(Person other)</tt>
+<br><tt>&nbsp; { name = other.name;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; birthday = (Date)other.birthday.clone();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Zun&auml;chst einmal ist das v&ouml;llig in Ordnung.&nbsp; Die Problem
+tauchen auf, wenn Subklassen von Person ins Spiel kommen.&nbsp; Betrachten
+wir eine Subklasse Employee:
+<p><tt>class Employee extends Person {</tt>
+<br><tt>&nbsp; private float salary;</tt>
+<br><tt>&nbsp; public Employee(Person p, float s)</tt>
+<br><tt>&nbsp; { super(p); salary = s; }</tt>
+<br><tt>&nbsp; public Employee(Employee other)</tt>
+<br><tt>&nbsp; { super(other); salary = other.salary; }</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt>
+<p>Nehmen wir au&szlig;erdem an, es gibt eine Methode copy(), welche Person-Objekte
+kopiert:
+<p><tt>Person copy(Person p)</tt>
+<br><tt>{ return new Person(p); }</tt>
+<p>Kein Problem, solange nur Person-Objekte kopiert werden.&nbsp; Die copy()-Methode
+kann aber auch mit einem Employee als Argument aufgerufen werden.&nbsp;
+Dann w&uuml;rde man erwarten, dass als Ergebnis eine Person-Referenz auf
+ein Employee-Objekt zur&uuml;ck kommt.&nbsp; Das ist aber nicht der Fall:
+es wird nur eine Kopie des Person-Anteils des Employee-Objekts geliefert.&nbsp;
+Diesen Vorgang der Verst&uuml;mmelung bezeichnet man als "object slicing"
+und i.a. allgemeinen ist das kein erw&uuml;nschter Effekt.&nbsp; Man erwartet
+statt dessen, dass copy() ein Objekt von dem Typ zur&uuml;ck liefert, der
+auch hineingesteckt wurde.
+<p>Das Problem des Object-Slicing lie&szlig;e sich vermeiden, wenn die
+copy()-Methode abh&auml;ngig vom Typ des Arguments unterschiedliche Konstruktoren
+aufrufen w&uuml;rde. Das k&ouml;nnte dann so aussehen:
+<p><tt>Person copy(Person p)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; if (p.getClass() == Person.class)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return new Person(p);</tt>
+<br><tt>&nbsp; if (p.getClass() == Employee.class)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return new Employee(p) ;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt>
+<p>Allerdings ist das der klassische Wartungsalbtraum: jedes Mal, wenn
+eine neuen Subklasse entsteht, muss die copy()-Methode um einen weiteren
+if-Zweig erweitert werden.&nbsp; So sollte man es auf gar keinen Fall machen.&nbsp;
+F&uuml;r typ-abh&auml;ngige Methodenaufrufe gibt es in der Objekt-Orientierung
+den Mechanismus des Polymorphismus. Das Problem lie&szlig;e sich elegant
+l&ouml;sen, indem statt der Kopie per Copy-Konstruktion einen Klon per
+clone()-Methode erzeugen w&uuml;rde.&nbsp; Eine bessere Implementierung
+w&uuml;rde also so aussehen:
+<p><tt>Person copy(Person p)</tt>
+<br><tt>{ return p.clone(); }</tt>
+<p>Die clone()-Methode ist eine polymorphe Methode, die zur Laufzeit abh&auml;ngig
+vom Typ des Objekts, auf dem sie gerufen wird, ausgew&auml;hlt wird. Wenn
+also ein Employee als Argument &uuml;bergeben wird, dann wird automatisch
+Employee.clone() gerufen, und es wird ein Employee -Objekt und nicht nur
+ein Person-Objekt erzeugt. Was man f&uuml;r die Implementierung von Methoden
+wie copy() braucht, ist eine polymorphe Kopier-Methode, und genau das kann
+ein Konstruktor nicht leisten.&nbsp; Konstruktoren sind grunds&auml;tzlich
+nicht-polymorphe Methoden. Das polymorphe Kopieren ist nur &uuml;ber clone()
+zu erreichen.&nbsp; Aus diesem Grunde ist clone() die bevorzugte Technik
+f&uuml;r das Kopieren von Objekten.<sup>[<a href="#3">3</a>]</sup>
+<p>Au&szlig;erdem hat die gezeigte Person-Klasse mit ihrem Copy-Konstruktor
+die oben schon am Beispiel von Observable diskutierten Schw&auml;chen einer
+non-final Klasse, die nicht cloneable ist und damit ihre Subklassen einschr&auml;nkt:
+was auch immer man versucht, es gelingt nicht, die non-final Klasse Employee
+mit einer korrekten clone()-Methode auszustatten.
+<p><a NAME="3"></a>[3] <font size=-2>Es gibt eine einzige Situation, in
+der ein Copy-Konstruktor als Ersatz f&uuml;r eine clone()-Methode vertretbar
+ist:&nbsp; bei Klassen, die als final deklariert sind.&nbsp; Eine final
+Klasse kann keine Subklassen haben; ohne Klassenhierarchie spielt Polymorphie
+keine Rolle und dann ist auch ein Copy-Konstruktor akzeptabel.</font>
+<br>&nbsp;
+<h3>
+clone() und final Felder</h3>
+Es gibt noch ein Problem bei der Implementierung von clone(): Klassen,
+die Felder haben, die als final deklariert sind, machen Schwierigkeiten.&nbsp;
+Betrachten wir das Beispiel einer Klasse, die ein Feld vom Typ java.util.Date
+hat, welches eine Zeitstempel enth&auml;lt.&nbsp; Der Stempel markiert
+den Zeitpunkt der letzten Ver&auml;nderung des Objekts und wird in jeder
+modifizierenden Methode neu gesetzt.&nbsp; Aus Optimierungsgr&uuml;nden
+soll beim Update des Zeitstempels kein neues Date-Objekt erzeugt werden,
+sondern es soll das vorhandene Date-Objekt ge&auml;ndert werden, um den
+neuen Zeitstempel abzulegen.&nbsp; Diese Nutzungsweise des Date-Feldes
+kann in Java sicher gestellt werden, indem das Feld als final deklariert
+wird.
+<p>Felder oder Variablen, die als final deklariert sind, k&ouml;nnen nicht
+ver&auml;ndert werden.&nbsp; Das bedeutet bei Variablen von primitivem
+Typ, dass sich der Wert der Variablen niemals &auml;ndert.&nbsp; Bei Referenzvariablen
+bedeutet es, dass sich die Referenz niemals &auml;ndern kann, d.h. die
+final Referenzvariable wird immer auf dasselbe Objekt verweisen.&nbsp;
+Es bedeutet aber nicht, dass das referenzierte Objekt nicht ge&auml;ndert
+werden kann.
+<p>In unserem Beispiel haben wir ein Feld, dass auf ein Date-Objekt verweist.&nbsp;
+Das Date-Objekt, d.h. der Zeitstempel, kann ge&auml;ndert werden, aber
+die Referenz selbst soll aus den oben geschilderten Optimierungsgr&uuml;nden
+bestehen bleiben.&nbsp; In einer solchen Situation ist sinnvoll und korrekt,
+das Referenzfeld als final zu deklarieren, um die gemachte Designentscheidung
+in der Implementierung zu erzwingen.
+<p>Was passiert nun, wenn unsere Klasse mit ihrem Zeitstempel geklont werden
+soll?&nbsp; Hier ist der Versuch einer Implementierung von clone() f&uuml;r
+diese Klasse:
+<p><tt>public class MyClass implements Cloneable {</tt>
+<br><tt>&nbsp;&nbsp; final private Date cTime = new Date();</tt>
+<br><tt>&nbsp;&nbsp; private Integer cInt;</tt>
+<p><tt>&nbsp;&nbsp; public Object clone() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; try { MyClass tmp = (MyClass)super.clone();
+}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; catch (CloneNotSupportedException e) {}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; tmp.cTime = new Date();&nbsp;&nbsp; //
+error: cannot assign to final field</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; tmp.cInt = new Integer(cInt.intValue());</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return tmp;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Der Klon soll nat&uuml;rlich seinen eigenen Zeitstempel haben, der zum
+Zeitpunkt der Erzeugung des Klons mit dem augenblicklichen Zeitpunkt initialisiert
+wird.&nbsp; Das wird per Zuweisung versucht, aber leider weist der Compiler
+die Zuweisung als Fehler zur&uuml;ck, weil final Felder nicht ver&auml;ndert
+werden k&ouml;nnen.&nbsp; Dieses Problem tritt immer auf, wenn Objekte
+geklont werden sollen, die final Felder haben. Das Problem liegt darin,
+dass super.clone() bereits ein fertiges Objekt liefert, in dem die final
+Felder bereits als bit-weise Kopie der entsprechenden Felder des Originals
+initialisiert sind. final Felder k&ouml;nnen daher nur den Inhalt haben,
+den super.clone() ihnen gibt; sp&auml;tere &Auml;nderungen, wie hier die
+Zuweisung einer Kopie des Date-Objekts, sind nicht m&ouml;glich.
+<p>F&uuml;r das Problem gibt es nur zwei L&ouml;sungen, die aber beide
+unbefriedigend sind:
+<ol>
+<li>
+Man verzichtet auf die Deklaration von final Felder in Klassen, die cloneable
+sein sollen. Damit verzichtet man darauf, seine Designentscheidungen klar
+und deutlich mit Mitteln der Sprache auszudr&uuml;cken und man macht au&szlig;erdem
+etwaige Optimierungen, die der Compiler f&uuml;r final Felder machen k&ouml;nnte,
+unm&ouml;glich.</li>
+
+<li>
+Man greift auf Konstruktoren zur&uuml;ck, um clone() zu implementieren.&nbsp;
+Damit handelt man sich aber die oben diskutierten Object-Slicing-Probleme
+ein.&nbsp; Eine solche L&ouml;sung f&uuml;hrt immer dazu, dass die Klasse
+oder zumindest die clone()-Methode final sein muss.</li>
+</ol>
+Eine L&ouml;sung per Konstruktor k&ouml;nnte so aussehen:
+<p><tt>public class MyClass implements Cloneable {</tt>
+<br><tt>&nbsp;&nbsp; final private Date cTime;</tt>
+<br><tt>&nbsp;&nbsp; private Integer cInt;</tt>
+<p><tt>&nbsp;&nbsp; private MyClass(MyClass m)</tt>
+<br><tt>&nbsp;&nbsp; { cTime = new Date(); }</tt>
+<p><tt>&nbsp;&nbsp; final public Object clone() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; MyClass tmp = new MyClass(this);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; tmp.cInt = new Integer(cInt.intValue());</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return tmp;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<p>In dieser L&ouml;sung verwenden wir ein sogenanntes "blank final" Feld,
+ein Sprachmittel, dass in den ersten Versionen der Sprache noch gar nicht
+existierte und erst sp&auml;ter (in Version 1.1) eingef&uuml;hrt wurde.
+Normale final Felder m&uuml;ssen bereits bei der Definition mit ihrem unver&auml;nderlichen
+Wert versorgt werden.&nbsp; F&uuml;r solche Felder verlangt der Compiler,
+dass bereits in der Definition auch der Wert spezifiziert wird, so wie
+wir das in unserer ersten versuchten Implementierung gemacht hatten. F&uuml;r
+blank final Felder ist das etwas anders:&nbsp; sie m&uuml;ssen nicht schon
+in der Definition mit ihrem Wert versorgt werden, sondern das kann im Konstruktor
+geschehen.&nbsp; Das hat den Vorteil, dass in verschiedenen Konstruktoren
+verschiedene Werte zugewiesen werden k&ouml;nnen.&nbsp; Das war mit den
+normalen final Feldern nicht m&ouml;glich; deshalb wurden die blank final
+Felder erfunden.
+<p>Konstruktor gesetzt wird.&nbsp; In diesem Konstruktor haben wir die
+Chance das Feld so zu setzen, wie es ben&ouml;tigt wird, n&auml;mlich so,
+dass es auf ein neues Date-Objekt verweist. Diesen privaten Konstruktor
+verwenden wir in der Implementierung von clone(), damit der Klon seinen
+eigenen Zeitstempel bekommt.&nbsp; Der unangenehme Nebeneffekt ist, dass
+nun der Speicher f&uuml;r den Klon per new&nbsp; und nicht mit Hilfe von
+super.clone() beschafft wird, was in Subklassen zu den schon beschriebenen
+Problemen f&uuml;hrt. Deshalb haben wir die clone()-Methode als final deklariert.
+<p>Das geschilderte Problem tritt im allgemeinen nur bei final Feldern
+auf, die Referenzen auf ver&auml;nderliche Objekte sind.&nbsp; Bei final
+Feldern von primitiven Typ und bei final Feldern, die Referenzen auf unver&auml;nderliche
+Objekte sind, ist die von Object.clone() erzeugte bit-weise h&auml;ufig
+Kopie bereits ausreichend und eine sp&auml;tere Zuweisung eines anderen
+Werts in der clone()-Methode ist nicht n&ouml;tig.&nbsp; Damit tritt auch
+das diskutierte Problem nicht auf.
+<p>Wenn das Problem aber auftritt, dann muss man sich zwischen den beiden
+skizzierten L&ouml;sungen entscheiden. Beide L&ouml;sungen sind unbefriedigend
+und man w&uuml;rde sich etwas mehr Unterst&uuml;tzung von der Sprache w&uuml;nschen.
+Der Compiler k&ouml;nnte clone()&nbsp; als "besondere Methode" behandeln
+und das Setzen von blank final Feldern in clone() erlauben, so wie es auch
+in den Konstruktoren erlaubt ist.&nbsp; Aber da das geschilderte Problem
+in der Praxis nicht extrem h&auml;ufig auftritt, ist wohl nicht damit zu
+rechnen, dass sich an der Sprache in dieser Hinsicht etwas &auml;ndern
+wird.
+<br>&nbsp;
+<h2>
+Zusammenfassung</h2>
+Es gibt drei Gr&uuml;nde, warum Klassen eine korrekte Implementierung von
+clone() haben sollten:
+<ol>
+<li>
+um das polymorphe Kopieren zu erm&ouml;glichen. Copy-Konstruktoren leisten
+dies nicht; die Klasse muss das Cloneable-Interface implementieren und
+eine public clone()-Methode haben.</li>
+
+<li>
+um cloneable Subklassen zu erm&ouml;glichen. Dazu braucht die Klasse nicht
+selbst cloneable zu sein; es gen&uuml;gt eine protected clone()-Methode.</li>
+
+<li>
+um das Kopieren von generischen Collections zu erleichtern. Das hatten
+wir im letzen Artikel (siehe /<a href="#Kreft1">KRE1</a>/) erw&auml;hnt.
+F&uuml;r jede non.cloneable Klasse muss eine Sonderl&ouml;sung gefunden
+werden; f&uuml;r cloneable Klassen ist das Kopieren wesentlich einfacher.</li>
+</ol>
+Die einzigen Klassen, die eine clone()-Methode nur aus Grund [3], also
+nicht unbedingt, brauchen, sind unver&auml;nderlichen Klassen wie z.B.
+String und Klassen, die Entity-Typen repr&auml;sentieren, weil man Instanzen
+von diesen Klassen im Prinzip &uuml;berhaupt nicht kopieren muss. Sowohl
+die clone()-Methode als auch ein Copy-Konstruktor ist f&uuml;r solche Klassen
+optional.
+<p>F&uuml;r Klassen, die als final deklariert sind, gilt &Auml;hnliches:&nbsp;
+final Klassen m&uuml;ssen keine R&uuml;cksicht auf etwaige Subklassen oder
+Polymorphie-Anforderungen nehmen.&nbsp; Falls Kopien gebraucht werden,
+reicht ein Copy-Konstruktor aus.&nbsp; Die clone()-Methode w&uuml;rde nur
+aus Grund [3] gebraucht, was aber bereits Grund genug ist, um die Klasse
+cloneable zu machen.
+<p>Wir haben uns in diesem Artikel au&szlig;erdem angesehen, worauf man
+bei der Implementierung von clone() achten muss:
+<ul>
+<li>
+Man sollte clone() nicht so deklarieren, dass es eine CloneNotSupportedException
+wirft. (Dazu mehr im n&auml;chsten Artikel).</li>
+
+<li>
+Man sollte in non-final Klassen immer super.clone() aufrufen, um den Speicher
+f&uuml;r den Klon zu beschaffen.</li>
+
+<li>
+Man sollte in cloneable Klassen final Felder vermeiden, die Referenzen
+auf ver&auml;nderliche Objekte sind.</li>
+</ul>
+
+<h2>
+Literaturverweise</h2>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft1"></a>/KRE1/</td>
+
+<td VALIGN=TOP><b>Das Kopieren von Objekten in Java (Teil 1)&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaSpektrum, September 2002
+<br>URL: <a href="../05.Clone-Part1/05.Clone-Part1.html">http://www.langer.camelot.de/Articles/JavaSpektrum/05.Clone-Part1/05.Clone-Part1.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft3"></a>/KRE3/</td>
+
+<td><b>Das Kopieren von Objekten in Java (Teil 3): Die CloneNotSupportedException&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaSpektrum, Januar 2003
+<br>URL: <a href="../07.Clone-Part3/07.Clone-Part3.html">http://www.langer.camelot.de/Articles/JavaSpektrum/07.Clone-Part3/07.Clone-Part3.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft2"></a>/KRE2/</td>
+
+<td><b>Wie, wann und warum implementiert man die equals()-Methode? (Teil
+1)</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>Java Spektrum, Januar 2002
+<br>URL: <a href="../01.Equals-Part1/01.Equals1.html">http://www.langer.camelot.de/Articles/JavaSpektrum/01.Equals-Part1/01.Equals1.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Haggar"></a>/HAG/</td>
+
+<td><b>Practical Java - Programming Language Guide, Praxis 64</b>
+<br>Peter Haggar
+<br>Addison-Wesley, 2000
+<br>ISBN: 0201616467</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Bloch"></a>/BLO/&nbsp;</td>
+
+<td><b>Effective Java Programming Language Guide</b>
+<br>Josh Bloch&nbsp;
+<br>Addison-Wesley, June 2001&nbsp;
+<br>ISBN: 0201310058</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Davies"></a>/DAV/&nbsp;</td>
+
+<td><b>Durable Java: Hashing and Cloning</b>
+<br>Mark Davies&nbsp;
+<br>Java Report, April 2000
+<br>URL: <a href="http://www.macchiato.com/columns/Durable6.html">http://www.macchiato.com/columns/Durable6.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Liskov"></a>/LIS/&nbsp;</td>
+
+<td><b>Program Development in Java</b>
+<br>Abstraction, Specification, and Object-Oriented Design, Section 4.4
+<br>Barbara Liskov with John Guttag&nbsp;
+<br>Addison-Wesley, June 2000&nbsp;
+<br>ISBN: 0-201-65768-6</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDK"></a>/JDK/&nbsp;</td>
+
+<td><b>Java 2 Platform, Standard Edition v1.4.2</b>
+<br>URL: <a href="http://java.sun.com/j2se/1.4/">http://java.sun.com/j2se/1.4/</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDOC"></a>/JDOC/&nbsp;</td>
+
+<td><b>Java 2 Platform, Standard Edition, v 1.4.2 - API Specification</b>
+<br>URL: <a href="http://java.sun.com/j2se/1.4/docs/api/index.html">http://java.sun.com/j2se/1.4/docs/api/index.html</a></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,712 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Article C++ Report September1997">
+   <title>The Locale Framework</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CppReportLocales"></a>
+<br><font color="#295AB5"><font size=+3>The Locale Framework</font></font>
+<p><font color="#295AB5"><font size=+2>C++ Report, September 1997</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p><font size=+0>Computer users all over the world prefer to interact with
+their systems using their own language and cultural conventions. Cultural
+differences affect for instance the display of monetary values, of date
+and time. Just think of the way numeric values are formatted in different
+cultures: 1,000,000.00 in the US is 1.000.000,00 in Germany and 10,00,000.00
+in Nepal. If you aim for high international acceptance of your products
+you must build into your software the to adapt to varying requirements
+that stem from cultural differences.</font>
+<p><font size=+0>Building into software the potential for worldwide use
+is called <i>internationalization</i>. The Standard C++ Library provides
+an extensible framework that supports internationalization of C++ programs.
+Its main elements are <i>locales</i> and <i>facets</i>. In this column
+we focus on their architecture; subsequent columns will show you how to
+use and extend them.</font>
+<p><font size=+0><b>Locales and Facets.</b> The abstraction that holds
+all the information about a certain cultural area and its conventions is
+called <i>locale</i>. In the Standard C++ Library a locale is a class that
+represents a container of <i>facets</i>. A facet is an abstraction that
+contains the information about a certain localization aspect. A <i>localization
+aspect</i> is a set of related services and information needed for internationalization.
+An example of a facet is the standard facet </font><font face="Courier,Courier New"><font size=-1>numpunct</font></font><font size=+0>.
+It holds information about the formating of a numeric value. This facet,
+for instance, has a member function </font><font face="Courier,Courier New"><font size=-1>decimal_point()</font></font><font size=+0>,
+which returns the character that is used as radix separator in a given
+cultural area. For an US-English environment this is‘.’, but for a German
+environment this is ‘,’.</font>
+<p><font size=+0>Facets do not only hold information, they also provide
+functionality. The </font><font face="Courier,Courier New"><font size=-1>num_put</font></font><font size=+0>
+facet, another standard facet in the library, formats a numeric value to
+a sequence of characters; this transformation is done according to the
+current localization settings, part of which are determined by the </font><font face="Courier,Courier New"><font size=-1>numpunct</font></font><font size=+0>
+facet mentioned above.</font>
+<p><font size=+0>One interesting aspect about the way the locale maintains
+its facets is its capability to <i>handle</i> <i>facets polymorphically</i>.
+Lets consider an example. Assume we derive our own facet from </font><font face="Courier,Courier New"><font size=-1>numpunct</font></font><font size=+0>
+and make it return ‘|’ as radix separator, instead of ‘.’ or ‘,’. Lets
+also assume that we create a locale object that contains an instance of
+our newly derived </font><font face="Courier,Courier New"><font size=-1>numpunct</font></font><font size=+0>
+class. Then we pass this locale object to a function that retrieves the
+current </font><font face="Courier,Courier New"><font size=-1>numpunct</font></font><font size=+0>
+facet from the locale object in order to access its </font><font face="Courier,Courier New"><font size=-1>decimal_point()</font></font><font size=+0>
+member function. An instance of the derived </font><font face="Courier,Courier New"><font size=-1>numpunct</font></font><font size=+0>
+class will be obtained, its </font><font face="Courier,Courier New"><font size=-1>decimal_point()</font></font><font size=+0>
+function will be called, and eventually ‘|’, instead of ‘.’ or ‘,’ will
+be returned. In this sense facets are polymorphic in a locale; a request
+for retrieval of a facet type, </font><font face="Courier,Courier New"><font size=-1>numpunct</font></font><font size=+0>
+in our example, yields different results depending on the actual content
+of the locale.</font>
+<p><font size=+0>The implementation of this polymorphic facet selection
+does not only rely on overwriting virtual functions, which is the most
+obvious way to implement polymorphism in C++. It is also based on a special
+framework, called the<i> locale framework</i> in our articles. In this
+article we are going to describe the architecture of this framework. The
+C++ standard defines a number of standard facet classes that support the
+most common internationalization tasks. We have already mentioned </font><font face="Courier,Courier New"><font size=-1>numpunct</font></font><font size=+0>
+and </font><font face="Courier,Courier New"><font size=-1>num_put</font></font><font size=+0>.
+In a follow-up article we will give a comprehensive overview of all available
+standard facets, their functionality and usage. We will then close our
+introduction to the standard C++ locale with an article that describes
+how new user-defined facet types can be implemented and used.</font>
+<p><b><i><font face="Arial">Facets Interfaces and Ids</font></i></b>
+<p><font size=+0>We are going to start the description of the locale framework
+in the Standard C++ Library with a closer look at facets. Two classes nested
+into class </font><font face="Courier,Courier New"><font size=-1>locale</font></font><font size=+0>
+play a central role in the definition of a facet: </font><font face="Courier,Courier New"><font size=-1>locale::facet</font></font><font size=+0>
+and </font><font face="Courier,Courier New"><font size=-1>locale::id</font></font><font size=+0>..
+Let’s see how these classes are defined in the C++ standard:</font>
+<dir><font face="Courier,Courier New"><font size=-1>class locale::facet</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{</font></font>
+<br><font face="Courier,Courier New"><font size=-1>protected:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>explicit facet(size_t
+refs = 0);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>virtual ~facet();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>private:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>facet(const facet&amp;);
+// not defined</font></font>
+<br><font face="Courier,Courier New"><font size=-1>void operator=(const
+facet&amp;); // not defined</font></font>
+<br><font face="Courier,Courier New"><font size=-1>};</font></font>
+<br><font face="Courier,Courier New"><font size=-1>class locale::id</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{</font></font>
+<br><font face="Courier,Courier New"><font size=-1>public:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>id();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>private:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>void operator=(const
+id&amp;); // not defined</font></font>
+<br><font face="Courier,Courier New"><font size=-1>id(const id&amp;); //
+not defined</font></font>
+<br><font face="Courier,Courier New"><font size=-1>};</font></font></dir>
+<font size=+0>The C++ standard defines a facet that can be contained in
+a locale object in terms of these two classes</font><font size=-1>: </font><font size=-2><font face="Arial">"A
+class is a <i>facet</i> if it is publicly derived from another <i>facet</i>,
+or if it is a class derived from </font><font face="Courier,Courier New">locale::facet</font><font face="Arial">
+and containing a declaration (in the public section) as follows</font><font face="Courier,Courier New">:
+static ::std::locale::id id;</font><font face="Arial"> ."</font></font><font size=+0>
+See [<a href="#[1]">1</a>]for reference. Let us see what role the </font><font face="Courier,Courier New"><font size=-1>id</font></font><font size=+0>
+member plays.</font>
+<br>&nbsp;
+<br>&nbsp;
+<p><font face="Arial">Facet Identifications</font>
+<p><font size=+0>The declaration </font><font face="Courier,Courier New"><font size=-1>static
+locale::id id;</font></font><font size=+0> inserts a data member </font><font face="Courier,Courier New"><font size=-1>id</font></font><font size=+0>
+into a facet class. It provides an identification of a facet interface.
+What does this mean?</font>
+<p><font size=+0>First, let’s agree on some technical terms. We call a
+class derived from </font><font face="Courier,Courier New"><font size=-1>locale::facet,</font></font><font size=+0>
+that defines an </font><font face="Courier,Courier New"><font size=-1>id</font></font><font size=+0>
+member, a <i>facet base class</i>. All classes derived from a facet base
+class refer to the same static data member </font><font face="Courier,Courier New"><font size=-1>id.
+</font></font><font size=+0>We
+call this static data member the <i>facet (interface) identification</i>.
+At the same time, all of the derived classes implement at least the same
+public interface as the base class; this is the semantics of public derivation
+in C++. We call this interface a <i>facet interface</i>. The essence is
+that all facet classes that implement the same interface as the base class
+share the same identification.</font>
+<p><font size=+0>Can other classes, that do not implement the base class
+interface, have the same identification, too? The answer is: No! An implementation
+of a standard </font><font face="Courier,Courier New"><font size=-1>locale</font></font><font size=+0>
+has to provide a unique value for each </font><font face="Courier,Courier New"><font size=-1>locale::id</font></font><font size=+0>
+object.</font>
+<p><font size=+0>How about identification of facets that are templates?
+A facet can be defined as a class template. An example is the standard
+facet </font><font face="Courier,Courier New"><font size=-1>numpunct&lt;class
+charT></font></font><font size=+0>. It has the character type as a template
+parameter because it contains information that is expressed by means of
+characters, like the radix separator character, and the character type
+shall not be restricted to type </font><font face="Courier,Courier New"><font size=-1>char</font></font><font size=+0>.</font>
+<p><font size=+0>The facet identification is a static data member </font><font face="Courier,Courier New"><font size=-1>id</font></font><font size=+0>
+declared in the class template, i.e. there is a separate </font><font face="Courier,Courier New"><font size=-1>id</font></font><font size=+0>
+object for each template instantiation. We have mentioned earlier that
+the </font><font face="Courier,Courier New"><font size=-1>locale::id</font></font><font size=+0>
+class guarantees assignment of a unique value for each instance of an </font><font face="Courier,Courier New"><font size=-1>id</font></font><font size=+0>.
+This ensures that each template instantiation has a unique identification.</font>
+<p><font size=+0>As we’ve seen above, all facet with the same identification
+implement the same facet interface. Also, facets with the same facet interface
+represent the same localization aspect, i.e. the localization services
+and information provided by their base class. Hence there is a one-to-one
+match of facet interfaces, facet identifications, and localization aspects.</font>
+<p><b><i><font face="Arial">Maintenance of Facets in a Locale</font></i></b>
+<p><font size=+0>A locale is basically a container of facets. The interaction
+between a locale and its facets is invoked by the user when:</font>
+<ul>
+<li>
+<font size=+0>the user wants to retrieve a certain facet, that is expected
+to be contained in the locale object; or</font></li>
+
+<li>
+<font size=+0>the user wants to store a certain facet in the locale object.</font></li>
+</ul>
+<font size=+0>Let’s examine how the locale uses the identification of a
+facet interface described above to deal with each of the situations.</font>
+<p><font face="Arial">Retrieval of Facets from a Locale</font>
+<p><font size=+0>We start with the retrieval of a facet from a locale.
+Say, we have a function</font><font face="Courier,Courier New"><font size=-1>
+foo()</font></font><font size=+0> that receives a locale object containing
+different facets, and each facet describes a certain localization aspect.
+We want to access the </font><font face="Courier,Courier New"><font size=-1>decimal_point()</font></font><font size=+0>
+member function of the </font><font face="Courier,Courier New"><font size=-1>numpunct</font></font><font size=+0>
+facet. For the purpose of facet retrieval from a locale the standard provides
+the following global function template:</font>
+<dir><font face="Courier,Courier New"><font size=-1>template &lt;class
+Facet> const Facet&amp; use_facet(const locale&amp; loc);</font></font></dir>
+<font size=+0>Using this function template, we can implement </font><font face="Courier,Courier New"><font size=-1>foo()</font></font><font size=+0>
+in the following way (see also sidebar on Explicit Template Argument Specification):</font>
+<dir><font face="Courier,Courier New"><font size=-1>void foo(const locale&amp;
+loc)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{</font></font>
+<br><font face="Courier,Courier New"><font size=-1>const char radix_separator</font></font>
+<br><font face="Courier,Courier New"><font size=-1>= use_facet&lt; numpunct&lt;char>
+>(loc).decimal_point();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>}</font></font></dir>
+<font size=+0>This is the way a user retrieves a facet from a locale. Now
+let’s see how </font><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+can be implemented.</font>
+<p><b><font size=+0>Implementing </font></b><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>.
+Let’s examine an example implementation. For exposition, we assume that
+</font><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+is a friend of class </font><font face="Courier,Courier New"><font size=-1>locale</font></font><font size=+0>,
+so that it has access to a private member function of class </font><font face="Courier,Courier New"><font size=-1>locale</font></font><font size=+0>
+that implements retrieval of a facet from the facet repository contained
+in the locale. This function might have the following signature: </font><font face="Courier,Courier New"><font size=-1>const
+locale::facet* get_facet (const locale::id&amp;).</font></font>
+<p><font size=+0>You can think of the facet repository as a map with </font><font face="Courier,Courier New"><font size=-1>locale::id</font></font><font size=+0>
+as the key and </font><font face="Courier,Courier New"><font size=-1>const
+locale::facet*</font></font><font size=+0> as the value. An implementation
+is conceivable that uses an instantiation </font><font face="Courier,Courier New"><font size=-1>map&lt;size_t,
+const locale::facet*> </font></font><font size=+0>of the map class template
+from the standard, where </font><font face="Courier,Courier New"><font size=-1>locale::id</font></font><font size=+0>
+allows a conversion to </font><font face="Courier,Courier New"><font size=-1>size_t</font></font><font size=+0>.
+However, keep in mind that this is only an example; the C++ Standard does
+not define any implementation issues. A real implementation probably uses
+a faster data structure for the facet repository.</font>
+<p><font size=+0>Here is a tentative implementation of </font><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>:</font>
+<dir><font face="Courier,Courier New"><font size=-1>template &lt;class
+Facet></font></font>
+<br><font face="Courier,Courier New"><font size=-1>const Facet&amp; use_facet(const
+locale&amp; loc)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{</font></font>
+<br><font face="Courier,Courier New"><font size=-1>const locale::facet
+*pb;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>const Facet *pd;</font></font>
+<br><font size=-1><font face="Courier,Courier New">// </font>use the <font face="Courier New">Facet</font>
+identification</font>
+<br><font face="Courier,Courier New"><font size=-1>if ((pb = loc.get_facet(Facet::id))
+== 0)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>throw(bad_cast("missing
+locale facet"));</font></font>
+<br><font size=-1><font face="Courier,Courier New">// </font>use the <font face="Courier New">Facet</font>
+type</font>
+<br><font face="Courier,Courier New"><font size=-1>if ((pd = dynamic_cast&lt;const
+Facet*>(pb)) == 0)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>throw(bad_cast("missing
+locale facet"));</font></font>
+<br><font face="Courier,Courier New"><font size=-1>return (*pd);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>}</font></font></dir>
+<font size=+0>The example code shows that </font><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+first tries to retrieve the facet from the locale’s facet repository via
+the interface identification </font><font face="Courier,Courier New"><font size=-1>Facet::id</font></font><font size=+0>.
+A locale can contain no more than one facet with the facet interface identification
+</font><font face="Courier,Courier New"><font size=-1>Facet::id</font></font><font size=+0>.
+If such a facet can be found, it uses a dynamic cast to check if the found
+facet can be cast down to </font><font face="Courier,Courier New"><font size=-1>const
+Facet*.</font></font>
+<p><b><font size=+0><tt>use_facet</tt> and Facet Hierarchies.</font> </b>Let’s
+have a closer look at what will happen if we invoke<b> </b><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+on different classes from a class hierarchy . Let’s assume we have the
+following situation:</font>
+<dir><font face="Courier,Courier New"><font size=-1>class base_facet :
+public locale::facet</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{</font></font>
+<br><font face="Courier,Courier New"><font size=-1>// constructors and
+destructors</font></font>
+<br><font face="Courier,Courier New"><font size=-1>public:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>virtual string bar()
+{ return "this is the base class"; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>static ::std::locale::id
+id;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>};</font></font>
+<br><font face="Courier,Courier New"><font size=-1>class derived_facet
+: public base_facet</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{</font></font>
+<br><font face="Courier,Courier New"><font size=-1>// constructors and
+destructors</font></font>
+<br><font face="Courier,Courier New"><font size=-1>public:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>virtual string bar()
+{ return "this is the derived class"; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>virtual string bar_2()
+{ return "hello world"; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>};</font></font></dir>
+<font size=+0>Neither</font><font face="Courier,Courier New"><font size=-1>
+base_facet</font></font><font size=+0> nor </font><font face="Courier,Courier New"><font size=-1>derived_facet</font></font><font size=+0>contain
+any localization services or information. This is done deliberately, in
+order to keep the example simple and concise.</font>
+<p><font size=+0>Now let’s examine the different possible cases, and let’s
+discuss them in terms of our example implementation of </font><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+above.</font>
+<p><font size=+0><i>1. Exact type match</i>. We are going to start with
+a situation where the locale object contains a facet of the same type as
+the type requested in the </font><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+template specification. Say, a locale object </font><font face="Courier,Courier New"><font size=-1>loc</font></font><font size=+0>
+contains a facet of type </font><font face="Courier,Courier New"><font size=-1>base_facet</font></font><font size=+0>
+and we call:</font>
+<dir><font face="Courier New"><font size=-1>cout &lt;&lt; use_facet&lt;base_facet>(loc).bar();</font></font></dir>
+<font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+will find a facet with the facet interface identification</font><font face="Courier,Courier New"><font size=-1>
+base_facet::id</font></font><font size=+0> in </font><font face="Courier,Courier New"><font size=-1>loc,</font></font><font size=+0>
+and the dynamic cast to </font><font face="Courier,Courier New"><font size=-1>const
+base_base*</font></font><font size=+0> will be processed correctly, because
+the facet is of exactly this type. The text sent to standard out will be:
+</font><font face="Courier,Courier New"><font size=-1>this
+is the base class</font></font><font size=+0>. Okay, that was no surprise.</font>
+<p><font size=+0><i>2. Base requested, derived available.</i> Let’see what
+happens when the locale object contains a facet instance of the derived
+class, and the type requested in the </font><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+template specification is the base class. In terms of our example classes:
+</font><font face="Courier,Courier New"><font size=-1>loc</font></font><font size=+0>
+contains a facet of type </font><font face="Courier,Courier New"><font size=-1>derived_facet</font></font><font size=+0>
+and we call:</font>
+<dir><font face="Courier,Courier New"><font size=-1>cout &lt;&lt; use_facet&lt;base_facet>(loc).bar();</font></font></dir>
+<font size=+0>As </font><font face="Courier,Courier New"><font size=-1>derived_facet</font></font><font size=+0>
+is derived from </font><font face="Courier,Courier New"><font size=-1>base_facet</font></font><font size=+0>,
+the identifications </font><font face="Courier,Courier New"><font size=-1>derived_facet::id</font></font><font size=+0>
+and </font><font face="Courier,Courier New"><font size=-1>base_facet::id</font></font><font size=+0>
+refer to the same static member. This means that </font><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+retrieves the instance of </font><font face="Courier,Courier New"><font size=-1>derived_facet</font></font><font size=+0>
+from </font><font face="Courier,Courier New"><font size=-1>loc</font></font><font size=+0>
+when it uses </font><font face="Courier,Courier New"><font size=-1>base_facet::id</font></font><font size=+0>
+as search key. The dynamic cast to </font><font face="Courier,Courier New"><font size=-1>const
+base_facet*</font></font><font size=+0> will process correctly because
+the current object is of type </font><font face="Courier,Courier New"><font size=-1>const
+derived_facet*.</font></font><font size=+0> The text send to standard out
+will be</font><font face="Courier,Courier New"><font size=-1>: this is
+the derived class</font></font><font size=+0>. This is a really interesting
+effect.</font>
+<p><b>Two-Phase Polymorphism. </b>What we have here is a kind of two-phase
+polymorphic dispatch.
+<ul>
+<li>
+First, whatever type of derived class is contained in the locale, it is
+extracted by specifying the base class type in the<b> </b><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+template specification.</font></li>
+
+<li>
+<font size=+0>Second, the invocation of a virtual function is dispatched
+by C++ means to the implementation of the extracted class.</font></li>
+</ul>
+<font size=+0>After the first enthusiasm you might think: "Nice technique
+- but where is the benefit?" Well, let’s consider an example. It’s a situation
+where you pass a </font><font face="Courier,Courier New"><font size=-1>const
+locale&amp;</font></font><font size=+0> to a function that needs a certain
+member functions of a certain facet interface . It retrieves the facet
+from the locale by specifying the facet class type, that corresponds to
+this interface, in the </font><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+template specification:</font>
+<dir><font face="Courier,Courier New"><font size=-1>void function(const
+locale&amp; loc)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{ use_facet&lt; facet_type
+>(loc).facet_member_function(); }</font></font></dir>
+<font size=+0>Now, take into account that facet instances are constant
+objects. They are not mutated inside of a locale (we will discuss the reasons
+later). They can neither change, nor can they be replaced in a locale.
+When you want to provide a different localization environment to the function
+above, you have to pass in a different locale object. Now, let’s imagine
+that in our example above the new locale object is one that has the facet
+of type </font><font face="Courier,Courier New"><font size=-1>facet_type</font></font><font size=+0>
+replaced. The new facet can be an instance of the same type as before,
+or an instance of a type derived from </font><font face="Courier,Courier New"><font size=-1>facet_type</font></font><font size=+0>.
+In either case, the function can retrieve the facet the same way as before.
+It need not care about the actual type of the facet object contained in
+the current locale (as long as</font><font face="Courier,Courier New"><font size=-1>
+use_facet</font></font><font size=+0> does not fail). Nor does it have
+to care if the facet instance or its type have changed. Instead - thanks
+to the two-phase-polymorphism </font><font face="Courier,Courier New"><font size=-1>-</font></font><font size=+0>
+the function will always process the current localization information contained
+in the locale.</font>
+<p><font size=+0><i>3. Derived requested, base available.</i> Let’s get
+back to</font><font face="Courier,Courier New"><font size=-1> base_facet</font></font><font size=+0>
+and </font><font face="Courier,Courier New"><font size=-1>derived_facet</font></font><font size=+0>.
+Eventually we are going to examine the situation where the locale object
+contains a facet instance of the base class and the type requested in the</font><font face="Courier,Courier New"><font size=-1>
+use_facet</font></font><font size=+0> template specification is the derived
+class, i.e. </font><font face="Courier,Courier New"><font size=-1>loc</font></font><font size=+0>
+contains a facet of type</font><font face="Courier,Courier New"><font size=-1>
+base_facet</font></font><font size=+0> and we call:</font>
+<dir><font face="Courier New"><font size=-1>cout &lt;&lt; use_facet&lt;derived_facet>(loc).bar_2();</font></font></dir>
+<font size=+0>With the same argumentation as in the previous situation,
+</font><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+retrieves the instance of </font><font face="Courier,Courier New"><font size=-1>base_facet</font></font><font size=+0>
+from </font><font face="Courier,Courier New"><font size=-1>loc</font></font><font size=+0>
+when it uses </font><font face="Courier,Courier New"><font size=-1>derived_facet::id</font></font><font size=+0>
+as search key. The dynamic cast to </font><font face="Courier,Courier New"><font size=-1>const
+derived_facet*</font></font><font size=+0> will fail, because the current
+object is of type </font><font face="Courier,Courier New"><font size=-1>const
+base_facet*.</font></font><font size=+0> This is okay, because the base
+class pointer is not a compatible type to the derived class pointer; even
+in our simple example the base class (</font><font face="Courier,Courier New"><font size=-1>base_facet</font></font><font size=+0>)
+does not support the full interface of the derived class (</font><font face="Courier,Courier New"><font size=-1>derived_facet</font></font><font size=+0>).</font>
+<p><font size=+0><i>4. Wrong id. </i>A call to<i> </i></font><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+also fails with an </font><font face="Courier,Courier New"><font size=-1>bad_cast</font></font><font size=+0>
+exception when the facet repository in the locale object contains no facet
+with the requested </font><font face="Courier,Courier New"><font size=-1>locale::id.</font></font><font size=+0>
+To avoid the exception the</font><font face="Courier,Courier New"><font size=-1>
+has_facet</font></font><font size=+0> function can be used:</font>
+<dir>&nbsp;
+<br><font face="Courier,Courier New"><font size=-1>template &lt;class Facet>
+bool has_facet(const locale&amp;) throw();</font></font></dir>
+<font size=+0>It checks if a locale can satisfy a call to </font><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>.
+The preceding example can be changed to:</font>
+<dir><font face="Courier New"><font size=-1>if (has_facet&lt;derived_facet>(loc))</font></font>
+<br><font face="Courier New"><font size=-1>cout &lt;&lt; use_facet&lt;derived_facet>(loc).bar();</font></font></dir>
+<font size=+0>so that no exception will be thrown.</font>
+<br>&nbsp;
+<br>&nbsp;
+<p><font face="Arial">Storing Facets in a Locale</font>
+<p><font size=+0>We’ve seen above that the functions </font><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+and </font><font face="Courier,Courier New"><font size=-1>has_facet</font></font><font size=+0>
+provide the functionality to retrieve facets from a locale object. But
+how do the facets get into a locale? It all happens when a locale object
+is created. A locale fills its facet repository depending on the arguments
+passed to its constructor. Here is an example of a </font><font face="Courier,Courier New"><font size=-1>locale</font></font><font size=+0>
+constructor:</font>
+<dir><font face="Courier New"><font size=-1>template &lt;class Facet> locale(const
+locale&amp; other, Facet* f);</font></font></dir>
+<font size=+0>It creates a locale which is a copy of </font><font face="Courier,Courier New"><font size=-1>other.
+</font></font><font size=+0>If
+</font><font face="Courier,Courier New"><font size=-1>other</font></font><font size=+0>
+contains a facet with the identification </font><font face="Courier,Courier New"><font size=-1>Facet::id</font></font><font size=+0>,
+then this facet is replaced in the copy. The new facet is the one that
+the pointer </font><font face="Courier,Courier New"><font size=-1>f </font></font><font size=+0>points
+to. If </font><font face="Courier,Courier New"><font size=-1>other</font></font><font size=+0>
+does not contain a facet with the identification </font><font face="Courier,Courier New"><font size=-1>Facet::id,</font></font><font size=+0>
+then the facet that the pointer </font><font face="Courier,Courier New"><font size=-1>f
+</font></font><font size=+0>points
+to is added and extends the copy.</font>
+<p><font size=+0>One interesting aspect of this behavior is, that it allows
+to add instances of new user-defined facet in a simple way. We will discuss
+all locale constructors in detail in our next article.</font>
+<br>&nbsp;
+<br>&nbsp;
+<p><font face="Arial">Memory Management of Facets in a Locale</font>
+<p><font size=+0>The locale does not only provide means for retrieving
+and storing facets, it is also capable of taking over the memory management
+of its facets. In fact, all facets in the Standard C++ Library are designed
+for maintenance by a locale; they have a protected virtual destructor.
+The consequence is that standard facets can only be created on the heap,
+and, more importantly, they can only be deleted by friends or derived classes.
+Class </font><font face="Courier,Courier New"><font size=-1>locale</font></font><font size=+0>
+is friend of class </font><font face="Courier,Courier New"><font size=-1>locale::facet,</font></font><font size=+0>
+and thus has permission to delete facets via the virtual destructor </font><font size=-1><font face="Courier,Courier New">locale::
+</font><font face="Symbol">~</font><font face="Courier,Courier New">
+facet().</font></font>
+<p><font size=+0>All standard facets offer the same control mechanism for
+their deletion: When you create a standard facet you can determine, whether
+the facet shall later be deleted by the locale or not. This is implemented
+by means of a certain argument for the constructor of the facet base class
+</font><font face="Courier,Courier New"><font size=-1>locale::facet;
+it</font></font><font size=+0> takes an arguments </font><font face="Courier,Courier New"><font size=-1>refs</font></font><font size=+0>,
+which controls deletion of a facet:</font>
+<ul>
+<li>
+<font size=+0>If refs = = 0, then the locale deletes the facet. In this
+case the facet should only be used in conjunction with a locale. Its lifetime
+is tied to the lifetime of the locale it belongs to; the facet becomes
+invalid when the locale is destroyed.</font></li>
+
+<li>
+<font size=+0>If refs = = 1, then the creator of the facet is fully responsible
+for the facet’s lifetime and deletion.</font></li>
+</ul>
+<font size=+0>Note that facet with refs= =1 must be of a type derived from
+a standard facet, because the standard facets have no public destructor,
+but a derived facet can provide one. In fact, non-standard facets can differ
+substantially. For instance, they need not at all provide the parameter
+described above for the standard facet constructors. However, the mechanism
+used by the locale for managing the lifetime of its facets remains the
+same. It is contained in class </font><font face="Courier,Courier New"><font size=-1>locale::facet</font></font><font size=+0>
+already, and thus is inherited by all facet types.</font>
+<p><font size=+0>In the example shown earlier we had omitted the constructors
+and destructors of the classes </font><font face="Courier,Courier New"><font size=-1>base_facet</font></font><font size=+0>
+and </font><font face="Courier,Courier New"><font size=-1>derived_facet</font></font><font size=+0>..
+Here is the completed example. The base class follows the pattern demonstrated
+by the standard facets in the library; i.e. it provides the latitude to
+control deletion of the facet by setting the constructor argument </font><font face="Courier,Courier New"><font size=-1>refs</font></font><font size=+0>
+to 1, if necessary. The derived class is more restrictive and cannot be
+deleted independently of the locale, because it always sets </font><font face="Courier,Courier New"><font size=-1>refs</font></font><font size=+0>
+to 0.</font>
+<dir><font face="Courier,Courier New"><font size=-1>class base_facet :
+public locale::facet</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{</font></font>
+<br><font face="Courier,Courier New"><font size=-1>public:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>base_facet(size_t refs=0)
+: locale::facet(refs) {}</font></font>
+<br><font face="Courier,Courier New"><font size=-1>virtual string bar()
+{ return "this is the base class"; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>static ::std::locale::id
+id;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>protected:</font></font>
+<br><font size=-1><font face="Symbol">~</font><font face="Courier,Courier New">
+base_facet() {}</font></font>
+<br><font face="Courier,Courier New"><font size=-1>};</font></font>
+<br><font face="Courier,Courier New"><font size=-1>class derived_facet
+: public base_facet</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{</font></font>
+<br><font face="Courier,Courier New"><font size=-1>public:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>derived_facet() : base_facet(0)
+{}</font></font>
+<br><font face="Courier,Courier New"><font size=-1>virtual string bar()
+{ return "this is the derived class"; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>virtual string bar_2()
+{ return "hello world"; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>protected:</font></font>
+<br><font size=-1><font face="Symbol">~</font><font face="Courier,Courier New">
+derived_facet() {}</font></font>
+<br><font face="Courier,Courier New"><font size=-1>};</font></font></dir>
+<font size=+0>So far our focus was maintenance of facets by just one locale.
+However, facets are shared among locales. As we have seen earlier, the
+facet repository contained in a locale is a mapping between facet identifications
+and facet pointers. Once a locale is copied, only the facets pointers are
+duplicated. It would be wasteful and inefficient to create copies of all
+contained facets in a locale each time a locale is copied</font>
+<p><font size=+0>For this reason there is a more global management scheme:
+a locale expects its facets to have a reference counter, which the locale
+increments and decrements. When a locale deletes the last pointer to a
+facet it also deletes the facet itself. The reference counter is likely
+to be part of the private guts of class </font><font face="Courier,Courier New"><font size=-1>locale::facet</font></font><font size=+0>.
+Again, details of an implementation are not specified by the standard.</font>
+<p><font size=+0>Let’s examine an example. Say, we have a function that
+creates a new locale object by combining a given locale with a certain
+facet.</font>
+<dir><font face="Courier,Courier New"><font size=-1>void function(const
+locale&amp; loc)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{</font></font>
+<br><font face="Courier,Courier New"><font size=-1>locale temp_locale(loc,
+new facet_type(0));</font></font>
+<br><font size=-1><font face="Courier,Courier New">// </font>do something
+fancy with <font face="Courier,Courier New">temp_locale</font></font>
+<br><font size=-1><font face="Courier,Courier New">} // </font>here <font face="Courier,Courier New">temp_locale</font>
+goes out of scope</font></dir>
+<font size=+0>The diagram below shows an arbitrary locale </font><font face="Courier,Courier New"><font size=-1>loc</font></font><font size=+0>
+provided as an argument to the function.</font>
+<br>&nbsp;
+<br>&nbsp;
+<br>
+<center>
+<p><img SRC="Folie2.JPG" NOSAVE height=322 width=346></center>
+
+<p><font size=+0>After creation of the second locale object</font><font face="Courier,Courier New"><font size=-1>
+temp_locale</font></font><font size=+0> both locale objects share almost
+all of their facets except the one of type </font><font face="Courier,Courier New"><font size=-1>facet_type</font></font><font size=+0>
+that is replaced in the newly constructed locale object.</font>
+<center>
+<p><img SRC="Folie3.JPG" NOSAVE height=450 width=600></center>
+
+<p><font size=+0>When the locale object </font><font face="Courier,Courier New"><font size=-1>temp_locale</font></font><font size=+0>
+goes out of scope its destructor decrements the reference counters of the
+locale’s facets. The reference counter of the new </font><font face="Courier,Courier New"><font size=-1>facet_type</font></font><font size=+0>
+object will be 0 by then and consequently the facet will be deleted. After
+destruction of the locale object </font><font face="Courier,Courier New"><font size=-1>temp_locale</font></font><font size=+0>
+the situation will be as before.</font>
+<p><font size=+0>Facets and locales are designed to work closely together.
+The locale manages references and the lifetime of its facets. Another area
+of close collaboration between locales and facets is the immutability of
+both.</font>
+<br>&nbsp;
+<br>&nbsp;
+<p><font face="Arial">Immutability of Facets in a Locale</font>
+<p><font size=+0>Locales and their contained facets are immutable objects.
+This is because they represent information and rules that describe a certain
+cultural area. Such localization aspects are naturally fixed. Consequently
+a locale does not change throughout its lifetime. Apart from this intuitive
+understanding of a locale, its immutability also has practical reasons.</font>
+<p><font size=+0>Facets are shared among locales. Would it be permitted
+that a facet were changed through the interface of one locale, all other
+locales sharing this facet would be affected by this change. Hence notification
+would be needed, or some kind of synchronization between the locales concerned.
+In any case, it would complicate every program using locales and facets.
+The design path taken for the locale framework is to make locales and facets
+immutable. Once created neither a locale nor its facets can change anymore.</font>
+<p><font size=+0>The immutability is reflected in various places. Locales
+cannot be modified, but only be built by composition. Also, if you look
+at the standard facets, you will notice that all their member functions
+are declared constant. This is sensible because the function </font><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+returns a </font><font face="Courier,Courier New"><font size=-1>const Facet&amp;</font></font><font size=+0>.
+Consequently, you can only invoke constant operations on a facet retrieved
+from a locale.</font>
+<br>&nbsp;
+<br>&nbsp;
+<p><b><i><font face="Arial">Summary</font></i></b>
+<p><font size=+0>We have seen that a locale represents a repository of
+facets, and that a facet encapsulates certain localization aspects. Facets
+can be stored in a locale and retrieved from a locale. The retrieval works
+polymorphically, using the facet identification and the facet type for
+dispatch. Locales and facets are designed to closely work together; locales
+manage references and the lifetime of their facets. Another area of close
+collaboration is the immutability of both locales and facets.</font>
+<br>&nbsp;
+<br>&nbsp;
+<p><font size=+0><b>Acknowledgment.</b> We would like to thank Nathan Myers,
+who proposed the locale framework to the standards committee, for answering
+countless questions.</font>
+<p><b><font size=+0>References.</font></b>
+<p><a NAME="[1]"></a><font size=+0>[1]</font>
+<br><font size=+0>Working Paper for Draft Proposed International Standard
+for Information Systems</font>
+<br><font size=+0>Programming Language C++</font>
+<br><font size=+0>Doc No: X3J16/96-0219R1, WG21/N1037</font>
+<br><font size=+0>Date: December 2, 1996</font>
+<br><font size=+0>Copies of the Committee draft are available for downloading
+at:</font>
+<br><font size=+0>&lt;http://www.setech.com/x3.html> and</font>
+<br><font size=+0>&lt;http://www.maths.warwick.ac.uk/c++/pub/></font>
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER COLS=1 WIDTH="100%" >
+<tr>
+<td><font face="Arial">Sidebar: Explicit Template Argument Specification</font></td>
+</tr>
+
+<tr>
+<td><font size=+0>Template arguments of a function instantiated from a
+function template can either be explicitly specified in a call or be deduced
+from the function arguments. The explicit template argument specification
+is a language feature that is relatively new to C++. We have used it a
+couple of times in this article. Here is a brief explanation of explicit
+template argument specification for function templates.</font>
+<p><font size=+0>Traditionally, function template arguments are deduced
+from the function arguments. If you have a function template</font>
+<dir><font face="Courier,Courier New"><font size=-1>template &lt;class
+T> void foo (T t) { /* ... */ }</font></font></dir>
+<font size=+0>then you usually do not care about instantiation of the function
+template. You simply use this function template as in the following example:</font>
+<dir><font face="Courier,Courier New"><font size=-1>int i = 5;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>foo(i);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>float x = 1.5;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>foo(x);</font></font></dir>
+<font size=+0>The compiler does the work for you; it examines the arguments
+to these function calls, determines the argument types, and deduces that
+in the cases above the function templates need to be instantiated for type
+</font><font face="Courier,Courier New"><font size=-1>int
+</font></font><font size=+0>and
+for type </font><font face="Courier,Courier New"><font size=-1>float</font></font><font size=+0>.&nbsp;</font>
+<p><font size=+0>Now, let’s take a look at the </font><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+function template from the Standard C++ Library. It is declared as:</font>
+<dir><font face="Courier,Courier New"><font size=-1>template &lt;class
+Facet> const Facet&amp; use_facet(const locale&amp; loc);</font></font></dir>
+<font size=+0>Different from the example above, the template parameter
+</font><font face="Courier,Courier New"><font size=-1>Facet</font></font><font size=+0>
+does not appear as type of a function parameter. The only function parameter
+to</font><font face="Courier,Courier New"><font size=-1> use_facet</font></font><font size=+0>
+is the locale. Now, consider a call to this function template:&nbsp;</font>
+<dir><font face="Courier,Courier New"><font size=-1>locale loc;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>const numpunct&lt;char>&amp;
+fac = use_facet(loc); // will not compile !!!</font></font></dir>
+<font size=+0>The function argument </font><font face="Courier,Courier New"><font size=-1>loc</font></font><font size=+0>
+does not allow to deduce the template argument, because its type has nothing
+to do with the template argument </font><font face="Courier,Courier New"><font size=-1>Facet</font></font><font size=+0>.
+The return type of the function template is not considered for template
+argument deduction. Hence in the call to </font><font face="Courier,Courier New"><font size=-1>use_facet</font></font><font size=+0>
+above the template argument </font><font face="Courier,Courier New"><font size=-1>Facet</font></font><font size=+0>
+cannot be deduced. It has to be explicitly specified.&nbsp;</font>
+<p><font size=+0>Explicit template argument specification is done like
+this:</font>
+<dir><font face="Courier,Courier New"><font size=-1>locale loc;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>const numpunct&lt;char>&amp;
+fac = use_facet&lt;numpunct&lt;char> >(loc);&nbsp;</font></font></dir>
+<font size=+0>Note that the syntax for explicit template argument specification
+of a function template is similar to template argument specification of
+class templates. If you have a class template</font>
+<dir><font face="Courier,Courier New"><font size=-1>template &lt;class
+T> class list;</font></font></dir>
+<font size=+0>you naturally specify the template arguments whenever you
+need an instantiation of the class template:</font>
+<dir><font face="Courier,Courier New"><font size=-1>list&lt;int> counters;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>list&lt;float> sizes;</font></font></dir>
+<font size=+0>With a function template&nbsp;</font>
+<dir><font face="Courier,Courier New"><font size=-1>template &lt;class
+T> void foo();</font></font></dir>
+<font size=+0>you do exactly the same:</font>
+<dir><font face="Courier,Courier New"><font size=-1>foo&lt;int>();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>foo&lt;float>();</font></font></dir>
+<font size=+0>if you have to. If the template argument appears in the function
+argument list, it is more convenient to let the compiler deduce the template
+argument for you.</font>
+<p><font size=+0>Disclaimer: Not all compilers available on the market
+these days are capable of understanding this new language feature. So,
+don’t be surprised if your compiler starts complaining about constructs
+like </font><font face="Courier,Courier New"><font size=-1>foo&lt;int>();</font></font></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

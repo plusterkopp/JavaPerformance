@@ -1,0 +1,200 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <title>Book Review  -  Large-Scale C++ Software Development</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="BookReviewLakos"></a>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="489" >
+<tr>
+<td>&nbsp;</td>
+
+<td>&nbsp;</td>
+
+<td VALIGN=BOTTOM WIDTH="189"><img SRC="../../../Images/czonesub.gif" NOSAVE height=33 width=106 align=LEFT></td>
+
+<td NOWRAP WIDTH="50%">
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="450" >
+<tr>
+<td VALIGN=BOTTOM WIDTH="350"><b><sub><font face="Verdana"><font color="#FF0037"><font size=+3>&nbsp;Book
+Review </font></font><i><font color="#660099"><font size=+1>of the week</font></font></i></font></sub></b></td>
+
+<td></td>
+
+<td>&nbsp;</td>
+
+<td></td>
+</tr>
+
+<tr>
+<td VALIGN=BOTTOM COLSPAN="2" WIDTH="387"><img SRC="../../../Images/czonesubrule.gif" VSPACE=4 NOSAVE height=2 width=380></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="10%">
+<center><table BORDER=0 WIDTH="100%" >
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="115"><img SRC="0201633620.gif" NOSAVE height=140 width=112></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="115"><b><font face="Verdana"><font size=-2>Large-Scale
+C++ Software Design&nbsp;</font></font></b></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><i><font face="Verdana"><font size=-2>By John
+S. Lakos&nbsp;</font></font></i></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><font face="Verdana"><font size=-2>Reading,MA:Addison-Wesley
+Longman&nbsp;</font></font></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><font face="Verdana"><font size=-2>ISBN 0201633620&nbsp;</font></font></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><font face="Verdana"><font size=-2>846 pages&nbsp;</font></font></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><font face="Verdana"><font size=-2>Price: $43.95&nbsp;</font></font></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><i><font face="Verdana"><font size=-2>(Reviewed
+10/20/98)&nbsp;</font></font></i></td>
+</tr>
+</table></center>
+&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="100%">
+<center><table BORDER=0 WIDTH="90%" >
+<tr>
+<td VALIGN=TOP WIDTH="60%"><b><font face="Verdana"><font color="#660099"><font size=+2>Unique
+Coverage of Physical Design Issues for Large Systems&nbsp;</font></font></font></b></td>
+</tr>
+
+<tr>
+<td WIDTH="60%"><i><font face="Verdana"><font size=-1>Describes how to
+use C++ in a way that scales well</font></font></i></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font face="Verdana"><font color="#333399"><font size=+2>T</font></font><font size=-1>his
+C++ book is unique: published in 1996, it still is the only volume on the
+development of large-scale software systems implemented in C++. It describes
+how one would use the C++ programming language in a way that scales well
+to very large systems. Yet most of the advice presented in the book also
+applies to small projects.</font></font>
+<p><font face="Verdana"><font size=-1>&nbsp;Typically, projects expand,
+and what started out as a small project often becomes a major undertaking.
+Experienced C++ programmers thoroughly understand the C++ language features.
+However, as programs expand, different forces come into play; techniques
+used to create small programs in C++ don't work when tackling larger projects.
+In his book, Lakos distinguishes between physical and logical design issues.</font></font>
+<p><font face="Verdana"><font size=-1>&nbsp;First, <i>logical design</i>
+is about language constructs (classes, functions, and inheritance). It
+revolves around questions like: Does a class need a copy constructor? Shall
+an operator be a member function or a free function? Shall a member function
+be const or non-const, virtual or non-virtual, static or non-static? Logical
+design does not address issues such as where to place a class definition.
+Unfortunately, as programs get larger, such physical design issues become
+more relevant.</font></font>
+<p><font face="Verdana"><font size=-1>&nbsp;Second, <i>physical design</i>
+addresses issues of the physical entities of a system (files, directories,
+and libraries). For instance, making a member function of a class inline
+forces any client of the class to have seen not only the declaration of
+the function, but also its definition. What is affected is the degree of
+physical coupling between the class and its clients.</font></font>
+<p><font face="Verdana"><font size=-1>&nbsp;Lakos devotes most of his book
+to physical design, explaining techniques for reducing the degree of interdependency
+among the physical entities of a C++ system. He discusses the adverse effect
+of cyclic dependencies, a symptom of which is that no part of the system
+can be understood independently. Cyclically dependent designs are impossible
+to be tested modularly, whereas hierarchical designs (for example, noncyclic
+designs) are easy to comprehend, test, and reuse. He explains the drawbacks
+of excessive link-time dependencies, which are a result of "fat" interfaces
+where one class depends on a tremendous amount of code. Link-time dependencies
+lead to oversized executables. He also discusses the effect of compile-time
+dependencies, such as situations where changing one innocent-looking header
+file results in recompilation of the entire system--a costly activity that
+in very large systems could take days. Reducing the degree of coupling
+therefore is vital to the success of large-scale development.</font></font>
+<p><font face="Verdana"><font size=-1>&nbsp;Lakos's analysis and proposed
+solutions regarding physical design are very detailed (about 450 pages)
+and distinguish the book from other C++ publications. At times, this discussion
+may seem overdeveloped, but in multimillion lines-of-code programs these
+considerations indeed are vital. However, in an ideal world, we would expect
+the development environment (compiler, linker, run-time system) to take
+the burden of physical design issues off our shoulders. As C++ programmers,
+we want to concentrate on logical design. Lakos discusses logical design
+in a 200-page section of the book, and many of the topics discussed there
+can be found in other books, as well. Yet this section is recommended reading
+for C++ programmers who want to gain a deeper understanding of the tradeoffs
+of C++ language features.</font></font>
+<p><font face="Verdana"><font size=-1>&nbsp;<i>Large-Scale C++ Software
+Design</i> is an advanced text that is unique in covering physical design
+issues relevant for very large systems. It is also valuable for smaller
+projects because the suggested techniques are good practice and scale well.
+It's a pity that the book covers only "classic" C++ and does not consider
+programming with templates and/or exceptions. Let us share with you what
+Lakos replied when we asked him what he thinks of the impact of these "new"
+language features on large-scale systems: "That is something my children
+or grandchildren will be writing books about. Right now, nobody has enough
+experience with templates and exceptions to understand the full range of
+consequences." Well, right he is!&nbsp;</font></font>
+<p><i><font face="Verdana"><font size=-1><b>Angelika Langer</b> develops
+and teaches classes on advanced C++, STL, multithreading, internationalization,
+and Java. She has served on the ANSI/ISO C++ Committee since 1993. <b>Klaus
+Kreft</b> is a software architect and consultant with more than a decade
+of experience in industrial software development. He works for Siemens
+Business Services in Germany. Langer and Kreft are working on a book about
+standard C++ iostreams and locales and are columnists for </font></font></i><font face="Verdana"><font size=-1>C++
+Report<i>.&nbsp;</i></font></font></td>
+</tr>
+</table></center>
+&nbsp;</td>
+</tr>
+</table>
+<b><font face="Arial"><font size=-1></font></font></b>
+</body>
+</html>

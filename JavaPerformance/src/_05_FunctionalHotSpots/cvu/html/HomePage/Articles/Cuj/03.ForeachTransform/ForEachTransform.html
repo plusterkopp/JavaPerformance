@@ -1,0 +1,651 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <title>The Difference between for_each and transform</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CujForeach"></a>
+<br><font color="#295AB5"><font size=+3>The Difference between for_each
+and transform</font></font>
+<p><font color="#295AB5"><font size=+2>C/C++ Users Journal, February 2001</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p>The algorithms <b>for_each</b> and <b>transform</b> are often understood
+as very similar in that they apply an operation (supplied as a function
+object) to each element in an input range. The difference is that <b>for_each</b>
+discards the operation's return value, while <b>transform</b> copies the
+return value to an element in the output range. This kind of understanding
+is a fairly common oversimplification. According to the Standard, however,
+the difference between both algorithms is more fundamental. Our goal in
+this installment of our column is to explain the conceptual difference
+between the algorithms and to point out the potential portability trap
+that the na&iuml;ve understanding of the algorithms opens.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+Reading the Standard</h3>
+Before we enter the actual discussion, let us first see what the Standard
+says <a href="#1">[1]</a>.
+<br>&nbsp;
+<br>&nbsp;
+<p><b>FOR_EACH</b>. The <b>for_each</b> algorithm is specified in the Standard
+in the section of non-modifying sequence operations.
+<br>&nbsp;
+<br>&nbsp;
+<pre>template&lt;class InputIterator, class Function>
+Function for_each(InputIterator first, InputIterator last, Function f);</pre>
+
+<ul>Effects: Applies <b>f</b> to the result of dereferencing every iterator
+in the range <b>[first, last)</b>, starting from <b>first</b> and proceeding
+to <b>last - 1</b>.
+<li>
+Returns: <b>f</b></li>
+
+<li>
+Complexity: Applies <b>f</b> exactly <b>last - first</b> times.</li>
+
+<li>
+Notes:If <b>f</b> returns a result, the result is ignored.</li>
+</ul>
+<b>TRANSFORM</b>. The <b>transform</b> algorithm is specified in the Standard
+in the section of mutating sequence operations. It comes in two flavors,
+one version (unary transform) works on one input sequence, the other version
+(binary transform) takes two input sequences. Since we want to compare
+<b>for_each</b>
+and <b>transform</b>, we only consider the unary <b>transform</b>.
+<br>&nbsp;
+<br>&nbsp;
+<pre>template&lt;class InputIterator, class OutputIterator, class UnaryOperation>
+OutputIterator transform(InputIterator first, InputIterator last,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OutputIterator result, UnaryOperation op);</pre>
+
+<ul>
+<li>
+Effects: Assigns through every iterator <b>i</b> in the range <b>[result,
+result + (last - first))</b> a new corresponding value equal to <b>op(*(first
++ (i - result))</b>.</li>
+
+<li>
+Requires: <b>op</b> shall not have any side effects <a href="#2">[2]</a>.</li>
+
+<li>
+Returns: <b>result + (last - first)</b></li>
+
+<li>
+Complexity: Exactly <b>last - first</b> applications of <b>op</b>.</li>
+
+<li>
+Notes: <b>result</b> may be equal to <b>first</b>.</li>
+</ul>
+Indeed, the unary <b>transform</b> algorithm and the <b>for_each</b> algorithm
+both apply a unary operation to every element in a range of input iterators
+exactly once. Other than that they have little in common. The differences
+include:
+<br>&nbsp;
+<br>&nbsp;
+<ul>
+<li>
+<b>for_each</b> is a non-modifying algorithm; <b>transform</b> is a mutating
+algorithm.</li>
+
+<li>
+<b>for_each</b> ignores the operation's return value; <b>transform</b>
+assigns the return value to successive elements in the output range.</li>
+
+<li>
+<b>for_each</b> returns a copy of the function object; <b>transform</b>
+returns an iterator to the end of the output range.</li>
+
+<li>
+<b>for_each</b> applies the operation in a definite order, namely starting
+at the beginning and proceeding to the end of the input range; no such
+guarantee is given for <b>transform</b>.</li>
+
+<li>
+The operation supplied to <b>transform</b> must not have any side effects;
+no such restriction is imposed on the operation supplied to <b>for_each</b>.</li>
+</ul>
+Let us see what these differences mean and why they exist.
+<h3>
+The Intent</h3>
+When we use an algorithm, we expect that the application of the algorithm
+has an effect; otherwise the invocation would be pointless. Typical effects
+include production of a return value and modification of sequence elements.
+<p><b>RETURN VALUES</b>. Typical return values produced by algorithms are
+a Boolean value (see <b>includes</b>), a count (see <b>count_if</b>), an
+iterator pointing to a particular element in the input sequence (see <b>find_if</b>),
+an iterator pointing to the end of a produced output sequence (see <b>copy</b>),
+or a pair of iterators denoting an iterator range (see <b>equal_range</b>).
+Most algorithms produce a return value, only a few do not (i.e., <b>fill</b>,
+<b>replace</b>,
+<b>sort</b>,
+and <b>swap</b>).
+<br>&nbsp;
+<br>&nbsp;
+<p>Regarding modification of sequence elements, the Standard distinguishes
+between mutating (or modifying) and inspecting (or non-modifying) algorithms.
+<p><b>MUTATORS. </b>Algorithms such as <b>remove</b>, <b>replace</b>, <b>copy</b>,
+or <b>sort</b> actively produce side effects, namely modification of elements
+in a sequence. Typically they do so by assigning values through dereferenced
+iterators. <b>copy</b>, for instance, assigns elements from the input range
+to elements in the output range. If the modified sequence is the input
+sequence, then the Standard talks of an <i>in-place algorithm</i>; if the
+modification affects the output range, then it talks of a <i>copy algorithm</i>.
+For instance, <b>replace_if</b> is an in-place algorithm, while <b>replace_copy_if</b>
+is a copy algorithm.
+<br>&nbsp;
+<br>&nbsp;
+<p><b>INSPECTORS.</b> The non-modifying algorithms, in contrast, do not
+assign to any sequence elements. Examples of non-modifying algorithms are
+<b>find_if</b>,
+<b>count_if</b>,
+and <b>search</b>. The actual purpose of an inspecting algorithm is not
+modification of any sequence element, but production of a return value.
+<p>In this sense, <b>transform</b> is a modifying copy algorithm since
+it modifies sequence elements by assigning the result of the function object
+to an element in the output range, whereas <b>for_each</b> is a non-modifying
+algorithm because it does not assign to any sequence elements.
+<p>As stated before, the sole purpose of a non-modifying algorithm is production
+of a return value.
+<b>for_each</b> is a non-modifying algorithm, and it
+returns the function object that was supplied to it. One might wonder:
+what is the point in applying <b>for_each</b> to a sequence of elements
+if it does not modify any elements and returns what it received? Does <b>for_each</b>
+have an effect at all? Indeed, <b>for_each</b> does not actively produce
+any side effect at all. The actual purpose of invoking <b>for_each</b>
+lies in the effects that the function object that is supplied to <b>for_each</b>
+produces when it is invoked for each element in the input sequence. More
+precisely: the function object may produce an effect by modifying the input
+sequence, and it can produce a useful result by mutating itself in the
+course of its invocations.
+<p>For this reason, the operation supplied to <b>for_each</b> is not restricted
+regarding side effects; invocation of <b>for_each</b> with a side-effect-free
+function object is utterly pointless. This is radically different for the
+operation supplied to <b>transform</b>, which according to the Standard
+must not have any side effects at all. And here we see the fundamental
+difference between <b>for_each</b> and <b>transform</b>. <b>for_each</b>
+depends on the side effect produced by the function object, while <b>transform</b>
+produces effects by itself and prohibits any side effects that the function
+object might produce.
+<br>&nbsp;
+<br>&nbsp;
+<p>In this sense, <b>transform</b> is a modifying copy algorithm since
+it modifies sequence elements by assigning the result of the function object
+to an element in the output range, and <b>for_each</b> is a non-modifying
+algorithm because it does not assign to any sequence elements.
+<p>The sole purpose of a non-modifying algorithm is production of a return
+value. <b>for_each</b> returns the function object that was supplied to
+it. Strictly speaking, <b>for_each</b> does not actively produce any side
+effect at all. The point of invoking <b>for_each</b> is the effects produced
+by the function object supplied to <b>for_each</b>. The function object
+may produce an effect by modify the input sequence, and it can produce
+a result by mutating itself in the course of its invocations.
+<br>&nbsp;
+<br>&nbsp;
+<p>For this reason, the operation supplied to <b>for_each</b> is not restricted
+regarding side effects; this is different from the operation supplied to
+<b>transform</b>,
+which according to the Standard must not have any side effects at all.
+This is the a fundamental difference between <b>for_each</b> and <b>transform</b>.
+<b>for_each</b>
+depends on the side effect produced by the function object, while <b>transform</b>
+produces effects by itself and prohibits any side effects that the function
+object might produce.
+<br>&nbsp;
+<br>&nbsp;
+<p>This difference explains why <b>for_each</b> gives a guarantee regarding
+order and number of invocations of the function object. When an operation
+produces side effects, we need to know how often and in which order the
+operation is invoked, because it might be sensitive to the number or order
+of invocations. <b>transform</b>, on the other hand, forbids any side effects
+of its function object and only guarantees the number of invocations as
+a sort of a complexity guarantee, but does not say anything about the order
+of invocation.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+The Consequences</h3>
+Let us consider the consequences of the specification of <b>for_each</b>
+and <b>transform</b> given by the Standard. It turns out that the simple
+notion of "very similar algorithms that only differ in the use of the return
+value of the function object they invoke" is misleading in many cases.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+Side Effects</h3>
+A function object with side effects can be supplied to <b>for_each</b>,
+but it cannot be supplied to <b>transform</b>. The intent of the Standard
+is that <b>for_each</b> is pointless without a side-effect producing function
+object, while <b>transform</b> does not need any side effects from the
+function object other than its return value. According to the Standard,
+the function object supplied to <b>for_each</b> can have any side effect,
+and the function object supplied to <b>transform</b> must not have any.
+Both lead to surprises in practice.
+<br>&nbsp;
+<br>&nbsp;
+<p>Side effects of a function object can be as harmless as writing output
+to a stream for debugging purposes or modifying its own data members, none
+of which would interfere with the side effects that the algorithm produces
+itself. Still, such a function object must not be supplied to <b>transform</b>
+because it violates the standard requirements.
+<p>On the other hand, it is common sense that a function object is not
+free to have any kind of side effect whatsoever. The side effects produced
+by a function object must not interfere with the activities performed by
+the algorithm. For instance, invalidating the iterators or the sequences
+that the algorithm works with is disastrous in any case. Even the function
+object supplied to <b>for_each</b> must obey this common-sense rule, even
+if the Standard does not say so.
+<h3>
+Order of Invocation</h3>
+A function object that is sensitive to the order of invocation can be supplied
+to <b>for_each</b>, but it is not reasonable to supply it to <b>transform</b>.
+The Standard does not say anything about the order in which the <b>transform</b>
+algorithm invokes the function object. For this reason, the result of supplying
+an order-sensitive operation to <b>transform</b> is unpredictable, while
+the result is well-defined when supplied to <b>for_each</b>.
+<p>Why would this matter in practice? Well, let's study an example.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+A Concrete Example</h3>
+Say we have the following situation: we have a directory, which contains
+names and associated information, implemented using a <b>map</b> container.
+In addition, we have a file that contains a list of names. All entries
+for the names contained in this file must be removed from the directory.
+How do we solve such a problem?
+<p>The first idea might be to use the algorithms <b>remove_if</b> and <b>remove_copy_if</b>:
+remove an entry from the <b>map</b> if its name is contained in the file
+(and copy the entry to another <b>map</b>). This of course does not work
+because <b>remove_if</b> and <b>remove_copy_if</b> are mutating algorithms,
+which try to assign values to elements in the input sequence through dereferenced
+iterators. The <b>map</b> container, however, does not allow assignment
+to its contained elements; its elements are pairs of a <b>const</b> key
+and an associated value, and the <b>const</b> key cannot be changed. For
+this reason, an attempted application of <b>remove_if</b> or <b>remove_copy_if</b>
+to the <b>map</b> container would not compile. Instead of using <b>remove_if</b>
+and <b>remove_copy_if</b>, elements in a <b>map</b> are better removed
+via the <b>map</b>'s <b>erase</b> member function
+<h3>
+Using for_each</h3>
+Let us take another approach using <b>for_each</b>: for each name in the
+file, apply a function that erases the respective entry from the map. The
+function object could look like this:
+<br>&nbsp;
+<br>&nbsp;
+<pre>template &lt;class MapT>
+class eraseFct {
+public:
+&nbsp; eraseFct(MapT* m) : theMap(m) {}
+&nbsp; void operator() (string nam)
+&nbsp; { typename MapT::iterator iter = theMap->find(nam);
+&nbsp;&nbsp;&nbsp; if (iter == theMap->end())&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; throw invalid_argument(nam);
+&nbsp;&nbsp;&nbsp; theMap->erase(iter);
+&nbsp; }
+private:
+&nbsp; MapT* theMap;
+};
+
+template &lt;class MapT>
+eraseFct&lt;MapT> eraser(MapT* m)&nbsp;
+{ return eraseFct&lt;MapT>(m); }</pre>
+The function object would be used like this:
+<br>&nbsp;
+<br>&nbsp;
+<pre>map&lt;string,info> directory_1;
+// ... populate directory_1 ...
+ifstream infile("toBeErased.txt");
+for_each(istream_iterator&lt;string>(infile),istream_iterator&lt;string>(),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; eraser(&amp;directory_1));</pre>
+The use of the function object with <b>for_each</b> is fine and has the
+desired effect. The function object's side effect is modification of the
+map that the function object's data member <b>theMap</b> points to. Note
+that the side effect is not order-sensitive, so a guarantee regarding the
+order of invocation of the function object is not needed. In addition,
+the side effects do not interfere with the activities of the algorithms
+because the function object does not attempt modification of the input
+or the output iterators or sequences.
+<p>So far, so good. Now, imagine the situation changes slightly: instead
+of removing entries from the directory, we must now split the directory;
+that is, we must move the entries corresponding to the names in the file
+from the existing directory into a separate directory. How do we solve
+the new problem?
+<h3>
+Using transform</h3>
+An intuitive first idea is to use the <b>transform</b> algorithm with a
+function very similar to the one that we had used with <b>for_each</b>:
+for each name in the file apply a function that erases the respective entry
+from the map and returns the entry that can then be stored in another map.
+<p>We slightly modify the original function object so that we can use it
+with <b>transform</b>. The main difference compared to the original function
+object is that the modified function object returns the value of the removed
+sequence element so that <b>transform</b> can store the value in the output
+sequence. All necessary modifications are marked in the implementation
+shown below:
+<br>&nbsp;
+<br>&nbsp;
+<pre>template &lt;class MapT>
+class eraseFct {
+public:
+&nbsp; eraseFct(MapT* m) : theMap(m) {}
+&nbsp; <b>typename MapT::value_type</b> operator() (string nam)
+&nbsp; { typename MapT::iterator iter = theMap->find(nam);
+&nbsp;&nbsp;&nbsp; if (iter == theMap->end())&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; throw invalid_argument(nam);
+&nbsp;&nbsp;&nbsp; <b>typename MapT::value_type res = *iter;
+</b>&nbsp;&nbsp;&nbsp; theMap->erase(iter);
+&nbsp;&nbsp;&nbsp; <b>return res;
+</b>&nbsp; }
+private:
+&nbsp; MapT* theMap;
+};
+
+template &lt;class MapT>
+eraseFct&lt;MapT> eraser(MapT* m)&nbsp;
+{ return eraseFct&lt;MapT>(m); }</pre>
+The function object would be used like this in conjunction with <b>transform</b>
+for splitting the directory:
+<br>&nbsp;
+<br>&nbsp;
+<pre>map&lt;string,info> directory_2;
+transform(istream_iterator&lt;string>(infile),istream_iterator&lt;string>(),&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; inserter(directory_2,directory_2.end()),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; eraser(&amp;directory_1));</pre>
+We could also use it in lieu of the original function object with <b>for_each</b>
+to solve the initial problem, namely removing the entries:
+<br>&nbsp;
+<br>&nbsp;
+<pre>map&lt;string,info> directory_1;
+// ... populate directory_1 ...
+ifstream infile("toBeErased.txt");
+for_each(istream_iterator&lt;string>(infile),istream_iterator&lt;string>(),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; eraser(&amp;directory_1));</pre>
+The use of the modified function object with <b>for_each</b> is fine and
+solves our initial problem as nicely as the original function object did.
+<b>for_each</b>
+simply ignores the function object's return value, and the effect is the
+same as before with the original function object.
+<br>&nbsp;
+<br>&nbsp;
+<p>The situation is surprisingly different with <b>transform</b>. The effect
+of supplying the modified function object to <b>transform</b> is neither
+predictable nor portable, because the Standard only allows side-effect-free
+function objects in conjunction with <b>transform</b>, and our function
+object <i>has</i> a side effect, namely removal of an element from the
+map that its data member points to.
+<br>&nbsp;
+<br>&nbsp;
+<p>Here we see the fundamental difference between <b>for_each</b> and <b>transform</b>.
+It's misleading to describe the two algorithms as very similar with the
+sole difference being that <b>for_each</b> ignores the return value of
+the function object while <b>transform </b>does not. Instead, the two algorithms
+work with entirely different categories of function objects: one is side-effect-producing;
+the other is side-effect-free.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+Theory vs. Practice</h3>
+The Standard prohibits use of a side-effect-producing function object in
+conjunction with the <b>transform</b> algorithm. The reason for this is
+that the Standard wants to give library implementations the latitude for
+potential optimizations. The requirement that a transformator must not
+have any side effect whatsoever is a very strong requirement. There is
+not a lot that a transformator is allowed to do. It cannot modify its own
+data members; it cannot modify temporaries; it cannot invoke any function
+that has side effects (for instance writing to a stream); it cannot even
+retrieve the value of a volatile variable. All it can do is inspect its
+function argument and other constant, non-volatile fields, calling side-effect-free
+functions and producing a return value. Under these restrictions a library
+implementation can safely apply optimizations.
+<p>One conceivable optimization would be execution of the transformation
+in parallel threads. A function object that is side-effect free is in particular
+thread-safe; since it cannot cause any change in the so-called execution
+environment, there cannot be any potential conflict if the function object
+is invoked from several threads in parallel. Such an optimized implementation
+of the <b>transform</b> algorithm would clearly break the code in our example.
+<p>The transformator in our example might erase an element from a map,
+which is not an atomic operation. One thread might be in the process of
+erasing an element while the other checks for the end of the map, which
+an instant later will be invalidated by the first thread, and as a result
+the second thread will crash. This is the prototypical race condition,
+and it stems from the fact that our transformator violates the requirement
+that it must not have side effects.
+<p>In practice, you will find that supplying a function object with side
+effects to the <b>transform</b> algorithm works just fine and yields predictable
+and reliable results with most implementations of the standard library.
+In fact, no library implementation that we know of takes advantage of the
+latitude that the Standard gives them for optimizing the algorithm. Still,
+keep in mind: strictly speaking it is not portable to use side-effect-producing
+transformators.
+<p>So, what can we do in a portable program instead of using <b>transform</b>?
+Off-hand we see two potential solutions: implement a relaxed version of
+<b>transform</b>
+and use that instead of the standard <b>transform</b> algorithm, or use
+<b>for_each</b>
+instead of <b>transform</b>.
+<h3>
+Implement Your Own Version of transform</h3>
+We can implement our own version of the <b>transform</b> algorithm that
+invokes the function object starting at the beginning and proceeding to
+the end and allows function objects with arbitrary side effects, except
+side effects that invalidate the input or output iterators or sequences.
+Here is a conceivable implementation:
+<br>&nbsp;
+<br>&nbsp;
+<pre>template &lt;class InputIterator, class OutputIterator, class Transformator>
+OutputIterator relaxed_transform(InputIterator first, InputIterator last,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OutputIterator result, Transformator trans) {
+&nbsp; for ( ; first != last; ++first, ++result)
+&nbsp;&nbsp;&nbsp; *result = trans(*first);
+&nbsp; return result;
+}</pre>
+This is the implementation that you find in most implementations of the
+standard library anyway, but it is safer to use your own version, since
+it's a portable solution. The algorithm above can be specified as:
+<pre>template&lt;class InputIterator, class OutputIterator, class Transformator >
+OutputIterator relaxed_transform(InputIterator first, InputIterator last,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OutputIterator result, Transformator trans);</pre>
+
+<ul>
+<li>
+Effects: Applies <b>trans</b> to the result of dereferencing every iterator
+in the range <b>[first, last)</b> starting from <b>first</b> and proceeding
+to <b>last - 1</b> and assigns through every iterator <b>i</b> in the range
+<b>[result,
+result + (last - first))</b> the return value of <b>trans(*(first + (i
+- result))</b>.</li>
+
+<li>
+Requires: <b>trans</b> shall not have any side effects that invalidate
+any iterator in the range <b>[first, last) </b>and <b>[result, result +
+(last - first))</b>.</li>
+
+<li>
+Returns: <b>result + (last - first)</b></li>
+
+<li>
+Complexity: Exactly <b>last - first</b> applications of <b>trans</b> and
+exactly <b>last - fir</b>st assignments.</li>
+
+<li>
+Notes: <b>result</b> may be equal to <b>first</b>.</li>
+</ul>
+In the case that <b>result</b> equals <b>first</b>, that is, input and
+output sequence are the same, the <b>transform</b> algorithm is used as
+an in-place transformation. In this case, the user must keep in mind that
+any modification of the input element performed via the function object
+will be overwritten by the subsequent assignment to the same element. This
+introduces a minor pitfall, but a user who supplies a function object that
+modifies the input elements will probably not use this function object
+in an in-place transformation anyway.
+<br>&nbsp;
+<br>&nbsp;
+<p>The purpose and benefit of the user-defined <b>relaxed_transform</b>
+algorithm is that it eases implementation of portable applications. The
+downside is that potential performance optimizations that a library implementation
+might provide for the standard <b>transform</b> algorithm taking advantage
+of the requirements imposed on the function object of <b>transform</b>
+are not available in this relaxed, user-defined version of the algorithm.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+Use for_each in Case of Doubt</h3>
+Another alternative is to use the <b>for_each</b> algorithm whenever a
+side effect must be produced. We could re-implement the function object
+so that it produces all desired side effects including the one that <b>transform</b>
+had produced; that is, it removes entries from one directory and inserts
+them into another directory. Here is a conceivable re-write of the function
+object:
+<br>&nbsp;
+<br>&nbsp;
+<pre>template &lt;class MapT>
+class moveFct {
+public:
+&nbsp; moveFct (MapT* m1, MapT* m2) : theMap1(m1), theMap2(m2) {}
+&nbsp; void operator() (string nam)
+&nbsp; { typename MapT::iterator iter = theMap1->find(nam);
+&nbsp;&nbsp;&nbsp; if (iter == theMap1->end())&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; throw invalid_argument(nam);
+&nbsp;&nbsp;&nbsp; theMap2->insert(*iter);
+&nbsp;&nbsp;&nbsp; theMap1->erase(iter);
+&nbsp; }
+private:
+&nbsp; MapT* theMap1;
+&nbsp; MapT* theMap2;
+};
+
+template &lt;class MapT>
+moveFct&lt;MapT> mover(MapT* m1,MapT* m2)&nbsp;
+{ return moveFct&lt;MapT>(m1,m2); }</pre>
+The function object would be used like this:
+<br>&nbsp;
+<br>&nbsp;
+<pre>map&lt;string,info> directory_1;
+// ... populate directory_1 ...
+ifstream infile("toBeErased.txt");
+for_each(istream_iterator&lt;string>(infile),istream_iterator&lt;string>(),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; eraser(&amp;directory_1));</pre>
+This solution culminates in the recommendation that we should in general
+use <b>for_each</b> instead of <b>transform</b> for all transformations
+that are order-sensitive or have side effects.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+Summary</h3>
+It is a common misconception that the only difference between the algorithms
+<b>for_each</b>
+and <b>transform</b> is the fact that <b>for_each</b> discards the operation's
+return value, while <b>transform</b> copies the return value to an element
+in the output range. A more fundamental difference between the two algorithms
+is that <b>transform</b> is restricted to side-effect-free function objects,
+while <b>for_each</b> is more relaxed regarding the requirements it imposes
+on its function object.
+<br>&nbsp;
+<br>&nbsp;
+<p>In fact, <b>for_each</b> is an exception among the algorithms in the
+standard library: it is the only algorithm that gives exact guarantees
+regarding order and number of invocations of the function object <i>and</i>
+permits side effects including modification of elements from the input
+sequence. In detail:
+<ul>
+<li>
+<b>for_each</b> is the one of the few algorithms in the standard library
+that gives a guarantee regarding the order in which it invokes the function
+object <a href="#3">[3]</a>. This allows application of order-sensitive
+functionality through a function object. Supplying order-sensitive function
+objects to any other algorithm is downright nonsensical since the result
+is unpredictable.</li>
+
+<li>
+<b>for_each</b> is the only algorithm that returns the function object.
+This allows application of function objects that accumulate in their data
+members' information, which can be retrieved after execution of the algorithm.
+Supplying such a function object to any other algorithm requires instantiation
+of those algorithms for a reference to the function object, which is kind
+of inconvenient since it involves explicit function argument specification,
+plus you will by struggling with library deficiencies <a href="#4">[4]</a>.</li>
+
+<li>
+<b>for_each</b> is one of the few algorithms that does not restrict the
+function object regarding side effects <a href="#5">[5]</a>.This gives
+users an enormous amount of flexibility regarding the implementation of
+function objects. All other algorithms impose requirements of varying degrees
+of severity on the function objects they use.</li>
+</ul>
+In the next installment of this column, we will discuss unary predicates,
+which are another category of function objects used in the standard library.
+We will see which side effects these function objects must or must not
+have.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+Notes and References</h3>
+<a NAME="1"></a>[1] INTERNATIONAL STANDARD. Programming languages &amp;151;
+C++. ISO/IEC IS 14882:1998(E).
+<p><a NAME="2"></a>[2] The Standard defines a side effect as follows: Accessing
+an object designated by a volatile <b>lvalue</b>, modifying an object,
+calling a library I/O function, or calling a function that does any of
+those operations are all <i>side effects</i>, which are changes in the
+state of the execution environment.
+<p><a NAME="3"></a>[3] The other algorithms that give a guarantee regarding
+the order of invocation are the generalized numeric operations <b>accumulate</b>,
+<b>inner_product</b>,
+<b>partial_sum</b>,
+and <b>adjacent_difference</b> defined in header file
+<b>&lt;numerics></b>.
+These algorithms, different from <b>for_each</b>, require side-effect-free
+function objects.
+<p><a NAME="4"></a>[4] Klaus Kreft and Angelika Langer. "Effective Standard
+C++ Library: Explicit Function Template Argument Specification and the
+STL," <a href="../02.FctTemplArgs/FunctionTemplateArguments.html">C++Experts
+Forum</a>.
+<p><a NAME="5"></a>[5]The other algorithm that does not restrict the side
+effects of its function object is <b>generate</b>.
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<br>&nbsp;
+</body>
+</html>

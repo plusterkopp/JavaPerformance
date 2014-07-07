@@ -1,0 +1,169 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer and Klaus Kreft">
+   <title>Preface</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="IOStreamsPreface"></a>
+<h2>
+PREFACE</h2>
+Since 1998, the programming language C++ has been formerly specified in
+the form of the ISO/IEC International Standard 14882, a document that for
+historical reasons is often referred to as the <i>ANSI C++ Standard</i>.
+Integral to this standard is a rich set of abstractions known as the<i>
+C++ Standard Library</i>. In fact, half of the standard is devoted to the
+library. This book covers two major domains of the standard library: IOStreams
+and locales.
+<p>During the process of standardization from 1989 to 1998, the new language
+features and the standard library created a fair amount of interest in
+the C++ community. To address this need for the information, several books
+were published during and after standardization. Some cover standard C++
+in general, typically including a brief introduction to some of the library
+abstractions; one textbook is devoted exclusively to the standard library.
+However, the only part of the library that has been discussed in depth
+so far is the <i>STL,</i> a set of collections and algorithms that was
+developed at Hewlett-Packard independent of the standardization effort
+and was later integrated into C++ standard library. While the STL is, without
+doubt, the most popular part of the standard library, it represents less
+than a third of the library as a whole (counting the pages in the standards
+document and considering the time that the committee spent on it), whereas
+IOStreams and locales form another third of the library.
+<p>When we got involved with the standardization of C++ through our professional
+occupations in 1993, hardly anything had been published about IOStreams,
+and C++ locales had not yet been invented. The only book on IOStreams was
+the <i>C++ IOStreams Handbook</i> by Steve Teale, which describes the classic,
+prestandard IOStreams; and there was a definite lack of information regarding
+the standardized IOStreams. The situation has not radically changed since
+then. Even now, at the time of this writing in 1999, little has been published
+about the standardized IOStreams, and even less about C++ locales. The
+few books that exist about IOStreams are out of date; they all cover the
+classic, pre-standard IOStreams. The C++ textbooks provide introductory
+information about IOStreams but rarely anything about locales. For this
+reason, we felt the need for a book exclusively devoted to these topics
+that begins where the tutorials leave off.
+<h2>
+TARGET AUDIENCE</h2>
+This book is a programmer's guide to the standard IOStreams and locales,
+together with a complete reference of all relevant classes, functions,
+templates, headers, etc. It is neither a tutorial nor a textbook. It does
+not aim to teach the reader C++ or the basics of IOStreams. We expect of
+the readers that they know, at least roughly, what happens when they type
+a line of C++ code such as
+<br><tt>cout &lt;&lt; "Hello" &lt;&lt; endl;</tt>
+<p>Hence this book is not for absolute beginners, but rather for C++ programmers
+who have been studying a C++ textbook, or have comparable practical experience,
+and who intend to use IOStreams and locales in more than a casual way.
+<p>As locales are an abstraction that is new to C++, as opposed to IOStreams,
+which has been around for more than a decade, we cover locales from the
+ground up. Some knowledge of locales in C will aid understanding, but it
+is not required. We do not aim to cover internationalization in a comprehensive
+way. Internationalization is too broad a topic, and an adequate discussion
+of it would fill another whole book. However, IOStreams and locales are
+closely related, and for this reason the book explains the concept of C++
+locales, with emphases on usage of locales in conjunction with IOStreams.
+<p>Regarding IOStreams, we acknowledge the fact that the classic IOStreams
+library has been in existence since the early days of C++. We assume that
+readers are familiar with the basic features as they are explained in every
+C++ textbook. Instead of repeating the basics, we aim to go beyond that
+introductory level. For instance, we demonstrate advanced features--such
+as user-defined shift operators and manipulators, extending streams by
+use of iword/pword, and derivation of new stream and stream buffer classes--as
+well as less ambitious topics like format control and error handling.
+<p>Overall, the goal of this book is to provide as much information about
+the general principles as is needed to enable readers to accomplish their
+concrete programming tasks using IOStreams and locales. The focus is on
+the underlying concepts and the more advanced programming techniques that
+IOStreams and locales support, rather than on the details of each and every
+interface. For this reason we refrain from presenting extensive and lengthy
+case studies and code examples. IOStreams and locales are general purpose
+tools and can be used to solve a sheer abundance of problems. It would
+have been impossible to find a representative and comprehensive set of
+case studies. Instead, we concentrate on a few condensed examples that
+we use to explain programming techniques and concepts, and we deliberately
+refrain from blowing them up to full applications in order to avoid unnecessary
+distractions. We trust that readers will be astute enough to figure out
+concrete applications once the principles are clear.
+<h2>
+ABOUT THE STANDARD</h2>
+We have received a considerable number of queries such as, "Why is this
+and that so and so?" seeking an explanation of why IOStreams and locales
+are designed the way they are. Where we know of an underlying rationale,
+we explain it. Yet there are inconsistencies and "interesting" design decisions
+that can be explained only by "historical reasons" or "design by committee."
+Where we feel that certain features introduce potential pitfalls, we point
+them out, so that the reader can avoid them. Beyond that, we neither aim
+to defend the standard nor intend to discuss alternative designs. We describe
+it as it is.
+<h2>
+ACKNOWLEDGMENTS</h2>
+Writing this book took us more than three years, and during this long period
+many people helped us to endure and finish the task. As with any book,
+the authors are only part of the story, and we would like to thank all
+those people who contributed in one way or another.
+<p>At Addison-Wesley, we would like to thank Mike Hendrickson, Deborah
+Lafferty, and in particular Marina Lang; they believed in the value of
+this book and accompanied us through the entire process from proposal to
+print.
+<p>We would like to thank all those knowledgeable and patient people at
+the standards committee and elsewhere who answered our countless and sometimes
+stupid questions: Nathan Myers, who invented the C++ locales and proposed
+them to the standards com-mittee, told us everything about locales and
+helped us understand his proposal as well as any resulting discussions.
+Jerry Schwarz, who is the "father of IOStreams," that is, the author of
+the first version of IOStreams (or "streams" as they were called in C++
+1.0), gave us invaluable insights into the intent of many of the IOStreams
+features, and we thank him for his patience and support. Bill Plauger,
+author of the Microsoft version of the C++ standard library, helped us
+find bugs in the implementation resulting from misunder-standings on our
+side; he was also invaluable in helping us understand and interpret the
+standard correctly. Philippe LeMouel, a former colleague at RogueWaveSoftware,
+imple-mented IOStreams there and explained his implementation to us. Joe
+Delaney worked on RogueWave's implementation of locales. Dietmar Kuehl,
+worked on the implementation of IOStreams and locales for the gnu compiler.
+John Spicer of EdisonDesignGroup and Erwin Unruh of Siemens answered questions
+regarding templates and other language features. Beman Dawes, who maintains
+the library issue list for the standards committee helped clarify countless
+open issues in the standard.
+<p>Thanks also to our reviewers, some of whom spent a considerable amount
+of effort and time compiling thorough and helpful comments: (in alphabetical
+order) Chuck Allison, Stephen Clamage, Mary Dageforde, Amelia Lewis, Stan
+Lippman, Dietmar Kuehl, Werner Mossner, and Patrick Thompson, as well as
+others who preferred to stay anonymous.
+<br><i>--Angelika Langer</i>
+<br><i>--Klaus Kreft</i>
+<p>I would like to thank Bernd Eggink, author of a book about the classic
+IOStreams written in German. Our email correspondence about IOStreams spawned
+the idea of a joint book project on the standard IOStreams. The original
+idea had been to translate his book into English and upgrade to the standard,
+but his sudden, serious illness thwarted our plans.
+<p>I would like to thank Thomas Keffer, the founder of RogueWaveSoftware,
+for coming up with the idea of writing a book of my own and for supporting
+and encouraging me ever since. I had been working at his company when he
+suggested the book project. I was a German alien working at a US corporation
+when he proposed that I write a book about internationalization in C++.
+I would like to thank Roland Hartinger, my former supervisor and head of
+the C++ compiler construction group at Siemens Nixdorf, who threw me into
+the library project and encouraged me to join the standards committee.
+<p>Last, but not least, I thank Klaus Kreft for joining me on this project.
+Without him this book would have never been finished, and not much is worth
+doing without him.
+<br><i>--Angelike Langer</i>
+<p>First of all, I would like to thank my parents for recognizing and fostering
+my interest and talent in mathematics and natural sciences. Without their
+support I would not be who I am. Next I thank two individuals whom I met
+through my professional work who were true sources of inspiration and insight:
+Gerhard Draxler, whom I miss tremendously since he retired from his professional
+life, and Werner Mossner, with whom I had my first contact with IOStreams.
+Together we implemented a logging facility by derivation from the IOStreams
+classes.
+<p>Finally, I thank Angelika Langer, who is a constant source of ideas
+and an overwhelmingly persistent workers. Without her effort this book
+would not have been finished, yet the significance of her contribution
+is nothing compared to what she means me to me in private life.
+<br><i>--Klaus Kreft</i>
+<br>&nbsp;
+</body>
+</html>

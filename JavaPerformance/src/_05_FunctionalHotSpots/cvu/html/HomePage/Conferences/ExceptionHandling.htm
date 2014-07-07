@@ -1,0 +1,135 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <title>Programming with C++ Exceptions</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="AbstractCppExceptionHandling"></a>&nbsp;
+<div ALIGN=right><table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 COLS=1 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">ABSTRACT</font></b></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=0 COLS=1 WIDTH="95%" >
+<tr>
+<td>In pre-standard C++, the most widely used error indication technique
+is by returning an error code. Unfortunately, some function such as constructors,
+destructors, and overloaded operators do not have a return code or use
+the return value for purposes other than error indication. It is difficult
+to report failure of a constructor in a reliable way, because inevitably
+we must put the responsibility for error recognition into the user’s hands,
+who might forget to check for failure and attempt to access the "zombie"
+object that results from a failed construction. By and large, classic error
+handling is unreliable and error-prone. The language feature of exceptions
+solves this problem and provides a uniform means for error indication and
+error handling.&nbsp;
+<p>The benefit of using exceptions is substantial, yet there are trade-offs
+to consider. Exception handling adds a whole new dimension of design issues
+and programming techniques to C++. How do we design exception classes?
+How do we use exceptions handling in practice? How do we program in presence
+of exceptions? What do we have to do in order to make programs behave nicely
+even in presence of exceptions? What is exception safety? Naive use of
+exception handling might lead to resource leaks, dangling pointers, and
+program crashes. How do we avoid such pitfalls? This lecture suggests answers
+to these and other questions.&nbsp;</td>
+</tr>
+</table></div>
+&nbsp;</td>
+</tr>
+</table></div>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">PREREQUISITES</font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=0 CELLPADDING=5 WIDTH="95%" >
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Level:</font></i></b></td>
+
+<td>intermediate</td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td WIDTH="50%">1.5 - 3.0 hours</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><i><font color="#295AB5">Prerequisites:</font></i></b></td>
+
+<td WIDTH="50%">Attendants should be familiar with the concept and language
+constructs of exception handling in C++. Practical experiences with exceptions
+is not required.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><b><i><font color="#295AB5">Presented at:</font></i></b></td>
+
+<td WIDTH="95%"><a href="PreviousEvents.html#London98">Object Expo Europe</a>,
+London, UK, June 1998&nbsp;
+<br><a href="PreviousEvents.html#C++WorldNYC98">Object Developers Group
+Meeting,</a> New York, NY, August 1998&nbsp;
+<br><a href="PreviousEvents.html#OOP99">OOP 1999</a>, Munich, Germany,
+January 1999&nbsp;
+<br><a href="PreviousEvents.html#ToolsUsa">TOOLS,</a> Santa Barbara, CA,
+August 1999&nbsp;
+<br><a href="PreviousEvents.html#C++World">C++ World</a>, Miami, FL, December
+1999
+<br><a href="PreviousEvents.html#DevWeek">DevWeek Europe</a>, London, UK,
+February 2000</td>
+</tr>
+</table></div>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=2 WIDTH="100%" >
+<tr>
+<td COLSPAN="2"><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminars or
+skim through some further reading:</font></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminars</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER><a href="../Courses/ExceptionHandling.htm"><img SRC="../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><font color="#000000"><a href="../Courses/ExceptionHandling.htm">C++
+Exception Handling</a></font>
+<br><font color="#000000"><font size=-1>1-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+
+<td VALIGN=TOP>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"></td>
+
+<td></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+</body>
+</html>

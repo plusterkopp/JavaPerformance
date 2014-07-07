@@ -1,0 +1,186 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Angelika Langer">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <title>STL Gotchas - Avoiding Common Errors in Using the STL</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="AbstractSTLPitfalls"></a>&nbsp;
+<div ALIGN=right><table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 COLS=1 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">ABSTRACT</font></b></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=0 COLS=1 WIDTH="95%" >
+<tr>
+<td>The standard C++ library and the STL – and in particular its containers
+and algorithms - are an indispensable part of every C++ programmer's knowledge
+of the language. Like every tools it increases productivity and reliability
+of the resulting software, yet it needs to be mastered before it can be
+used effectively.
+<p>Textbooks and courses teach provide tutorials to the STL and enable
+programmers to use the STL containers and algorithms. In practice, it turns
+out that there are several hurdles to surmount, before the STL fits into
+every-day programming smoothly and safely.
+<br>Examples of known problem areas:
+<ul>
+<li>
+<b><font size=-1>INVALIDATION OF ITERATORS.</font></b> Iterators are pointer-like
+objects that refer to elements maintained in a STL container. Depending
+on the type of the container, any operations performed on the container
+might invalidate any iterators pointing to elements in the container. Ever
+too often, programmers overlook this side-effect and as a result, have
+to cope with errors that are hard to track down - pretty much like traditional
+pointer problems.&nbsp;</li>
+
+<li>
+<b><font size=-1>NON-MUTATING ITERATORS.</font></b> The associative containers
+in the STL must not allow modification of the key values that determine
+the ordering of the underlying binary-tree-structure. Depending on the
+implementation this might be expressed in terms of all iterators being
+constant iterators, which imposes severe restrictions on the usability
+of the container, or the iterators are non-constant iterators, which allows
+inadvertant corruption of the tree-structure. How do we cope?</li>
+
+<li>
+<b><font size=-1>SIDE-EFFECT-FREE FUNCTION OBJECTS.</font></b> Use of function
+object types is a programming idiom central to the STL. The STL specification
+imposes restrictions on the functionality of function objects that can
+be used in conjunction with the STL: they must not have side effects and
+they must not modify the container element through a dereferenced iterator.
+What does it mean in pratice?</li>
+
+<li>
+<b><font size=-1>EQUALITY VS. EQUIVALENCE.</font></b> While most algorithms
+use an equality relation, typically <font face="Courier New,Courier"><font size=-1>operator==()</font></font>,
+when they check for equal values, the associative containers use a deduced
+equivalence, typically deduced from <font face="Courier New,Courier"><font size=-1>operator&lt;()</font></font>.
+When does equality differ from equivalence, and what difference does it
+make?</li>
+
+<li>
+<b><font size=-1>STREAM ITERATORS.</font></b> Stream iterators are a powerful
+and convenient abstraction that permit treating input and output devices
+as sequences of elements of the same type. Yet they have interesting semantics
+in the sense that several iterators on the same stream are not independent
+of each other, the result of which can be surprising. Learn more about
+stream iterators.</li>
+
+<li>
+<b><font size=-1>USABILITY OF AUTO POINTERS.</font></b> The auto pointer
+abstraction in the STL is designed to solve problems regarding management
+of heap objects in presence of exceptions: it automatically deletes the
+heap object it owns in order to prevent memory leaks. However, use of the
+auto pointer in conjunction with the STL leads to surprising results.</li>
+
+<li>
+<b><font size=-1>POLYMORPHIC STRATEGIES. </font></b>Numerous algorithms
+and containers take strategy objects: a <font face="Courier New,Courier"><font size=-1>sort()</font></font>
+algorithm can be provided with a comparator which it uses for comparison
+of container elements. If such strategy objects are implemented using the
+strategy pattern, run-time polymorphism is likely to be involved, which
+again leads to subtle problems with the STL.</li>
+</ul>
+These and other problem zones of the STL are explored in this tutorial.
+Knowing them ahead of time saves a lot of development and testing time.
+While some of the problems lead to compile-time errors, they are still
+hard to identify, because contemporary compilers&nbsp; issue almost unreadable
+error message when templates are used intensely. Other errors will result
+in run-time errors and are even harder to track down. The tutorial aims
+to increase the awareness of potential problems and helps avoiding the
+errors in the first place.&nbsp;</td>
+</tr>
+</table></div>
+&nbsp;</td>
+</tr>
+</table></div>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">PREREQUISITES</font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLPADDING=5 WIDTH="95%" >
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Level:</font></i></b></td>
+
+<td>intermediate</td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td WIDTH="50%">2 hours</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><i><font color="#295AB5">Prerequisites:</font></i></b></td>
+
+<td WIDTH="50%">Attendants should have gained a certain degree of familiarity
+with the STL.&nbsp;</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><b><i><font color="#295AB5">Presented at:</font></i></b></td>
+
+<td WIDTH="95%"><a href="PreviousEvents.html#OOP2000">OOP 2000</a>, Munich,
+Germany, January 2000
+<br><a href="PreviousEvents.html#DevWeek">DevWeek Europe 2000</a>, London,
+UK, February 2000
+<br><a href="PreviousEvents.html#ZühlkeForum">Z&uuml;hlke Forum</a>, Z&uuml;rich,
+CH, March 2000</td>
+</tr>
+</table></div>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=2 WIDTH="100%" >
+<tr>
+<td COLSPAN="2"><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminars or
+skim through some further reading:</font></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminars</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Courses/EffectiveSTL.htm"><img SRC="../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><font color="#000000"><a href="../Courses/EffectiveSTL.htm">Effective
+STL Programming</a></font>
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+
+<td VALIGN=TOP><b><i><font color="#295AB5">Paper</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Articles/C++Report.html"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=27 width=31></a></td>
+
+<td><font color="#000000"><a href="../Articles/C++Report.html">Effective
+Standard C++ Library</a></font>
+<br><font color="#000000"><font size=-1>column in C++ Report</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+</body>
+</html>

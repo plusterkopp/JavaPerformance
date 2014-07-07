@@ -1,0 +1,624 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="KeyWords" content="insert iterator STL iteratorC++ training course seminar">
+   <title>Insert Iterators</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CppReportInsertIterators"></a>
+<br><font color="#295AB5"><font size=+3>Insert Iterators</font></font>
+<p><font color="#295AB5"><font size=+2>C++ Report, February 1999</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p>In a series of articles published in our column "Effective Standard
+Library" in C++ Report in 1999 we discussed special groups of iterators:
+insert iterators, stream iterators, and stream buffer iterators. They need
+special attention because they differ from other iterators in that they
+do not fully behave like pointer-like objects, i.e. they break the analogy
+to pointers to some extent. The notion of an STL iterator is often explained
+and understood as a pointer-like object, i.e. something like a built-in
+pointer referring to a built-in array. While this is a valid analogy in
+many situations, it is kind of misleading, or at least confusing, when
+applied to insert and stream iterators. In this an the next installments
+we will see why. Let us start with a brief recap of iterators and then
+discuss insert iterators. Stream iterators will be covered in the next
+article.
+<br>&nbsp;
+<h3>
+Iterator Recap</h3>
+With the adoption of Hewlett-Packard’s STL as part of the Standard Library,
+the concept of <i>generic programming</i> was introduced into the Standard
+Library. The essential idea of generic programming is to separate a data
+structure (container) from the operations (algorithms) performed on the
+data structure. Iterators are provided by the container and used to connect
+the algorithm with the container. Iterators are pointer-like objects that
+provide an interface that allows the algorithm to traverse the container
+and to access and mutate the container’s elements. The following code shows
+an example. The <font face="Courier New">find</font>-algorithm is applied
+to a list of integers to see whether one of the list’s elements is <font face="Courier New">0</font>:
+<blockquote><font face="Courier New"><font size=-1>void foo(list&lt;int>&amp;
+myList)</font></font>
+<br><font face="Courier New"><font size=-1>{</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp; if (find(myList.begin(),
+myList.end(), 0) != myList.end())</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp; cout &lt;&lt; "Found
+a 0 in the list." &lt;&lt; endl;</font></font>
+<br><font face="Courier New"><font size=-1>}</font></font></blockquote>
+The member function <font face="Courier New">begin() </font>yields an iterator
+that refers to the first element of the list, while <font face="Courier New">end()</font>
+yields an iterator one past the end of the list. The <font face="Courier New">find</font>-algorithm
+traverses this iterator range inspecting if any of the elements of the
+list matches the value specified by the last parameter (see implementation
+of <font face="Courier New">find</font> below). If it has reached the iterator
+specified by the second parameter without finding any match it returns
+this iterator, which refers past the end of the list. Otherwise, when <font face="Courier,Courier New">find</font>
+has found a matching element in the list, it returns an iterator referring
+this element.
+<blockquote><font face="Courier New"><font size=-1>template &lt;class Iterator,
+class T></font></font>
+<br><font face="Courier New"><font size=-1>Iterator find ( Iterator first,
+Iterator end, const T&amp; value)</font></font>
+<br><font face="Courier New"><font size=-1>{</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; while (first
+!= end &amp;&amp; *first != value) // line 1</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+first++; // line 2</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; return first;
+// line 3</font></font>
+<br><font face="Courier New"><font size=-1>}</font></font></blockquote>
+There are two aspects in <font face="Courier New">find</font> which are
+typical for standard library algorithms and their relation to iterators:
+<ul>
+<li>
+the way iterator ranges are used and</li>
+
+<li>
+the way algorithms are implemented generically based on the iterators’
+types.</li>
+</ul>
+We will explore both aspects in greater detail now. Let’s start with iterator
+ranges.
+<br>&nbsp;
+<h3>
+<b>Iterator Ranges and Past-The-End Iterators.</b></h3>
+An iterator range is specified by two iterators. The first one indicates
+the beginning of the range and the second one the end. All iterator positions
+in that range can be reached by consecutively applying ++ (either postfix
+or prefix) to the first iterator until ++ yields the end iterator. The
+end iterator is excluded from the iterator range (denoted as: [<font face="Courier New">first,last</font>)
+). It need not even refer to a valid container element; it only has to
+be reachable. This past-the-end iterator can be used to indicate failure:
+When an algorithm normally returns a valid iterator from the iterator range
+as the result of its task, then it can return the past-the-end iterator
+to indicate that it failed to accomplish the task. The <font face="Courier New">find</font>-algorithm
+shown above does so when it cannot find the specified value. Hence, iterator
+ranges specify sequences of elements that an algorithm can step through,
+and the end iterator can also be used by an algorithm as an error indication.
+<br>&nbsp;
+<h3>
+<b>Iterator Categories.</b></h3>
+Algorithms are generic with respect to the types of the iterators they
+use. An algorithm is usually implemented as a function template that has
+one or more iterator types as template parameters.
+<p>The <b>interface required</b> of these iterator types is determined
+by the operations that an algorithm applies to the iterators. These operations
+can be the public member functions when the iterator is a class. When the
+iterator is a built-in type the operations used are the built-in operations
+for that type. In the example above, the <font face="Courier New">find</font>-algorithm
+has only one iterator type template parameter. The operations used from
+this iterator type’s interface are the != operator and the * operator in
+line 1, the postfix ++ operator in line 2, and the copy constructor in
+line 3. That's all the <font face="Courier New">find</font>-algorithm requires
+of an iterator type.
+<p>The <b>interface supported</b> by an iterator type depends on the kind
+of the container that provides it. Take for example the standard library’s
+<font face="Courier New">list</font>,
+which is a doubly-linked list. It can be iterated in forward and backward
+direction. Hence, it provides an iterator to whom the pre- and postfix
+<font face="Courier New">operator++</font>
+and <font face="Courier New">operator--</font> can be applied. A <font face="Courier New">vector</font>,
+on the other hand, need not to be iterated element by element, but allows
+steps of arbitrary size. It provides an iterator to whom the <font face="Courier New">operator+(Distance)</font>
+and <font face="Courier New">operator-(Distance)</font> can be applied.
+In other words, the characteristics of a container determine the interface
+of the iterators it provides.
+<p>While the interface of an iterator depends on the container, it is the
+algorithm that can optimize its implementation according to the iterator’s
+interface. A typical example is the <font face="Courier New">advance</font>-algorithm,
+which increments or decrements an iterator. It can be implemented for a
+<font face="Courier New">vector</font>
+in the following way:
+<blockquote><font face="Courier New"><font size=-1>i += n;</font></font></blockquote>
+while it must be implemented for a <font face="Courier New">list</font>
+in a more runtime consuming way:
+<blockquote><font face="Courier New"><font size=-1>if (n >= 0)</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; while (n--)</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+i++;</font></font>
+<br><font face="Courier New"><font size=-1>else</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; while (n++)</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+i--;</font></font></blockquote>
+The standard library classifies the iterator types according to their interfaces
+into five categories:
+<center>
+<p><img SRC="Folie1.JPG" NOSAVE height=227 width=270></center>
+
+<p>Note that this figure does not show inheritance relationships. Iterator
+categories are just abstractions which represent a set of requirements
+to an iterator’s interface. As already mentioned above individual iterators
+are free to satisfy these requirements by different means, i.e. built-in
+operators, member functions, global functions, etc. For detailed explanations
+of the requirements consult your library manual or take a look at one of
+the publications given as reference <a href="#Ref2">/2/-/4/</a>. In brevity:
+<ul>
+<li>
+Input iterators allow algorithms to advance the iterator and give "read
+only" access to the value.</li>
+
+<li>
+Output iterators allow algorithms to advance the iterator and give "write
+only" access to the value.</li>
+
+<li>
+Forward iterators combine read and write access, but only in one direction
+(i.e., forward).</li>
+
+<li>
+Bidirectional iterators allow algorithms to traverse the sequence in both
+directions, forward and backward.</li>
+
+<li>
+Random access iterators allow jumps and "pointer arithmetics".</li>
+</ul>
+Each category adds new features to the previous one.
+<br>&nbsp;
+<h3>
+<b>Iterator Adapters.</b></h3>
+Another issue related to standard library iterators is the idea of <i>iterator
+adapters</i>. An iterator adapter takes an iterator and transforms it into
+another iterator that has a different behavior. A typical example from
+the standard library is the<font face="Courier New"> reverse_iterator</font>.
+It reverts the direction in which the iterator traverses a collection.
+Or simpler: the <font face="Courier New">operator++()</font> of the reverse
+iterator adapter calls the <font face="Courier New">operator--()</font>
+of the original iterator. As you might already guess from this description,
+it is a precondition that the original iterator is at least a bidirectional
+iterator.
+<br>&nbsp;
+<h3>
+Insert Iterators</h3>
+To motivate the need for insert iterators, lets start with an example.
+Assume we have two iterator ranges, defined by [<font face="Courier New">sourceBegin,sourceEnd</font>)
+and [<font face="Courier New">targetBegin,targetEnd</font>). Then the following
+code:
+<blockquote><font face="Courier New"><font size=-1>while (targetBegin !=
+targetEnd &amp;&amp; sourceBegin != sourceEnd)</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; *targetBegin
+++ = *sourceBegin ++;</font></font></blockquote>
+copies the elements from the source iterator range into the target iterator
+range, overwriting the elements that initially existed in the target range.
+The copying stops when either the source or the target range is exceeded.
+<p>The above is a typical pointer idiom and thanks to the generic structure
+of the standard library this works fine, not only for pointers but also
+for iterators referring to elements of a container. The only precondition
+is that <font face="Courier New">container.begin() &lt;= targetBegin &lt;=
+targetEnd &lt;= container.end()</font>.
+<p>As mentioned before, the elements of the container between <font face="Courier New">targetBegin</font>
+and <font face="Courier New">targetEnd</font> will be overwritten. An interesting
+question is if it is possible to use the same code to insert the new elements
+into the container instead of overwriting the existing elements. We might
+consider inserting them right before the position denoted by the iterator
+<font face="Courier New">targetBegin</font>.
+In that case, we would see the iterator as a cursor pointing into the container,
+which we would want to switch from the regular overwrite mode to insert
+mode.
+<p>The standard library has the notion of iterator adapters. In the recap,
+we mentioned the example of the <font face="Courier New">reverse_iterator</font>,
+which switches an existing iterator from forward mode to backward mode.
+Similarly, the standard library contains an adapter that offers what we
+are looking for: the <font face="Courier New">insert_iterator</font>. It
+switches an existing iterator from overwrite mode to insert mode.
+<p>Let us see how an <font face="Courier New">insert_iterator</font> can
+be used to rewrite the code snippet above, in order to achieve insertion
+instead of overwriting. What would we have to change? Well, instead of
+a range that we want to overwrite, we have a position before which we intend
+to insert elements. The rewritten code snippet looks like this:
+<blockquote><font face="Courier New"><font size=-1>insert_iterator&lt;Container>
+insertIter(container, target);</font></font>
+<br><font face="Courier New"><font size=-1>while (sourceBegin != sourceEnd)</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; *insertIter
+++ = *sourceBegin ++;</font></font></blockquote>
+Instead of the target range [<font face="Courier New">targetBegin,targetEnd</font>)
+we have:
+<ul>
+<li>
+a <font face="Courier New">container</font> of type <font face="Courier New">Container</font>
+into which the new elements are inserted and</li>
+
+<li>
+a <font face="Courier New">target</font> iterator referring to a position
+inside this container; the iterator denotes the position before which the
+new elements are inserted.</li>
+</ul>
+The elements to be inserted are still taken from a source iterator range
+[<font face="Courier New">sourceBegin,sourceEnd</font>).
+<p><b><font size=+1>How do insert iterators work?</font></b>
+<p>We started this article with the remark that often people see iterators
+as something like a built-in pointer referring to a built-in array. Indeed,
+a built-in pointer referring to a built-in array can be seen as an iterator.
+Note, however, that this iterator cannot be switched to insert mode, because
+insertion would make the array grow, but built-in arrays are of fixed size.
+Here, the analogy between iterators and pointers breaks. All standard library
+containers are of dynamic size, whereas a built-in array is a fixed-size
+container. For this reason, an iterator can be switched into insert mode
+and a pointer cannot.
+<p>This is also visible in the implementation of the <font face="Courier New">insert_iterator</font>.
+It uses the container’s member function <font face="Courier New">insert</font>,
+which is defined as:
+<blockquote><font face="Courier New"><font size=-1>iterator insert(iterator
+position, const T&amp; newElement);</font></font></blockquote>
+The type <font face="Courier New">iterator</font> is the container’s iterator
+type; it is provided by a nested typedef inside the container' s public
+section. The type <font face="Courier New">T</font> is the container’s
+element type; it is a template parameter of the container's class template.
+The functionality of <font face="Courier New">insert</font> is very straightforward:
+It inserts a copy of <font face="Courier New">newElement</font> before
+<font face="Courier New">position</font>
+and returns an iterator referring to the inserted copy.
+<p><b><font size=+1>Which iterator category do insert iterators belong
+to?</font></b>
+<p>To classify the <font face="Courier New">insert_iterator</font> into
+an iterator category we have to ask ourselves: Which functionality, in
+terms of member functions, do we expect from the <font face="Courier New">insert_iterator</font>?
+In our example above we have used the <font face="Courier New">operator++</font>.
+Additionally we have used the <font face="Courier New">operator*</font>
+on the right hand side of an assignment, which means we require write access
+to the value the iterator refers to. Comparing this functionality with
+the brief description we gave of the iterator categories earlier, we find
+that the <font face="Courier New">insert_iterator</font> should be an output
+iterator. The standard, not surprisingly, specifies the <font face="Courier New">insert_iterator</font>’s
+synopsis as follows:
+<p><font face="Courier New"><font size=-1>template &lt;class Container></font></font>
+<br><font face="Courier New"><font size=-1>class insert_iterator :</font></font>
+<br><font face="Courier New"><font size=-1>public iterator&lt;output_iterator_tag,void,void,void,void></font></font>
+<br><font face="Courier New"><font size=-1>{</font></font>
+<br><font face="Courier New"><font size=-1>public:</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; typedef Container
+container_type;</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; insert_iterator&lt;Container>(Container&amp;
+c, typename Container::iterator i);</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; insert_iterator&lt;Container>&amp;
+operator= (typename Container::const_reference value);</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; insert_iterator&lt;Container>&amp;
+operator*();</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; insert_iterator&lt;Container>&amp;
+operator++();</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; insert_iterator&lt;Container>&amp;
+operator++(int);</font></font>
+<br><font face="Courier New"><font size=-1>protected:</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; Container*
+container;</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; typename
+Container::iterator iter;</font></font>
+<br><font face="Courier New"><font size=-1>};</font></font>
+<p>Do not worry too much about the base class <font face="Courier New">iterator&lt;output_iterator_tag,
+void, void, void, void></font>. It just means that the <font face="Courier New">insert_iterator</font>
+identifies itself as an output iterator. We will discuss the "voids" in
+our subsequent article.
+<p><b><font size=+1>How are operations of an insert iterator implemented?</font></b>
+<p>Let's take a more thorough look at the implementation of <font face="Courier New">insert_iterator</font>‘s
+member functions. The constructor is easy. It receives a container and
+an iterator which it saves in its protected data members:
+<blockquote><font face="Courier New"><font size=-1>insert_iterator&lt;Container></font></font>
+<br><font face="Courier New"><font size=-1>(Container&amp; c, typename
+Container::iterator i) : container(&amp;c), iter(i) {}</font></font></blockquote>
+The other member functions are supposed to work together in order to support
+the pointer idioms shown in the previous example:
+<dir>
+<dir><font face="Courier New"><font size=-1>*insertIter ++ = *sourceBegin
+++;</font></font></dir>
+</dir>
+The effect of this statement shall be insertion of the value of <font face="Courier New">*sourceBegin</font>
+into the container before the position indicated by <font face="Courier New">insertIter</font>.
+Hence, one of the many operations invoked here must call the container’s
+member function <font face="Courier New">insert</font>, which performs
+the actual insertion. To get a clearer picture, we decompose the expression
+into a sequence of calls of <font face="Courier New">insert_iterator</font>’s
+member functions, taking into account the order of evaluation for operator
+member function, which is left to right. The result is:
+<blockquote><font face="Courier New"><font size=-1>insertIter.operator*().operator++(int).operator=(*sourceBegin
+++);</font></font></blockquote>
+Which of these operations shall do the actual insertion?
+<p>For two reasons <font face="Courier New">operator=</font> is the one
+to call <font face="Courier New">insert</font>. First, it is the only one
+of the three operators whose signature allows to receive an argument. We
+can pass the value that shall be inserted in the container as an argument
+to the<font face="Courier New"> insert_iterator</font>’s assignment operator.
+Secondly, the semantics of "assigning a value to a container iterator"
+can be interpreted as "inserting the value into the container". It would
+feel kind of awkward if dereferencing or incrementing an iterator would
+mean "inserting the value into the container".
+<p>Okay, we're ready to try a tentative first implementation of <font face="Courier New">operator=(typename
+Container::const_reference value)</font>. The function body would be something
+like this:
+<blockquote><font face="Courier New"><font size=-1>container->insert(iter,
+value);</font></font>
+<br><font face="Courier New"><font size=-1>return *this;</font></font></blockquote>
+Not bad for a first try. However, there's a snag here. What happens if
+the container must be resized due to insertion of an additional element?
+Think of a <font face="Courier New">vector</font>: It's capacity might
+be exhausted (see figure 2a). Hence, insertion of an element requires:
+New memory for the elements must be allocated, elements must be copied,
+and the old memory must be released. After that <font face="Courier New">iter</font>
+has become invalid, because it still refers to some old, meanwhile released,
+memory location(see figure 2b).
+<p>Here it comes in handy that the container's member function <font face="Courier New">insert</font>
+returns an iterator to the newly inserted value. If we advance this returned
+iterator one step (by applying ++) then it refers to the position in the
+container before which the next value should be inserted, and we can make
+this position our new <font face="Courier New">iter</font> value:
+<blockquote><font face="Courier New"><font size=-1>insert_iterator&lt;Container>&amp;
+operator=(typename Container::const_reference value)</font></font>
+<br><font face="Courier New"><font size=-1>{</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; iter = container->insert
+(iter, value);</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; iter++;</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; return *this;</font></font>
+<br><font face="Courier New"><font size=-1>}</font></font></blockquote>
+
+<p><br>(See figure 2c).
+<center>
+<p><img SRC="Folie2.JPG" NOSAVE height=286 width=515><i><font size=-1>Figure
+2a: Situation <b>before</b> insertion into a full vector</font></i>
+<p><img SRC="Folie3.JPG" NOSAVE height=352 width=415>
+<p><i><font size=-1>Figure 2b: Situation <b>after</b> insertion into a
+full vector</font></i>
+<br>&nbsp;
+<p><img SRC="Folie4.JPG" NOSAVE height=384 width=486>
+<p><font size=-1><i>Figure 2c: Situation after adjustment of </i><font face="Courier New">iter</font></font></center>
+
+<p>Now that we have implemented <font face="Courier New">operator=</font>,
+we can take a look at the implementation of the other operators. It almost
+looks like there were no functionality left over for them. Instead of having
+them do nothing we make them return a reference to self:
+<blockquote><font face="Courier New"><font size=-1>insert_iterator&lt;Container>&amp;
+operator*() { return *this; }</font></font>
+<br><font face="Courier New"><font size=-1>insert_iterator&lt;Container>&amp;
+operator++() { return *this; }</font></font>
+<br><font face="Courier New"><font size=-1>insert_iterator&lt;Container>&amp;
+operator++(int) { return *this; }</font></font></blockquote>
+This allows to chain <font face="Courier New">operator*</font>, and <font face="Courier New">operator++</font>
+before <font face="Courier New">operator=</font> and the operator chain
+<blockquote><font face="Courier New"><font size=-1>insertIter.operator*().operator++(int).operator=(*sourceBegin
+++);</font></font></blockquote>
+works as expected. A good compiler can optimize this line of code by eliminating
+the code of <font face="Courier New">operator*</font> and <font face="Courier New">operator++</font>
+and would compress it to something like:
+<blockquote><font face="Courier New"><font size=-1>insertIter.operator=(*sourceBegin
+++);</font></font></blockquote>
+
+<p><br><b><font size=+1>Afterthought: What are iterators?</font></b>
+<p>We explained the implementation of the <font face="Courier New">insert_iterator</font>
+because we feel it helps to broaden the understanding of what an iterator
+in the standard library can be. In essence, an iterator is an abstraction
+that provides the operations required for the iterator category that it
+belongs to. In general, these operations are always a subset of the operations
+that a built-in pointer provides. There are, however, no carved-in-stone
+rules for the syntax or semantics of an individual iterator operation.
+For example, it is not guaranteed that an operation of an iterator implements
+a functionality that corresponds to the semantics of the same operation
+for a built-in pointer. It is allowed and sometimes sensible to break the
+analogy between an iterator and a built-in pointer.
+<p>Recall the <font face="Courier New">insert_iterator</font>’s <font face="Courier New">operator++</font>.
+It is implemented by a single line of code: <font face="Courier New">return
+*this;</font> . This code does not do anything of what is typically associated
+with an increment operation for a built-in pointer. We would expect something
+like: advance the pointer one step so that it refers the next data element.
+Also, look at the return type of the <font face="Courier New">insert_iterator</font>’s
+<font face="Courier New">operator*</font>.
+It returns a reference to an insert iterator. Wouldn't one expect a reference
+to the value the iterator points to? The bottom line is that the individual
+operations of an insert iterator have surprising and counter-intuitive
+semantics. Only in combination they mimic pointer-like semantics, like
+we've seen it in:
+<blockquote><font face="Courier New"><font size=-1>*insertIter ++ = *sourceBegin
+++;</font></font></blockquote>
+The flip side of this free interpretation of the semantics of an iterator's
+operations is that it allows to write correct code that looks wrong and
+hence is hard to comprehend. Here is an example: We could write the following
+code to insert the elements from the source iterator range [<font face="Courier New">sourceBegin,
+sourceEnd</font>) into the <font face="Courier New">container</font> before
+the position denoted by <font face="Courier New">target</font>:
+<blockquote><font face="Courier New"><font size=-1>insert_iterator&lt;Container>
+insertIter(container, target);</font></font>
+<br><font face="Courier New"><font size=-1>while (sourceBegin != sourceEnd)</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; insertIter
+= *sourceBegin ++;</font></font></blockquote>
+We strongly discourage writing code like this. It's correct and it works,
+yet it obfuscates the intent. Everybody who understands iterators as pointer-like
+objects might have a hard time to see what's going on in this <font face="Courier New">while</font>
+loop.
+<br>&nbsp;
+<h3>
+<b>Additional Remarks on Insert Iterators</b></h3>
+With the last remarks the column has already come full cycle: we have seen
+that the analogy between iterators and pointers only partially hold for
+insert iterators and how freely iterator operations can be interpreted.
+There are two additional issues we want to cover because they are so closely
+related to the <font face="Courier New">insert_iterator</font>. The first
+is a subtle problem in the iterator’s usage and the second are two other
+iterator adaptors: <font face="Courier New">front_insert_iterator</font>,
+<font face="Courier New">back_insert_iterator</font>
+which together with the <font face="Courier New">insert_iterator</font>
+form the family of insert iterators.
+<p><b><font size=+1>Temporary insert iterators</font></b>
+<p>Throughout all code samples in this article, we explicitly defined a
+named instance of the <font face="Courier New">insert_iterator</font> whenever
+we used one. We did so because creating only a temporary <font face="Courier New">insert_iterator</font>
+introduces a subtle problem. Consider:
+<blockquote><font face="Courier New"><font size=-1>while (sourceBegin !=
+sourceEnd)</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; *(insert_iterator(container,target))
+++ = *sourceBegin ++;</font></font></blockquote>
+A temporary <font face="Courier New">insert_iterator</font> is constructed
+for each iteration of the loop. For each of the temporary <font face="Courier New">insert_iterator</font>s
+the insertion position is always specified by the iterator <font face="Courier New">target</font>.
+However, the memory location referenced by <font face="Courier New">target</font>
+might have become invalid after an iteration due to a necessary re-sizing
+of the container. This is a problem similar to the one we had encountered
+with the first try for the implementation of <font face="Courier New">insert_iterator</font>'s
+<font face="Courier New">operator=.</font>
+<p>To avoid this problem it is recommended to use a non-temporary <font face="Courier New">insert_iterator</font>.
+<p>When the insertion position is specified by <font face="Courier New">container.begin()</font>
+or <font face="Courier New">container.end()</font> the situation is different.
+The member functions <font face="Courier New">begin()</font> and <font face="Courier New">end()</font>
+dynamically determine the respective positions. Prior to the construction
+of each temporary<font face="Courier New"> insert_iterator</font> the iterator
+to be adapted is determined anew.
+<p>Note also the difference between using:
+<blockquote><font face="Courier New"><font size=-1>while (sourceBegin !=
+sourceEnd)</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; *(insert_iterator(container,container.begin()))++
+= *sourceBegin++;</font></font></blockquote>
+and:
+<blockquote><font face="Courier New"><font size=-1>insert_iterator&lt;Container>
+insertIter(container, container.begin());</font></font>
+<br><font face="Courier New"><font size=-1>while (sourceBegin != sourceEnd)</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; *insertIter
+++ = *sourceBegin ++;</font></font></blockquote>
+The first code snippet makes each newly inserted element the first element
+of the container, while the latter inserts all element before the position
+that used to be <font face="Courier New">container.begin()</font> when
+the loop was started. Say, we have an empty<font face="Courier New"> list&lt;int></font>
+and the source iterator range is [<font face="Courier New">&amp;a[0],&amp;a[4]</font>)
+where<font face="Courier New"> a[]</font> is an integer array <font face="Courier New">int
+a[4] = {1,2,3,4}</font>. The first code snippet will result in a list which
+contains: 4,3,2,1, while the second leads to a list containing: 1,2,3,4.
+<p><b><font size=+1>Front Inserter and Back Inserter</font></b>
+<p>There are more elegant ways of inserting elements at the beginning or
+end of a container. The standard library provides two additional insert
+iterator adapters for this purpose: <font face="Courier New">front_insert_iterator</font>
+and <font face="Courier New">back_insert_iterator</font>.
+<p>The funny thing about them is that they are called iterator adapters
+although their constructors do not even receive an iterator that should
+be adapted. Their constructors’ only parameter is a container. The iterator
+to be adapted is implicitly specified: <font face="Courier New">front_insert_iterator</font>offers
+the same functionality as:
+<blockquote><font face="Courier New"><font size=-1>insert_iterator(container,container.begin())</font></font></blockquote>
+i.e. it inserts new elements always at the begin of the container. <font face="Courier New">back_insert_iterator</font>
+inserts new elements always at the end of the container, thus offering
+the same functionality as:
+<blockquote><font face="Courier New"><font size=-1>insert_iterator(container,container.end())</font></font></blockquote>
+We would call the functionality of both adapters "a kind of iterator adaptation",
+not really an iterator adaptation, because their actual implementation
+is not based on any iterators, not even <font face="Courier New">container.begin()</font>
+or <font face="Courier New">container.end()</font>. The <font face="Courier New">front_insert_iterator</font>,
+for instance, implements the assignment operator in the following way:
+<br>&nbsp;
+<blockquote><font face="Courier New"><font size=-1>front_insert_iterator&lt;Container>&amp;
+operator=(typename Container::const_reference value)</font></font>
+<br><font face="Courier New"><font size=-1>{</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp; container->push_front(value);</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; return *this;</font></font>
+<br><font face="Courier New"><font size=-1>}</font></font></blockquote>
+The <font face="Courier New">back_insert_iterator</font> calls <font face="Courier New">container->push_back(value)</font>
+in its corresponding assignment operator. <font face="Courier New">push_front</font>
+inserts a copy of <font face="Courier New">value</font> at the beginning
+of the container, while <font face="Courier New">push_back</font> does
+the same at the end.
+<p>While the <font face="Courier New">insert_iterator</font> adapter can
+be applied to <i>all</i> types of containers in the standard library, <font face="Courier New">front_insert_iterator</font>
+and <font face="Courier New">back_insert_iterator</font> cannot. The reason
+is that not all container types offer a <font face="Courier New">push_front</font>
+or <font face="Courier New">push_back</font> member function. Only those
+containers for which these operations take constant time provide them.
+The respective containers are for <font face="Courier New">push_front</font>:
+<font face="Courier New">list</font>,
+<font face="Courier New">deque</font>
+and for <font face="Courier New">push_back</font>:
+<font face="Courier New">vector</font>,
+<font face="Courier New">list</font>,
+<font face="Courier New">deque</font>.
+Applying a <font face="Courier New">front_insert_iterator</font> or a <font face="Courier New">back_insert_iterator</font>
+to other containers will result in a compile error.
+<br>&nbsp;
+<h3>
+<b>Summary</b></h3>
+We have seen that the<font face="Courier New"> insert_iterator</font> is
+an iterator adapter that provides an output iterator interface. While the
+container iterators only allow to overwrite existing container elements,
+the<font face="Courier New"> insert_iterator</font> allows to insert new
+elements into a container. The semantic of an <font face="Courier New">insert_iterator</font>'s
+individual operations is completely different from what is normally assumed
+for a typical iterator that is often seen a pointer-like object. Only in
+combination the operations exhibit pointer-like semantics.
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+<b>References</b><a NAME="Ref1"></a></h3>
+
+<blockquote>/1/ Klaus Kreft &amp; Angelika Langer
+<br><a href="../OOPvsGP/Introduction.htm">Combining OO Design and Generic
+Programming</a>
+<br>C++ Report, March 1997
+<br><a NAME="Ref2"></a>
+<br>/2/ STL Tutorial and Reference Guide
+<br>David R. Musser and Atul Saini
+<br>Addison-Wesley, 1996
+<br><a NAME="Ref3"></a>
+<br>/3/ Generic Programming and the STL
+<br>Matthew Austern
+<br>Addison Wesley Longman, 1998
+<br><a NAME="Ref4"></a>
+<br>/4/ The C++ Programming Language, 3rd Edition
+<br>Bjarne Stroustrup
+<br>Addison Wesley Longman, 1997</blockquote>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+<font size=-1></font>
+<br>&nbsp;
+</body>
+</html>

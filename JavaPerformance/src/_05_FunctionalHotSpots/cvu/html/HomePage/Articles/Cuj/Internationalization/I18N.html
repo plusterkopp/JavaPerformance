@@ -1,0 +1,1048 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <title>Internationalization Using Standard C++</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CujI18N"></a>
+<br><font color="#295AB5"><font size=+3>Internationalization Using Standard
+C++</font></font>
+<p><font color="#295AB5"><font size=+2>C/C++ User Journal, September 1997</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p><a NAME="Introduction"></a><font size=+1>Introduction</font>
+<p>Computer users all over the world prefer to interact with their systems
+using their own language and cultural conventions. Cultural differences
+affect for instance the display of monetary values, of date and time. Just
+think of the way numeric values are formatted in different cultures: 1,000,000.00
+in the US is 1.000.000,00 in Germany and 10,00,000.00 in Nepal. If you
+aim for high international acceptance of your products you must build into
+your software the flexibility to adapt to varying requirements that stem
+from cultural differences. Building into software the potential for worldwide
+use is called <i>internationalization</i>. It is one of the challenges
+of software development in these days.
+<p>Traditionally, internationalization was achieved by means of C. Standards
+like POSIX and X/Open define locales and wide character input and output
+for standard C. Windows 95 and Windows NT have a C interface, too, the
+Win32 NLSAPI.<sup> </sup>None of the Win32 NLSAPI interfaces matches any
+of the standard C interfaces though, and locales are thread-specific in
+Windows whereas they are provided per process in Unix. These are important
+differences. The concept and level of support, however, is equivalent.
+There is a common notion of locales, and the services provided cover almost
+the same range of i18n problems. Naturally, C++ cannot stand back. The
+ISO/ANSI C++ standard defines an extensible framework that facilitates
+internationalization of C++ programs in a portable manner. Its main elements
+are <i>locales</i> and <i>facets</i>. This article gives an overview of
+the locale framework and the standard facets defined by ISO/ANSI C++.
+<p>
+<hr WIDTH="100%">
+<h6>
+<a NAME="Overview"></a><font size=+2>Overview</font></h6>
+<a href="#A Recap - C Locales">A Recap - C Locales</a>
+<br><a href="#The Standard Facest">The C++ Locales</a>
+<br><a href="#C Locale vs. C++ Locales">C Locales vs. C++ Locales</a>
+<br><a href="#Relationship between the C Locale and the C++">Relationship
+between C Locale and C++ Locales</a>
+<br><a href="#Using C++ Locales and">Using C++ Locales and Facets</a>
+<br><a href="#Locales and IOStreams">Locales and IOStreams</a>
+<br><a href="#Summary">Summary</a>
+<p><font size=+1><a href="#Code Examples">Code Examples</a></font>
+<br><font size=-1><a href="#Example1: Multiple locales in C and">Multiple
+locales in C and C++</a></font>
+<br><font size=-1><a href="#Example 2: Class locale as defined in the C++">Class
+locale as defined in the C++ standard</a></font>
+<br><font size=-1><a href="#Example 3: Accessing a Locale's Facet">Accessing
+a Locale's Facet</a></font>
+<br><font size=-1><a href="#Example 4: A locale-sensitive date">A locale-sensitive
+date inserter</a></font>
+<p>
+<hr WIDTH="100%">
+<h6>
+<a NAME="A Recap - C Locales"></a><font size=+1>A Recap - C Locales</font></h6>
+As a software developer and reader of C++ Users Journal, you may already
+have some background in the C programming language, and the internationalization
+services provided by the ANSI C library. For this reason, let us start
+with a short recap of the internationalization services provided by the
+C library, and then build on existing knowledge to describe the C++ locales
+in terms of the C locale.
+<p>Internationalization requires that developers consciously design and
+implement their software and avoid hard-coding information or rules that
+can be localized. For example, careful developers never assume specific
+conventions for formatting numeric or monetary values, or for displaying
+date and time, not even for comparing or sorting strings. For internationalization,
+all culture and language dependencies need to be represented in a kind
+of language table. Such a table is called a <i>locale</i>. A locale in
+the C library contains support for the several problem domains. The information
+in a C locale is composed of <i>categories</i>. Each of the categories
+represents a set of related information:
+<br>&nbsp;
+<center><table BORDER=2 >
+<tr>
+<td WIDTH="121">
+<center><b>Category</b></center>
+</td>
+
+<td WIDTH="279">
+<center><b>Content&nbsp;</b></center>
+</td>
+</tr>
+
+<tr>
+<td WIDTH="121"><tt><font color="#000000">LC_NUMERIC</font></tt></td>
+
+<td WIDTH="279">Rules and symbols for numbers&nbsp;</td>
+</tr>
+
+<tr>
+<td WIDTH="121"><tt><font color="#000000">LC_TIME</font></tt></td>
+
+<td WIDTH="279">Values for date and time information&nbsp;</td>
+</tr>
+
+<tr>
+<td WIDTH="121"><tt><font color="#000000">LC_MONETARY</font></tt></td>
+
+<td WIDTH="279">Rules and symbols for monetary information&nbsp;</td>
+</tr>
+
+<tr>
+<td WIDTH="121"><tt><font color="#000000">LC_CTYPE</font></tt></td>
+
+<td WIDTH="279">Character classification and case conversion&nbsp;</td>
+</tr>
+
+<tr>
+<td WIDTH="121"><tt><font color="#000000">LC_COLLATE</font></tt></td>
+
+<td WIDTH="279">Collation sequence</td>
+</tr>
+
+<tr>
+<td WIDTH="121"><tt><font color="#000000">LC_MESSAGE</font></tt></td>
+
+<td WIDTH="279">Formats and values of messages&nbsp;</td>
+</tr>
+</table></center>
+Inside a program, the C locale is represented by one or more global <i>data
+structures</i>. The C library provides a <i>functions</i> that use information
+from those global data structures to adapt their behavior to local conventions.
+Examples of these functions and the information they cover are listed below:
+<br>&nbsp;
+<center><table BORDER=2 WIDTH="62%" >
+<tr>
+<td WIDTH="235"><b>C locale function</b></td>
+
+<td WIDTH="180"><b>Information covered</b></td>
+</tr>
+
+<tr>
+<td WIDTH="235"><font color="#000000"><font size=-2><tt><font face="Courier">setlocale(),</font></tt>
+...</font></font></td>
+
+<td WIDTH="180">Locale initialization and language information&nbsp;</td>
+</tr>
+
+<tr>
+<td WIDTH="235"><font color="#000000"><font size=-2><tt><font face="Courier">isalpha()</font></tt>,
+<tt><font face="Courier">isupper()</font></tt>,
+<tt><font face="Courier">isdigit()</font></tt>,
+...</font></font></td>
+
+<td WIDTH="180"><font color="#000000">Character classification</font></td>
+</tr>
+
+<tr>
+<td WIDTH="235"><font color="#000000"><font size=-2><tt><font face="Courier">strftime()</font></tt>,
+...</font></font></td>
+
+<td WIDTH="180"><font color="#000000">Date and time functions</font></td>
+</tr>
+
+<tr>
+<td WIDTH="235"><tt><font face="Courier"><font color="#000000"><font size=-2>strfmon()</font></font></font></tt></td>
+
+<td WIDTH="180"><font color="#000000">Monetary functions</font></td>
+</tr>
+
+<tr>
+<td WIDTH="235"><font color="#000000"><font size=-2><tt><font face="Courier">printf()</font></tt>,
+<tt><font face="Courier">scanf()</font></tt>,
+...</font></font></td>
+
+<td WIDTH="180"><font color="#000000">Number parsing and formatting</font></td>
+</tr>
+
+<tr>
+<td WIDTH="235"><font color="#000000"><font size=-2><tt><font face="Courier">strcoll()</font></tt>,
+<tt><font face="Courier">wcscoll()</font></tt>,
+...</font></font></td>
+
+<td WIDTH="180"><font color="#000000">String collation</font></td>
+</tr>
+
+<tr>
+<td WIDTH="235"><font color="#000000"><font size=-2><tt><font face="Courier">mblen()</font></tt>,
+<tt><font face="Courier">mbtowc()</font></tt>,
+<tt><font face="Courier">wctomb()</font></tt>,
+...</font></font></td>
+
+<td WIDTH="180"><font color="#000000">Multibyte functions</font></td>
+</tr>
+
+<tr>
+<td WIDTH="235"><font color="#000000"><font size=-2><tt><font face="Courier">cat_open()</font></tt>,
+<tt><font face="Courier">catgets()</font></tt>,
+<tt><font face="Courier">cat_close()</font></tt></font></font></td>
+
+<td WIDTH="180">Message retrieval</td>
+</tr>
+</table></center>
+
+<h6>
+<a NAME="_Toc363728915"></a><font size=+1>The C++ Locales</font></h6>
+In C++, internationalization semantics are broken out into separate classes,
+so-called <i>facets</i>. Each facet offers a set of internationalization
+services. For instance, the formatting of monetary values is encapsulated
+in the <tt><font face="Courier"><font color="#000000">money_put&lt;></font></font></tt>facet.
+(Don't <font color="#000000">get distracted by the template parenthesis;
+they are added because all facets are class templates.) Facets may also
+represent a set of information about certain culture and language dependencies.
+The rules and symbols for monetary information are an example; they are
+contained in a facet called <tt><font face="Courier">moneypunct&lt;></font></tt>.</font>
+<p><font color="#000000">In C++, there is also a class called <tt><font face="Courier">locale</font></tt>.
+Different from a C locale, which is a global data structure representing
+various culture and language dependencies, the C++ class <tt><font face="Courier">locale</font></tt>
+is an abstraction that manages facets. Basically, you can think of a C++
+locale as a container of facets. This concept is illustrated graphically
+below:</font>
+<center><img SRC="IMG00001.gif" height=289 width=366></center>
+
+<h6>
+<a NAME="The Standard Facest"></a><font size=+1>The Standard Facets</font></h6>
+The C++ standard defines a number of <i>standard</i> <i>facets</i>. They
+provide services and information similar to those contained in the C library.
+As we have seen, the C locale is composed of six categories of information.
+Similarly, there are six groups of standard facets. Here is a brief overview:
+<ul>
+<li>
+<font color="#000000"><b>Numeric. </b>The facets <tt><font face="Courier">num_get&lt;charT,InputIterator></font></tt>and
+<tt><font face="Courier">num_put&lt;charT,
+OutputIterator></font></tt> handle numeric formatting and parsing. The
+facets provide<tt><font face="Courier"> get()</font></tt> and <tt><font face="Courier">put()</font></tt>
+member functions for values of type <tt><font face="Courier">long</font></tt>,
+<tt><font face="Courier">double</font></tt>,
+etc.</font></li>
+
+<br><font color="#000000">The facet <tt><font face="Courier">numpunct&lt;charT></font></tt>
+specifies numeric formats and punctuation. It provides functions like <tt><font face="Courier">decimal_point(),thousands_sep(),</font></tt>
+etc.</font>
+<li>
+<font color="#000000"><b>Monetary. </b>The facets <tt><font face="Courier">money_get&lt;charT,bool,InputIterator></font></tt>
+and <tt><font face="Courier">money_put&lt;charT, bool,</font> <font face="Courier">OutputIterator></font></tt>
+handle formatting and parsing of monetary values. They provide <tt><font face="Courier">get()</font></tt>
+and <tt><font face="Courier">put()</font></tt> member functions that parse
+or produce a sequence of digits, representing a count of the smallest unit
+of the currency. For example, the sequence $1,056.23 in a common US locale
+would yield 105623 units, or the character sequence "105623”.</font></li>
+
+<br><font color="#000000">The facet <tt><font face="Courier">moneypunct
+&lt;charT, bool International></font></tt> handles monetary formats and
+punctuation like the facet <tt><font face="Courier">numpunct&lt;charT></font></tt>
+handles numeric formats and punctuation. It comes with functions like<tt><font face="Courier">
+curr_symbol(),</font></tt> etc.</font>
+<li>
+<font color="#000000"><b>Time. </b>The facets <tt><font face="Courier">time_get&lt;charT,InputIterator></font></tt>
+and <tt><font face="Courier">time_put&lt;charT, OutputIterator></font></tt>
+handle date and time formatting and parsing. They provide functions like<tt><font face="Courier">
+put(),</font></tt> <tt><font face="Courier">get_time(), get_date(), get_weekday(),</font></tt>etc.</font></li>
+
+<li>
+<font color="#000000"><b>Ctype. </b>The facet <tt><font face="Courier">ctype&lt;charT></font></tt>
+encapsulates the Standard C++ Library <tt><font face="Courier">ctype</font></tt>
+features for character classification, like <tt><font face="Courier">tolower(),
+toupper(), is(ctype_base::space,...)</font></tt>etc.</font></li>
+
+<li>
+<font color="#000000"><b>Collate. </b>The facet <tt><font face="Courier">collate&lt;charT></font></tt>
+provides features for string collation, including a <tt><font face="Courier">compare()</font></tt>
+function used for string comparison.</font></li>
+
+<li>
+<font color="#000000"><b>Code Conversion. </b>The facet <tt><font face="Courier">codecvt&lt;internT,externT,stateT></font></tt>
+is used when converting from one encoding scheme to another, such as from
+the multibyte encoding JIS to the wide-character encoding Unicode. The
+main member functions are<tt><font face="Courier"> in() </font>and<font face="Courier">
+out().</font></tt></font></li>
+
+<li>
+<font color="#000000"><b>Messages. </b>The facet <tt><font face="Courier">messages&lt;charT></font></tt>
+implements message retrieval. It provides facilities to access message
+catalogues via <tt><font face="Courier">open()</font></tt> and <tt><font face="Courier">close(catalog),</font></tt>
+and to retrieve messages via <tt><font face="Courier">get(..., int msgid,...).</font></tt></font></li>
+</ul>
+<font color="#000000">As you might have noticed, the names of the standard
+facets obey certain naming rules. The <tt><font face="Courier">get</font></tt>
+facets, like <tt><font face="Courier">num_get</font></tt> and <tt><font face="Courier">time_get</font></tt>,
+offer services for parsing. The <tt><font face="Courier">put</font></tt>
+facets provide formatting services The <tt><font face="Courier">punct</font></tt>
+facets, like <tt><font face="Courier">numpunct</font></tt> and <tt><font face="Courier">moneypunct</font></tt>,
+represent rules and symbols.</font>
+<h6>
+<a NAME="C Locale vs. C++ Locales"></a><font size=+1>C Locale vs. C++ Locales</font></h6>
+Apparently, the C locale and the C++ locale along with the standard facets
+offer similar services. However, the semantics of the C++ locale are different
+from the semantics of the C locale:
+<ul>
+<li>
+The <i>Standard C locale </i>is a global resource: there is only one locale
+for the entire application. This makes it hard to build an application
+that has to handle several locales at a time.</li>
+
+<li>
+The <i>Standard C++ locale</i><b> </b>is a class. Numerous instances of
+class<font color="#000000"> <tt>locale</tt> can be c</font>reated at will,
+so you can have as many locale objects as you need.</li>
+</ul>
+To explore this difference in further detail, let us see how locales can
+be used. It may well happen that you have to work with multiple locales.
+For example, if you have to implement an application for Switzerland, you
+might want to output messages in Italian, French, and German. As the C
+locale is a global data structure, you will have to switch locales several
+times.
+<p>Let's discuss an application that works with multiple locales. Say,
+the application runs at a US company that ships products worldwide. Our
+application's responsibility is printing of invoices to be sent to customers
+all over the world. Of course, the invoices need to be printed in the customer's
+native language. Say, the application reads input (the product price list)
+in US English, and writes output (the invoice) in the customer's native
+language, say German. Since there is only one global locale in C that affects
+both input and output, the global locale must change between input and
+output operations.
+<center><img SRC="IMG00002.gif" height=252 width=431></center>
+
+<p>Here is the C code that corresponds to the previous example:
+<pre>float price;
+while ( … )&nbsp; // processing the German invoice
+{&nbsp; setlocale(LC_ALL, "En_US”);
+&nbsp;&nbsp; fscanf(priceFile,”%f”,&amp;price);
+&nbsp;&nbsp; // convert $ to DM accosrding to the current exchange rate
+&nbsp;&nbsp; setlocale(LC_ALL,”De_DE”);
+&nbsp;&nbsp; fprintf(invoiceFile,”%f”,price);
+}</pre>
+Using C++ locale objects dramatically simplifies the task of using multiple
+locales. The iostreams in the Standard C++ Library are internationalized
+so that streams can be <i>imbued</i> with separate locale objects. For
+example, the input stream can be imbued with an English locale object,
+and the output stream can be imbued with a German locale object. In this
+way, switching locales becomes unnecessary.
+<center><img SRC="IMG00003.gif" height=256 width=391></center>
+
+<p>Here is the C++ code corresponding to the previous example:
+<pre>priceFile.imbue(locale("En_US”));
+invoiceFile.imbue(locale("De_DE”));
+float price;
+while ( … )&nbsp; // processing the German invoice
+{&nbsp; priceFile >> price;
+&nbsp;&nbsp; // convert $ to DM according to the current exchange rate
+&nbsp;&nbsp; invoiceFile &lt;&lt; price;
+}</pre>
+With these toy examples given above switching locales might look like a
+minor inconvenience. However, consider the need for multiple locales in
+an application with multiple threads of execution. Because all threads
+share one global locale in C, access to the global locale must be serialized
+by means of mutual exclusion. A lot of locking would occur and mostly slow
+down the program.
+<p>Ideally, you would want to have locales be completely independent of
+each other. Each component shall have a locale of its own, that is unrelated
+to other locales in your program. This is what you have in C++. You can
+create infinitely many, independent, light-weight locale objects that you
+can attach to streams, and exchange between components, or pass around
+as function arguments for instance.
+<p><a NAME="Relationship between the C Locale and the C++"></a><b><font size=+1>Relationship
+between the C Locale and the C++ Locale.</font></b>
+<p><font color="#000000">The C locale and the C++ locales are mostly unrelated.
+There is only one occasion when they effect each other: making a C++ locale
+global.</font>
+<p><font color="#000000">The matter is that there is a global locale in
+C++, as there is in C. You can make a given locale object global by calling
+<tt><font face="Courier">locale::global()</font></tt>.
+The notion of a global C++ locale was added for all those users who do
+not want to bother with internationalization and rely on internationalized
+components to pick a sensible default locale. The global C++ locale is
+often used as the default locale. IOStreams, for instance, uses it; if
+you do not explicitly imbue your streams with any particular locale object,
+a snapshot of the global locale is used.</font>
+<p><font color="#000000">Making a C++ locale object global via <tt><font face="Courier">locale::global()</font></tt>
+affects the global C locale in that it results in a call to <tt><font face="Courier">setlocale()</font></tt>.
+When this happens, locale-sensitive C functions called from within a C++
+program will use the global C++ locale. Conversely, there is no way to
+affect the C++ locale from within a C program though.</font>
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Using C++ Locales and"></a><font color="#000000">Using C++ Locales
+and Facets</font></h2>
+<font color="#000000">After this brief overview of C++ locales and facets
+let us now explore how they are used. Remember, a locale in C++ is a container
+of facets, and a facet is a set of internationalization services and information.
+The general pattern of usage is:</font>
+<ul>
+<li>
+<font color="#000000"><i>Create a locale.</i> First, you create a locale
+object and stuff all the facets you need into the locale.</font></li>
+
+<li>
+<font color="#000000"><i>Make available a locale.</i> You can pass around
+such a locale object to those components that might need it; for instance,
+you can attach it to a stream and the stream's shift operator will use
+it.</font></li>
+
+<li>
+<font color="#000000"><i>Retrieve a facet.</i> When you need a service
+from the locale, then you ask the locale to give you a handle to the respective
+facet that contains the service you need.</font></li>
+
+<li>
+<font color="#000000"><i>Invoke a service.</i> Via this handle you eventually
+invoke the facet's service.</font></li>
+</ul>
+<font color="#000000">This sounds more complicated than it actually is,
+as we will see later. However, it points out that the locale does not know
+anything about the facets' capabilities. The locale only maintains the
+facets. It registers them and makes them accessible on demand. The locale,
+however, does not provide you with the internationalization services itself.
+It only gives you access to facets that provide services. It is your task
+to memorize which facets you need for which particular service. The advantage
+of separating maintenance from functionality is that a locale can maintain
+any kind of facet, not only the predefined standard facets from the C++
+library, but also novel facets that are added to the library for special
+purposes.</font>
+<h6>
+<a NAME="Creating Locales"></a><font size=+1>Creating Locales</font></h6>
+Class locale has numerous constructors; see Box 2 for a comprehensive list.
+Basically they fall into three categories:
+<ol>
+<li>
+<font color="#000000"><i>By name.</i> You can create a locale object from
+a C locale's external representation. Class locale has a constructor <tt><font face="Courier">locale::locale(const
+char* std_name)</font></tt> that takes the name of a C locale. This locale
+name is like the one you would use for a call to the C library function
+<tt><font face="Courier">setlocale()</font></tt>.
+We have already used this constructor in the example above when we created
+a US English locale by invoking <tt><font face="Courier">locale("En_US");.
+A locale created this way contains all the standard facets and therefore
+makes available all services and information equivalent to the C locale
+you specified.</font></tt></font></li>
+
+<li>
+<font color="#000000"><i>The classic locale.</i> The standard C++ library
+contains a predefined locale object, <tt><font face="Courier">locale ::
+classic()</font></tt>, which represents the US English ASCII environment.
+The is the counterpart to the locale named "C" in the C library.</font></li>
+
+<li>
+<font color="#000000"><i>By composition.</i><b> </b>You can construct a
+new locale object as a copy of an existing locale object, that has one
+or several fac</font>et objects replaced. Below are a couple of constructors
+of class locale that allow creation of locales by composition.</li>
+</ol>
+
+<pre>class locale {
+public:
+&nbsp; locale(const locale&amp; other, const char* std_name, category);
+&nbsp; template &lt;class Facet> locale(const locale&amp; other, Facet* f);
+&nbsp; template &lt;class Facet> locale(const locale&amp; other
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ,const locale&amp; one);
+&nbsp; locale(const locale&amp; other, const locale&amp; one, category);
+};</pre>
+The following example uses the first constructor and shows how you can
+construct a locale object as a copy of the classic locale object with the
+classic numeric facets replaced by the numeric facet objects taken from
+a German locale object.
+<pre>locale loc ( locale::classic(), locale("De_DE”), LC_NUMERIC );</pre>
+<font color="#000000">The classic locale is created via <tt><font face="Courier">locale::classic(),</font></tt>
+the German locale is crated via <tt><font face="Courier">locale("De_DE").LC_NUMERIC</font></tt>
+is a locale category. As mentioned earlier, the facets fall into categories,
+and the LC_NUMERIC is the category that designates all numeric facets in
+a locale.</font>
+<p>Note that some of the constructors are member templates, which is a
+language feature that is relatively new to the language and not supported
+by all compilers.
+<p><i>Immutability of Locales</i>. It's important to understand that locales
+are immutable objects: once a locale object is created, it cannot be modified,
+i.e. no facets can be replaced after construction. This makes locales reliable
+and easy to use and you can safely pass them around between components.
+<p><i>Copying locales.</i> Copying a locale object is a cheap operation.
+You should have no hesitation about passing locale objects around by value.
+You may copy locale objects for composing new locale objects; you may pass
+copies of locale objects as arguments to functions, etc.
+<p>Locales are implemented using reference counting and the handle-body-idiom:
+When a locale object is copied, only its handle is duplicated, a fast and
+inexpensive action.
+<p>The following figure gives an overview of the locale architecture. A
+locale is a handle to a body that maintains a sequence of pointers to facets.
+The facets are reference-counted, too.
+<center><img SRC="IMG00004.gif" height=266 width=416></center>
+
+<p><br>
+<br>
+<h6>
+<a NAME="Accessing a Locale's Facets"></a><font size=+1>Accessing a Locale's
+Facets</font></h6>
+A<font color="#000000">ccess to the facet objects of a locale object is
+via two template functions, <tt><font face="Courier">use_facet</font></tt>
+and <tt><font face="Courier">has_facet</font></tt>:</font>
+<pre><font color="#000000">template &lt;class Facet> const Facet&amp;&nbsp;&nbsp;&nbsp;&nbsp; use_facet(const locale&amp;);
+template &lt;class Facet> bool&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; has_facet(const locale&amp;);</font></pre>
+<font color="#000000">The function <tt><font face="Courier">use_facet</font></tt>
+is the one that gives access to a facet by providing a constant reference
+to a facet. The function <tt><font face="Courier">has_facet</font></tt>
+is for checking whether a certain facet is present in a given locale. The
+requested facet is specified via its type. Note, that both functions are
+template functions. The template parameter they take is the type of the
+facet they try to access in a locale. In other words, these function are
+capable of deciding which facet object is meant from just the information
+about the facet's type. It works because a locale contains at most one
+exemplar of a certain facet type. This kind of compile-time dispatch is
+a novel technique in C++. A discussion of it and the design of the locale
+framework's architecture is beyond the scope of this article. A detailed
+description can be found in C++ Report, September 1997, "The Locale Framework"
+by Klaus Kreft &amp; Angelika Langer.</font>
+<p><font color="#000000">The code below demonstrates how these functions
+are used to get access to a facet and invoke an internationalization service.
+It is an example of the conversion service <tt><font face="Courier">tolower()</font></tt>
+from the <tt><font face="Courier">ctype</font></tt> facet; all upper case
+letters of a string read from the standard input stream are converted to
+lower case letters and are written to the standard output stream.</font>
+<pre><font color="#000000">string in;
+cin >> in;
+use_facet&lt; ctype&lt;char> >(locale::locale()).tolower(in.c_str(),in.c_str()+in.length());
+cout &lt;&lt; in;</font></pre>
+<font color="#000000">The function template <tt><font face="Courier">use_facet&lt;
+ctype&lt;char> >()</font></tt> returns a constant reference to the locale's
+facet object. Then the facet object's member function <tt><font face="Courier">tolower()</font></tt>
+is called. It has the functionality of the C function <tt><font face="Courier">tolower()</font></tt>;
+it converts all upper case letters into lower case letters. A couple of
+further comments on this example:</font>
+<p><font color="#000000"><i>Explicit Template Argument Specification.</i>
+The syntax of the call <tt><font face="Courier">use_facet &lt; ctype&lt;char>
+> (locale::locale())</font></tt> might look surprising to you. It is an
+example of explicit template argument specification, a language feature
+that is relatively new to C++. Template arguments of a function instantiated
+from a function template can either be explicitly specified in a call or
+be deduced from the function arguments. The explicit template argument
+specification is needed in the call to <tt><font face="Courier">use_facet</font></tt>
+above, because the compiler can only deduce a template argument if it is
+the type of one of the function arguments.</font>
+<p><font color="#000000"><i>Storing references to facets.</i> Note, that
+we do not store the reference to the facet, but just use the temporary
+reference returned by <tt><font face="Courier">use_facet</font></tt> for
+immediately calling the desired member function of that facet. This is
+a safe way of using facets retrieved from a locale. If you kept the reference,
+you needed to keep track of the object's lifetime and validity. The facet
+reference does stay valid throughout the lifetime of the locale object
+it was retrieved from. Moreover, the facet referred to does not even change
+in any way; it is immutable. However, when the locale goes out of scope,
+the references obtained from it might become invalid. For this reason it
+is advisable to combine retrieval and invocation as shown in the example
+above, unless you have a need for doing differently.</font>
+<p><i><font color="#000000">Need for <tt><font face="Courier"><font size=-1>has_facet</font></font></tt>.</font></i><font color="#000000">
+Note also, that we did not call <tt><font face="Courier">has_facet&lt;
+ctype&lt;char> >()</font></tt> in order to check whether the locale has
+a ctype facet. In most situations, you do not have to check for the presence
+of a standard facet object like <tt><font face="Courier">ctype&lt;char></font></tt>.
+This is because locale objects are created by composition; you start with
+the classic locale or a locale object constructed "by name" from a C locale's
+external representation. Because you can only add or replace facet objects
+in a locale object, you cannot compose a locale that misses one of the
+standard facets. A call to <tt><font face="Courier">has_facet()</font></tt>
+is useful, however, when you expect that a certain non-standard facet object
+should be present in a locale object.</font>
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Locales and IOStreams"></a><font color="#000000">Locales and IOStreams</font></h2>
+<font color="#000000">The standard iostreams are an example of an internationalized
+component that uses locales and facets. This feature of iostreams enables
+you to implement locale-sensitive standard i/o operations for your user-defined
+types. Each stream has a locale object attached. Attaching a locale to
+a stream is done via the stream's <tt><font face="Courier">imbue()</font></tt>
+operation. If you do not explicitly imbue a locale the stream uses a snapshot
+of the current global locale as a default.</font>
+<p><font color="#000000">Here is an example that demonstrates how one can
+use a stream's locale for printing a date. Let us assume we have a date
+object of type <tt><font face="Courier">tm</font></tt>, which is the time
+structure defined in the standard C library, and we want to print it. Let's
+assume our program is supposed to run in a German-speaking canton of Switzerland.
+Hence, we attach a Swiss locale to the standard output stream. When we
+print the date we expect an output like: <tt><font face="Courier">1. September
+1989 or 01.09.89</font></tt></font>
+<pre><font color="#000000">struct tm aDate;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+aDate.tm_year = 1989;
+aDate.tm_mon = 9;
+aDate.tm_mday = 1;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+cout.imbue(locale::locale("De_CH”));&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+cout &lt;&lt; aDate;</font></pre>
+<font color="#000000">As there is no <tt><font face="Courier">operator&lt;&lt;()</font></tt>
+defined in the Standard C++ Library for the time structure <tt><font face="Courier">tm</font></tt>
+from the C library, we have to provide this inserter ourselves. The following
+code suggests a way this can be done. To keep it simple, the handling of
+exceptions thrown during the formatting is omitted.</font>
+<pre><font color="#000000">template&lt;class Ostream >
+Ostream&amp; operator&lt;&lt; (Ostream&amp; os, const struct tm&amp; date)&nbsp;&nbsp;&nbsp;
+{
+&nbsp; typedef typename Ostream::char_type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; char_t;
+&nbsp; typedef typename Ostream::traits_type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; traits_t;
+&nbsp; typedef ostreambuf_iterator&lt;char_t,traits_t> outIter_t;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+&nbsp; locale loc = os.getloc();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;
+&nbsp; const time_put&lt;char_t,outIter_t>&amp; fac =&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp; use_facet &lt; time_put&lt;char_t, outIter_t > > (loc);
+&nbsp;&nbsp;&nbsp;
+&nbsp; outIter_t nextpos = fac.put(os,os,os.fill(),&amp;date,'x');
+
+&nbsp; if (nextpos.failed())&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; os.setstate(ios_base::badbit);&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp; return os;</font></pre>
+<font color="#000000">}</font>
+<p><font color="#000000">There's a lot going on here. Let's discuss the
+interface of the shift operator first. The code above shows a typical stream
+inserter. As function arguments it takes a reference to an output stream
+and a constant reference to the object to be printed. It returns a reference
+to the same stream. The inserter is a template function because the standard
+iostreams are templates; they take a character type and an associated traits
+type describing the character type as template arguments. Naturally, we
+have the same template parameters for our date inserter.</font>
+<p><font color="#000000">Now, we need to get hold of the stream's locale
+object, because we want to use its time formatting facet for output of
+our date object. As you can see in the code above, the stream's locale
+object is obtained via the stream's member function <tt><font face="Courier">getloc()</font></tt>.
+We retrieve the time formatting facet from the locale via <tt><font face="Courier">use_facet</font></tt>;
+that's an old hat meanwhile. We then call the facet's member function <tt><font face="Courier">put().</font></tt></font>
+<p><font color="#000000">The<tt><font face="Courier"> put()</font></tt>
+function does all the magic, i.e. it produces a character sequence that
+represents the equivalent of the date object, formatted according to culture-dependent
+rules and information. It then inserts the formatted output into the stream
+via an output iterator. Before we delve into the details of the <tt><font face="Courier">put()</font></tt>
+function let us take a look at its return value.</font>
+<p><font color="#000000">The <tt><font face="Courier">put()</font></tt>
+function returns an output iterator that points to the position immediately
+after the last inserted character. The output iterator used here is an
+output stream buffer iterator. These are special purpose iterators contained
+in the standard C++ library that bypass the stream's formatting layer and
+write directly to the output stream's underlying stream buffer. Output
+stream buffer iterators have a member function <tt><font face="Courier">failed()</font></tt>
+for error indication. So we can check for errors happening during the time
+formatting. If there was an error, we set the stream's state accordingly
+which is done via the stream's <tt><font face="Courier">setstate()</font></tt>
+function.</font>
+<p><font color="#000000">Let's return to the facet's formatting service
+<tt><font face="Courier">put()
+</font></tt>and
+see what arguments it takes. Here is the function's interface:</font>
+<center><table>
+<tr>
+<td WIDTH="115"><tt><font face="Courier"><font color="#000000"><font size=-2>iter_type
+put</font></font></font></tt></td>
+
+<td WIDTH="108"><tt><font face="Courier"><font color="#000000"><font size=-2>(iter_type</font></font></font></tt></td>
+
+<td WIDTH="84"><tt><font face="Courier"><font color="#000000"><font size=-2>(a)</font></font></font></tt></td>
+</tr>
+
+<tr>
+<td WIDTH="115"></td>
+
+<td WIDTH="108"><tt><font face="Courier"><font color="#000000"><font size=-2>,ios_base&amp;</font></font></font></tt></td>
+
+<td WIDTH="84"><tt><font face="Courier"><font color="#000000"><font size=-2>(b)</font></font></font></tt></td>
+</tr>
+
+<tr>
+<td WIDTH="115"></td>
+
+<td WIDTH="108"><tt><font face="Courier"><font color="#000000"><font size=-2>,char_type</font></font></font></tt></td>
+
+<td WIDTH="84"><tt><font face="Courier"><font color="#000000"><font size=-2>(c)</font></font></font></tt></td>
+</tr>
+
+<tr>
+<td WIDTH="115"></td>
+
+<td WIDTH="108"><tt><font face="Courier"><font color="#000000"><font size=-2>,const
+tm*</font></font></font></tt></td>
+
+<td WIDTH="84"><tt><font face="Courier"><font color="#000000"><font size=-2>(d)</font></font></font></tt></td>
+</tr>
+
+<tr>
+<td WIDTH="115"></td>
+
+<td WIDTH="108"><font color="#000000">,<tt><font face="Courier"><font size=-2>char)</font></font></tt></font></td>
+
+<td WIDTH="84"><tt><font face="Courier"><font color="#000000"><font size=-2>(e)</font></font></font></tt></td>
+</tr>
+</table></center>
+<tt><font color="#000000">The types<font face="Courier"> iter_type </font>and<font face="Courier">
+char_type </font>stand for the types that were provided as template arguments
+when the facet class was instantiated. In this case, they are <font face="Courier">ostreambuf_iterator&lt;charT,traits></font></font></tt><font color="#000000">
+and <tt><font face="Courier">charT</font></tt>, where <tt><font face="Courier">charT</font></tt>
+and <tt><font face="Courier">traits</font></tt> are the respective streams
+template arguments.</font>
+<p><tt><font color="#000000">Here is the actual call:</font></tt>
+<pre><tt><font color="#000000">nextpos = fac.put(os,os,os.fill(),&amp;date,'x');</font></tt></pre>
+<font color="#000000">Now let's see what the arguments mean:</font>
+<ol>
+<li>
+<font color="#000000">The first parameter is supposed to be an output iterator.
+We provide an iterator to the stream's underlying stream buffer. The reference
+<tt><font face="Courier">os</font></tt>
+to the output stream is converted to an output iterator, because output
+stream buffer iterators have a constructor taking an output stream, that
+is, <tt><font face="Courier">basic_ostream&lt;charT,traits>&amp;</font></tt>.</font></li>
+
+<li>
+<font color="#000000">The second parameter is of type <tt><font face="Courier">ios_base&amp;,</font></tt>
+which is one of the stream base classes. The class <tt><font face="Courier">ios_base</font></tt>
+contains data for format control (see the section on iostreams for details).
+The facet object uses this formatting information. We provide the output
+stream's <tt><font face="Courier">ios_base</font></tt> part here, using
+the automatic cast from a reference to an output stream, to a reference
+to its base class.</font></li>
+
+<li>
+<font color="#000000">The third parameter is the fill character. It is
+used when the output has to be adjusted and blank characters have to be
+filled in. We provide the stream's fill character, which one can get by
+calling the stream's <tt><font face="Courier">fill()</font></tt> function.</font></li>
+
+<li>
+<font color="#000000">The fourth parameter is a pointer to a time structure
+<tt><font face="Courier">tm</font></tt>
+from the C library.</font></li>
+
+<li>
+<font color="#000000">The fifth parameter is a format character as in the
+C function <tt><font face="Courier">strftime()</font></tt>; the <tt><font face="Courier">x</font></tt>
+stands for the locale's appropriate date representation.</font></li>
+</ol>
+As you can see from the example of a date inserter function, it is relatively
+easy to implement powerful, locale-sensitive i/o operations using standard
+iostreams and locale. It takes just a couple of lines of C++ code.
+<p>
+<hr WIDTH="100%">
+<p><a NAME="Summary"></a><font size=+1>Summary</font>
+<br>This article gave a brief overview of locales and facets - the components
+in the standard C++ library for support of internationalization of C++
+programs. The functionality of the standard facets contained in the standard
+C++ library covers traditional C functionality. However, C++ allows multiple
+locales and overcomes the limitation of one, single global locale that
+was imposed by C. Naturally, this brief introduction to internationalization
+support in standard C++ is far from being comprehensive. For instance,
+we concealed that locales and facets are designed as an open and extensible
+frame. A description of the framework's architecture and of techniques
+for extending the framework would fill another article.
+<p>
+<hr WIDTH="100%">
+<h6>
+<font size=+0>Acknowledgements</font></h6>
+This article is based on material we put together for a book on "Standard
+C++ IOStreams and Locales" to be published by Addison-Wesley-Longman in
+1998. Part of the article was inspired by work Angelika Langer did for
+Rogue Wave Software, Inc. in 1996. We also want to thank Nathan Myers,
+who initially proposed locales and facets to the standards committee. He
+patiently answered countless questions during the past months.
+<p>
+<hr WIDTH="100%">
+<h4>
+<a NAME="Code Examples"></a><font size=+2>Code Examples</font></h4>
+The subsequent code examples are compiled with MVC V4.0 and the locale
+component that comes with it. This locale component does only partly comply
+to the standard. Workarounds are marked as such.&nbsp;
+<hr>
+<h6>
+<a NAME="Example1: Multiple locales in C and"></a><font size=+1>Example
+1: Multiple locales in C and C++</font></h6>
+MVC does not support namespaces, hence we had to comment out the otherwise
+necessary using statement. The locale names used are those supported on
+Windows 95 and Windows NT. Also, we read input from standard input rather
+than a price list file, as was suggested in the example.
+<pre>#include &lt;stdio.h>
+#include &lt;locale.h>
+#include &lt;iostream>
+#include &lt;locale>
+
+/*
+using namespace ::std;
+*/
+
+void c_style_example()
+{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; float price;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int i = 1;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; while ( i-- )&nbsp; // processing the German invoice
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; setlocale(LC_ALL, "American_America.1252");
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("Type in the amount(as float): ");
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scanf("%f",&amp;price);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // convert $ to DM according to the current exchange rate
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; setlocale(LC_ALL,"German_Germany.1252");
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("Der Betrag ist: %f \n",price);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; setlocale(LC_ALL, "American_America.1252");
+}
+
+void cplusplus_style_example()
+{
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cin.imbue(locale("American_America.1252"));
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout.imbue(locale("German_Germany.1252"));
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int i= 1;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; float price;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; while ( i-- )&nbsp; // processing the German invoice
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout &lt;&lt; "Type in the amount(as float): ";
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cin >> price;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // convert $ to DM according to the current exchange rate
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout &lt;&lt; "Der Betrag ist: " &lt;&lt; price &lt;&lt; endl;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
+}
+
+int main()
+{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout &lt;&lt; "Test Begin !!!" &lt;&lt; endl;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout &lt;&lt; "***** c_style_example *****" &lt;&lt; endl;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; c_style_example();
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout &lt;&lt; endl;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout &lt;&lt; "***** cplusplus_style_example *****" &lt;&lt; endl;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cplusplus_style_example();
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout &lt;&lt; endl;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout &lt;&lt; "Test End !!!" &lt;&lt; endl;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout &lt;&lt; endl;
+}</pre>
+
+<hr>
+<h6>
+<a NAME="Example 2: Class locale as defined in the C++"></a><font size=+1>Example
+2: Class locale as defined in the C++ standard</font></h6>
+
+<pre><font size=-1>&nbsp; </font>namespace std {
+&nbsp;&nbsp;&nbsp; class locale {
+&nbsp;&nbsp;&nbsp; public:
+&nbsp;&nbsp;&nbsp; // types:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; class facet;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; class id;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; typedef int category;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; static const category&nbsp;&nbsp; // values assigned here are for exposition only
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; none&nbsp;&nbsp;&nbsp;&nbsp; = 0,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; collate&nbsp; = 0x010, ctype&nbsp;&nbsp;&nbsp; = 0x020,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; monetary = 0x040, numeric&nbsp; = 0x080,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; time&nbsp;&nbsp;&nbsp;&nbsp; = 0x100, messages = 0x200,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; all = collate | ctype | monetary | numeric | time&nbsp; | messages;
+&nbsp;&nbsp;&nbsp; // construct/copy/destroy:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; locale() throw()
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; locale(const locale&amp; other) throw()
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; explicit locale(const char* std_name);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; locale(const locale&amp; other, const char* std_name, category);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; template &lt;class Facet> locale(const locale&amp; other, Facet* f);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; template &lt;class Facet> locale(const locale&amp; other,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; const locale&amp; one);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; locale(const locale&amp; other, const locale&amp; one, category);
+&nbsp;&nbsp;&nbsp;&nbsp; ~locale() throw();&nbsp; // non-virtual
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; const locale&amp; operator=(const locale&amp; other) throw();
+&nbsp;&nbsp;&nbsp; // locale operations:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; basic_string&lt;char>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name() const;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bool operator==(const locale&amp; other) const;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bool operator!=(const locale&amp; other) const;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; template &lt;class charT, class Traits, class Allocator>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bool operator()(const basic_string&lt;charT,Traits,Allocator>&amp; s1,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; const basic_string&lt;charT,Traits,Allocator>&amp; s2) const;
+&nbsp;&nbsp;&nbsp; // global locale objects:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; static&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; locale&nbsp; global(const locale&amp;);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; static const locale&amp; classic();
+&nbsp;&nbsp;&nbsp; };
+&nbsp; }</pre>
+
+<hr>
+<h6>
+<a NAME="Example 3: Accessing a Locale's Facet"></a><font color="#000000"><font size=+1>Example
+3: Accessing a Locale's Facet</font></font></h6>
+<font color="#000000">MVC does not support namespaces, hence we had to
+comment out the otherwise necessary using statement.</font>
+<p><font color="#000000">MVC does not support explicit template argument
+specification. For this reason the standard interface of function templates
+like <tt><font face="Courier">use_facet</font></tt> and<tt><font face="Courier">
+has_facet</font></tt> cannot be implemented. The library that comes with
+MVC 4.0 offers a workaround, which is shown below.</font>
+<pre><font color="#000000">#include &lt;iostr</font>eam>
+#include &lt;locale>
+#include &lt;sstream>
+
+/*
+using namespace ::std;
+*/
+
+void tolower_example()
+{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; string in;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout &lt;&lt; "Input string needed(with uppercase characters): ";
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cin >> in;
+
+/* original code:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (has_facet&lt; ctype&lt;char> >(locale::locale()))
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {&nbsp; use_facet&lt; ctype&lt;char> >(locale::locale())
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .tolower(in.c_str(),in.c_str()+in.length());
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout &lt;&lt; in;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
+*/
+
+// workaround for MVC 4.0
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (_HAS(locale::locale(), ctype&lt;char>))
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; _USE(locale::locale(), ctype&lt;char>).tolower(in.begin(),in.end());
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout &lt;&lt; in;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
+}</pre>
+
+<hr>
+<h6>
+<a NAME="Example 4: A locale-sensitive date"></a><font size=+1>Example
+4: A locale-sensitive date inserter</font></h6>
+<font color="#000000">MVC does not support namespaces, hence we had to
+comment out the otherwise necessary using statement.</font>
+<p><font color="#000000">MVC does not support explicit template argument
+specification. For this reason the standard interface of function templates
+like <tt><font face="Courier">use_facet</font></tt> and<tt><font face="Courier">
+has_facet</font></tt> cannot be implemented. The library that comes with
+MVC 4.0 offers a workaround, which is shown below.</font>
+<p><font color="#000000">MVC does not support default template arguments.
+For reasons we simplified the example and implemented the inserter only
+for tiny character streams of type <tt><font face="Courier">ostream</font></tt>,
+instead of providing an inserter template, which would be natural.</font>
+<p><font color="#000000">MVC does not support the standard interface of
+the <tt><font face="Courier">time_put</font></tt> facet's <tt><font face="Courier">put()</font></tt>
+function; we had to omit one of the arguments.</font>
+<pre><font color="#000000">#include &lt;iostream>
+#include &lt;locale>
+</font>#include &lt;sstream>
+
+/*
+using namespace ::std;
+*/
+
+
+/* original code:
+
+template&lt;class Ostream>
+Ostream&amp; operator&lt;&lt; (Ostream&amp; os, const struct tm&amp; date)&nbsp;&nbsp;&nbsp;
+{
+&nbsp; typedef typename Ostream::char_type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; char_t;
+&nbsp; typedef typename Ostream::traits_type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; traits_t;&nbsp;
+&nbsp; typedef ostreambuf_iterator&lt;char_t,traits_t> outIter_t;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+&nbsp; locale loc = os.getloc();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;
+&nbsp; const time_put&lt;char_t,outIter_t>&amp; fac =&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp; use_facet &lt; time_put&lt;char_t, outIter_t > > (loc);&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp; outIter_t nextpos = fac.put(os,os,os.fill(),&amp;date,'x');
+&nbsp; if (nextpos.failed())&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; os.setstate(ios_base::badbit);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp; return os;
+}
+*/
+
+
+// simplified version for MVC 4.0
+
+ostream&amp; operator&lt;&lt; (ostream&amp; os, const struct tm&amp; date)
+{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; typedef ostream::char_type charType;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; typedef ostream::traits_type traitsType;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; typedef ostreambuf_iterator&lt;charType,traitsType> outIter_t;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; typedef time_put&lt;charType, outIter_t> time_put_facet_t;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; locale loc = os.getloc();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; const time_put&lt;charType,outIter_t>&amp; fac =
+&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* original code
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; use_facet &lt; time_put&lt;charType, bufIter_t > > (loc);&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; */
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // workaround for MVC 4.0
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; _USE(loc,time_put_facet_t);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; outIter_t nextpos = fac.put(os,os /* ,os.fill() */ ,&amp;date,'x');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (nextpos.failed())&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; os.setstate(ios_base::badbit);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; return os;
+}
+
+
+
+void date_inserter_example()
+{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; struct tm aDate;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; aDate.tm_year = 1989;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; aDate.tm_mon = 9;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; aDate.tm_mday = 1;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout.imbue(locale::locale("german-swiss"));
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout &lt;&lt; "Das Datum: " &lt;&lt; aDate &lt;&lt; endl;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+}</pre>
+&nbsp;
+<p>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../../HomepageGenerator/sources/HomePage/Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=24 width=35></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+</body>
+</html>

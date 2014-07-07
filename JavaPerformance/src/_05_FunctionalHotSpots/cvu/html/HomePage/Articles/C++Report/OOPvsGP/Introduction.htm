@@ -1,0 +1,604 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <title>Combining OO Design and Generic Programming</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CppReportIntro"></a>
+<br><font color="#295AB5"><font size=+3>Combining OO Design and Generic
+Programming</font></font>
+<p><font color="#295AB5"><font size=+2>C++ Report, March 1997</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p>As an attentive reader of C++ Report it will not have escaped your attention
+that during the past months there have been three articles explaining the
+structures and techniques related to iterators in the Standard C++ Library.
+Well, those were feature articles preceding a regular column on the Standard
+C++ Library.
+<p>We have not yet had the opportunity to introduce you to the why-and-what
+of this column. Let's make up for this omission now. First of all - its
+name. We suggested to call the column "Effective Standard C++ Library"
+in hommage &agrave; Scott Meyers and his "Effective C++" books, which we
+do like quite a bit. Secondly, before we start to explain the intention
+of the column, let us have a short look at what we mean by Standard C++
+Library. The diagram below is meant to be sort of a road map. It gives
+you an overview of the content and structure of the Standard C++ Library.
+It will reappear in future columns to help you keeping track of where we
+are, i.e. we want to prevent you from losing orientation in the library
+jungle.
+<p>So, here is what the Standard C++ Library comprises:
+<br>&nbsp;
+<br>&nbsp;
+<br>
+<center>
+<p><img SRC="IMG00001.gif" height=394 width=583></center>
+
+<p><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<p><b>Data Structures and Algorithms </b>are based on a proposal made by
+Alexander Stepanov and Meng Lee of Hewlett-Packard. The proposal was submitted
+to the ISO/ANSI committee and accepted as part of the standard in 1994.
+Early versions of it were made publicly available as the STL, the Standard
+Template Library. Standardization proceeded; many refinements were suggested
+and voted in. Today we have two diverging libraries: we have the standardized
+data structures and algorithms in the Standard C++ Library in parallel
+to the old, original STL that is available as public domain software. Both
+libraries comprise various containers like vector, list, map, and set,
+quite a number of algorithms, and the iterators, which we discussed at
+length in the preceding three articles. The design of these libraries is
+a demonstration of generic programming, a novel programming paradigm that
+separates data structures from algorithms. Function objects are another
+category of components in the Standard C++ Library; they are used as parameters
+to data structures and operations and are a powerful means in generic programming.
+Allocators were added later on, in order to make the data structures more
+flexible and adaptable to different memory allocation schemes. We will
+tell you more about them in the future.
+<p><b>Internationalization</b> is supported by the Standard C++ Library
+by means of the locale class and its facets. This component was designed
+and suggested by Nathan Myers in 1994. Major design issues were discussed
+and resolved until 1996. Traditionally, internationalization support was
+offered by the standard C library. However, the C library is of somewhat
+limited use, because its locale is a global one, which introduces problems
+in multilingual environments where multiple locales are needed. The locale
+framework introduces the notion of <i>facets</i>. A facet maintains a certain
+set of internationalization services, e.g. numeric facets hold information
+about the representation of the decimal point, the thousand separator,
+etc., and knows how to parse and format numbers. The <i>locale</i> <i>framework</i>
+serves as a container of facets. The framework can be extended; new user
+defined facet types can be created and new facets objects can be added
+to a locale object.
+<p><b>Streams Input and Output</b> is the next generation of IOStreams.
+Since the old days of C++, compilers have come with an IOStreams library.
+Cfront, which was one of the first C++ compilers, was delivered with an
+IOStreams library that was designed by Jerry Schwarz at AT&amp;T. Other
+compiler vendors recognized this IOStreams library as a kind of de-facto
+standard and offered IOStreams libraries with similar interfaces and behavior.
+Naturally, Jerry Schwarz was one of the people who contributed substantially
+to the new IOStreams component for the Standard C++ Library. The new standard
+IOStreams is a templatized and internationalized component for text and
+binary input and output. It aimed for staying compliant with the notion
+and design of the traditional IOStreams. However, fundamental changes were
+introduced over the time. The most significant was the decision to templatize
+the IOStreams classes on the character type. The intent was to extend the
+IOStreams framework so that it does not only work with one-byte-character
+streams, but also with wide character streams. Another logical consequence
+was to equip streams with a locale object in order to enable streams to
+adjust their behavior to local conventions such a numeric formatting rules
+or character conversion necessities.
+<p><b>Miscellaneous</b> comprises everything else. There is a string class.
+There is a hierarchy of exception classes, some of which are thrown by
+the runtime system of the language itself; the operator <i>new()</i> for
+instance throws a <tt><font face="Courier New">bad_alloc</font></tt> exception
+if it cannot make any memory available. Other standard exceptions are thrown
+by library components, such as out_of_<tt><font face="Courier New">range</font></tt>,
+which is raised by the string class's operator[]() for instance in case
+the index is greater than the string's size. The hierarchy itself already
+suggests how the exception should be handled and thus can serve as a base
+for your own exception classes. For example there is a distinction between
+run time errors and logical errors. Logical errors are bugs in your program's
+logic. Runtime errors cannot be anticipated, such as memory shortage for
+instance.
+<p>Another set of classes is for numeric problems; there is a complex number
+class template and a numeric array. The numeric array uses sophisticated
+template idioms, so-called expression templates, in order to serve as a
+high-performance building block for matrices and multidimensional arrays.
+<h3>
+What will the column be about?</h3>
+There is already a lot of printed material available that describes the
+functionality of the Standard C++ Library and the STL. For example the
+following books: <a href="#1">[i]</a>,<a href="#2">[ii]</a>,<a href="#3">[iii]</a>,
+<a href="#4">[iv]</a>,
+or <a href="#5">[v]</a>. The majority of those books are about the STL.
+<a href="#1">[i]</a>,<a href="#2">[ii]</a>,
+and <a href="#3">[iii]</a> come close to a user's guide and a reference
+manual to the STL; they show you the public interface of, say, the <i>vector&lt;></i>
+class template, or how to apply a <i>merge</i> algorithm. <a href="#4">[iv]</a>
+goes beyond this descriptive approach and demonstrates how one can build
+more complex data structures on top of the STL containers. <a href="#5">[v]</a>
+covers the entire Standard C++ Library. The focus still is on data structures
+and algorithms; stream input/output and internationalization are only described
+in brevity.
+<p>The intention of our column, however, is different. It will not be about
+the plain usage of the library's components, but will focus on explaining
+the idioms that are used in the design of the library. Take for example
+the traits technique that we described in one of our former articles <a href="#6">[vi]</a>.
+This is an idiom used in the Standard C++ Library, which can be applied
+whenever types should be associated to a class <i>and</i> built-in types.
+Such an idiom is used in the Standard C++ Library on the one hand, but
+is also helpful to any<i> </i>C++ designer.
+<p>Besides the explanation of idioms from the library we also want to show
+concrete tricks and techniques that are needed to effectively use and extend
+the Standard C++ Library framework. Our latest article <a href="#7">[vii]</a>,
+where we built a <i>safe iterator, </i>is a general assembly plan for an
+iterator that complies to the standard library framework. It explained
+how to extend the Standard C++ Library in adding a new iterator type.
+<h3>
+<font size=+2>Generic Programming and Its Impact on Software Design</font></h3>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td>However, before we will delve into the details of Standard C++ Library
+in future contributions to this column, let us first spend a couple of
+thoughts on how the philosophy and design of the library will influence
+the way we design and develop our applications. This time the considerations
+will focus on <i>application software</i> <i>design</i> rather than implementation
+techniques used in the Standard C++ Library. Let's restrict the discussion
+on the most popular part of the library, the data structures and algorithms
+from the Standard C++ Library and, in analogy, the STL.&nbsp;</td>
+
+<td>
+<center><img SRC="IMG00002.gif" height=196 width=273></center>
+</td>
+</tr>
+</table>
+
+<p><font face="Arial"><font size=+1>Aspects of Generic Programming</font></font>
+<p>The data structures and algorithms in the Standard C++ Library, and
+the STL, are a demonstration of a programming paradigm called <i>generic
+programming</i>. The key abstractions of the generic components in the
+Standard C++ Library are <i>containers</i>, <i>algorithms</i>, and <i>iterators</i>.
+Containers hold the data. Containers also export pointer-like objects,
+so-called iterators, that give access to the data elements held in a container.
+Algorithms do the work. They accept iterators and iterator ranges as arguments
+and use them to access a container and perform certain operations on the
+container. In principle there is a clear separation between data and operations
+on the data; the glue between both elements are the iterators.
+<p><img SRC="IMG00003.gif" height=32 width=339>
+<p>Here's an example, a find algorithm applied to a list container:
+<pre>list&lt;string> Friends; // <b>container
+
+</b>// populate the list
+
+list&lt;string>::iterator begin = Friends.begin() // <b>iterator</b> to the begin of the container
+list&lt;string>::iterator end = Friends.begin()&nbsp;&nbsp; // <b>iterator</b> to the end of the container
+
+// <b>algorithm</b> find() search for "Philippe" in the container
+if (find(Friends.begin(),Friends.end(),"Philippe") != Friends.end())
+cout &lt;&lt; "Philippe is a friend of mine" &lt;&lt; endl;</pre>
+There are two types of genericity here.
+<ul>
+<li>
+First, there is the separation of data structures and algorithms. An algorithm
+like <tt><font face="Courier New">find()</font></tt> for instance is called
+a <i>generic</i> algorithm because you can apply it to any kind of container
+that fits into the Standard C++ Library or STL framework. Decoupling of
+containers and algorithms via iterators facilitates the generic behavior
+of the elements from the Standard C++ Library.</li>
+
+<li>
+Secondly, generic components are implemented by using C++ templates. The
+<tt><font face="Courier New">find()</font></tt>
+algorithm for instance is a function <i>template</i>; one of its template
+parameters is the iterator type. The <tt><font face="Courier New">list</font></tt>
+container is a class <i>template</i>; one of its template parameters is
+the type of elements it holds. Most iterators are class <i>templates</i>
+too; they take the value type as one of their template arguments.</li>
+</ul>
+In sum, we achieve genericity by means of a design idea, i.e. separation
+of data structures from algorithms, and by use of programming techniques
+supported by the programming language, i.e. C++ class and function templates.
+<p>Although generic programming uses classical object-oriented C++ language
+features such as class (template) declarations, it is not object-oriented.
+How does generic programming contrast to object-oriented ideas?
+<p>In object-oriented programs abstractions are expressed by means of base
+classes.
+<p>In generic programs the abstractions are described in terms of formal,
+yet verbal requirements. Examples of such requirements are:
+<ul>
+<li>
+A container must provide certain iterators.</li>
+
+<li>
+An iterator must provide certain operations, such as increment and dereference.</li>
+
+<li>
+An algorithm must work on iterator ranges.</li>
+</ul>
+Most of these requirements are expressed in C++ by implicit requirements
+to the template arguments of a generic component. A call to <tt><font face="Courier New">find()</font></tt>
+for instance will not compile if you provide it with iterators that do
+not have an increment operation:
+<pre>template &lt;class Iterator, class T>
+Iterator find(Iterator first, Iterator last, const T&amp; value)
+{
+&nbsp;&nbsp; while (first != last &amp;&amp; *first != value)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; first++; <i>// Iterator::operator++() used !
+</i>&nbsp;&nbsp; return first;
+}</pre>
+We note that a significant part of the generic programming paradigm can
+be expressed in terms of C++ language constructs; other parts cannot be
+expressed by means of the programming language. There are requirements
+to containers, iterators, and algorithms that are <i>not</i> expressed
+by means of language features and hence will not even be detected at compile
+or template instantiation time. An example is the requirement that a pair
+of iterators is supposed to describe a contiguous range of elements, i.e.
+the second iterator must be reachable by incrementing the first iterator.
+Violations of this requirement are not detected until runtime.
+<p>Although both paradigms, object-oriented programming and generic programming,
+can be expressed in C++ they are fundamentally different. What does this
+difference mean for the design of applications that use generic components?
+<h3>
+Design Elements of Object-Oriented Software</h3>
+It is common wisdom that you do some design before you start coding whenever
+you develop software for a system that has a certain degree of complexity.
+Depending on various factors, such as your budget, the formal requirements
+for your project, the amount of people that have to understand the design,
+you can either scribble some notes on a piece of paper, or use a formal
+design method instead. In a project where numerous people have to understand
+each other's design, it is good practice to use one of the <i>popular </i>formal
+object-oriented design methods: Booch Method, Fusion, OMT, ...
+<p>What aspects of your software design do you usually model in a object-oriented
+design language? Typical elements are:
+<ul>
+<li>
+<i>A static class model.</i> It shows the classes, their interfaces, and
+their relationships (inheritance, containment, associations,...), other
+details such as the protected and public interface, cardinalities of containment
+relationships, roles of associations, and so on.</li>
+
+<li>
+<i>A dynamic model.</i> It shows the interaction of objects in representative
+scenarios, i.e. it shows typical sequences of calls to (public) member
+functions.</li>
+
+<li>
+<i>A state diagram</i>, if needed. It shows the potential states of a class
+and the state transitions triggered by events.</li>
+</ul>
+
+<h3>
+Software Design and Generic Programming</h3>
+What do I have do design in a generic program in contrast to an object-oriented
+program? Can I use object-oriented design methods for modeling a generic
+program? Well, not really ....
+<ul>
+<li>
+First, not all elements of your generic program are classes. Algorithms
+for instance play an important role in generic programming, and they are
+function templates, not classes. If you want to reflect the existence of
+algorithms, you can be happy if your design method allows free code, as
+the Booch method does. In some design methods you will not even be able
+to express function templates in an appropriate way.</li>
+
+<li>
+Secondly, classes in generic programming are mostly unrelated. There is
+no inheritance among containers, iterators, or algorithms. There are only
+few containment relationships among containers, iterators, and algorithms.
+It's true, containers have an allocator , and associative containers have
+a comparitor. However, the main classes do not contain each other</li>
+
+<li>
+Also, class interfaces do not reflect all operations of a generic component.
+Take the interface of a vector for instance; you will notice that a vector
+provides iterators. But it is not obvious that you are allowed to use these
+iterators in a call to a <i>sort</i>-algorithm. Still, it is a property
+of a vector that it can be sorted via the sort-algorithm. More generally,
+you cannot see which operations (or algorithms) are applicable to a certain
+container. In an object-oriented program the sort-algorithm would most
+likely be a member function of the vector class. Hence the relationship
+between the container and the algorithm would be visible and could be expressed
+by means of an object-oriented design method. Since in generic programming
+many relationships are expressed in terms of implicit requirements to template
+arguments there is no way of modeling the relationships between elements
+in a generic program by means of an object-oriented design method.</li>
+</ul>
+In sum, object-oriented design is not ideal for generic programming. This
+does not really come as a surprise because object-oriented design methods
+essentially capture the semantics of object-oriented programming; that's
+what they are for.
+<h3>
+Using Generic Programming for Application Development</h3>
+Does that mean we have to wait until someone some day will invent a "generic
+programming design method", before we will be able to use the Standard
+C++ Library or the STL in a project that has a complexity which requires
+design? To answer this question let's have a broader look at the way we
+can use generic programming and generic components in a C++ project. We
+can conceive of the following scenarios:
+<p><b><u>Scenario 1</u>: Design your application as a generic program.</b>
+<p>You would apply the generic programming paradigm to your entire application,
+i.e. you would design your application as a generic program that consists
+of various generic components that can be plugged together.
+<br>&nbsp;
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><img SRC="IMG00004.gif" height=199 width=232></td>
+
+<td>The C++ standard already defines a set of generic components - the
+data structures and algorithms from the Standard C++ Library. It would
+certainly be wise to make your abstractions compatible to the standard
+framework. Now, think of the main elements of generic programming in the
+Standard C++ Library - containers, algorithms, iterators. Adopting the
+generic programming paradigm from the Standard C++ Library for an entire
+application basically means that you have to categorize all significant
+elements of your software to be either an algorithm, or an iterator, or
+a container. Is it conceivable to design an entire application in terms
+of just 3 different abstractions?&nbsp;</td>
+</tr>
+</table>
+
+<p>It is not as restrictive as is sounds. The notion of these main elements
+can be broadened to some extent. Take the abstraction of a container for
+instance. A container in essence is an object that can provide iterators
+to let algorithms operate on itself. Hence, a container need not necessarily
+be a typical 'container' data structure such as a list or a queue. Generic
+algorithms can be applied to the <tt><font face="Courier New">istream</font></tt>
+from the Standard IOStreams via <tt><font face="Courier New">istream_iterator</font></tt>'s,
+too.
+<p>Also, the generic programming paradigm does not impose any limitations
+regarding the type or number of abstractions. You are free to invent novel
+generic abstractions. Allocators are an example of this; they were introduced
+to the STL in the process of making the STL part of the Standard C++ Library.
+Allocators added another dimension of genericity to containers, see [].
+You can also contrive a novel set of requirements to algorithms; you might
+want to add algorithms that accept containers as arguments rather than
+iterator ranges. Examples for that can be found in Graham Glass's column
+"STL in Action".
+<p>In principle, it is conceivable that you use the ideas of generic programming
+in your application design, broaden the standard abstractions and add new
+generic elements. Still, can you imagine that <i>all</i> elements of your
+software can be squeezed into the pattern of either algorithms, or iterators,
+or containers, and a few other generic elements? We think that this will
+be very rarely true. In some cases it <i>is</i> true, in particular for
+foundation libraries that provide data structures and algorithms. In those
+cases, where the generic programming paradigm fits, your design is more
+or less done, because you already know how all elements of your design
+can be classified into certain generic abstractions and how they will collaborate.
+You would not need to do any elaborated design anymore; you would just
+stick to a well-defined classification of generic components.
+<p><b><u>Scenario 2</u>: Design your application as an object-oriented
+program that uses the generic components</b>.
+<p>In this case you will apply classical object-oriented design techniques,
+and then build this object-oriented application on top of the generic components
+from the Standard C++ Library or the STL. In principle there are two possibilities
+for doing this:
+<ol>
+<li>
+You can either use the generic components directly, or</li>
+
+<li>
+you introduce a middle layer of object-oriented base components that are
+built on top of the generic components from the Standard C++ Library or
+the STL.</li>
+</ol>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><img SRC="IMG00005.gif" height=222 width=254></td>
+
+<td>If you use the generic components directly, i.e. without a middle layer,
+these generic components will show up in your object-oriented design model.
+One reasonable way of integrating them is to model the standard containers
+as classes, and all standard algorithms that can be applied to a container
+as methods of the respective container class. (This is different from the
+generic approach where containers and algorithms are more decoupled.) Basically
+you would fake an object-oriented container model.&nbsp;
+<p>In your object-oriented design the application domain objects will have
+use- and containment-relationships to the faked object-oriented container
+classes.&nbsp;
+<p>However, for purpose of implementation, your application domain classes
+you will ultimately have to use the generic components as they are: as
+containers with separate algorithms.</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><img SRC="IMG00006.gif" height=221 width=247></td>
+
+<td>An alternative possibility is to really implement the object-oriented
+containers from our design model above, i.e. you will implement a middle
+layer on top of the generic components.&nbsp;
+<p>In your object-oriented design the application domain objects will have
+use- and containment-relationships to the object-oriented container classes
+from the middle layer.&nbsp;
+<p>Different from the approach suggested above, you will also use these
+object-oriented containers in your implementation. You will not have to
+switch back to generic programming then.&nbsp;
+<p>The generic components from the Standard C++ Library will be hidden
+behind an object-oriented wrapper and will serve solely as a portability
+layer. They will be invisible both in design and implementation.&nbsp;</td>
+</tr>
+</table>
+
+<h3>
+<font size=+2>Conclusion</font></h3>
+There is a mismatch between object-oriented design / object-oriented programming
+on the one hand and generic programming / use of generic components on
+the other hand. You cannot appropriately express generic programming in
+a an object-oriented design. Either you refrain from doing object-oriented
+design (scenario 1) and stick to the generic programming paradigm. Or you
+do object-oriented design, fake an object-oriented container model for
+that purpose, and accept that your implementation does not exactly match
+the design (scenario 2a). Or you hide the generic components under an object-oriented
+layer that you can include both in your design and implementation (scenario
+2b). All three alternatives are viable approaches. However, generic programming
+seems to be suitable for a smaller number of application domains compared
+to object-oriented programming, which is a true general purpose programming
+paradigm that fits many needs. For this reason we doubt that basing larger
+projects solely on generic programming is reasonable. There is evidence
+that object-oriented programming helps mastering large projects and there
+is no reason for throwing over board this realization. In any case, C++
+is a multi-paradigm programming language and techniques and components
+from its Standard Library are useful in many cases. We will continue exploring
+them in further columns.
+<br>&nbsp;
+<table BORDER COLS=1 WIDTH="100%" BGCOLOR="#CCCCCC" >
+<tr>
+<td><b><font size=+1>Stereotypes - A Mechanism for Metaclassification</font></b></td>
+</tr>
+
+<tr>
+<td>The Unified Modeling Language (UML), which is currently under definition
+at Rational Software, introduces a concept called <i>stereotypes</i> in
+its latest version, which is UML V0.91 (see <a href="#9">[ix]</a> for reference).
+Stereotypes address the problem of metaclassification of an element in
+UML. An example of an element that needs metaclassification is an exception
+class; it has the special property that it should generally only be thrown
+or caught, but cannot be used in a different context: No other use of an
+exception class is intended. In classifying an exception class as a &laquo;exception&raquo;
+stereotype allows to express these special semantics. There are predefined
+stereotypes in UML; &laquo;exception&raquo; is one of them. However, UML
+allows users to add new kinds of stereotypes along with a specification
+of their semantics. Stereotypes are a means that allows end users some
+degrees of freedom in tailoring the modeling language to their needs.&nbsp;
+<p>We can imagine that stereotypes will help modeling generic components.
+For instance, we can conceive of semantic specifications for &laquo;container&raquo;,
+&laquo;iterator&raquo;, and &laquo;algorithm&raquo; stereotypes, which
+then can be used for modeling the generic data structures and algorithms
+from the Standard C++ Library and the STL. That means it looks like UML
+can serve as a design language that can handle the mix of object oriented
+design and generic programming elements on one hand and, on the other hand,
+can be used for a pure generic programming design.&nbsp;
+<p>However, this is a look into the crystal ball; stereotypes cannot yet
+be considered common practice in software design since Unified Modeling
+Language V1.0 is not yet born. Still, stereotypes might become the "generic
+programming modeling language" as well as a way to integrate object oriented
+design and generic programming.</td>
+</tr>
+</table>
+
+<p><b><font size=+2>References</font></b>
+<br>&nbsp;
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font size=+1>Books</font></b></td>
+
+<td><b>... for those who enjoy some German reading once and a while ...</b></td>
+</tr>
+
+<tr>
+<td><a NAME="1"></a>[i] Mark Nelson&nbsp;
+<br>C++ Programmer’s Guide&nbsp;
+<br>to the Standard Template Library&nbsp;
+<br>IDG Books Worldwide, 1995
+<br>ISBN 1-56884-314-3&nbsp;</td>
+
+<td><a NAME="4"></a>[iv] Ulrich Breymann&nbsp;
+<br>Die C++ Standard Template Library&nbsp;
+<br>Addison Wesley Longman, 1996&nbsp;</td>
+</tr>
+
+<tr>
+<td><a NAME="2"></a>[ii] David R. Musser and Atul Saini&nbsp;
+<br>STL Tutorial and Reference Guide&nbsp;
+<br>Addison-Wesley Publishing, 1996&nbsp;
+<br>ISBN 0-201-63398-1&nbsp;</td>
+
+<td><a NAME="5"></a>[v] Nicolai Jossuttis&nbsp;
+<br>Die C++ Standardbibliothek&nbsp;
+<br>Addison Wesley Longman, 1996&nbsp;</td>
+</tr>
+
+<tr>
+<td><a NAME="3"></a>[iii] Graham Glass and Brett Schuchart&nbsp;
+<br>The STL&lt;Primer>&nbsp;
+<br>Prentice Hall, 1995</td>
+
+<td></td>
+</tr>
+</table>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font size=+1>Articles</font></b></td>
+
+<td><b><font size=+1>URLs</font></b></td>
+</tr>
+
+<tr>
+<td><a NAME="6"></a>[vi] Klaus Kreft and Angelika Langer&nbsp;
+<br>Iterators in the Standard C++ Library&nbsp;
+<br>C++ Report, Nov.-Dec. 1996&nbsp;</td>
+
+<td><a NAME="9"></a>[ix] Rational Software, Inc.&nbsp;
+<br>Unified Modeling Language V0.91 Addendum&nbsp;
+<br>&nbsp;http://www.rational.com/ot/uml.html</td>
+</tr>
+
+<tr>
+<td><a NAME="7"></a>[vii] Klaus Kreft and Angelika Langer&nbsp;
+<br>Building a Safe Iterator&nbsp;
+<br>C++ Report, February 1997&nbsp;</td>
+
+<td></td>
+</tr>
+
+<tr>
+<td><a NAME="8"></a>[viii] Bjarne Stroustrup&nbsp;
+<br>Making a vector fit for a standard
+<br>C++ Report, October 1994&nbsp;</td>
+
+<td></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,740 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Pre-Copyedit Version of Article in ObjektSPEKTRUM in March 2003">
+   <title>Programming with C++ Templates</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="ObjektSpektrumTemplates"></a>
+<br><font color="#295AB5"><font size=+3>Programmieren mit C++ Templates</font></font>
+<br>&nbsp;
+<p><font color="#295AB5"><font size=+2>ObjektSPEKTRUM, M&auml;rz 2003</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<h2>
+Abstract</h2>
+Templates gibt es in C++ bereits seit mehr als 10 Jahren, benutzt werden
+sie in der Praxis jedoch eher selten.&nbsp; In diesem Artikel wird besprochen,
+warum das so ist, warum es sich in der Zukunft rasch &auml;ndern k&ouml;nnte
+und wof&uuml;r Templates in der Praxis n&uuml;tzlich sind.
+<br>&nbsp;
+<h2>
+Templates Gestern und Heute</h2>
+
+<p><br>Beim Stichwort „Templates“ denken die meisten C++-Programmierer
+an parametrisierte Container-Klassen wie zum Beispiel ein Klassen-Template
+f&uuml;r eine Liste, aus dem Klassen f&uuml;r verschiedene Elementtypen
+wie list&lt;int>, list&lt;string>, usw. generiert werden k&ouml;nnen.&nbsp;
+In der Tat sind Templates in die Sprache eingef&uuml;hrt worden, um solche
+Container-Klassen effizient implementieren zu k&ouml;nnen.&nbsp; Die C++
+Standard-Bibliothek ist eine typische Anwendung dieses Sprachmittels. Sie
+ist eine Template-Bibliothek, die bisweilen auch verk&uuml;rzt als STL
+= Standard Template Library bezeichnet wird. Die Verwendung der Templates
+aus der Standard-Bibliothek ist vielen C++-Programmierer durchaus&nbsp;
+gel&auml;ufig.&nbsp; Wenige C++-Programmierer verwenden das Template-Sprachmittel
+jedoch f&uuml;r die Implementierung eigener Klassen und Funktionen.&nbsp;
+Und das ist schade, weil ein gro&szlig;er Fundus an n&uuml;tzlichen Techniken
+einfach brach liegt und gar nicht genutzt wird.&nbsp; Diese Zur&uuml;ckhaltung
+hat allerdings ihre Gr&uuml;nde.
+<br>&nbsp;
+<h3>
+Code Bloat</h3>
+Zu den Gr&uuml;nden geh&ouml;rt sicherlich die Tatsache, da&szlig; fr&uuml;he
+Implementierungen des Template-Sprachmittels den Templates einen schlechten
+Ruf eingebracht haben.&nbsp; Hartn&auml;ckig h&auml;lt sich das Ger&uuml;cht,
+da&szlig; die Benutzung von Templates zwangsl&auml;ufig zu gr&ouml;&szlig;erem
+Bin&auml;rcode (Code-Bloat) f&uuml;hrt.&nbsp; Das war in fr&uuml;hen Compiler-Implementierungen
+auch in der Tat h&auml;ufig der Fall, weil die Compiler bei der Template-Instanziierung
+Code erzeugt haben, der gar nicht gebraucht wurde.&nbsp; Moderne Compiler
+tun das nicht mehr und d&uuml;rfen es auch gar nicht, wenn sie standardkonform
+sein wollen.&nbsp; Der Sprachstandard schreibt n&auml;mlich vor, dass ein
+Compiler bei der Generierung einer Klasse aus einem Klassentemplate nur
+diejenigen Memberfunktionen erzeugen darf, die auch tats&auml;chlich aufgerufen
+werden. Alle nicht verwendeten Memberfunktionen d&uuml;rfen im Bin&auml;rcode
+gar nicht auftauchen. Damit wird genau der Code generiert, der auch tats&auml;chlich
+gebraucht wird – nicht mehr und nicht weniger. Das war fr&uuml;her (vor
+der Standardisierung von C++) anders. Da wurde von den Compilern mitunter
+hemmungslos Code f&uuml;r Funktionen generiert, die nirgendwo aufgerufen
+wurden.&nbsp; Das hat nat&uuml;rlich zu Bin&auml;rcodegr&ouml;&szlig;en
+gef&uuml;hrt, die nicht n&ouml;tig gewesen w&auml;ren.
+<p>Zur Ehrenrettung der Compilerhersteller mu&szlig; man sagen, da&szlig;
+nicht jeder Code-Bloat auf das Konto des Compilers geht.&nbsp; Man kann
+auch durch ungeschicktes Programmier selber zum Aufbl&auml;hen des erzeugten
+Bin&auml;rcode beitragen, zum Beispiel indem man Funktionalit&auml;t und
+Daten, die nicht vom Template-Parameter abh&auml;ngen, trotzdem im Template
+definiert.&nbsp; Solcher Code und solche Daten werden dann nat&uuml;rlich
+vom Compiler bei jeder Instanziierung dupliziert. Solche Fehler kann man
+aber vermeiden, so da&szlig; bei geschickter Programmierung mit einem modernen
+Compiler der ber&uuml;chtigte Code-Bloat der Vergangenheit angeh&ouml;ren
+d&uuml;rfte.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+Portabilit&auml;t</h3>
+Es gibt aber noch ein weiteres Problem, da&szlig; zur eher sp&auml;rlichen
+Verwendung von Templates in der Praxis gef&uuml;hrt hat.&nbsp; Im Zuge
+der Standardisierung von C++ (1989-1998) wurden&nbsp; der Sprache zahlreiche
+neue Template-Sprachmittel hinzugef&uuml;gt.&nbsp; Dazu geh&ouml;ren Feature
+wie Member-Templates, Template-Spezialisierung, Template-Template-Argumente
+und einige andere. Diese Sprachmittel werden zum Teil f&uuml;r die Implementierung
+und Benutzung der Standard-Bibliothek gebraucht.&nbsp; Die Compilerhersteller
+haben diese neuen Sprachmittel peu &agrave; peu in die Compiler eingebaut,
+was dazu gef&uuml;hrt hat, da&szlig; f&uuml;r eine ganze Weile (ca. Mitte
+bis Ende der 90er Jahre) jeder Compiler Templates in unterschiedlichem
+Umfang unterst&uuml;tzt hat. F&uuml;r Programmierer, die zu jener Zeit
+portable C++-Programme schreiben wollten, war das ein Albtraum. Templates
+hat man daher in Programmen mit Portabilit&auml;tsanforderung tunlichst
+vermieden.
+<p>Leider hat sich an dieser traurigen Situation bis heute wenig ge&auml;ndert.
+Zwar unterst&uuml;tzen heute zahlreiche Compiler-Hersteller fast den gesamten
+Sprachumfang der C++-Templates, aber ausgerechnet einer der popul&auml;rste
+C++-Compiler, Microsoft’s Visual C++ 6.0, unterst&uuml;tzt Templates nur
+rudiment&auml;r. Vollkommen korrekte C++-Programme f&uuml;hren zu Compiler-Abst&uuml;rzen
+mit der Fehlermeldung INTERNAL COMPILER ERROR und es kommt auch vor, dass
+MVC 6.0 gar nichts meldet und einfach inkorrekten Bin&auml;rcode generiert.&nbsp;
+Mit anderen Worten, von Templates l&auml;&szlig;t man besser die Finger,
+wenn man sein Programm mit MVC 6.0 &uuml;bersetzen will.&nbsp; Die Version
+7.0 ist dem Vernehmen nach kaum besser, aber wir haben das selbst nicht
+verifiziert.
+<p>Das Compiler-Defizit im Bereich der Template-Sprachmittel wird in K&uuml;rze
+der Vergangenheit angeh&ouml;ren.&nbsp; Im November 2002 hat Microsoft
+den C++-Compiler Visual Studio C++ .NET 2003 angek&uuml;ndigt (siehe /<a href="#MVC">MVC</a>/),
+der nun endlich einen gro&szlig;en Teil der Template-Sprachmittel unterst&uuml;tzen
+wird.&nbsp; Damit entf&auml;llt auch diese H&uuml;rden f&uuml;r die Benutzung
+von Templates in der industriellen C++-Programmierung.
+<br>&nbsp;
+<h3>
+Knowhow und Praxis</h3>
+Ein letztes Problem bleibt allerdings. Das Programmieren mit Templates
+mu&szlig; erst einmal erlernt werden.&nbsp; Zwar sind praktisch alle C++-Programmierer
+in der Lage, Templates zu instanziieiren, also z.B. eine list&lt;int> zu
+benutzen.&nbsp; Aber vor dem Implementieren eigener Templates schrecken
+viele C++-Programmierer oft zur&uuml;ck.&nbsp; Wenn man nachfragt, warum
+das so ist, h&ouml;rt man Antworten wie „kann ich nicht“, „brauch’ ich
+nicht“, „habe ich noch nie benutzt“.
+<p>Gegen „kann ich nicht“ kann man nat&uuml;rlich was tun.&nbsp; In einer
+entsprechenden Schulung sind die Grundlagen der Template-Programmierung
+in 2-3 Tagen erlernt und f&uuml;r das Selbststudium steht ebenfalls ein
+Fachbuch zur Verf&uuml;gung (siehe /<a href="#VAN">VAN</a>/), dessen Erscheinen
+f&uuml;r das Fr&uuml;hjahr 2003 angek&uuml;ndigt ist.&nbsp; Das Buch ist
+sehr ambitioniert und wendet sich nicht nur an den Template-Anf&auml;nger,
+sondern bespricht nahezu alles, was es derzeit &uuml;ber Templates zu sagen
+und zu wissen gibt.&nbsp; F&uuml;r den Neuling wird es wohl eher schwer
+verdaulich sein, aber es hat ein brauchbares Tutorial, das auch dem Anf&auml;nger
+Hilfestellungen bietet.&nbsp; Aus diesem Grunde wird das Buch am Ende dieses
+Artikel n&auml;her vorgestellt.
+<p>Das „brauch ich nicht“-Argument wirkt auf den ersten Blick &uuml;berzeugend.&nbsp;
+Viele Programmierer sagen: „Templates brauche ich nicht, weil ich keine
+Container-Klassen implementieren will.“&nbsp; Und moderne Template-Programmiertechniken
+wie generisches Programmieren oder Template-Meta-Programmierung erscheinen
+einigen C++-Praktikern reichlich akademisch und unbrauchbar f&uuml;r die
+industrielle C++-Programmierung.&nbsp; Das ist auch so oder kann zumindest
+so gesehen werden.&nbsp; Was viele C++-Programmierer jedoch untersch&auml;tzen,
+ist die N&uuml;tzlichkeit der Templates in ganz allt&auml;glichen Situationen
+zur L&ouml;sung v&ouml;llig normaler Programmieraufgaben.&nbsp; Beispiele
+solcher Anwendungen von Templates in der allt&auml;glichen Praxis wollen
+wir uns im Folgenden ansehen.
+<br>&nbsp;
+<h2>
+Template-Programmierung in der Praxis</h2>
+
+<p><br>Beide Beispiel sind realen Programmierproblemen nachempfunden, aber
+f&uuml;r die Besprechung im Rahmen dieses Artikels stark verk&uuml;rzt
+und vereinfacht, damit man die eigentliche Idee der jeweiligen Implementierungstechnik
+mit Templates auch sehen kann.
+<br>&nbsp;
+<h3>
+Read / Write Iterator</h3>
+
+<p><br>Betrachten wir das&nbsp; Beispiel einer Klasse, die eine Sequenz
+von Elementen eines Typs Data repr&auml;sentiert und Zugriff auf die Elemente
+der Sequenz &uuml;ber einen Iterator gibt:
+<p><tt>class Sequence</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp;public:</tt>
+<br><tt>&nbsp; class Iterator</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp; public:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Iterator (Data* base, size_t size)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; : pIter(base), lenIter(size), current(0)
+{}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Data* next()</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; { if (current &lt; lenIter)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return pIter+(current++);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return 0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; private:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Data* pIter;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; size_t lenIter;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; size_t current;</tt>
+<br><tt>&nbsp; };</tt><tt></tt>
+<p><tt>&nbsp; Sequence() : p(new Data[SIZ]), len(SIZ) {}</tt>
+<br><tt>&nbsp; Sequence(unsigned int i) : p(new Data[i]), len(i) {}</tt>
+<br><tt>&nbsp; virtual ~Sequence() { delete [] p; }</tt>
+<br><tt>&nbsp; Iterator makeIterator() const</tt>
+<br><tt>&nbsp; { return Iterator(p,len); }</tt><tt></tt>
+<p><tt>&nbsp;&nbsp; // some other member functions,</tt>
+<br><tt>&nbsp;&nbsp; // assignment, copy constructor, operator[], ...</tt><tt></tt>
+<p><tt>&nbsp;private:</tt>
+<br><tt>&nbsp;&nbsp; enum { SIZ = 5 };</tt>
+<br><tt>&nbsp;&nbsp; Data* p;</tt>
+<br><tt>&nbsp;&nbsp; size_t len;</tt>
+<br><tt>};</tt>
+<br>&nbsp;
+<p>Bei n&auml;herer Analyse der Klasse stellt man fest, da&szlig; die Klasse
+nicht ganz in Ordnung ist. Selbst wenn eine Sequenz als unver&auml;nderlich
+deklariert ist, wie zum Beispiel im Kontext einer Funktion (siehe someFunction()
+unten), der sie als const Sequence&amp; &uuml;bergeben wird, kann die Sequenz
+ver&auml;ndert werden. Das ist eine grobe Verletzung der const-Garantien.
+<p><tt>void someFunction(const Sequence&amp; seq)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp;&nbsp; Sequence::Iterator iter = seq.makeIterator();</tt>
+<br><tt>&nbsp;&nbsp; Data* elemPtr = iter.next();</tt>
+<br><tt>&nbsp;&nbsp; *elemPtr = Data(?new value?);&nbsp;&nbsp;&nbsp; //
+&szlig; das sollte eigentlich nicht m&ouml;glich sein !!!</tt>
+<br><tt>}</tt>
+<br>&nbsp;
+<p>Das Problem liegt darin, da&szlig;&nbsp; die Funktion makeIterator()
+als const deklariert ist und damit auf unver&auml;nderliche Sequenzen angewandt
+werden kann, aber dann einen Iterator zur&uuml;ck gibt, der den schreibenden
+Zugriff auf die Elemente in der Sequenz zul&auml;&szlig;t, weil er eine
+non-const Referenz auf die Elemente der Sequenz liefert.&nbsp; Dieses Loch
+in der Const-Correctness kann man stopfen, indem man zwei Varianten der
+makeIterator()-Funktion implementiert, eine f&uuml;r ver&auml;nderliche
+und eine f&uuml;r unver&auml;nderliche Sequenzen.&nbsp; Die makeIterator()-Funktion
+f&uuml;r unver&auml;nderliche Sequenzen m&uuml;&szlig;te einen Lese-Iterator
+liefern und die makeIterator()-Funktion f&uuml;r ver&auml;nderliche Sequenzen
+d&uuml;rfte einen Schreib-Iterator liefern. Man braucht also zwei Iterator-Typen,
+einen Lese- und einen Schreib-Iterator.&nbsp;&nbsp; Das w&uuml;rde dann
+etwa so aussehen:
+<p><tt>class Sequence {</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp;...</tt>
+<br><tt>&nbsp;WriteIterator makeIterator()</tt>
+<br><tt>&nbsp;{ return writeIter(p,len); }</tt><tt></tt>
+<p><tt>&nbsp;ReadIterator makeIterator() const</tt>
+<br><tt>&nbsp;{ return readIter(p,len); }</tt>
+<br><tt>&nbsp;...</tt>
+<br><tt>};</tt>
+<p>Wie implementiert man die beiden ben&ouml;tigten Iterator-Typen am geschicktesten?&nbsp;
+Den Schreib-Iterator hatten wir ja schon; wir m&uuml;ssen den Typ Iterator
+nur umbenennen in WriteIterator:
+<p><tt>class Sequence::WriteIterator</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp; public:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Iterator (Data* base, size_t size)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; : pIter(base), lenIter(size), current(0)
+{}</tt><tt></tt>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp; Data* next()</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; { if (current &lt; lenIter)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return pIter+(current++);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return 0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; private:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Data* pIter;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; size_t lenIter;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; size_t current;</tt>
+<br><tt>&nbsp; };</tt>
+<p>Der Lese-Iterator sieht ganz &auml;hnlich aus.&nbsp; Er unterscheidet
+sich lediglich im R&uuml;ckgabetyp der Funktion next() und im Typ des privaten
+Pointer-Datenmembers:
+<p><tt>class Sequence::ReadIterator</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp; public:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Iterator (const Data* base, size_t size)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; : pIter(base), lenIter(size), current(0)
+{}</tt><tt></tt>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp; const Data* next()</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; { if (current &lt; lenIter)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return pIter+(current++);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return 0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; private:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; const Data* pIter;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; size_t lenIter;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; size_t current;</tt>
+<br><tt>};</tt>
+<p>Hier haben wir die Implementierung gezeigt, die wohl die meisten Programmierer
+intuitiv gew&auml;hlt h&auml;tten.&nbsp; Man kopiert einfach den Source-Code
+des Schreib-Iterators mit Copy-Paste, macht die beiden winzigen &Auml;nderungen
+und – voil&agrave; – man hat einen Lese-Iterator implementiert.&nbsp; Das
+machen&nbsp; manche Programmierer auch noch, wenn der zu kopierende Code
+etwas umfangreicher ist, wie das wohl bei einer realistischen Iterator-Klasse
+der Fall w&auml;re; typischerweise hat ein Iterator nicht nur eine einzige
+Memberfunktion, sondern eher ein halbes bis ein ganzes Dutzend.&nbsp; Dann
+werden nicht nur 10 Zeilen Code, sondern gleich 100 Zeilen Code kopiert.
+<p>Code-Duplizierung ist zwar einfach, hat aber gravierende Nachteile.&nbsp;
+Man erzeugt Redundanzen, die sich sp&auml;ter bei der Weiterentwicklung
+und Wartung des Quellcodes nachteilig auswirken, weil man immer alle Kopien
+synchron &auml;ndern mu&szlig;, zum Beispiel wenn den Iterator-Typen eine
+neue Funktion hinzugef&uuml;gt werden soll oder wenn eine bestehende Funktion
+ge&auml;ndert werden mu&szlig;.&nbsp; Aus Gr&uuml;nden der Wartbarkeit
+seines Codes wird man Redundanzen grunds&auml;tzlich vermeiden, wenn man
+kann.&nbsp; Und hier k&ouml;nnte man die Redundanz beispielsweise mit Templates
+vermeiden.
+<p>Der Unterschied zwischen den beiden Iterator-Typen besteht lediglich
+im Namen der Interator-Typen, im Return-Typ der Memberfunktion next(),
+und im Typ eines Datenmembers. Ansonsten sind die beiden Iterator-Typen
+absolut identisch.&nbsp; Unterschiede, die sich nur auf Typinformation
+beziehen, kann man &uuml;ber Template-Argumente ausdr&uuml;cken.&nbsp;
+Man k&ouml;nnte ein einziges Klassen-Template definieren, aus dem die beiden
+ben&ouml;tigten Iterator-Typen generiert werden k&ouml;nnen.&nbsp; Das
+sieht dann wie folgt aus:
+<p><tt>class Sequence {</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp; template &lt;class ElemT> class Iterator {</tt>
+<br><tt>&nbsp; public:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Iterator (ElemT* base, size_t size)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; { … }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ElemT* next()</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; { … }</tt>
+<br><tt>&nbsp;&nbsp; private:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ElemT* pIter;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp; };</tt>
+<br><tt>&nbsp; typedef Iterator&lt;Data>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+WriteIterator;</tt>
+<br><tt>&nbsp; typedef Iterator&lt;const Data> ReadIterator;</tt><tt></tt>
+<p><tt>&nbsp; …</tt><tt></tt>
+<p><tt>&nbsp; WriteIterator makeIterator()</tt>
+<br><tt>&nbsp; { return writeIter(p,len); }</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp; ReadIterator makeIterator() const</tt>
+<br><tt>&nbsp; { return readIter(p,len); }</tt>
+<br><tt>};</tt>
+<br><tt></tt>&nbsp;<tt></tt>
+<p>Es gibt nat&uuml;rlich auch andere Techniken, um die Redundanz zu vermeiden.&nbsp;
+Beispielsweise k&ouml;nnte man versuchen, die Gemeinsamkeiten der beiden
+Iterator-Typen durch eine gemeinsame Basisklasse auszudr&uuml;cken.&nbsp;
+Dann implementiert man statt einem Klassen-Template ein ganze Klassen-Hierarchie
+mit 3 Klassen.&nbsp; Vererbung ist in der Tat eine sinnvolle M&ouml;glichkeit
+zur Redundanzvermeidung. Allerdings stellt man fest, da&szlig; man in unserem
+Beispiel nur die Datenmember in die Basisklasse legen kann. Die Memberfunktion
+next() kann nicht in die Basisklasse gezogen werden, weil sie in beiden
+abgeleiteten Klassen eine &auml;hnliche, aber dennoch leicht andere Signatur
+haben m&uuml;&szlig;te.&nbsp; In einer realistischen Implementierung einer
+Iterator-Klasse w&uuml;rde das vermutlich f&uuml;r eine ganze Reihe von
+Memberfunktionen gelten.
+<p>Anstelle der Vererbungsl&ouml;sung kann man auch eine Wrapper-L&ouml;sung
+versuchen, bei der man den Lese-Iterator so implementiert, da&szlig; er
+einen Schreib-Iterator enth&auml;lt, alle Funktionen durch Delegierung
+an den enthaltenen Schreib-Iterator implementiert und lediglich bei der
+next()-Funktion einen anderen Return-Typ, n&auml;mlich einen Pointer auf
+const ElemT liefert.&nbsp; Man hat dann aber immer noch die Arbeit, da&szlig;
+man das gesamte Iterator-Interface zweimal hinschreiben und, wenn auch
+in trivialer Form, implementieren mu&szlig;.
+<p>Unter Verwendung von Templates bekommt man verglichen mit der Vererbungs-
+und der Wrapper-L&ouml;sung eine kompakte, redundanz-freie, optimale L&ouml;sung.
+Das ber&uuml;chtigte Code-Bloat-Problem besteht hier nicht, weil bei der
+Template-Instanziierung nichts entsteht, was nicht auch beim Copy-Paste
+entstanden w&auml;re.&nbsp; Im Gegenteil!&nbsp; Der Compiler darf bei der
+Instanziierung von Iterator&lt;Data> und Iterator&lt;const Data> nur die
+Memberfunktionen erzeugen, die auch tats&auml;chlich aufgerufen werden.
+Wenn es Memberfunktionen im Iterator-Template g&auml;be, die nirgendwo
+verwendet werden, dann w&uuml;rde die Template-L&ouml;sung sogar zu einer
+Reduzierung der Bin&auml;rcode-Gr&ouml;&szlig;e im Vergleich zu allen anderen
+L&ouml;sungen f&uuml;hren.
+<br>&nbsp;
+<h4>
+Fazit</h4>
+Wie man am Beispiel sieht, sind Templates auch in ganz normalen Lebenslagen
+n&uuml;tzlich, d.h. in Situation, die mit Template-Programmierung im klassischen
+Sinne nichts zu tun haben.&nbsp; Hier wird nicht versucht, ein Container-Template
+zu implementieren.&nbsp; Die Templates wurden einfach nur verwendet, um
+Code-Duplizierung zu vermeiden, Redundanzen zu eliminieren und den eigenen
+Code &uuml;bersichtlicher und leichter wartbar zu gestalten.
+<p>Wer sich mit Templates etwas besser auskennt, wird feststellen, da&szlig;
+sich Templates relativ gut zur Redundanzvermeidung einsetzen lassen. Es
+ist nicht immer so trivial wie im besprochenen Beispiel und man mu&szlig;
+u.U. mehr Template-Sprachmittel einsetzen als hier gezeigt, aber es geht
+und ist n&uuml;tzlich und in gewissen F&auml;llen sind Templates anderen
+Techniken wie beispielsweise der Vererbung sogar &uuml;berlegen.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+I/O-Operatoren f&uuml;r beliebige Objekte</h3>
+
+<p><br>Sehen wir uns ein anderes Beispiel von Template-Programmierung in
+der Praxis an. Stellen wir uns vor, wir implementieren Software f&uuml;r
+einen Paketdienst.&nbsp; In der Applikation gibt es eine Abstraktion ShippingInfo,
+die Informationen &uuml;ber Gewicht und Ma&szlig;e des Pakets und die Entfernung
+zum Zielort enth&auml;lt, damit daraus die Zustellgeb&uuml;hren berechnet
+werden k&ouml;nnen.&nbsp; F&uuml;r solche selbst-definierten Typen implementiert
+man h&auml;ufig&nbsp; die I/O Operatoren, damit z.B. der Inhalt eines ShippingInfo-Objekts
+protokolliert werden kann, indem man das Objekt auf eine Datei ausgibt.&nbsp;
+Hier sieht man einen Teil der ShippingInfo-Klasse und den Ausgabe-Operator:
+<p><tt>#ifndef ShippingInfo_H</tt>
+<br><tt>#define ShippingInfo_H</tt><tt></tt>
+<p><tt>class ShippingInfo {</tt>
+<br><tt>private:</tt>
+<br><tt>&nbsp; float _wght; // weight in pounds</tt>
+<br><tt>&nbsp; float _siz[3]; // size in inches</tt>
+<br><tt>&nbsp; float _dist; // distance to destination in miles</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp; ShippingInfo( float w, float s1, float s2, float s3, float
+d)</tt>
+<br><tt>&nbsp; : _wght(w), _dist(d)</tt>
+<br><tt>&nbsp; {_siz[0] = s1; _siz[1] = s2; _siz[2] = s3;}</tt>
+<br><tt>&nbsp; …</tt><tt></tt>
+<p><tt>friend std::ostream&amp; operator&lt;&lt; (std::ostream&amp; os,
+const ShippingInfo&amp; si);</tt>
+<br><tt>};</tt><tt></tt>
+<p><tt>std::ostream&amp; operator&lt;&lt; (std::ostream&amp; os, const
+ShippingInfo&amp; si)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; os &lt;&lt; ”weight: ” &lt;&lt; si._wght &lt;&lt; ‘ ‘;</tt>
+<br><tt>&nbsp; os &lt;&lt; ”size: ” &lt;&lt; si._siz[0] &lt;&lt; ‘x’ &lt;&lt;
+si._siz[1] &lt;&lt; ‘x’ &lt;&lt; si._siz[2] &lt;&lt; ‘ ‘;</tt>
+<br><tt>&nbsp; os &lt;&lt; ”distance: ” &lt;&lt; si._dist ;</tt>
+<br><tt>&nbsp; return os;</tt>
+<br><tt>}</tt>
+<br><tt>#endif /* ShippingInfo_H */</tt>
+<br>&nbsp;
+<p>Den Ausgabe-Operator kann man dann wie folgt benutzen:
+<p><tt>#include &lt;iostream></tt>
+<br><tt>#include ”ShippingInfo.h”</tt><tt></tt>
+<p><tt>void main()</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; ShippingInfo item(2,3,5,7,600);</tt>
+<br><tt>&nbsp; std::cout &lt;&lt; ”Info: ” &lt;&lt; item &lt;&lt; ‘\n’;</tt>
+<br><tt>}</tt>
+<p>Das Programm schreibt auf den Bildschirm:
+<p><tt>Info: weight: 2 size: 3x5x7 distance: 600</tt>
+<p>Im Laufe der Weiterentwicklung der Anwendung ergibt es sich, da&szlig;
+zwischen metrischen und amerikanischen Ma&szlig;einheiten konvertiert werden
+mu&szlig;.&nbsp; Weil diese Konvertierung typischerweise im Zusammenhang
+mit der Ein- und Ausgabe von Daten und nicht nur im Zusammenhang mit der
+ShippingInfo-Abstraktion gebraucht wird, soll die Konvertierung in der
+Stream-Abstraktion implementiert werden.&nbsp; Zu diesem Zweck wird eine
+neue Stream-Klasse implementiert:
+<p><tt>#ifndef MetricConvStream_H</tt>
+<br><tt>#define MetricConvStream_H</tt><tt></tt>
+<p><tt>#include &lt;sstream></tt><tt></tt>
+<p><tt>class MCostringstream : public std::ostringstream {</tt>
+<br><tt>private:</tt>
+<br><tt>&nbsp; bool _metric;</tt>
+<br><tt>&nbsp; float MilesToKm(float m)&nbsp; const { return m * 1.609;
+}</tt>
+<br><tt>&nbsp; float InchesToCm(float m) const { return m * 2.54; }</tt>
+<br><tt>&nbsp; float PoundsToKg(float w) const { return w * .45359; }</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp; MCostringstream() :_metric(false) {}</tt>
+<br><tt>&nbsp; void set_metric(bool m) { _metric = m; }</tt>
+<br><tt>&nbsp; …</tt>
+<br><tt>};</tt>
+<br><tt>#endif /* MetricConvStream_H */</tt>
+<p>Diese neue Stream-Klasse MCostringstream ist von der in der Standard-Bibliothek
+existierenden Klasse std::ostringstream abgeleitet, die ihrerseits von
+der Klasse std::ostream abgeleitet ist.&nbsp; Die Hierarchie der Stream-Klassen
+wird noch eine Rolle spielen.&nbsp; Sie sieht so aus:
+<center>
+<p><img SRC="image002.gif" NOSAVE height=346 width=462></center>
+
+<p><br>
+<p>Da die neue Konvertierungsm&ouml;glichkeit selbstverst&auml;ndlich auch
+f&uuml;r die Ausgabe von ShippingInfo-Objekten genutzt werden soll, wird
+eine weiterer Ausgabe-Operator definiert, der ShippingInfo-Objekte auf
+MCostringstreams ausgeben kann:
+<p><tt>MCostringstream&amp; operator&lt;&lt;(MCostringstream&amp; os,const
+ShippingInfo&amp; si)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; float w = (os._metric) ? os.PoundsToKg(si._wght) : si._wght;</tt>
+<br><tt>&nbsp; float d = (os._metric) ? os.MilesToKm(si._dist) : si._dist;</tt>
+<br><tt>&nbsp; float s[3];</tt>
+<br><tt>&nbsp; for (int i=0;i&lt;3;i++)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; s[i] = (os._metric) ? os.InchesToCm(si._siz[i])
+: si._siz[i];</tt>
+<br><tt>&nbsp; os &lt;&lt; ”weight: ” &lt;&lt; w &lt;&lt; ‘ ‘;</tt>
+<br><tt>&nbsp; os &lt;&lt; ”size: ” &lt;&lt; s[0] &lt;&lt; ‘x’ &lt;&lt;
+s[1] &lt;&lt; ‘x’ &lt;&lt; s[2] &lt;&lt; ‘ ‘;</tt>
+<br><tt>&nbsp; os &lt;&lt; ”distance: ” &lt;&lt; d;</tt>
+<br><tt>&nbsp; return os;</tt>
+<br><tt>}</tt>
+<p>F&uuml;r die ShippingInfo-Objekte gibt es jetzt also zwei Ausgabe-Operatoren:
+<p><tt>std::ostream&amp; operator&lt;&lt; (std::ostream&amp; os, const
+ShippingInfo&amp; si);</tt>
+<br><tt>MCostringstream&amp; operator&lt;&lt;(MCostringstream&amp; os,
+const ShippingInfo&amp; si);</tt>
+<p>Schauen wir uns an, was passiert, wenn man nun die ShippingInfo-Objekte
+auf einen MCostringstreams ausgibt wie in folgendem Beispiel:
+<p><tt>#include &lt;iostream></tt>
+<br><tt>#include ?ShippingInfo.h?</tt>
+<br><tt>#include ?MetricConvStream.h?</tt><tt></tt>
+<p><tt>void main()</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; ShippingInfo item(2,3,5,7,600);</tt>
+<br><tt>&nbsp; MCostringstream os;</tt><tt></tt>
+<p><tt>&nbsp; os &lt;&lt; ?US:\t? &lt;&lt; item &lt;&lt; ‘\n’;</tt>
+<br><tt>&nbsp; os.set_metric(true);</tt>
+<br><tt>&nbsp; os &lt;&lt; ?metric:\t? &lt;&lt; item &lt;&lt; ‘\n’;</tt>
+<br><tt>&nbsp; std::cout &lt;&lt; os.str();</tt>
+<br><tt>}</tt>
+<p>Man w&uuml;rde erwarten, da&szlig; die Ausgabe erst in US-Einheiten
+erfolgt und nach dem Einschalten des metric-Flags in metrischen Einheiten.
+Das ist aber nicht der Fall.&nbsp; Das Flag hat &uuml;berhaupt keine Wirkung
+und es wird in beiden F&auml;llen eine Ausgabe in US-Einheiten gemacht.&nbsp;
+Wieso?
+<p>Um das zu verstehen, mu&szlig; man sich eine Sequenz von Ausgabe-Operationen
+wie os &lt;&lt; ?US:\t? &lt;&lt; item &lt;&lt; ‘\n’; genauer ansehen.&nbsp;
+F&uuml;r die erste Ausgabe os &lt;&lt; ?US:\t?&nbsp; sucht der Compiler
+einen operator&lt;&lt;, der einen Mcostringstream und einen C-String vom
+Typ const char* verarbeiten kann.&nbsp; Es gibt keinen solchen Operator.
+Also sucht der Compiler nach einem &auml;hnlichen Ausgabe-Operator und
+findet einen Kandidaten in der Standard-Bibliothek.&nbsp; Es gibt dort
+Ausgabe-Operatoren f&uuml;r alle in der Sprache definierten Typen und auch
+einen f&uuml;r C-Strings vom Typ const char*.&nbsp; Diese Ausgabe-Operatoren
+sind f&uuml;r die Klasse std::ostream definiert:
+<p><tt>std::ostream&amp; operator&lt;&lt;(std::ostream&amp;, int)</tt>
+<br><tt>std::ostream&amp; operator&lt;&lt;(std::ostream&amp;, const string&amp;)</tt>
+<br><tt>std::ostream&amp; operator&lt;&lt;(std::ostream&amp;, const char*)</tt>
+<br><tt>...</tt>
+<p>Nun pa&szlig;t der Ausgabe-Operator std::ostream&amp; operator&lt;&lt;
+(std::ostream&amp;, const char*) nicht hundertprozentig, aber der Compiler
+wei&szlig;, da&szlig; er einen MCostringstream in einen&nbsp; std::ostream&nbsp;
+konvertieren kann, weil MCostringstream von&nbsp; std::ostream&nbsp; abgeleitet
+ist.&nbsp;&nbsp; Der Compiler ruft also diesen Ausgabe-Operator.&nbsp;
+Das Ergebnis dieses Aufrufs ist vom Typ&nbsp; std::ostream&nbsp; und mit
+diesem Ergebnis geht der Compiler auf die Suche nach dem passenden Ausgabe-Operator
+f&uuml;r die Ausgabe des ShippingInfo-Objekts item.
+<p>F&uuml;r die Ausgabe von ShippingInfo-Objekten stehen zwei Operatoren
+zur Verf&uuml;gung, einer f&uuml;r Streams vom Typ MCostringstream und
+einer f&uuml;r Streams vom Typ&nbsp; std::ostream. Da das Ergebnis des
+vorangegangenen Aufrufs vom Typ std::ostream war,&nbsp; entscheidet der
+Compiler, da&szlig; er den Operator f&uuml;r Standard-Streams vom Typ std::ostream
+verwenden mu&szlig;, weil er auf die Argumente, d.h. rechter und linker
+Operand, vom Typ her genau pa&szlig;t. Das ist aber genau der Ausgabe-Operator,
+der nie eine metrische Konvertierung macht und ist nicht der Operator,
+den wir aufrufen wollten.&nbsp; Schlie&szlig;lich ist der Stream os ein
+MCostringstream und dann sollte der Compiler eigentlich auch den Ausgabe-Operator
+f&uuml;r MCostringstream nehmen.&nbsp; Das tut er aber nicht, weil durch
+den vorangegangenen Aufruf des Operators f&uuml;r C-Strings die Information
+verloren gegangen ist, da&szlig; der Stream os tats&auml;chlich ein MCostringstream
+war.
+<p>Was kann man nun tun, damit der Compiler den „richtigen“ Ausgabe-Operator
+aufruft?&nbsp; Nun, wenn es einen Ausgabe-Operator g&auml;be, der C-Strings
+auf MCostringstream schreiben kann, dann br&auml;uchte der Compiler nicht
+auf den Operator aus der Standard-Bibliothek zur&uuml;ckgreifen. Ein solcher
+Operator mit der Signatur MCostringstream&amp; operator&lt;&lt; (MCostringstream&amp;,
+const char*) w&uuml;rde nat&uuml;rlich auch einen MCostringstream zur&uuml;ckliefern
+und dann w&uuml;rde der Compiler im n&auml;chsten Schritt den „richtigen“
+Ausgabe-Operator aufrufen.&nbsp; Problem gel&ouml;st! Der zus&auml;tzliche
+Operator s&auml;he dann wie folgt aus:
+<p><tt>MCostringstream&amp; operator&lt;&lt;(MCostringstream&amp; os, const
+char* obj)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; static_cast&lt;std::ostream&amp;>(os) &lt;&lt; obj;</tt>
+<br><tt>&nbsp; return os;</tt>
+<br><tt>}</tt>
+<p>Das ist nat&uuml;rlich nur eine partielle L&ouml;sung des Problems.&nbsp;
+Wenn die Sequenz der Ausgabe-Operationen vor dem ShippingInfo einen Integer
+ausgeben will, dann wird wiederum auf die Standard-Bibliothek zur&uuml;ck
+gegriffen, weil es nur dort einen Ausgabe-Operator f&uuml;r integrale Werte
+gibt und wir haben das gerade gel&ouml;ste Problem schon wieder.&nbsp;
+Also m&uuml;&szlig;ten wir noch einen zus&auml;tzlichen Ausgabe-Operator
+schreiben, der wei&szlig;, wie man Integers auf MCostringstream schreibt.
+Und so weiter und so fort.&nbsp; Eigentlich m&uuml;ssen wir Ausgabe-Operatoren
+f&uuml;r alle erdenklichen Typen schreiben, die man auf Streams ausgeben
+kann.
+<p>Eine solche Aufgabe kann man nat&uuml;rlich mit Copy-Paste erledigen.&nbsp;
+Aber wenn morgen ein neuer Typ entsteht, den man auf Standard-Streams ausgeben
+kann, dann mu&szlig; auch ein neuer Ausgabe-Operator f&uuml;r diesen neuen
+Typ und unseren MCostringstream entstehen.&nbsp; Das l&auml;uft auf ein
+ziemliches Wartungsproblem hinaus, da&szlig; sich aber gl&uuml;cklicherweise
+mit Templates vermeiden l&auml;&szlig;t. Wenn aus dem oben gezeigten Ausgabe-Operator
+ein Template macht, dann kann der Compiler alle n&ouml;tigen Ausgabe-Operatoren
+automatisch generieren. Das Template s&auml;he so aus:
+<p><tt>template &lt;class T></tt>
+<br><tt>MCostringstream&amp; operator&lt;&lt;(MCostringstream&amp; os,
+const T&amp; obj)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; static_cast&lt;std::ostream&amp;>(os) &lt;&lt; obj;</tt>
+<br><tt>&nbsp; return os;</tt>
+<br><tt>}</tt>
+<p>Das ist eine elegante L&ouml;sung, die mitw&auml;chst, ohne da&szlig;
+ein Wartungsaufwand entsteht.&nbsp; Der Compiler generiert von selbst neue
+Funktionen, wenn welche gebraucht werden.&nbsp; Das m&uuml;ssen wir nicht
+manuell per Copy-Paste machen.&nbsp; Overhead in Form von Code-Bloat entsteht
+hier nicht unbedingt.&nbsp; Alle generierten Funktionen sind einfache Delegationen
+an bereits existierende Ausgabe-Operatoren.&nbsp; Ein gut optimierender
+Compiler wird die generierten Funktionen alle „inlinen“, d.h. die Aufrufe
+der generierten Funktionen durch die existierenden Funktionen, an die deligiert
+wird, ersetzen.&nbsp; Bei guter Optimierung tauchen die generierten Ausgabe-Operatoren
+im Bin&auml;rcode &uuml;berhaupt nicht auf.
+<p>Es soll nicht verschwiegen werden, da&szlig; es auch eine L&ouml;sung
+ohne Templates gibt, bei der man auf dynamische Typinformation zur&uuml;ckgreift.
+Dabei w&uuml;rde man gar keine Ausgabe-Operatoren f&uuml;r MCostringstream
+implementieren, sondern den einen Ausgabe-Operator f&uuml;r Standard-Streams
+std::ostream&amp; operator&lt;&lt; (std::ostream&amp; os, const ShippingInfo&amp;
+si) so &auml;ndern, da&szlig; er abfragt, ob der Stream ein MCostringstream
+ist.&nbsp; Wenn ja, dann kann der Ausgabe-Operator die Konvertierungsfunktionalit&auml;t
+des Streams nutzen.&nbsp; Wenn nein, dann wird halt Ausgabe ohne Konvertierung
+gemacht.&nbsp; Das s&auml;he dann im Prinzip so aus:
+<p><tt>std::ostream&amp; operator&lt;&lt; (std::ostream&amp; os,const ShippingInfo&amp;
+si)</tt>
+<br><tt>{ MCostringstream* p = dynamic_cast&lt;MCostringstream*>(&amp;os);</tt>
+<br><tt>&nbsp; if (p)</tt>
+<br><tt>&nbsp; { /* do metric conversion */ }</tt>
+<br><tt>&nbsp; else</tt>
+<br><tt>&nbsp; { /* no conversion */ }</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp; //&nbsp; output to os</tt>
+<br><tt>&nbsp; return os;</tt>
+<br><tt>}</tt>
+<p>Wenn man die beiden L&ouml;sungen vergleicht, stellt man fest, da&szlig;
+von der Code-Gr&ouml;&szlig;e her kein Unterschied besteht. Die Funktionalit&auml;t,
+die in der Template-L&ouml;sung in den zwei Ausgabe-Operatoren f&uuml;r
+ShippingInfo-Objekte implementiert ist, taucht hier in den beiden Zweigen
+der if-Anweisung auf. Und die per Template generierten Operatoren werden
+bei guter Optimierung, wie bereits erl&auml;utert, vollst&auml;ndig wegoptimiert.
+<p>Von der&nbsp; Performance her ist die Template-L&ouml;sung sogar besser,
+weil in der L&ouml;sung ohne Templates die dynamische Typinformation des
+Streams abgefragt werden mu&szlig;.&nbsp; Diese Entscheidung f&auml;llt
+in der Template-L&ouml;sung bereits zur Compilezeit anhand der statischen
+Typinformation des Streams und belastet daher das Laufzeitverhalten nicht.
+<p>Die &Uuml;bersetzungszeiten der Template-L&ouml;sungen werden l&auml;nger
+sein, weil das Instanziieren von Templates und das anschlie&szlig;ende
+Inlinen und Wegoptimieren der generierten Funktionen nat&uuml;rlich Zeit
+kostet.
+<br>&nbsp;
+<h4>
+Fazit</h4>
+
+<p><br>Auch in diesem Fall haben wir Templates f&uuml;r die L&ouml;sung
+eines ganz allt&auml;glichen Problems verwendet.&nbsp; Statt mit Copy-Paste
+zahlreiche Funktionen zu erzeugen, haben wir sie uns vom Compiler per Template-Instanziierung
+generieren lassen.
+<br>&nbsp;
+<p>Das Beispiel mit den Stream-Klassen ist nicht ausgedacht, sondern ist
+ein real existierendes Problem, das den meisten Programmierern aber vermutlich
+eher selten unterkommen wird. Es ist ein Beispiel f&uuml;r eine ganze Kategorie
+von Situationen, in denen man sich &uuml;ber Templates Funktionen generieren
+lassen kann.&nbsp; Wenn man zum Beispiel&nbsp; Adaptoren f&uuml;r existierende
+Funktionen schreiben will und diese Adaptoren &auml;hneln sich, dann kann
+man sie sich auch generieren lassen.&nbsp; Zum Beispiel k&ouml;nnte es
+ein, da&szlig; man sicher stellen will, da&szlig; in einem bestimmten Kontext
+keine Funktion irgendwelche Exceptions wirft, oder man will alle Exceptions
+abfangen und nicht nur unterdr&uuml;cken, sondern irgendwie besonders behandeln,
+z.B. in ein Logbuch schreiben.&nbsp; Dann kann man sich einen Exception-Adaptor
+bauen, der die betreffende Funktion in einem try-Block aufruft, die Exceptions
+abf&auml;ngt und unterdr&uuml;ckt oder behandelt. Einen solchen Adaptor
+braucht man f&uuml;r jede erdenkliche Funktion, die man adaptieren will.&nbsp;
+Solche Adaptoren mu&szlig; man nicht von Hand schreiben, sondern man kann
+sie sich per Template generieren lassen.
+<p><tt>#include &lt;iostream></tt>
+<br><tt>#include &lt;stdexcept></tt>
+<br><tt>#include &lt;typeinfo></tt><tt></tt>
+<p><tt>typedef void (*Function)(void);</tt>
+<br><tt>typedef void (*ExcHandler)(void);</tt><tt></tt>
+<p><tt>template &lt;Function Fct, ExcHandler Exc></tt>
+<br><tt>void adapted()</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; try { Fct(); }</tt>
+<br><tt>&nbsp; catch (...)</tt>
+<br><tt>&nbsp; {&nbsp;&nbsp;&nbsp;&nbsp; Exc(); }</tt>
+<br><tt>}</tt>
+<br><tt></tt>&nbsp;<tt></tt>
+<p><tt>extern void foo();</tt><tt></tt>
+<p><tt>void suppress() {}</tt>
+<br><tt>void report()</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp;try { throw; }</tt>
+<br><tt>&nbsp;catch (std::logic_error&amp; e)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; { std::clog &lt;&lt; typeid(e).name()
+&lt;&lt; ": " &lt;&lt; e.what() &lt;&lt; std::endl; }</tt>
+<br><tt>&nbsp;catch (...)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; { std::terminate(); }</tt>
+<br><tt>}</tt><tt></tt>
+<p><tt>int main(void)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; foo();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; adapted&lt;foo,suppress>();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; adapted&lt;foo,report>();</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return 0;</tt>
+<br><tt>}</tt>
+<p>Hier im Beispiel haben wir den Adapter nur f&uuml;r Funktionen ohne
+Argumente und R&uuml;ckgabewerte gezeigt.&nbsp; Wenn man es verallgemeinern
+will, wird es deutlich komplizierter, aber es ist machbar.
+<p>Wie man sieht, ist die Verwendung von Templates keineswegs auf die Implementierung
+von Container-Bibliotheken beschr&auml;nkt, sondern hilft auch in der ganz
+normalen Alltagsprogrammierung.
+<br>&nbsp;
+<br>&nbsp;
+<h2>
+Referenzen</h2>
+&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=5 >
+<tr>
+<td VALIGN=TOP><a NAME="VAN"></a>/VAN/&nbsp;</td>
+
+<td>C++ Templates: The Complete Guide
+<br>David Vandevoorde und Nicolai M. Josuttis
+<br>Addison Wesley, 2003
+<br>ISBN: 0-201-73484-2
+<br><a href="http://www.aw.com/catalog/academic/product/1,4096,0201734842,00.html">http://www.aw.com/catalog/academic/product/1,4096,0201734842,00.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>&nbsp;<a NAME="KRE"></a>/KRE/</td>
+
+<td>Buchbesprechung von „C++ Templates – The Complete Guide“
+<br>von Klaus Kreft &amp; Angelika Langer
+<br>erschienen im OBJEKTspektrum im M&auml;rz 2003
+<br><a href="http://www.langer.camelot.de/Articles/Reviews/Templates/Templates.html">http://www.langer.camelot.de/Articles/Reviews/Templates/Templates.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="MVC"></a>/MVC/</td>
+
+<td>Microsoft’s Ank&uuml;ndigung f&uuml;r den neuen C++-Compiler Visual
+C++ .NET 2003:
+<br><a href="http://msdn.microsoft.com/visualc/productinfo/visualc03/features/default.asp">http://msdn.microsoft.com/visualc/productinfo/visualc03/features/default.asp</a></td>
+</tr>
+
+<tr>
+<td></td>
+
+<td></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/Templates.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=26 width=40></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/Templates.htm">Template
+Programming</a> </font></b>- All you ever wanted to know about templates
+<br><font color="#000000"><font size=-1>3 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="FORMATTER" content="Microsoft FrontPage 2.0">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="KeyWords" content="Java, multithreading, concurrent programming">
+   <title>Concurrent Java</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="ConcurrentJavaCourse"></a>
+<br><b><font face="Arial"><font color="#295AB5">COURSE DESCRIPTION</font></font></b>
+<table BORDER=0 CELLSPACING=10 CELLPADDING=2 WIDTH="98%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%"><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p>Java supports concurrent programming with multiple threads directly
+by means of certain language features.&nbsp; As Java programmers we therefore
+have to grasp the essence of concurrent programming.&nbsp;
+<p>Only if we can be absolutely sure that our classes will never ever be
+used in a multi-threaded application we can ignore concurrent programming
+issues altogether. Otherwise we have to ask ourselves each time we implement
+an innocently looking method: Do I have to make this method "synchronized"
+or not?&nbsp; What does it mean?&nbsp; Why do I do this?&nbsp; Do I have
+to care? Is it safe not to care?
+<p>Preparing classes for use in concurrent programs is one aspect of this
+seminar; the other one is active creation of multiple threads. There are
+numerous reason for doing this:&nbsp;
+<ul>
+<li>
+<font size=-1>We might want to increase the performance of our application
+on a multiple CPU machine by performing tasks in parallel rather than sequentially.&nbsp;</font></li>
+
+<li>
+<font size=-1>We might want to increase the availability of our application
+for accepting further requests by delegating requests to other, newly started,
+asynchronous threads.&nbsp;</font></li>
+
+<li>
+<font size=-1>We might strive for a kind of reactive behavior that starts
+different parallel activities as responses to input.&nbsp;</font>&nbsp;</li>
+</ul>
+There are many reasons for building concurrent applications and we are
+easily confronted with concurrency issues when we program in Java.&nbsp;
+Even high-level frameworks require that the pieces that we provide are
+thread-safe. For this reason an understanding of multi-threaded programming
+is essential to every Java programmer.
+<p>One observation in using multi-threading in Java is that you have to
+reconcile two entirely different and mostly unrelated paradigms. Most techniques
+for concurrent programming and design have evolved in the world of system
+programming.&nbsp; For this reason concurrent programming and object-oriented
+programming do not always fit together seamlessly.&nbsp; There <i>are</i>
+techniques for combining the two&nbsp; worlds that have been developed
+both in Java and in other object-oriented languages.&nbsp; In this seminars
+we will discuss these more or less language independent design and programming
+techniques.
+<p>Another critical issue with multi-threaded Java applications is testing.
+Normally, the proof of correctness of a program is achieved via execution
+of appropriate test programs.&nbsp; In contrast, testing a multi-threaded
+application is at best highly complicated and time consuming and at worst
+not feasible at all.&nbsp; Creating a race condition for testing the concurrency
+control mechanism is a truly demanding task.&nbsp; Just because it is difficult
+to test does not mean the problems are unlikely to occur in practice.&nbsp;
+<p>The bottom line is that, different from normal sequential program design,
+we have to take extra care when we design and implement concurrent programs,
+because the test phase will not detect bugs with any acceptable likelihood.
+In essence, it is often easier to foresee error situations&nbsp; in theory
+than trying to detect them by testing.
+<br>&nbsp;
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p>This seminar aims to give an introduction into concurrent programming
+using Java and exposes students to programming techniques and idioms that
+have been proven useful in practice.
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 CELLPADDING=2 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="35%"><b><i><font color="#295AB5">Prerequisite Courses&nbsp;</font></i></b>
+<br><b><i><font color="#295AB5">and Skills:</font></i></b></td>
+
+<td VALIGN=TOP WIDTH="65%">Basic knowledge of Java (introductory course
+or equivalent practical experience).&nbsp;</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="50%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td WIDTH="50%">3 days</td>
+</tr>
+</table>
+
+<p>This is a course for Java programmers who intend to build applications
+that are executed concurrently in multiple threads.
+<p>The seminar is equally relevant to programmers who do not actively create
+threads, but have to prepare their classes for use in multi-threaded environments.&nbsp;
+<p>It is <i>not</i> a course for programmers who want to learn about system
+level programming in Java or real-time Java.
+<br>&nbsp;
+<p><b><font face="Arial"><font color="#295AB5"><font size=+0>OBJECTIVES</font></font></font></b>
+<table BORDER=0 CELLSPACING=4 CELLPADDING=0 >
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Understand concurrency control issues in general</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Know the instruments available in Java</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Avoid common errors and pitfalls</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Understand concurrency control idioms</td>
+</tr>
+</table>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p><font color="#295AB5">The course is designed by Klaus Kreft &amp; Angelika
+Langer and backed by years of experience in teaching and more than a decade
+of practical experience in industrial software development both in C++
+and Java.</font>
+<p><font color="#295AB5"><i>Angelika Langer </i>is a freelance trainer/mentor
+in the area of object-oriented software development in C++ and Java.&nbsp;</font>
+<p><font color="#295AB5"><i>Klaus Kreft</i> is a senior consultant for
+more than 15 years and has served as the lead architect on several successful
+industry projects. He has been working in C++ for many year and works in
+Java since 1995.&nbsp;</font>
+<p><font color="#295AB5">Both are recognized speakers at OO oonference
+and author of numerous articles on C++ and Java topics in various computer
+magazines worldwide. Together they write a column for C/C++ Users Journal
+(formerly a column for C++ Report) and are authors of the&nbsp; book "Standard
+C++ IOStreams and Locales".&nbsp;</font>
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>&nbsp;</td>
+</tr>
+</table>
+<a NAME="Overview"></a>
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial"><font color="#295AB5">COURSE OVERVIEW</font></font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+
+<table BORDER=0 CELLPADDING=2 WIDTH="98%" >
+<tr>
+<td VALIGN=TOP><b><font face="Arial"><font size=-1>Multi-Threading Basics</font></font></b>
+<ul>
+<li>
+<font face="Arial,Helvetica"><font size=-1>Synchronization Basics</font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font size=-1>Thread Safety</font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font size=-1>Thread Creation</font></font></li>
+</ul>
+<b><font face="Arial"><font size=-1>Concurrency Control</font></font></b>
+<ul>
+<li>
+<font face="Arial,Helvetica"><font size=-1>Synchronization Design Details</font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font size=-1>Explicit Locks</font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font size=-1>State-Dependent Operations</font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font size=-1>Subtle Difference Between Variable
+and Object</font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font size=-1>Adapter Pattern</font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font size=-1>Before-After Pattern</font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font size=-1>Read-Write-Locks</font></font></li>
+</ul>
+<b><font face="Arial"><font size=-1>Thread Model&nbsp;</font></font></b>
+<ul>
+<li>
+<font face="Arial,Helvetica"><font size=-1>Multi-Threaded&nbsp; Software
+Systems</font></font></li>
+
+<li>
+<font face="Arial"><font size=-1>Details of the Thread API</font></font></li>
+
+<li>
+<font face="Arial"><font size=-1>Thread States, Scheduling, Thread Groups</font></font></li>
+
+<li>
+<font face="Arial"><font size=-1>Thread Completion</font></font></li>
+
+<li>
+<font face="Arial"><font size=-1>Thread Interruption</font></font></li>
+
+<li>
+<font face="Arial"><font size=-1>Threads And Exceptions</font></font></li>
+</ul>
+</td>
+
+<td VALIGN=TOP><b><font face="Arial"><font size=-1>Concurrency Utilities</font></font></b>
+<ul>
+<li>
+<font face="Arial,Helvetica"><font size=-1>High-Level Thread Synchronization</font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font size=-1>Thread Pool</font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font size=-1>Scheduled Tasks</font></font></li>
+</ul>
+<b><font face="Arial,Helvetica"><font size=-1>Memory Model</font></font></b>
+<ul>
+<li>
+<font face="Arial,Helvetica"><font size=-1>Memory Model Issues</font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font size=-1>Double Checked Locking</font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font size=-1>Thread Local Memory</font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font size=-1>Lock-Free Programming</font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font size=-1>Busy Wait</font></font></li>
+</ul>
+<b><font face="Arial,Helvetica"><font size=-1>User-Defined Locks</font></font></b>
+<ul>
+<li>
+<font face="Arial,Helvetica"><font size=-1>User-Defined Locks</font></font></li>
+</ul>
+<b><font face="Arial,Helvetica"><font size=-1>GUI and Multithreading</font></font></b>
+<ul>
+<li>
+<font face="Arial,Helvetica"><font size=-1>Swing Utilities&nbsp;</font></font></li>
+
+<br>&nbsp;</ul>
+</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td></td>
+</tr>
+</table>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial"><font color="#295AB5">FURTHER READING</font></font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+
+<table BORDER=0 CELLSPACING=10 CELLPADDING=2 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP WIDTH="60%"><a NAME="ReadingConcurrentJava"></a><font color="#000000">To
+get an impression of some topics covered in this course check out the sample
+reading:&nbsp;</font>
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP>
+<center><a href="../Articles/JavaSpektrum.html"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=27 width=31></a></center>
+</td>
+
+<td VALIGN=TOP><font size=-1><a href="../Articles/JavaSpektrum.html">EFFECTIVE
+JAVA</a></font>
+<br><font color="#000000"><font size=-1>Column in JavaSpektrum&nbsp;</font></font>
+<br><font color="#000000"><font size=-1>(available in German only)</font></font></td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<br>&nbsp;
+</body>
+</html>

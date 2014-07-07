@@ -1,0 +1,175 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Angelika Langer">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <title>Java Programming Idioms</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="AbstractJavaIdioms"></a>&nbsp;
+<div ALIGN=right><table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 COLS=1 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">ABSTRACT</font></b></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=0 COLS=1 WIDTH="95%" >
+<tr>
+<td>The programming language Java was introduced to the IT community as
+an “easy-to-learn” and “easy-to-use” language (typically referring to C++
+for comparison). While this is certainly true, it turns out that even this
+supposedly easy language offers a lot of choices and comes with many programming
+idioms that must be understood thoroughly in order to produce high-quality
+software implemented in Java. In this tutorial we look into the less obvious
+limitations of some concepts and discuss some fundamental, yet typical
+misunderstandings.&nbsp;
+<p>Due to the time frame the discussion cannot be exhausting and we will
+focus on two language features that exist in Java since its advent, namely
+the implications of reference semantics on object copying and comparison
+and the use of exceptions for error indication and error handling.&nbsp;
+<p><b><font size=-1>COPYING AND COMPARISON.&nbsp;&nbsp;&nbsp;&nbsp; </font></b>Regarding
+object copying and comparison in Java we examine the semantics of clone()
+and equals(). Questionable implementations of these functions can be found
+galore (in the JDK, in popular textbooks, even in commercial applications).
+It turns out that correct and symmetric implementation of these two functions
+is a non-trivial task. We will look into the details.&nbsp;
+<p><b><font size=-1>EXCEPTION HANDLING.&nbsp;&nbsp;&nbsp; </font></b>Use
+of exceptions is mandatory in Java and cannot be avoided, yet in practice
+they are often misunderstood. We explain why and when one would want to
+handle exceptions at all (a common misunderstanding is that every potential
+exception must be caught.) We discuss common problems such as exception
+hiding, improper use of throws specification, and resource leaks and inconsistent
+object state.</td>
+</tr>
+</table></div>
+&nbsp;</td>
+</tr>
+</table></div>
+&nbsp;
+<div ALIGN=right><table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 COLS=1 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">OUTLINE</font></b></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=0 COLS=1 WIDTH="95%" >
+<tr>
+<td>
+<h4>
+Copying and Comparison of Objects (ca. 90 min)</h4>
+
+<ul>Recap of reference semantics vs. value semantics
+<br>The semantic meaning of equals()&nbsp;
+<br>The problem of asymmetric implementations in class hierarchies
+<br>Discussion of conceivable solutions
+<br>The semantic meaning of clone()
+<br>Shallow vs. deep copying&nbsp;
+<br>Discussion of various solutions and related issues&nbsp;</ul>
+
+<h4>
+Exception Handling (ca. 90 min)</h4>
+
+<ul>Recap of the language means
+<br>finally and its impact on control flow
+<br>Problematic throws clause
+<br>Hiding of exceptions
+<br>Maintaining valid object state and avoiding resource leaks
+<br>Reasons for catching and handling an exception</ul>
+&nbsp;</td>
+</tr>
+</table></div>
+&nbsp;</td>
+</tr>
+</table></div>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">PREREQUISITES</font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLPADDING=5 WIDTH="95%" >
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Level:</font></i></b></td>
+
+<td>intermediate</td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td WIDTH="50%">1.5 - 3.5&nbsp; hours</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><i><font color="#295AB5">Prerequisites:</font></i></b></td>
+
+<td WIDTH="50%">Basic knowledge of Java.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><b><i><font color="#295AB5">Presented at:</font></i></b></td>
+
+<td WIDTH="95%"><a href="PreviousEvents.html#OOP2000">OOP 2000</a>, Munich,
+Germany, Janauray 2000
+<br><a href="PreviousEvents.html#DevWeek">DevWeek Europe</a>, London, UK,
+February 2000
+<br><a href="PreviousEvents.html#TOOLSUSA2000">TOOLS USA</a>, Santa Barbara,
+CA, August 2000
+<br><a href="PreviousEvents.html#TOOLSEurope2001">TOOLS Europe 2001</a>,
+Z&uuml;rich, CH, March 2001</td>
+</tr>
+</table></div>
+
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=2 WIDTH="88%" >
+<tr>
+<td COLSPAN="2"><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar or
+skim through some further reading:</font></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminars</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Courses/EffectiveJava.htm"><img SRC="../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><font color="#000000"><a href="../Courses/EffectiveJava.htm">Effective
+Java</a></font>
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+
+<td VALIGN=TOP><b><i><font color="#295AB5">Paper</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Articles/Papers/JavaGotchas/JavaProceedings.htm"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=27 width=31></a></td>
+
+<td><font color="#000000"><a href="../Articles/Papers/JavaGotchas/JavaProceedings.htm">Myths
+and Truths Comparing Java</a></font>
+<br><font color="#000000"><font size=-1>White Paper</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

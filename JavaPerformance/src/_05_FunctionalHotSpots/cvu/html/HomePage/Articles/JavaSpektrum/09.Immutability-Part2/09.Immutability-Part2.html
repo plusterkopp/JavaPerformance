@@ -1,0 +1,634 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Pre-Copyedit Version of Article in JavaSpektrum, November 2002">
+   <meta name="KeyWords" content="Java clone copy Effective Java">
+   <title>Immutability  - Part 2</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="EffectiveJava09"></a>
+<br><font color="#295AB5"><font size=+3>Unver&auml;nderliche Typen in Java</font></font>
+<br><font color="#295AB5"><font size=+2>Teil 2: Wie die&nbsp; Immutability-Adaptoren
+im JDK-Collection-Framework funktionieren und was das Schl&uuml;sselwort
+final mit Immutability zu tun hat.</font></font>
+<p><font color="#295AB5"><font size=+2>JavaSPEKTRUM, Juli 2003</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p><b>Im letzen Artikel dieser Kolumne (siehe /<a href="#Kreft1">KRE1</a>/)
+haben wir diskutiert, wie man unver&auml;nderliche Typen, duale Klassen
+und Read-Only-Adaptoren implementieren kann. Das wollen wir in diesem Artikel
+weiter verfolgen.&nbsp; Es gibt Beispiele f&uuml;r&nbsp; Read-Only-Adaptoren
+im JDK, n&auml;mlich im Collection-Framework.&nbsp; Diese "unmodifiable"
+Collections sehen wir uns in diesem Artikel n&auml;her an. Au&szlig;erdem
+erkl&auml;ren wir, was das Schl&uuml;sselwort final mit Immutability zu
+tun hat. Und am Ende fassen wir zusammen, welche Arten von Immutability
+es gibt, was sie bedeuten und wie man damit umgeht.</b>
+<br>&nbsp;
+<br>&nbsp;
+<h2>
+Immutability-Adaptoren f&uuml;r Collections im JDK</h2>
+Im Package java.util (siehe /<a href="#JDK">JDK</a>/) ist u.a. der Collection
+Framework definiert mit verschiedenen Container-Interfaces wie Set, List,
+und Map sowie verschiedenen Container-Implementierungen wie ArrayList,
+LinkedList, HashSet, TreeSet, HashMap, TreeMap, usw. Die Collections sind
+erwartungsgem&auml;&szlig; ver&auml;nderliche Typen; sie haben z.B. Methoden
+wie add() und remove() f&uuml;r das Hinzuf&uuml;gen und L&ouml;schen von
+Elementen.
+<p>Zu diesen Collection-Typen sind Immutability-Adaptoren definiert, die
+man sich &uuml;ber statische Methoden der Klasse Collections beschaffen
+kann:&nbsp; man &uuml;bergibt eine Referenz auf eine ver&auml;nderliche
+Collection als Argument und erh&auml;lt als Return eine Referenz auf eine
+unver&auml;nderliche Collection zur&uuml;ck. Genauer gesagt bekommt man
+keine Referenz auf eine unver&auml;nderliche Collection, sondern eine Referenz
+auf ein Objekt, das eine eingeschr&auml;nkte Sicht auf die ver&auml;nderliche
+Collection gibt, n&auml;mlich eine nur lesende Sicht. Wir werden im folgenden
+aber dennoch den Begriff "unver&auml;nderliche Collection" anstelle von
+"Lese-Sicht auf ver&auml;nderliche Collection" verwenden, weil es einfach
+k&uuml;rzer ist, und au&szlig;erdem ist es die direkte &Uuml;bersetzung
+des entsprechenden Begriffs "unmodifiable collection", wie er in der JDK-API-Dokumentation
+verwendet wird.
+<p>Nehmen wir das Beipiel einer ArrayList. Zu einem ArrayList-Objekt kann
+man sich &uuml;ber den Aufruf von Collections.unmodfiableList() die Lese-Sicht
+auf das ArrayList-Objekt geben lassen.
+<p><tt>List myList;</tt>
+<br><tt>myList = new ArrayList();</tt>
+<br><tt>myList = Collections.unmodifiableList(myList);</tt>
+<p>Von welchem Typ die Lese-Sicht auf das ArrayList-Objekt ist, bleibt
+unbekannt, weil die Methode Collections.unmodfiableList()&nbsp; lediglich
+eine Referenz vom Typ List zur&uuml;ckgibt. List ist ein Interface, das
+sowohl von ArrayList als auch von LinkedList und Vector implementiert wird.
+Das bedeutet, dass der "unver&auml;nderliche" Container die gesamte List-Funktionalit&auml;t
+anbietet, was einigerma&szlig;en &uuml;berraschend ist.&nbsp; Man w&uuml;rde
+vielmehr erwarten, dass modifizierende Methoden wie add() und remove()
+gar nicht erst zur Verf&uuml;gung stehen.&nbsp; Die Designer des JDK-Collection-Frameworks
+haben aber eine andere L&ouml;sung gew&auml;hlt: die ver&auml;ndernden
+Methoden stehen zur Verf&uuml;gung und k&ouml;nnen auch aufgerufen werden,
+scheitern aber zur Laufzeit mit einer&nbsp; UnsupportedOperationException.&nbsp;&nbsp;
+Hier wird der Compilezeit-Check durch einen Laufzeit-Check ersetzt.
+<br>&nbsp;
+<h3>
+Immutability-Adaptoren mit Laufzeit-Check</h3>
+&Uuml;bertragen wir diese im JDK verwendete Technik einmal auf die Implementierung,
+die wir in der&nbsp; letzten&nbsp; Ausgabe dieser Kolumne (siehe /<a href="#Kreft1">KRE1</a>/)
+diskutiert haben. Wir hatten einen unver&auml;nderlichen Typ ImmutableStamp
+implementiert, der in einer Widget-Klasse verwendet wurde, um eine lesende
+Zugriffsmethode getLastModification() zu implementieren.&nbsp; Hier noch
+einmal zur Erinnerung die&nbsp; Widget-Klasse sowie die Stamp- und ImmutableStamp-Klasse:
+<p><tt>public final class Stamp</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private Date date;</tt>
+<br><tt>&nbsp; private String author;</tt><tt></tt>
+<p><tt>&nbsp; ... other fields, constructors and methods ...</tt><tt></tt>
+<p><tt>&nbsp; public Date getDate()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return Date.clone();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public void setDate(Date d)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; date = d.clone();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public String getAuthor()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return author;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public void setAuthor(String a)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; author = a;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt><tt></tt>
+<p><tt>public final class ImmutableStamp</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private Stamp stamp;</tt><tt></tt>
+<p><tt>&nbsp; public ImmutableStamp(Stamp s) { stamp = s.clone(); }</tt><tt></tt>
+<p><tt>&nbsp; public Date getDate()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return stamp.getDate();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public String getAuthor()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return stamp.getAuthor();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt><tt></tt>
+<p><tt>public final class Widget</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private Stamp lastModification;</tt><tt></tt>
+<p><tt>&nbsp; ... other methods and fields ...</tt><tt></tt>
+<p><tt>&nbsp; public ImmutableStamp getLastModification()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return new ImmutableStamp(lastModification);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Die Stamp-Abstraktion hatten wir als duale Klasse implementiert, die
+aus einer ver&auml;nderlichen Klasse Stamp und einer unver&auml;nderlichen
+Klasse&nbsp; ImmutableStamp besteht. Man beachte, dass die&nbsp; ImmutableStamp-Klasse
+in unserer Implementierung ausschlie&szlig;lich lesende Methoden hat.
+<p>Wenn wir die JDK-Technik, die f&uuml;r die "unmodifiable collections"
+verwendet wird, auf unsere ImmutableStamp-Klasse &uuml;bertragen, dann
+sieht die Klasse anders aus, n&auml;mlich so:
+<p><tt>public final class ImmutableStamp</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private Stamp stamp;</tt><tt></tt>
+<p><tt>&nbsp; public ImmutableStamp(Stamp s) { stamp = s; }</tt><tt></tt>
+<p><tt>&nbsp; public Date getDate()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return stamp.getDate().clone();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public void setDate(Date d)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; throw new UnsupportedOperationException();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public String getAuthor()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return stamp.getAuthor();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public void setAuthor(String s)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; throw new UnsupportedOperationException();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Ob man dieses Vorgehen f&uuml;r sinnvoll h&auml;lt oder nicht, muss
+jeder f&uuml;r sich selbst entscheiden. Wir halten Immutability-Adaptoren,
+bei denen die modifizierenden Methoden zwar angeboten werden, aber immer
+und unbedingt eine Exception werfen, f&uuml;r wenig nachahmenswert und
+w&uuml;rden die ver&auml;ndernden Methoden lieber gleich weglassen.
+<p>Dass die JDK-Technik mit dem Laufzeit-Check nicht ganz so ideal ist,
+zeigt sich auch in der Dokumentation der Immutability-Adaptoren des JDK-Collection-Frameworks
+(siehe /<a href="#JDK">JDK</a>/). Wenn man die JavaDoc liest, ist eigentlich
+nicht auf Anhieb klar, welche Methoden ein "unmodifiable" Container nun
+unterst&uuml;tzt und welche nicht. Wenn man dagegen ein Interface h&auml;tte,
+in dem nur die lesenden Methoden vorhanden w&auml;ren, dann k&ouml;nnte
+man sofort erkennen, welche Methoden von der "unmodifiable" Collection
+unterst&uuml;tzt werden und welche nicht.&nbsp; Und nat&uuml;rlich w&uuml;rde
+auch der Compiler bereits beim &Uuml;bersetzen Fehler melden, wenn man
+eine Methode aufrufen will, die nicht erlaubt ist.
+<p>Die JDK-Designer haben aber f&uuml;r die Entscheidung gegen den Compiletime-Check
+einen guten Grund gehabt. Als Begr&uuml;ndung findet man die Aussage, dass
+sie andernfalls&nbsp; unz&auml;hlige Interfaces und Klasses h&auml;tten
+definieren m&uuml;ssen, was nun auch nicht gerade zur Klarheit beigetragen
+h&auml;tte (siehe /<a href="#FAQ">FAQ</a>/).&nbsp; Das stimmt auch, weil
+es nicht nur den "unmodifiable" Adaptor gibt, sondern auch noch einen "synchronized"
+Adaptor, und man kann beide Adaptionen beliebig miteinander kombinieren.
+Dann h&auml;tte man gleich 3 Interfaces f&uuml;r jeden der 6 Collection-Typen
+definieren m&uuml;ssen. Statt der erforderlichen 18 Interfaces hat man
+gar nichts Neues definieren m&uuml;ssen; die unver&auml;nderlichen Listen
+sind immer noch Listen, weil sie alle Methoden des List-Interfaces unterst&uuml;tzen,
+obwohl sie einige Methoden eigentlich konzeptionell nicht unterst&uuml;tzen.
+<br>&nbsp;
+<h3>
+"Shallow" Immutability</h3>
+Sehen wir uns einmal an, was man mit den&nbsp; Immutability-Adaptoren des
+JDK anfangen kann und wie sie benutzt werden. Als Beispiel verwenden wir
+wieder unsere Widget-Klasse.
+<p>Wenn die Klasse Widget nicht nur die letzte &Auml;nderung speichern
+w&uuml;rde, sondern die gesamte Historie aufzeichnen w&uuml;rde, dann m&uuml;&szlig;te
+sie intern eine Collection (z.B. eine Liste) von Stamp-Objekten verwalten.
+Die Klasse Widget k&ouml;nnte dann so aussehen:
+<p><tt>public final class Widget</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private List changeLog;</tt><tt></tt>
+<p><tt>&nbsp; ... other methods and fields ...</tt><tt></tt>
+<p><tt>&nbsp; public ImmutableStamp getLastModification();</tt>
+<br><tt>&nbsp; public List getChangeLog();</tt>
+<br><tt>}</tt>
+<p>Dabei nehmen wir an, dass in der privaten Liste Stamp-Objekte abgelegt
+werden und dass die Stamp-Abstraktion wie im letzten Artikel empfohlen
+als duale Klasse bestehend aus 2 Klassen, ImmutableStamp und Stamp, implementiert
+ist. Wie m&uuml;&szlig;ten die beiden Zugriffsmethoden getLastModification()
+und getChangeLog() implementiert werden?
+<p>Fangen wir mit der Methode getLastModification() an. Sie soll das letzte
+Element in der Liste der Stamp-Objekte als ImmutableStamp zur&uuml;ckgeben.&nbsp;
+Da muss man sich zun&auml;chst einmal fragen: was genau soll das bedeuten?&nbsp;
+Es gibt zwei M&ouml;glichkeiten: entweder es wird ein Snapshot dieses letzten
+Eintrags erzeugt und zur&uuml;ck gegeben oder es wird eine Read-Only-Sicht
+auf den letzten Eintrag zur&uuml;ck gegeben.&nbsp;&nbsp; Beides w&uuml;rde
+Sinn machen.&nbsp; Die Read-Only-Sicht w&auml;re eine reine Sicht auf einen
+bestimmten Eintrag in der Stamp-Liste.&nbsp; Wenn sich dieser Eintrag &auml;ndert,
+dann w&uuml;rde man das sehen k&ouml;nnen.&nbsp; Der Snapshot dagegen ist
+unver&auml;nderlich. Er ist eine Kopie des&nbsp; Eintrags in der&nbsp;
+Stamp-Liste, so wie er zum Zeitpunkt des Aufrufs der&nbsp; Methode getLastModification()
+gerade eingetragen ist.
+<p>Hier ist die Implementierung der Methode getLastModification(), wenn
+sie eine Read-Only-Sicht zur&uuml;ckliefert:
+<p><tt>public final class Widget</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private List changeLog;</tt><tt></tt>
+<p><tt>&nbsp; ... other methods and fields ...</tt><tt></tt>
+<p><tt>&nbsp; public ImmutableStamp getLastModification()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return changeLog.get(changeLog.size()-1);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public List getChangeLog();</tt>
+<br><tt>}</tt>
+<p>Hier ist die Implementierung der Methode getLastModification(), wenn
+sie einen Snapshot zur&uuml;ckliefert:
+<p><tt>public final class Widget</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private List changeLog;</tt><tt></tt>
+<p><tt>&nbsp; ... other methods and fields ...</tt><tt></tt>
+<p><tt>&nbsp; public ImmutableStamp getLastModification()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return new ImmutableStamp(changeLog.get(changeLog.size()-1));</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public List getChangeLog();</tt>
+<br><tt>}</tt>
+<p>Etwas komplizierter ist die Lage bei der Methode getChangeLog(). Auch
+hier muss man sich zun&auml;chst fragen: was soll denn genau die Semantik
+dieser Methode sein?&nbsp; Eines ist klar: sie soll keinen Schreibzugriff
+auf die private Stamp-Liste des&nbsp; Widget-Objekts zulassen. Das hei&szlig;t,
+eine naive Implementierung wie die folgende w&auml;re auf jeden Fall falsch:
+<p><tt>public List getChangeLog()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return changeLog;&nbsp; // don't do this !!!</tt>
+<br><tt>&nbsp; }</tt>
+<p>Hier wird voller (d.h. auch schreibender) Zugriff auf die private Liste
+gibt. Aber wie w&auml;re es damit?
+<p><tt>&nbsp; public List getChangeLog()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return Collections.unmodifiableList(changeLog);</tt>
+<br><tt>&nbsp; }</tt>
+<p>Hier wird der Immutability-Adaptor aus dem Collection-Framework verwendet,
+um eine unver&auml;nderliche Sicht auf die private Liste zur&uuml;ck zu
+geben. Das sieht so aus, als h&auml;tten wir damit eine Zugriffsmethode
+implementiert, die eine Read-Only-Sicht auf ein privates Feld eines Objekts
+gibt.&nbsp; &Uuml;ber eine Read-Only-Sicht kann man &uuml;blicherweise
+das Feld nicht &auml;ndern, aber man kann Ver&auml;nderungen, die von anderen
+gemacht werden, sehen. Das w&auml;re eine sinnvolle Semantik f&uuml;r eine
+solche Zugriffsmethode.&nbsp; Bleibt die Frage, haben wir tats&auml;chlich
+eine Read-Only-Sicht implementiert?
+<p>Wenn man genauer hinsieht, stellt man fest, dass zwar Methoden wie add()
+und remove() auf der zur&uuml;ckgelieferten "unmodifiable" Liste nicht
+mehr funktionieren, genauer gesagt, sie werfen grunds&auml;tzlich eine
+UnsupportedOperationException. Das hei&szlig;t, wir haben eine Read-Only-Sicht
+auf die Collection. Aber Methoden wie get() oder der Zugriff auf Elemente
+&uuml;ber den Iterator der Collection geben nach wie vor vollen Zugriff
+auf die enthaltenen Elemente.&nbsp; Die Elemente in der Liste sind Stamp-Objekte,
+die man dann nat&uuml;rlich nach Belieben modifizieren kann, wie das folgende
+Beispiel zeigt:
+<p><tt>Widet w = new Widget();</tt>
+<br><tt>...</tt>
+<br><tt>List log = w.getChangeLog();</tt>
+<br><tt>Iterator iter = log.iterator();</tt>
+<br><tt>while (iter.hasNext())</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; Stamp s = (Stamp)iter.next();</tt>
+<br><tt>&nbsp; s.setDate(new Date());</tt>
+<br><tt>&nbsp; s.setAuthor("Molly Malicious");</tt>
+<br><tt>}</tt>
+<p>Das hei&szlig;t, wir haben keine Read-Only-Sicht implementiert. Das
+Beispiel zeigt, dass der Immutability-Adaptor der Collection allein nicht
+ausreicht, um Ver&auml;nderungen an den privaten Daten des Widget zu verhindern.&nbsp;
+Es gen&uuml;gt nicht, dass wir eine Read-Only-Sicht auf den Container zur&uuml;ck
+geben. Wir m&uuml;ssten au&szlig;erdem eine Read-Only-Sicht auf die im
+Container enthaltenen Element geben.
+<p>Das k&ouml;nnten wir in diesem speziellen Beispiel dadurch erreichen,
+dass wir die gesamte Implementierung der Widget-Klasse umkrempeln und in
+der Liste nicht Stamp-Objekte, sondern ImmutableStamp-Objekte abgelegen.
+Das w&auml;re durchaus eine &Uuml;berlegung wert. Aber diese L&ouml;sungsm&ouml;glichkeit
+besteht ja nicht immer.&nbsp; Das geht beispielsweise dann nicht, wenn
+die Listenelemente nicht als duale Klassen implementiert sind und es den
+unver&auml;nderlichen Typ gar nicht gibt, oder wenn die Collection von
+der Semantik her tats&auml;chlich ver&auml;nderliche Element enthalten
+soll, oder wenn man eine existierende Klasse wie die Widget-Klasse nicht
+in gr&ouml;&szlig;erem Stil &auml;ndern will.
+<p>In solchen F&auml;llen bleibt einem nichts anderes &uuml;brig, als eine
+Kopie des gesamten Containers zu erzeugen.&nbsp; In unserem Beipiel s&auml;he
+eine Implementierung mit Kopieren des Containers dann so aus:
+<p>&nbsp; <tt>public List getChangeLog()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; List copy = new ArrayList();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Iterator iter = log.iterator();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; while (iter.hasNext())</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; copy.add(new ImmutableStamp(iter.next()));</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return Collections.unmodifiableList(copy);</tt>
+<br><tt>&nbsp; }</tt><tt></tt>
+<p>Jetzt haben wir die Methode getChangeLog() t&uuml;chtig umgekrempelt.
+Sie hat nicht mehr die Semantik, dass sie eine Read-Only-Sicht auf die
+private Liste der Stamp-Objekte gibt, sondern sie liefert jetzt eine Read-Only-Sicht
+auf einen Snapshot dieser privaten Liste.
+<p>Es sind andere Implementierungen denkbar, zum Beispiel eine Read-Only-Sicht
+auf eine Kopie einer private Collection, die Read-Only-Sichten auf die
+Elemente der Original-Collection enth&auml;lt.&nbsp; Das w&auml;re dann
+eine echte Read-Only-Sicht.&nbsp; In unserer L&ouml;sung geht das nicht,
+weil unsere duale Stamp-Abstraktion keine Read-Only-Sicht auf ver&auml;nderliche
+Stamp-Objekte erm&ouml;glicht. In anderen F&auml;llen w&auml;re das aber
+eine sinnvolle Alternative.
+<p>Fazit: Wie schon beim Klonen (siehe /<a href="#Kreft2">KRE2</a>/) muss
+man auch bei der Immutability beachten, dass man die Unver&auml;nderlichkeit
+"tief genug" ansetzt.&nbsp; Die Read-Only-Sicht auf einen Container, der
+ver&auml;nderliche Objekte enth&auml;lt, gen&uuml;gt nicht, um sicher zu
+stellen, dass die Collection auch tats&auml;chlich unver&auml;ndert bleibt.
+Man muss au&szlig;erdem noch daf&uuml;r sorgen, dass auch die enthaltenen
+Element unver&auml;nderlich sind.&nbsp; Wobei man unterscheiden muss, ob
+man mit "unver&auml;nderlich" eine Read-Only-Sicht oder einen Snapshot
+meint.&nbsp; F&uuml;r eine Read-Only-Sicht auf einen Container braucht
+man eine "unmodifiable collection", die Read-Only-Sichten auf die Element
+enth&auml;lt. F&uuml;r einen Snapshot eines Containers braucht man eine
+Kopie des Containers, der Kopien der Elemente enth&auml;lt.
+<br>&nbsp;
+<h3>
+final Variablen</h3>
+Nach all unseren Betrachtungen &uuml;ber unver&auml;nderliche Typen und
+Read-Only-Sichten auf ver&auml;nderliche Objekte fragt man sich, welche
+Unterst&uuml;tzung die Sprache Java eigentlich in diesem Zusammenhang bietet.&nbsp;
+Wie man an den Beispielen in diesem und dem vorangegangenen Artikel schon
+gesehen hat, bietet Java&nbsp; keinerlei M&ouml;glichkeiten, lesende Methoden
+von schreibenden zu unterscheiden, oder um ver&auml;nderliche von unver&auml;nderlichen
+Typen zu unterscheiden, oder um zu sagen, ob eine Methode eine Referenz
+auf eine Kopie oder&nbsp; aufs Original liefert. All das muss man verbal
+in der Dokumentation aufschreiben und auch dort wieder nachlesen. Es gibt
+lediglich die M&ouml;glichkeit,&nbsp;&nbsp; ver&auml;nderliche von unver&auml;nderlichen
+Variablen zu unterscheiden.&nbsp; Dazu kann man das Schl&uuml;sselwort
+final auf Variablen anwenden.
+<br>Der Inhalt einer Variablen, die als final erkl&auml;rt ist, kann nicht
+ge&auml;ndert werden. Bei Variablen vom primitivem Typ, d.h. int, long,
+boolean, etc., bedeutet es, dass sich der Wert der Variablen nach der Initialisierung
+nicht mehr &auml;ndert.&nbsp; Bei Referenzvariablen bedeutet es, dass sich
+die in der Referenzvariablen gespeicherte Adresse nicht mehr &auml;ndert.&nbsp;
+Mit anderen Wort, eine final Referenzvariable verweist auf das Objekt,
+das ihr bei der Initialisierung zugewiesen wurde und kann niemals auf ein
+anderes Objekt verweisen. Es bedeutet aber nicht, dass das referenzierte
+Objekt vor Ver&auml;nderungen gesch&uuml;tzt ist.
+<br>Beispiele:
+<p><tt>final int max = 256;</tt>
+<br><tt>max = 0; // error: does not compile</tt><tt></tt>
+<p><tt>final Date deadline = new Date();</tt>
+<br><tt>deadline = new Date(100,0,1,0,0,0);&nbsp;&nbsp;&nbsp;&nbsp; //
+error: does not compile</tt>
+<br><tt>deadline.set(new Date(100,0,1,0,0,0));&nbsp; // fine:&nbsp; compiles</tt>
+<p>Mit anderen Worten, das Schl&uuml;sselwort final hilft im Zusammenhang
+mit Immutability nur in wenigen Situationen.&nbsp; Beispielsweise hilft
+es, wenn man einen unver&auml;nderlichen Typ bauen will, dessen Felder
+alle von primitivem Typ sind. Dann kann man alle Felder als final deklarieren
+und der Compiler kann dann daf&uuml;r sorgen, dass man nicht versehentlich
+in irgendeiner Methode diese Felder ver&auml;ndert.&nbsp; Hier ist ein
+Beispiel:
+<p><tt>public final class ImmutablePoint</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private final float x;</tt>
+<br><tt>&nbsp; private final float y;</tt>
+<br><tt>&nbsp; private final float z;</tt><tt></tt>
+<p><tt>&nbsp; ImmuablePoint(float a, float b, float c) { x=a; y=b; z=c;
+}</tt><tt></tt>
+<p><tt>&nbsp; ... other methods and fields ...</tt><tt></tt>
+<p><tt>&nbsp; public float getX() { return x; }</tt>
+<br><tt>&nbsp; public float getY() { return y; }</tt>
+<br><tt>&nbsp; public float getZ() { return z; }</tt><tt></tt>
+<p><tt>&nbsp; public void translate(ImmutablePoint p) // nonsensical method</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; x+=p.getX();&nbsp; // error: does not compile</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; y+=p.getY();&nbsp; // error: does not compile</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; z+=p.getZ();&nbsp; // error: does not compile</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Wenn man aber Felder hat, die Referenzen sind, dann hilft es nicht,
+wenn man diese Felder als final deklariert, weil es ja nicht gen&uuml;gt,
+dass die Referenzbeziehung unver&auml;nderlich ist; man will eigentlich
+sagen, dass auch das referenzierte Objekt nicht ge&auml;ndert werden soll.&nbsp;
+Das kann man aber mit Sprachmitteln in Java gar nicht ausdr&uuml;cken.
+Hier ist ein weiteres Beipiel, in dem man die fehlende Unterst&uuml;tzung
+bei final Referenzvariablen sieht. Wir werden daran zeigen, wie man diese
+L&uuml;cke mit Hilfe von unver&auml;nderlichen Typen schlie&szlig;en kann.
+Betrachten wir folgende Klasse und ihre&nbsp; final Felder:
+<p><tt>public final class ImmutablePeriod</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private final Date begin;</tt>
+<br><tt>&nbsp; private final Date end;</tt><tt></tt>
+<p><tt>&nbsp; ImmuablePeriod(Date a, Date z) { begin=a; end=z; }</tt><tt></tt>
+<p><tt>&nbsp; ... other methods and fields ...</tt><tt></tt>
+<p><tt>&nbsp; public Date getBegin() { return begin; }</tt>
+<br><tt>&nbsp; public Date getEnd()&nbsp;&nbsp; { return end; }</tt><tt></tt>
+<p><tt>&nbsp; public void stretch(int factor) // nonsensical method</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; end.setTime(end.getTime()*factor);&nbsp; //
+oops!</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Man kann versehentlich die referenzierten Date-Objekte &auml;ndern,
+ohne dass der Compiler sich beschwert. Da die Sprache keine Sprachmittel
+bietet, um das zu verhindern, kann nur mit Immutability-Interfaces oder
+unver&auml;nderlichen Typen sagen, was man meint. Wenn man z.B. eine ImmutableDate-Adaptor-Klasse
+hat, dann kann man es so machen:
+<p><tt>public final class ImmutableDate</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private Date date;</tt><tt></tt>
+<p><tt>&nbsp; public ImmutableDate(Date d) { date=d; }</tt>
+<br><tt>&nbsp; public long getTime()&nbsp; { return date.getTime(); }</tt>
+<br><tt>&nbsp; public int getYear()&nbsp;&nbsp; { return date.getYear();
+}</tt>
+<br><tt>&nbsp; public int getMonth()&nbsp; { return date.getDate(); }</tt>
+<br><tt>&nbsp; public int getDay()&nbsp;&nbsp;&nbsp; { return date.getDay();</tt>
+<br><tt>&nbsp; public int getHour()&nbsp;&nbsp; { return date.getHour();
+}</tt>
+<br><tt>&nbsp; public int getMinute() { return date.getMinute(); }</tt>
+<br><tt>&nbsp; public int getSecond() { return date.getSecond();</tt>
+<br><tt>}</tt><tt></tt>
+<p><tt>public final class ImmutablePeriod</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private final ImmutableDate begin;</tt>
+<br><tt>&nbsp; private final ImmutableDate end;</tt><tt></tt>
+<p><tt>&nbsp; public ImmuablePeriod(Date a, Date z)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; begin=new ImmutableDate(a);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; end=new ImmutableDate(z);</tt>
+<br><tt>&nbsp; }</tt><tt></tt>
+<p><tt>&nbsp; ... other methods and fields ...</tt><tt></tt>
+<p><tt>&nbsp; public ImmutableDate getBegin() { return begin; }</tt>
+<br><tt>&nbsp; public ImmutableDate getEnd()&nbsp;&nbsp; { return en; }</tt><tt></tt>
+<p><tt>&nbsp; public void stretch(int factor)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; end.setTime(end.getTime()*factor);&nbsp; //
+error: does not compile</tt>
+<br><tt>&nbsp; }</tt>
+<p>Man merke sich, dass final Referenzvariablen, im Gegensatz zu final
+Variablen von primitivem Typ, nicht dazu f&uuml;hren, dass das referenzierte
+Objekt unver&auml;ndert bleibt. Es kommt in der Praxis selten vor, dass
+man sagen will, dass die Referenzbeziehung zwischen Variable und Objekt
+unver&auml;nderlich ist. Viel h&auml;ufiger m&ouml;chte man sagen, dass
+die Referenzvariable und das referenzierte Objekt unver&auml;nderlich ist,
+aber das kann man&nbsp; in Java mit dem Sprachmittel final&nbsp; nicht
+ausdr&uuml;cken.
+<p>Zur Vollst&auml;ndigkeit eine letzte Bemerkung zum Schl&uuml;sselwort
+final: Die Anwendung des Schl&uuml;sselworts&nbsp; final&nbsp; auf Klassen
+oder Methoden hat nat&uuml;rlich gar nichts mit Immutability von Variablen
+und Objekten zu tun, sondern hat Auswirkungen auf die Vererbung. Von final
+Klassen kann man nicht ableiten und&nbsp; final Methoden kann man nicht
+&uuml;berschreiben.
+<br>&nbsp;
+<h3>
+Immutability – eine zusammenfassende Begriffsbestimmung</h3>
+Wir haben uns in diesem und dem vorangegangenen Artikel ausf&uuml;hrlich
+mit diversen Aspekten von unver&auml;nderlichen Typen befasst. Dabei haben
+wir verschiedene Arten von Immutability gesehen. Fassen wir abschlie&szlig;en
+noch einmal zusammen, was man eigentlich unter "unver&auml;nderlich" versteht:
+<ul>
+<li>
+<b>Read-Only-Sicht.</b></li>
+
+<p><br>Bei dieser Art von Immutability definiert man Interfaces oder Klassen,
+die ausschlie&szlig;lich lesende Methoden haben.&nbsp; Variablen von diesen
+Typen k&ouml;nnen auf ver&auml;nderliche oder unver&auml;nderliche Objekte
+von Subtypen verweisen.
+<p>Beispiele: Immutability-Interfaces oder auch die "unmodifiable" Adaptoren
+der JDK-Collections oder der Supertyp einer dualen Klasse wie in /<a href="#Kreft1">KRE1</a>/
+beschrieben.
+<p>Diese Art der Immutability kann leicht missverstanden werden.&nbsp;
+Eine Read-Only-Sicht bedeutet lediglich, dass man ohne Cast das referenzierte
+Objekt nicht &auml;ndern kann. Eine Read-Only-Sicht ist aber keine Garantie,
+dass das referenzierte Objekt tats&auml;chlich unver&auml;ndert bleibt.
+Es kann andere Referenzen auf dasselbe Objekt geben, &uuml;ber die das
+Objekt ver&auml;ndert werden kann. Man kann auch jederzeit einen Cast auf
+den "echten" Typ des Objekts machen. Falls der "echte" Typ Ver&auml;nderungen
+zul&auml;&szlig;t, dann kann man das referenzierte Objekt sogar selber
+ver&auml;ndern.
+<br>&nbsp;
+<li>
+<b>"Echte" Unver&auml;nderlichkeit.</b></li>
+
+<p><br>Bei dieser Art von&nbsp; Immutability hat man ebenfalls Klassen,
+die ausschlie&szlig;lich lesende Methoden haben. Aber diesmal k&ouml;nnen
+Variablen von diesen Typen&nbsp; nur auf unver&auml;nderliche Objekte verweisen.
+Typischerweise sind solche Klassen als final deklariert, d.h. es gibt gar
+keine Subklassen.
+<p>Beispiel: final Klassen, die nur lesende Methoden haben, z.B. String,
+oder der unver&auml;nderliche Teil einer dualen Klasse (siehe /<a href="#Kreft1">KRE1</a>/).
+<p>Das ist die Art von Unver&auml;nderlichkeit, bei der man das Object
+Sharing bedenkenlos zulassen kann, weil das Objekt &uuml;ber keine Referenz
+jemals ge&auml;ndert werden kann. Man braucht Objekte diesen Typs nicht
+zu kopieren und man kann in Multithread-Programmen auf die Synchronisation
+der Zugriffe auf Objekte diesen Typs verzichten.
+<br>&nbsp;
+<li>
+<b>final Variable von primitivem Typ.</b></li>
+
+<p><br>Solche Variablen sind ebenfalls "echt" unver&auml;nderlich.
+<p>Das ist der einzige Fall, wo man mit Mitteln der Sprache, n&auml;mlich
+&uuml;ber die Qualifizierung mit final, ein Objekt als unver&auml;nderlich
+kenzeichnen kann.
+<br>&nbsp;
+<li>
+<b>final Referenzvariable.</b></li>
+
+<p><br>Die Art von Immutability bringt man zum Ausdruck durch die Kennzeichnung
+einer Referenzvariablen als final Variable.
+<p>Es bedeutet, dass eine unver&auml;nderliche Beziehung zwischen Referenzvariable
+und Objekt besteht.&nbsp; Es bedeutet aber nicht, dass das referenzierte
+Objekt unver&auml;nderlich ist.
+<br>&nbsp;</ul>
+
+<h2>
+Tipps f&uuml;r den Umgang mit unver&auml;nderlichen Typen in der Praxis</h2>
+
+<h3>
+Benutzung</h3>
+Wenn man unver&auml;nderliche Typen verwendet, dann muss man sich immer
+genau &uuml;berlegen, ob man einen echt unver&auml;nderlichen Typ oder
+nur eine Read-Only-Sicht auf etwas m&ouml;glicherweise Ver&auml;nderliches
+vor sich hat. Beides kann sinnvoll und n&uuml;tzlich sein, je nach Kontext.
+Man darf diese beiden Arten von Immutability nur nicht miteinander verwechseln.
+<p>Die Read-Only-Sicht sagt, dass man in diesem Kontext keine Ver&auml;nderungen
+des referenzierten Objekts machen will.&nbsp; Eine Garantie ist das allerdings
+nicht. Nur die echt unver&auml;nderlichen Typen&nbsp; garantieren, dass
+die referenzierten Objekte sich nicht &auml;ndern.&nbsp; Und nur Objekte,
+die sich tats&auml;chlich nicht &auml;ndern, kann man bedenkenlos als Shared
+Objects verwenden.
+<br>&nbsp;
+<h3>
+Implementierung</h3>
+Wenn man unver&auml;nderliche Typen implementiert, muss man sich ebenfalls
+&uuml;berlegen, was man eigentlich mit "unver&auml;nderlich" meint.&nbsp;
+Man muss es sorgf&auml;ltig in der Dokumentation beschreiben und man muss
+es entsprechend implementieren.&nbsp; Insbesondere muss man wissen, wie
+man lesende Zugriffsfunktionen implementiert; das haben wir im vorangegangenen
+Artikel (siehe /KRE/) besprochen.
+<p>Das sicherste Beispiel einer Abstraktion, die alle Formen der Immuability
+unterst&uuml;tzt, ist die duale Klasse, wie wir sie in&nbsp; im vorangegangenen
+Artikel (siehe /<a href="#Kreft1">KRE1</a>/) beschrieben und in vereinfachter
+Form (siehe Stamp-Abstraktion) in diesem Artikel verwendet haben.&nbsp;
+Sie besteht aus einer Superklasse oder einem Super-Interface, dass die
+Read-Only-Sicht repr&auml;sentiert, und zwei final Subklassen, die den
+ver&auml;nderlichen und den echt unver&auml;nderlichen Typ implementieren.
+&Uuml;ber Konstruktoren und Casts kann zwischen den verschiedenen Typen
+hin und her transformiert werden. Ob man allerdings f&uuml;r eine Abstraktion
+den Implementierungsaufwand einer dualen Klassen spendieren will, muss
+man im Einzelfall entscheiden. Das wird man sicher nicht f&uuml;r alle
+Abstraktionen tun.
+<br>&nbsp;
+<h2>
+Literaturverweise</h2>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft1"></a>/KRE1/</td>
+
+<td VALIGN=TOP><b>Unver&auml;nderliche Typen in Java (Teil 1)&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaSpektrum, M&auml;rz 2003
+<br><a href="../08.Immutability-Part1/08.Immutability-Part1.html">http://www.langer.camelot.de/Articles/JavaSpektrum/08.Immutability-Part1/08.Immutability-Part1.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft2"></a>/KRE2/</td>
+
+<td><b>Das Kopieren von Objekten in Java (Teil 1 - 3)&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaSpektrum, September 2002 + November 2002 + Januar 2003
+<br><a href="../05.Clone-Part1/05.Clone-Part1.html">http://www.langer.camelot.de/Articles/JavaSpektrum/05.Clone-Part1/05.Clone-Part1.html</a>
+<br><a href="../06.Clone-Part2/06.Clone-Part2.html">http://www.langer.camelot.de/Articles/JavaSpektrum/06.Clone-Part2/06.Clone-Part2.html</a>
+<br><a href="../07.Clone-Part3/07.Clone-Part3.html">http://www.langer.camelot.de/Articles/JavaSpektrum/07.Clone-Part3/07.Clone-Part3.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDK"></a>/JDK/&nbsp;</td>
+
+<td><b>Java 2 Platform Std. Ed. v1.4 - Package java.util</b>
+<br><a href="http://java.sun.com/j2se/1.4/docs/api/index.html">http://java.sun.com/j2se/1.4/docs/api/index.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="FAQ"></a>/FAQ/&nbsp;</td>
+
+<td><b>Java Collections API Design FAQ</b>
+<br><a href="http://java.sun.com/j2se/1.3/docs/guide/collections/designfaq.html#1">http://java.sun.com/j2se/1.3/docs/guide/collections/designfaq.html#1</a></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

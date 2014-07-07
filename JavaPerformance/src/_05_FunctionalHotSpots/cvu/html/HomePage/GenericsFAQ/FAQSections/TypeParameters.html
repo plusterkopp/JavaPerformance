@@ -1,0 +1,2267 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <meta name="KeyWords" content="Java Generics parameterized type parameterized methodwildcard">
+   <title>Java Generics FAQs - Type Parameters</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+
+<h1>
+<a NAME="Top"></a><a NAME="FAQTypeParameters"></a><a NAME="Type Parameters"></a>Type
+Parameters</h1>
+<font size=-2>&copy; Copyright 2004-2005 by Angelika Langer.&nbsp; All
+Rights Reserved.</font>
+<table CELLPADDING=10 WIDTH="100%" >
+<tr>
+<td COLSPAN="2"><font size=+0><a href="#Fundamentals">Fundamentals</a></font>
+<ul>
+<li>
+<font size=+0><a href="#What is a type parameter?">What is a type parameter?</a></font></li>
+
+<li>
+<font size=+0><a href="#What is a bounded type parameter?">What is a bounded
+type parameter?</a></font></li>
+</ul>
+<font size=+0><a href="#Bounds">Type Parameter Bounds</a></font>
+<ul>
+<li>
+<font size=+0><a href="#What is a type parameter bound?">What is a type
+parameter bound?</a></font></li>
+
+<li>
+<font size=+0><a href="#Which types are permitted as type parameter  bounds?">Which
+types are permitted as type parameter bounds?</a></font></li>
+
+<li>
+<a href="#Can I use a type parameter as a type parameter bound?">Can I
+use a type parameter as a type parameter bound?</a></li>
+
+<li>
+<a href="#Can I use different instantiations of a same parameterized type as bounds of a type parameter?">Can
+I use different instantiations of a same generic type as bounds of a type
+parameter?</a></li>
+
+<li>
+<a href="#How can work around the restriction that a type parameter cannot have different instantiations of a same">How
+can I work around the restriction that a type parameter cannot have different
+instantiations of a same generic type as its bounds?</a></li>
+
+<li>
+<font size=+0><a href="#Does a bound that is a class type give access to all its public members?">Does
+a bound that is a class type give access to all its public members?</a></font></li>
+
+<li>
+<font size=+0><a href="#How do I decrypt Enum?">How do I decrypt "<tt>Enum&lt;E
+extends Enum&lt;E>></tt>"?</a></font></li>
+</ul>
+<font size=+0><a href="#Usage">Usage</a></font>
+<ul>
+<li>
+<font size=+0><a href="#Can I use a type parameter like a type?">Can I
+use a type parameter like a type?</a></font></li>
+
+<li>
+<font size=+0><a href="#Can I create an object whose type is a type parameter?">Can
+I create an object whose type is a type parameter?</a></font></li>
+
+<li>
+<font size=+0><a href="#Can I create an array whose component type is a type parameter?">Can
+I create an array whose component type is a type parameter?</a></font></li>
+
+<li>
+<font size=+0><a href="#Can I cast to the type that the type parameter stands for?">Can
+I cast to the type that the type parameter stands for?</a></font></li>
+
+<li>
+<font size=+0><a href="#Can I use a type parameter in exception handling?">Can
+I use a type parameter in exception handling?</a></font></li>
+
+<li>
+<font size=+0><a href="#Can I derive from a type parameter?">Can I derive
+from a type parameter?</a></font></li>
+
+<li>
+<a href="#Why is there no class literal for a type parameter?">Why is there
+no class literal for a type parameter?</a></li>
+</ul>
+<a href="#Why is there no class literal for a type parameter?">Scope</a>
+<ul>
+<li>
+<font size=+0><a href="#Where is a type parameter visible (or invisible)?">Where
+is a type parameter visible (or invisible)?</a></font></li>
+
+<li>
+<a href="#Can I use a type parameter as part of its own bounds or in the declaration of other type parameters?">Can
+I use a type parameter as part of its own bounds?</a></li>
+
+<li>
+<a href="#Can I use the type parameter of an outer type as part of the bounds of the type parameter of an inner type or a method?">Can
+I use the type parameter of an outer type as part of the bounds of the
+type parameter of an inner type or a method?</a></li>
+</ul>
+<font size=+0><a href="#Static Context">Static Context</a></font>
+<ul>
+<li>
+<font size=+0><a href="#Is there one instances of a static field per instantiation of a parameterized type?">Is
+there one instances of a static field per instantiation of a generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="#Why can't I use a type parameter in any static context of the parameterized class?">Why
+can't I use a type parameter in any static context of a generic class?</a></font></li>
+</ul>
+</td>
+</tr>
+
+<tr>
+<td></td>
+</tr>
+</table>
+
+<h1>
+<img SRC="../../Images/bar.gif" NOSAVE height=5 width=600></h1>
+
+<h2>
+Type Parameters</h2>
+
+<h2>
+<img SRC="../../Images/bar.gif" NOSAVE height=5 width=600></h2>
+
+<h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450></h3>
+
+<h3>
+<a NAME="Fundamentals"></a>Fundamentals</h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450><a NAME="FAQ001"></a>
+<h2>
+<a NAME="What is a type parameter?"></a><font face="Arial,Helvetica"><font size=+0>What
+is a type parameter?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>A place holder for a type argument.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Generic types have one or more type parameters.
+<p>Example of a parameterized type:
+<blockquote><tt>interface Comparable&lt;E>&nbsp; {&nbsp;</tt>
+<br><tt>&nbsp; int compareTo(E other);</tt>
+<br><tt>}</tt></blockquote>
+The identifier <tt>E</tt> is a type parameter. Each type parameter is replaced
+by a type argument when an instantiation of the generic type, such as <tt>Comparable&lt;Object></tt>
+or <tt>Comparable&lt;? extends Number></tt>, is used.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ001">#FAQ001</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#How is a parameterized type defined?">How
+is a generic type defined?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is a bounded type parameter?">What
+is a bounded type parameter?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Where is a type parameter visible (or invisible)?">Where
+is a type parameter visible (or invisible)?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ002"></a>
+<h2>
+<a NAME="What is a bounded type parameter?"></a><font face="Arial,Helvetica"><font size=+0>What
+is a bounded type parameter?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>A type parameter with one or more bounds.&nbsp;
+The bounds restrict the set of types that can be used as type arguments
+and give access to the methods defined by the bounds.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">When you declare a type parameter <tt>T</tt> and use it
+in the implementation of a generic type or method, the type parameter
+<tt>T</tt>
+still denotes an unknown type.&nbsp; The compiler knows that
+<tt>T</tt>
+is a place holder for a type, but it does not know anything about the type.&nbsp;&nbsp;
+This is okay in some implementations, but insufficient in others.&nbsp;
+<p>Example (of a generic type without bounds):
+<blockquote><tt>public class Hashtable&lt;Key,Data> {</tt>
+<br><tt>&nbsp; ...&nbsp;</tt>
+<br><tt>&nbsp; private static class Entry&lt;Key,Data> {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private Key key;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private Data value;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private int hash;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private Entry&lt;Key,Data> next;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; private Entry&lt;Key,Data>[] table;&nbsp;</tt>
+<br><tt>&nbsp; ...&nbsp;</tt>
+<br><tt>&nbsp; public Data get(Key key) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; int hash = <b><font color="#990000">key.hashCode()</font></b>;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; for (Entry&lt;Key,Data> e = table[hash &amp;
+hashMask]; e != null; e = e.next) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if ((e.hash == hash) &amp;&amp;
+e.<b><font color="#CC0000">key.equals(key)</font></b>) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return e.value;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return null;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+The implementation of class <tt>Hashtable</tt> invokes the methods <tt>hashCode
+</tt>and
+<tt>equals</tt>
+on the unknown <tt>Key</tt> type.&nbsp; Since
+<tt>hashCode
+</tt>and <tt>equals</tt>
+are methods defined in class <tt>Object</tt> and available for all reference
+types, not much need to be known about the unknown <tt>Key</tt> type.&nbsp;
+This changes substantially, when we look into the implementation of sorted
+sequence.
+<p>Example (of a generic type, so far without bounds):
+<blockquote><tt>public interface Comparable&lt;T> {</tt>
+<br><tt>&nbsp; public int compareTo(T arg);</tt>
+<br><tt>}</tt>
+<br><tt>public class TreeMap&lt;Key,Data>{</tt>
+<br><tt>&nbsp; private static class Entry&lt;K,V> {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; K key;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; V value;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> left = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> right = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> parent;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; private transient Entry&lt;Key,Data> root = null;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; private Entry&lt;Key,Data> getEntry(Key key) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;Key,Data> p = root;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Key k = key;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; while (p != null) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int cmp = k.<b><font color="#990000">compareTo(p.key)</font></b>;
+// error</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (cmp == 0)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return p;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else if (cmp &lt; 0)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; p = p.left;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; p = p.right;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return null;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public boolean containsKey(Key key) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return getEntry(key) != null;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt></blockquote>
+The implementation of class <tt>TreeMap</tt> invokes the method <tt>compareTo
+</tt>on
+the unknown <tt>Key</tt> type.&nbsp; Since <tt>compareTo </tt>is not defined
+for arbitrary types the compiler refuses to invoke the <tt>compareTo</tt>
+method on the unknown type <tt>Key</tt> because it does not know whether
+the key type has a <tt>compareTo</tt> method.
+<p>In order to allow the invocation of the <tt>compareTo</tt> method we
+must tell the compiler that the unknown <tt>Key</tt> type has a <tt>compareTo</tt>
+method.&nbsp; We can do so by saying that the <tt>Key</tt> type implements
+the <tt>Comparable&lt;Key></tt> interface.&nbsp; We can say so by declaring
+the type parameter <tt>Key</tt> as a bounded parameter.
+<p>Example (of the same generic type, this time <i>with</i> bounds):
+<blockquote><tt>public interface Comparable&lt;T> {</tt>
+<br><tt>&nbsp; public int compareTo(T arg);</tt>
+<br><tt>}</tt>
+<br><tt>public class TreeMap&lt;Key <b><font color="#000066">extends Comparable&lt;Key></font></b>,Data>{</tt>
+<br><tt>&nbsp; private static class Entry&lt;K,V> {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; K key;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; V value;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> left = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> right = null;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;K,V> parent;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; private transient Entry&lt;Key,Data> root = null;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; private Entry&lt;Key,Data> getEntry(Key key) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Entry&lt;Key,Data> p = root;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Key k = key;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; while (p != null) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int cmp = k.<b><font color="#990000">compareTo(p.key)</font></b>;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (cmp == 0)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return p;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else if (cmp &lt; 0)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; p = p.left;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; p = p.right;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return null;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public boolean containsKey(Key key) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return getEntry(key) != null;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt></blockquote>
+In the example above, the type parameter <tt>Key</tt> has the bound <tt>Comparable&lt;Key></tt>.&nbsp;
+Specification of a bound has two effects:
+<ul>
+<li>
+<i>It gives access to the methods that the bound specifies</i>.&nbsp; In
+the example, the bound <tt>Comparable&lt;Key> </tt>gives access to the
+<tt>compareTo</tt>
+method that we want to invoke in the implementation of our <tt>TreeMap</tt>
+class.</li>
+</ul>
+
+<ul>
+<li>
+<i>Only types "within bounds" can be used for instantiation of the generic
+type.</i>&nbsp; In the example, a parameterized type such as <tt>TreeMap&lt;Number,String></tt>
+would be rejected, because the type
+<tt>Number</tt> is not a subtype of
+<tt>Comparable&lt;Number></tt>.&nbsp;
+A parameterized type like <tt>TreeMap&lt;String,String></tt> would be accepted,
+because the type String is within bounds, i.e. is a subtype of <tt>Comparable&lt;String></tt>.</li>
+</ul>
+
+<p><br>Note that the suggested bound <tt>Comparable&lt;Key> </tt>in this
+example is not the best conceivable solution.&nbsp; A better bound, that
+is more relaxed and allows a larger set of type arguments, would be <tt>Comparable&lt;?
+super Key></tt>.&nbsp; A more detailed discussion can be found in a separate
+FAQ entry (click <a href="#Which types are permitted as type parameter  bounds?">here</a>).</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ002">#FAQ002</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#Which types are permitted as type parameter  bounds?">When
+would I use a wildcard parameterized with a lower bound?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is a type parameter bound?">What
+is a type parameter bound?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Which types are permitted as type parameter  bounds?">Which
+types are permitted as type parameter&nbsp; bounds?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I use different instantiations of a same parameterized type as bounds of a type parameter?">Can
+I use different instantiations of a same generic type as bounds of a type
+parameteer?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Does a bound that is a class type give access to all its public members?">Does
+a bound that is a class type give access to all its public members?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I use a type parameter as part of its own bounds or in the declaration of other type parameters?">Can
+I use a type parameter as part of its own bounds or in the declaration
+of other type parameters?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450></h3>
+
+<h3>
+<a NAME="Bounds"></a>Type Parameter Bounds</h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450><a NAME="FAQ101"></a>
+<h2>
+<a NAME="What is a type parameter bound?"></a><font face="Arial,Helvetica"><font size=+0>What
+is a type parameter bound?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>A reference type that is used to further
+describe a type parameter.&nbsp; It restricts the set of types that can
+be used as type arguments and gives access to the non-static methods that
+it defines.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">A type parameter can be unbounded.&nbsp; In this case any
+reference type can be used as type argument to replace the unbounded type
+parameter in an instantiation of a generic type.
+<p>Alternatively can have one or several bounds.&nbsp; In this case the
+type argument that replaces the bounded type parameter in an instantiation
+of a generic type must be a subtype of all bounds.
+<p>The syntax for specification of type parameter bounds is:&nbsp;
+<blockquote><tt>TypeParameter extends Class &amp; Interface<sub>1</sub>
+&amp; ... &amp; Interface<sub>N</sub></tt></blockquote>
+A list of bounds consists of one class and/or several interfaces.&nbsp;
+<p>Example (of type parameters with several bounds):
+<blockquote><tt>class Pair&lt;A extends <b><font color="#000099">Comparable&lt;A>
+&amp; Cloneable</font></b>,&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; B
+extends <b><font color="#000099">Comparable&lt;B> &amp; Cloneable</font></b>>&nbsp;</tt>
+<br><tt>&nbsp; implements Comparable&lt;Pair&lt;A,B>>, Cloneable { … }</tt></blockquote>
+This is a generic class with two type arguments <tt>A</tt> and <tt>B</tt>,
+both of which have two bounds.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ101">#FAQ101</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TypeArguments.html#What is the difference between a wildcard bound and a type parameter bound?">What
+is the difference between a wildcard bound and a type parameter bound?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Which types are permitted as type parameter  bounds?">Which
+types are permitted as type parameter&nbsp; bounds?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I use different instantiations of a same parameterized type as bounds of a type parameter?">Can
+I use different instantiations of a same generic type as bounds of a type
+parameteer?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ102"></a>
+<h2>
+<a NAME="Which types are permitted as type parameter  bounds?"></a><font face="Arial,Helvetica"><font size=+0>Which
+types are permitted as type parameter&nbsp; bounds?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>All classes, interfaces and enum types
+including parameterized types, but no primitive types and no array types.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">All classes, interfaces, and enum types can be used a type
+parameter bound, including nested and inner types.&nbsp; Neither primitive
+types nor array types be used as type parameter bound.
+<p>Examples (of type parameter bounds):
+<blockquote><tt>class X0 &lt;T extends <b><font color="#000099">int</font></b>>
+{ ... }&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#660000">// error</font></b></tt>
+<br><tt>class X1 &lt;T extends <b><font color="#000099">Object[]</font></b>>
+{ ... } <b><font color="#660000">// error</font></b></tt>
+<br><tt>class X2 &lt;T extends <b><font color="#000099">Number</font></b>>
+{ ... }</tt>
+<br><tt>class X3 &lt;T extends <b><font color="#000099">String</font></b>>
+{ ... }</tt>
+<br><tt>class X4 &lt;T extends <b><font color="#000099">Runnable</font></b>>
+{ ... }</tt>
+<br><tt>class X5 &lt;T extends <b><font color="#000099">Thread.State</font></b>>
+{ ... }</tt>
+<br><tt>class X6 &lt;T extends <b><font color="#000099">List</font></b>>
+{ ... }</tt>
+<br><tt>class X7 &lt;T extends <b><font color="#000099">List&lt;String></font></b>>
+{ ... }</tt>
+<br><tt>class X8 &lt;T extends <b><font color="#000099">List&lt;? extends
+Number></font></b>> { ... }</tt>
+<br><tt>class X9 &lt;T extends <b><font color="#000099">Comparable&lt;?
+super Number></font></b>> { ... }</tt>
+<br><tt>class X10&lt;T extends <b><font color="#000099">Map.Entry&lt;?,?></font></b>>
+{ ... }</tt></blockquote>
+The code sample shows that primitive types such as <tt>int</tt> and array
+types such as <tt>Object[] </tt>are not permitted as type parameter bound.&nbsp;
+<p>Class types, such as <tt>Number</tt> or <tt>String</tt>, and interface
+types, such as <tt>Runnable</tt>, are permitted as type parameter bound.&nbsp;
+<p>Enum types, such as <tt>Thread.State</tt> are also permitted as type
+parameter&nbsp; bound. <tt>Thread.State</tt> is an example of a nested
+type used as type parameter bound.&nbsp; Non-static inner types are also
+permitted.&nbsp;
+<p>Raw types are permitted as type parameter bound; <tt><font color="#000000">List</font></tt>
+is an example.
+<p>Parameterized types are permitted as type parameter bound, including
+concrete parameterized types such as <tt>List&lt;String></tt>,&nbsp; bounded
+wildcard parameterized types such as <tt>List&lt;? extends Number></tt>
+and <tt>Comparable&lt;? super Long></tt>, and unbounded wildcard parameterized
+types such as <tt>Map.Entry&lt;?,?></tt>.&nbsp; A bound that is a wildcard
+parameterized type allows as type argument all types that belong to the
+type family that the wildcard denotes.&nbsp; The wildcard parameterized
+type bound gives only restricted access to fields and methods; the restrictions
+depend on the kind of wildcard.
+<p>Example (of wildcard parameterized type as type parameter bound):
+<blockquote><tt>class X&lt;<b><font color="#000099">T extends List&lt;?
+extends Number></font></b>> {</tt>
+<br><tt>&nbsp; public void someMethod(T t) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; t.add(new Long(0L));&nbsp;&nbsp;&nbsp; <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Number n = t.remove(0);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<br><tt>class Test {</tt>
+<br><tt>&nbsp; public static void main(String[] args) {</tt>
+<br><tt><b><font color="#660000">&nbsp;&nbsp;&nbsp;&nbsp; </font></b><font color="#000000">X&lt;ArrayList&lt;</font><b><font color="#000099">Long</font></b><font color="#000000">>>&nbsp;&nbsp;
+x1 = new X&lt;ArrayList&lt;Long>>();&nbsp;</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp; X&lt;ArrayList&lt;</font><b><font color="#000099">String</font></b><font color="#000000">>>
+x2 = new X&lt;ArrayList&lt;String>>(); </font><b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+Reference variables of type<tt> T </tt>(the type parameter) are treated
+like reference variables of a wildcard type (the type parameter&nbsp; bound).&nbsp;
+In our example the consequence is that the compiler rejects invocation
+of methods that take an argument of the "unknown" type that the type parameter
+stands for, such as <tt>List.add</tt>, because the bound is a wildcard
+parameterized type with an upper bound.&nbsp;
+<br>At the same time the bound <tt>List&lt;? extends Number></tt> determines
+the types that can be used as type arguments. The compiler accepts all
+type arguments that belong to the type family <tt>List&lt;? extends Number></tt>,
+that is, all subtypes of <tt>List</tt> with a type argument that is a subtype
+of <tt>Number</tt>.&nbsp;
+<br>&nbsp;
+<p>Note, that even types that do not have subtypes, such as final classes
+and enum types, can be used as upper bound.&nbsp; In this case there is
+only one type that can be used as type argument, namely the type parameter
+bound itself. Basically, the parameterization is pointless then.
+<p>Example (of nonsensical parameterization):
+<blockquote><tt>class Box&lt;<b><font color="#000099">T extends String</font></b>>
+{</tt>
+<br><tt>&nbsp; private <b><font color="#000099">T </font></b>theObject;</tt>
+<br><tt>&nbsp; public Box(<b><font color="#000099">T </font></b>t) { theObject
+= t; }</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt>
+<br><tt>class Test {</tt>
+<br><tt>&nbsp; public static void main(String[] args) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Box&lt;<b><font color="#000099">String</font></b>>
+box1("Jack");</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Box&lt;<b><font color="#000099">Long</font></b>>&nbsp;&nbsp;
+box2(100L);&nbsp;&nbsp;&nbsp; <b><font color="#660000">// error</font></b></tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+The compiler rejects all type arguments except <tt>String</tt> as "not
+being within bounds". The type parameter <tt>T</tt> is not needed and the
+<tt>Box</tt>
+class would better be defined as a non-parameterized class.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ102">#FAQ102</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is a type parameter bound?">What
+is a type parameter bound?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I use a type parameter as a type parameter bound?">Can
+I use a type parameter as a type parameter bound?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I use different instantiations of a same parameterized type as bounds of a type parameter?">Can
+I use different instantiations of a same generic type as bounds of a type
+parameter?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I use a type parameter as part of its own bounds or in the declaration of other type parameters?">Can
+I use a type parameter as part of its own bounds or in the declaration
+of other type parameters?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do unbounded wildcard instantiations of a parameterized type relate to other instantiations of the same type?">How
+do unbounded wildcard instantiations of a generic type relate to other
+instantiations of the same generic type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do wildcard instantiations with an upper bound relate to other instantiations of the same type?How do wildcard instantiations with an upper bound relate to other instantiations of the same type?">How
+do wildcard instantiations with an upper bound relate to other instantiations
+of the same generic type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do wildcard instantiations with a lower bound relate to other instantiations of the same type?">How
+do wildcard instantiations with a lower bound relate to other instantiations
+of the same generic type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#Which methods and fields are accessible/inaccessible through a reference variable of a wildcard type?">Which
+methods and fields are accessible/inaccessible through a reference variable
+of a wildcard parameterized type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ102A"></a>
+<h2>
+<a NAME="Can I use a type parameter as a type parameter bound?"></a><font face="Arial,Helvetica"><font size=+0>Can
+I use a type parameter as a type parameter bound?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Yes.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">A type parameter can be used as the bound of another type
+parameter.&nbsp;
+<p>Example (of a type parameter used as a type parameter bound):
+<blockquote><tt>class Triple<b>&lt;T></b> {</tt>
+<br><tt>&nbsp; private T fst, snd, trd;</tt>
+<br><tt>&nbsp; public &lt;<b>U</b> <b><font color="#000099">extends T</font></b>,
+<b>V
+<font color="#000099">extends
+T</font></b>,
+<b>W <font color="#000099">extends T</font></b>> Triple(U
+arg1, V arg2, W arg3) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; fst = arg1;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; snd = arg2;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; trd = arg3;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+In this example the type parameter <tt>T</tt> of the parameterized class
+is used as bound of the type parameters <tt>U</tt>,&nbsp; <tt>V</tt> and
+<tt>W</tt>
+of a parameterized instance method of that class.
+<p>Further opportunities for using type parameters as bounds of other type
+parameters include situations where a nested type is defined inside a generic
+type or a local class is defined inside a generic method.&nbsp; It is even
+permitted to use a type parameter as bound of another type parameter in
+the same type parameter section.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ102A">#FAQ102A</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#Can I use a type parameter as part of its own bounds or in the declaration of other type parameters?">Can
+I use a type parameter as part of its own bounds or in the declaration
+of other type parameters?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Which types are permitted as type parameter  bounds?">Which
+types are permitted as type parameter&nbsp; bounds?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Where is a type parameter visible (or invisible)?">Where
+is a type parameter visible (or invisible)?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I use different instantiations of a same parameterized type as bounds of a type parameter?">Can
+I use different instantiations of a same generic type as bounds of a type
+parameteer?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeArguments.html#What is the difference between a wildcard bound and a type parameter bound?">What
+is the difference between a wildcard bound and a type parameter bound?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ103"></a>
+<p><a NAME="Can I use different instantiations of a same parameterized type as bounds of a type parameter?"></a><b><font face="Arial,Helvetica">Can
+I use different instantiations of a same generic type as bounds of a type
+parameter?</font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No, at most one instantiation of the
+same generic type can appear in the list of bounds of a type parameter.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Example (of illegal use of two instantiations of the same
+generic type as bounds of a type parameter):
+<blockquote><tt><nobr>class ObjectStore&lt;T extends <b><font color="#000099">Comparable&lt;T></font></b>
+&amp; <b><font color="#000099">Comparable&lt;String></font></b>> { <b><font color="#660000">//
+error&nbsp;</font></b></nobr></tt>
+<br><tt><nobr>&nbsp; private Set&lt;T> theObjects = new <b><font color="#000000">TreeSet&lt;T></font></b>();</nobr></tt>
+<br><tt><nobr>&nbsp; ...</nobr></tt>
+<br><tt><nobr>&nbsp; public boolean equals(ObjectStore&lt;String> other)
+{</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; if (theObjects.size() != other.size())
+return false;</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; Iterator&lt;T> iterThis = theObjects.iterator();</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; Iterator&lt;String> iterOther = other.theObjects.iterator();</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; while (iterThis.hasNext() &amp;&amp; iterOther.hasNext())
+{</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T t = iterThis.next();</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; String string = iterOther.next();</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (<b><font color="#000000">t.compareTo(string)</font></b>
+!= 0)&nbsp; return false;</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; }</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; return true;</nobr></tt>
+<br><tt><nobr>&nbsp; }</nobr></tt>
+<br><tt><nobr>}</nobr></tt>
+<br>
+<hr WIDTH="100%">
+<br><tt><nobr>error: java.lang.Comparable cannot be inherited with different
+arguments: &lt;T> and &lt;java.lang.String></nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; class ObjectStore&lt;T extends Comparable&lt;T>
+&amp; Comparable&lt;String>>&nbsp; {</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+^</nobr></tt></blockquote>
+In the example the type parameter <tt>T</tt> is required to be <tt>Comparable&lt;T></tt>,
+that is, comparable to its own type.&nbsp; This is needed for storing objects
+of type <tt>T</tt> in a <tt>TreeSet&lt;T></tt>.&nbsp; At the same time
+the type parameter <tt>T</tt> is required to be <tt>Comparable&lt;String></tt>,
+because we want to invoke the type parameter's <tt>compareTo(String)</tt>
+method. Remember, type parameter bounds are needed to give the compiler
+access to the type parameters non-static methods.&nbsp; In this (admittedly
+contrived) example, we need to specify two instantiations of the <tt>Comparable</tt>
+interface as bound of the type parameter, but the compiler rejects it.
+<p>The reason for this restriction is that there is no type that is a subtype
+of two different instantiations of the <tt>Comparable</tt> interface and
+could serve as a type argument.&nbsp; It is prohibited that a type implements
+or extends two different instantiations of the same interface. This is
+because the bridge method generation process cannot handle this situation.&nbsp;
+Details are discussed in a separate FAQ entry (click <a href="ProgrammingIdioms.html#Can a class implement different instantiations of the same parameterized interface?">here</a>).&nbsp;
+If no class can ever implement both instantiations of <tt>Comparable</tt>,
+there is no point to a bounds list that requires it.&nbsp; The class in
+our example would not be instantiable because no type can ever be within
+bounds, except perhaps class <tt>String</tt>.
+<p>In practice, you will need to work around this restriction. Sadly, there
+might be situations in&nbsp; which there is no workaround at all.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ103">#FAQ103</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="ProgrammingIdioms.html#Can a class implement different instantiations of the same parameterized interface?">Can
+a class implement different instantiations of the same generic interface?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is type erasure?">What
+is type erasure?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is a bridge method?">What
+is a bridge method?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How does type erasure work when a type parameter has several bounds?">How
+does type erasure work when a type parameter has several bounds?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#How can work around the restriction that a type parameter cannot have different instantiations of a same">How
+can<b> </b>work around the restriction that a type parameter cannot have
+different instantiations of a same generic type as its bounds?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ104"></a>
+<p><a NAME="How can work around the restriction that a type parameter cannot have different instantiations of a same"></a><b><font face="Arial,Helvetica">How
+can I work around the restriction that a type parameter cannot have different
+instantiations of a same generic type as its bounds?</font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Usually there is no satisfactory workaround.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Let us use the example from the previous question for our
+search of a workaround.
+<p>Example (of illegal use of two instantiations of the same generic type
+as bounds of a type parameter):
+<blockquote><tt><nobr>class ObjectStore&lt;T extends <b><font color="#000099">Comparable&lt;T></font></b>
+&amp; <b><font color="#000099">Comparable&lt;String></font></b>> { <b><font color="#660000">//
+error</font></b></nobr></tt>
+<br><tt><nobr>&nbsp; private Set&lt;T> theObjects = new <b><font color="#000000">TreeSet&lt;T></font></b>();</nobr></tt>
+<br><tt><nobr>&nbsp; ...</nobr></tt>
+<br><tt><nobr>&nbsp; public boolean equals(ObjectStore&lt;String> other)
+{</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; if (theObjects.size() != other.size())
+return false;</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; Iterator&lt;T> iterThis = theObjects.iterator();</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; Iterator&lt;String> iterOther = other.theObjects.iterator();</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; while (iterThis.hasNext() &amp;&amp; iterOther.hasNext())
+{</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T t = iterThis.next();</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; String string = iterOther.next();</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (<b><font color="#000000">t.compareTo(string)</font></b>
+!= 0)&nbsp; return false;</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; }</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; return true;</nobr></tt>
+<br><tt><nobr>&nbsp; }</nobr></tt>
+<br><tt><nobr>}</nobr></tt></blockquote>
+In the example the type parameter <tt>T</tt> is required to be <tt>Comparable&lt;T></tt>,
+because objects of type <tt>T</tt> are stored in a <tt>TreeSet&lt;T></tt>.&nbsp;
+At the same time the type parameter <tt>T</tt> is required to be <tt>Comparable&lt;String></tt>,
+because we invoke the type parameter's <tt>compareTo(String)</tt> method.
+The compiler rejects the attempt of specifying two instantiations of the
+<tt>Comparable</tt>
+interface as bound of the type parameter.
+<p>One workaround for the example above could be the following: we could&nbsp;
+drop the requirement that the parameter
+<tt>T</tt> must be <tt>Comparable&lt;T></tt>,
+because the corresponding
+<tt>compareTo(T)</tt> method is not invoked in
+the implementation of the generic class itself, but in the operations of
+the <tt>Treeset&lt;T></tt>.&nbsp; By dropping the requirement we would
+risk that a type argument is supplied that is not<tt> Comparable&lt;T></tt>
+and will cause <tt>ClassCastException</tt>s when operations of the <tt>TreeSet&lt;T></tt>
+are invoked.&nbsp; Clearly not a desirable solution, but perhaps a viable
+one for this particular example.
+<p>However, this might not be a solution if the class uses the type parameter
+in a slightly different way. For instance, if both <tt>compareTo</tt> methods
+were called in the implementation of the generic class, then we could not
+drop any of the bounds.
+<p>Example (another class with illegal use of two instantiations of the
+same generic type as bounds of a type parameter):
+<blockquote><tt><nobr>class SomeClass&lt;T extends <b><font color="#000099">Comparable&lt;T></font></b>
+&amp; <b><font color="#000099">Comparable&lt;String></font></b>> { <b><font color="#660000">//
+error&nbsp;</font></b></nobr></tt>
+<br><tt><nobr>&nbsp; ...&nbsp;</nobr></tt>
+<br><tt><nobr>&nbsp; private void method(T t1, T t2) {</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp;&nbsp; ... <b>t1.compareTo(t2)</b> ...</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp;&nbsp; ... <b>t1.compareTo("string")</b>
+...</nobr></tt>
+<br><tt><nobr>&nbsp; }</nobr></tt>
+<br><tt><nobr>}</nobr></tt></blockquote>
+If the methods of the bounds are invoked in the class implementation, then
+dropping one of the conflicting bounds does not solve the problem.&nbsp;
+One could consider use of an additional interface, such as a <tt>CombinedComparable</tt>
+interface that combines the two required interfaces into one interface.&nbsp;
+<p>Example (conceivable work-around; does not work):
+<blockquote><tt><b>interface CombinedComparable&lt;T> </b>{</tt>
+<br><tt>&nbsp; int compareTo(T other);</tt>
+<br><tt>&nbsp; int compareTo(String other);</tt>
+<br><tt>}</tt>
+<br><tt><nobr>class SomeClass&lt;T extends <b><font color="#000099">CombinedComparable&lt;T></font></b>
+{&nbsp;</nobr></tt>
+<br><tt><nobr>&nbsp; ...&nbsp;</nobr></tt>
+<br><tt><nobr>&nbsp; private void m(T t1, T t2) {</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp;&nbsp; ... t1.compareTo(t2) ...</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp;&nbsp; ... t1.compareTo("string") ...</nobr></tt>
+<br><tt><nobr>&nbsp; }</nobr></tt>
+<br><tt><nobr>&nbsp; public boolean equals(<b>SomeClass&lt;String></b>
+other) {&nbsp; <b><font color="#660000">// error&nbsp;</font></b></nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; ...</nobr></tt>
+<br><tt><nobr>&nbsp; }</nobr></tt>
+<br><tt><nobr>&nbsp;}</nobr></tt></blockquote>
+However, this is not really a viable solution, because it excludes class
+<tt>String</tt>
+as a type argument. <tt>String</tt> is a class that is comparable to itself
+and to <tt>String</tt>, but it is does not implement a <tt>CombinedComparable</tt>
+interface. Hence type <tt>String</tt> is not within bounds. Another conceivable
+alternative is definition of one new interface per instantiation needed,
+such as a parameterized <tt>SelfComparable</tt> and a non-parameterized
+<tt>StringComparable</tt>
+interface.&nbsp; Again, this excludes class <tt>String</tt> as a potential
+type argument.&nbsp; If it acceptable that class String is excluded as
+a potential type argument then the definition of additional interfaces
+might be a viable workaround.&nbsp;
+<p>But there remain some situations, in which additional interface to not
+help.&nbsp; For instance, if the type parameter is used as type argument
+of another parameterized method, then it must itself be within the bounds
+of that other type parameter.&nbsp;
+<p>Example (another class with illegal use of two instantiations of the
+same generic type as bounds of a type parameter):
+<blockquote><tt><nobr>class AnUnrelatedClass {</nobr></tt>
+<br><tt><nobr>&nbsp; public static &lt;T extends <b>Comparable&lt;String></b>>
+void f(T t) { ... }</nobr></tt>
+<br><tt><nobr>}</nobr></tt>
+<br><tt><nobr>class AnotherUnrelatedClass {</nobr></tt>
+<br><tt><nobr>&nbsp; public static &lt;T extends <b>Comparable&lt;T></b>>
+void g(T t) { ... }</nobr></tt>
+<br><tt><nobr>}</nobr></tt>
+<br><tt><nobr>class SomeClass&lt;T extends <b><font color="#000099">Comparable&lt;T></font></b>
+&amp; <b><font color="#000099">Comparable&lt;String></font></b>> { <b><font color="#660000">//
+error&nbsp;</font></b></nobr></tt>
+<br><tt><nobr>&nbsp; ...&nbsp;</nobr></tt>
+<br><tt><nobr>&nbsp; private void h(T t) {</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp;&nbsp; AnUnrelatedClass.f(t);</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp;&nbsp; AnotherUnrelatedClass.g(t);</nobr></tt>
+<br><tt><nobr>&nbsp; }</nobr></tt>
+<br><tt><nobr>}</nobr></tt></blockquote>
+No solution sketched out above would address this situation appropriately.
+If we required that the type parameter be <tt>CombinedComparable</tt>,
+it would not be within the bounds of at least one of the two invoked methods.
+Note, that the <tt>CombinedComparable</tt> interface can be a subinterface
+of only one of the two instantiations of <tt>Comparable</tt>, but not both.
+<p>Example (conceivable work-around; does not work):
+<blockquote><tt><b>interface CombinedComparable&lt;T> extends Comparable&lt;String>
+</b>{</tt>
+<br><tt>&nbsp; int compareTo(T other);</tt>
+<br><tt>}</tt>
+<br><tt><nobr>class ObjectStore&lt;T extends <b><font color="#000099">CombinedComparable&lt;T></font></b>
+{&nbsp;</nobr></tt>
+<br><tt><nobr>&nbsp; ...&nbsp;</nobr></tt>
+<br><tt><nobr>&nbsp; private void h(T t) {</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp;&nbsp; AnUnrelatedClass.f(t);&nbsp;</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp;&nbsp; AnotherUnrelatedClass.g(t); <b><font color="#660000">//
+error</font></b></nobr></tt>
+<br><tt><nobr>&nbsp; }</nobr></tt>
+<br><tt><nobr>}</nobr></tt></blockquote>
+The same happens when we require that the type parameter be <tt>SelfComparable</tt>
+and <tt>StringComparable</tt>. Even if both were subinterfaces of the respective
+instantiation of <tt>Comparable</tt>, there cannot be a class that implements
+both, because that class would indirectly implement the two instantiations
+of <tt>Comparable</tt>.
+<p>Ultimately the realization is that, depending on the circumstances,
+there might not be a work around at all.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ104">#FAQ104</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#Can I use different instantiations of a same parameterized type as bounds of a type parameter?">Can
+I use different instantiations of a same generic type as bounds of a type
+parameter?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ProgrammingIdioms.html#Can a class implement different instantiations of the same parameterized interface?">Can
+a class implement different instantiations of the same parameterized interface?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ105"></a>
+<h2>
+<a NAME="Does a bound that is a class type give access to all its public members?"></a><font face="Arial,Helvetica"><font size=+0>Does
+a bound that is a class type give access to all its public members?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Yes, except any constructors.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">A bound that is a class gives access to all its public
+members, that is, public fields, methods, and nested type. Only constructors
+are not made accessible, because there is no guarantee that a subclass
+of the bound has the same constructors as the bound.
+<p>Example (of a class used as bound of a type parameter):
+<blockquote><tt>public class <font color="#000000">SuperClass</font> {</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; // static members</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public enum EnumType {THIS, THAT}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public static Object staticField;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public static void staticMethod() { ... }</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; // non-static members</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public class InnerClass { ... }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public Object nonStaticField;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public void nonStaticMethod() { ... }</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; // constructors</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public SuperClass() { ... }</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; // private members</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private Object privateField;&nbsp;</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>}</tt>
+<p><tt>public final class SomeClass&lt;T extends <b><font color="#006600">SuperClass</font></b>>
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private T object;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public SomeClass(T t) { object = t; }&nbsp;</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; public String toString() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "static nested
+type&nbsp;&nbsp;&nbsp; : "+T.EnumType.class+"\n"&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; +"static field&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+: "+T.staticField+"\n"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; +"static method&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+: "+T.staticMethod()+"\n"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; +"non-static nested
+type: "+T.InnerClass.class+"\n"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; +"non-static field&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+: "+object.nonStaticField+"\n"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; +"non-static method&nbsp;&nbsp;&nbsp;&nbsp;
+: "+object.nonStaticMethod()+"\n"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; +"constructor&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+: "+(new T())+"\n"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// error</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; +"private member&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+: "+object.privateField+"\n"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// error&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+The bound <tt>SuperClass</tt> gives access to its nested types, static
+fields and methods and non-static fields and methods.&nbsp; Only the constructor
+is not accessible.&nbsp; This is because constructors are not inherited.
+Every subclass defines its own constructors and need not support its superclass's
+constructors.&nbsp; Hence there is no guarantee that a subclass of <tt>SuperClass</tt>
+will have the same constructor as its superclass.
+<p>
+<hr WIDTH="100%">
+<p>Although a superclass bound gives access to types, fields and methods
+of the type parameter, only the non-static methods are dynamically dispatched.
+In the unlikely case that a subclass redefines types, fields and non-static
+methods of its superclass, these redefinitions would not be accessible
+through the superclass bound.&nbsp;
+<p>Example (of a subclass of the bound used for instantiation):
+<blockquote><tt><nobr>public final class SubClass extends SuperClass {</nobr></tt></blockquote>
+
+<blockquote><tt><nobr>&nbsp;&nbsp;&nbsp; // static members</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; public enum Type {FIX, FOXI}&nbsp;</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; public static Object staticField;</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; public static Object staticMethod() {
+... }</nobr></tt>
+<p><tt><nobr>&nbsp;&nbsp;&nbsp; // non-static members&nbsp;</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; public class Inner { ... }</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; public Object nonStaticField;</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; public Object nonStaticMethod() { ...
+}</nobr></tt>
+<p><tt><nobr>&nbsp;&nbsp;&nbsp; // constructors&nbsp;</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; public SubClass(Object o) { ... }</nobr></tt>
+<br><tt><nobr>&nbsp;&nbsp;&nbsp; public SubClass(String s) { ... }</nobr></tt>
+<p><tt><nobr>&nbsp;&nbsp;&nbsp; ...</nobr></tt>
+<br><tt><nobr>}</nobr></tt>
+<br>
+<hr WIDTH="100%">
+<br><tt><nobr><font color="#000000">SomeClass&lt;</font><b><font color="#006600">SubClass</font></b><font color="#000000">></font>
+ref = new SomeClass&lt;SubClass>(new SubClass("xxx"));</nobr></tt>
+<br><tt><nobr>System.out.println(ref);</nobr></tt>
+<br>
+<hr WIDTH="100%">
+<br><tt><nobr>prints:</nobr></tt>
+<br><tt><nobr>static nested type&nbsp;&nbsp;&nbsp; : <b><font color="#000099">SuperClass</font></b>.EnumType</nobr></tt>
+<br><tt><nobr>static field&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+: <b><font color="#000099">SuperClass</font></b>.staticField</nobr></tt>
+<br><tt><nobr>static method&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+:
+<b><font color="#000099">SuperClass</font></b>.staticMethod&nbsp; =>
+SuperClass.staticField</nobr></tt>
+<br><tt><nobr>non-static nested type: <b><font color="#000099">SuperClass</font></b>.InnerClass</nobr></tt>
+<br><tt><nobr>non-static field&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : <b><font color="#000099">SuperClass</font></b>.nonStaticField</nobr></tt>
+<br><tt><nobr>non-static method&nbsp;&nbsp;&nbsp;&nbsp; : <b><font color="#006600">SubClass</font></b>.nonStaticMethod
+=> SubClass.nonStaticField</nobr></tt>
+<br>&nbsp;</blockquote>
+Calling the <tt>nonStaticMethod</tt> results in invocation of the subclass's
+overriding version of the <tt>nonStaticMethod</tt>. In contrast, the subclass's
+redefinitions of types, fields and static methods are not accessible through
+the bounded parameter.&nbsp; This is nothing unusual.&nbsp; First, it is
+poor programming style to redefine in a subclass any of the superclass's
+nested types, fields and static methods.&nbsp; Only non-static methods
+are overridden.&nbsp; Second, the kind of hiding that we observe in the
+example above also happens when a subclass object is used through a superclass
+reference variable.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ105">#FAQ105</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ106"></a>
+<h2>
+<a NAME="How do I decrypt Enum?"></a><b><font face="Arial,Helvetica"><font size=+0>How
+do I decrypt "Enum&lt;E extends Enum&lt;E>>"?</font></font></b></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>As a type that can only be instantiation
+for its subtypes, and those subtypes will inherit some useful methods,
+some of which take subtype arguments (or otherwise depend on the subtype).</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">The context in which <font size=+0>"<tt>Enum&lt;E extends
+Enum&lt;E>></tt>"</font> appears is the declaration of the <tt>Enum</tt>
+class in package <tt>java.lang</tt>:
+<blockquote><tt>public abstract class <b>Enum&lt;E extends Enum&lt;E>></b>
+{</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt></blockquote>
+The type <tt>Enum</tt> is the common base class of all enumeration types.&nbsp;
+In Java an enumeration type such as <tt>Color</tt> is translated into a
+class <tt>Color</tt> that extends <tt>Enum&lt;Color></tt>. The purpose
+of the superclass <tt>Enum</tt> is to provide functionality that is common
+to all enumeration types.&nbsp;
+<p>Here is a sketch of class <tt>Enum</tt>:
+<blockquote><tt>public abstract class <b>Enum&lt;<font color="#000099">E</font>
+extends Enum&lt;E>></b> implements Comparable&lt;<b><font color="#000099">E</font></b>>,
+Serializable {</tt>
+<br><tt>&nbsp; private final String name;</tt>
+<br><tt>&nbsp; public&nbsp; final String name() { ... }</tt>
+<p><tt>&nbsp; private final int ordinal;</tt>
+<br><tt>&nbsp; public&nbsp; final int ordinal() { ... }</tt>
+<p><tt>&nbsp; protected Enum(String name, int ordinal) { ... }</tt>
+<p><tt>&nbsp; public String&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+toString() { ... }</tt>
+<br><tt>&nbsp; public final boolean&nbsp;&nbsp;&nbsp; equals(Object other)
+{ ... }</tt>
+<br><tt>&nbsp; public final int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+hashCode() { ... }</tt>
+<br><tt>&nbsp; protected final Object&nbsp; clone() throws CloneNotSupportedException
+{ ... }</tt>
+<br><tt>&nbsp; public final int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+compareTo(<b><font color="#000099">E</font></b> o) { ... }</tt>
+<p><tt>&nbsp; public final Class&lt;<b><font color="#000099">E</font></b>>
+getDeclaringClass() { ... }</tt>
+<br><tt>&nbsp; public static &lt;T extends Enum&lt;T>> T valueOf(Class&lt;T>
+enumType, String name) { ... }</tt>
+<br><tt>}</tt></blockquote>
+The surprising feature in the declaration&nbsp; <font size=+0>"<tt>Enum&lt;E
+extends Enum&lt;E>></tt>" </font>is the fact that the newly defined class
+<tt>Enum</tt>
+and its newly defined type parameter <tt><font size=+0>E</font></tt>appear
+in the bound of that same type parameter.&nbsp; It means that the <tt>Enum</tt>
+type must be instantiated for one of its subtypes.&nbsp; In order to understand
+why this makes sense, consider that every enum type is translated into
+a subtype of <tt>Enum</tt>.
+<p>Here is the contrived enum type <tt>Color</tt>:
+<blockquote><tt>enum <b>Color</b> {RED, BLUE, GREEN}</tt></blockquote>
+The compiler translates it into the following class:
+<blockquote><tt>public final class <b>Color</b> extends <b>Enum&lt;Color></b>
+{</tt>
+<br><tt>&nbsp; public static final Color[] values() { return (Color[])$VALUES.clone();
+}</tt>
+<br><tt>&nbsp; public static Color valueOf(String name) { ... }</tt>
+<p><tt>&nbsp; private Color(String s, int i) { super(s, i); }</tt>
+<p><tt>&nbsp; public static final Color RED;</tt>
+<br><tt>&nbsp; public static final Color BLUE;</tt>
+<br><tt>&nbsp; public static final Color GREEN;</tt>
+<p><tt>&nbsp; private static final Color $VALUES[];</tt>
+<p><tt>&nbsp; static {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; RED = new Color("RED", 0);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; BLUE = new Color("BLUE", 1);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; GREEN = new Color("GREEN", 2);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; $VALUES = (new Color[] { RED, BLUE, GREEN });</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+The inheritance has the effect that the <tt>Color</tt> type inherits all
+the methods implemented in <tt>Enum&lt;Color></tt>.&nbsp; Among them is
+the <tt>compareTo</tt> method.&nbsp; The <tt>Color.compareTo</tt> method
+should probably take a <tt>Color</tt> as an argument.&nbsp; In order to
+make this happen class <tt>Enum</tt> is generic and the <tt>Enum.compareTo</tt>
+method takes <tt>Enum</tt>'s type parameter <tt>E </tt>as an argument.&nbsp;
+As a result, type <tt>Color</tt> derived from <tt>Enum&lt;Color></tt> inherits
+a <tt>compareTo</tt> method that takes a <tt>Color</tt> as and argument,
+exactly as it should.&nbsp;
+<br>&nbsp;
+<p>If we dissect the declaration <font size=+0>"<tt>Enum&lt;E extends Enum&lt;E>></tt>"
+we can see that this pattern has several aspects.&nbsp;</font>
+<p><font size=+0>First, there is the fact that the type parameter bound
+is the type itself: "<tt><b>Enum</b>&lt;E extends <b>Enum</b>&lt;E>></tt>".
+It makes sure that only subtypes of type <tt>Enum</tt> are permitted as
+type arguments. (Theoretically, type <tt>Enum</tt> could be instantiated
+on itself, like in <tt>Enum&lt;Enum></tt>, but this is certainly not intended
+and it is hard to imagine a situation in which such an instantiation would
+be useful.)</font>
+<p><font size=+0>Second, there is the fact that the type parameter bound
+is the </font>parameterized type<font size=+0> <tt>Enum<b>&lt;E></b></tt>,&nbsp;
+which uses the type parameter <tt>E</tt> as the type argument of the bound.
+This declaration makes sure that the inheritance relationship between a
+subtype and an instantiation of <tt>Enum</tt> is of the form "<tt>X extends
+Enum&lt;X></tt>". A subtype such as "<tt>X extends Enum&lt;Y></tt>" cannot
+be declared because the type argument <tt>Y</tt> would not be within bounds;
+only subtypes of <tt>Enum&lt;X></tt> are within bounds.</font>
+<p><font size=+0>Third, there is the fact that <tt>Enum</tt> is generic
+in the first place.&nbsp; It means that some of the methods of class <tt>Enum</tt></font>take
+an argument or return a value of an unknown type (or otherwise depend on
+an unknown type). As we already know, this unknown type will later be a
+subtype <tt>X</tt> of <tt>Enum&lt;X></tt>.&nbsp; Hence, in the parameterized
+type
+<tt>Enum&lt;X></tt>, these methods involve the subtype <tt>X</tt>,
+and they are inherited into the subtype <tt>X</tt>.&nbsp; The <tt>compareTo</tt>
+method is an example of such a method; it is inherited from the superclass
+into each subclass and has a subclass specific signature in each case.
+<p>To sum it up, the declaration <font size=+0>"<tt>Enum&lt;E extends Enum&lt;E>></tt>"</font>
+can be decyphered as: <tt>Enum</tt> is a generic type that can only be
+instantiated for its subtypes, and those subtypes will inherit some useful
+methods, some of which take subtype specific arguments (or otherwise depend
+on the subtype).
+<br>&nbsp;</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ106">#FAQ106</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#How is a parameterized type defined?">How
+is a generic type defined?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is a bounded type parameter?">What
+is a bounded type parameter?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Where is a type parameter visible (or invisible)?">Where
+is a type parameter visible (or invisible)?</a></font></font></td>
+</tr>
+</table>
+
+<h3>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350></h3>
+
+<h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450></h3>
+
+<h3>
+<a NAME="Usage"></a>Usage</h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450><a NAME="FAQ200"></a>
+<h2>
+<a NAME="Can I use a type parameter like a type?"></a><font face="Arial,Helvetica"><font size=+0>Can
+I use a type parameter like a type?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No, a type parameter is not a type in
+the regular sense (different from a regular type such as a non-generic
+class or interface).</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Type parameters can be used for typing (like non-generic
+classes and interfaces)::
+<ul>
+<li>
+as argument and return types of methods</li>
+
+<li>
+as type of a field or local reference variable&nbsp;</li>
+
+<li>
+as type argument of other parameterized types</li>
+
+<li>
+as target type in casts&nbsp;</li>
+
+<li>
+as explicit type argument of parameterized methods</li>
+</ul>
+Type parameters can NOT be used for the following purposes (different from
+non-generic classes and interfaces)::
+<ul>
+<li>
+for creation of objects&nbsp;</li>
+
+<li>
+for creation of arrays&nbsp;</li>
+
+<li>
+in exception handling</li>
+
+<li>
+in static context</li>
+
+<li>
+in instanceof expressions&nbsp;</li>
+
+<li>
+as supertypes</li>
+
+<li>
+in a class literal</li>
+</ul>
+</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ200">#FAQ200</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ201"></a>
+<h2>
+<a NAME="Can I create an object whose type is a type parameter?"></a><font face="Arial,Helvetica"><font size=+0>Can
+I create an object whose type is a type parameter?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No, because the compiler does not know
+how to create objects of an unknown type.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Each object creation is accompied by a constructor call.
+When we try to create an object whose type is a type parameter then we
+need an accessible constructor of the unknown type that the type parameter
+is a place holder for.&nbsp; However, there is no way to make sure that
+the actual type arguments have the required constructors.
+<p>Example (illegal generic object creation):
+<blockquote><tt>public final class Pair&lt;<b><font color="#000099">A</font></b>,<b><font color="#000099">B</font></b>>
+{&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public final A fst;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public final B snd;</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; public Pair() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.fst = <b><font color="#000099">new
+A()</font></b>;&nbsp; <b><font color="#660000">// error</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.snd = <b><font color="#000099">new
+B()</font></b>;&nbsp; <b><font color="#660000">// error</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public Pair(A fst, B snd) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.fst = fst;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.snd = snd;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+In the example above, we are trying to invoke the no-argument constructors
+of two unknown types represented by the type parameters <tt>A</tt> and
+<tt>B</tt>.&nbsp;
+It is not known whether the actual type arguments will have an accessible
+no-argument constructor.
+<p>In situations like this - when the compiler needs more knowledge about
+the unknown type in order to invoke a method - we use type parameter bounds.
+However, the bounds only give access to methods of the type parameter.
+Constructors cannot be made available through a type parameter bound.
+<p>If you need to create objects of unknown type, you can use reflection
+as a workaround.&nbsp; It requires that you supply type information, typically
+in form of a <tt>Class</tt> object, and then use that type information
+to create objects via reflection.&nbsp;
+<p>Example (workaround using reflection):
+<blockquote><tt>public final class Pair<b><font color="#000099">&lt;A,B></font></b>
+{&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public final A fst;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public final B snd;</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; public Pair(<b><font color="#000099">Class&lt;A></font></b>
+typeA, <b><font color="#000099">Class&lt;B></font></b> typeB) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.fst = <font color="#000000">(A)typeA.</font><b><font color="#000099">newInstance();</font><font color="#999900">//
+unchecked cast</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.snd = <font color="#000000">(B)typeB.</font><b><font color="#000099">newInstance();</font><font color="#999900">//
+unchecked cast</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public Pair(A fst, B snd) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.fst = fst;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.snd = snd;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+By the way, the unchecked warnings are harmless and can be ignored. They
+stem from the need to cast to the respective type parameter, because the
+<tt>newInstance</tt>
+method returns an <tt>Object</tt> reference.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ201">#FAQ201</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#Does a bound that is a class type give access to all its public members?">Does
+a bound that is a class type give access to all its methods and fields?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ProgrammingIdioms.html#How do I generically create objects and arrays?">How
+do I generically create objects and arrays?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ProgrammingIdioms.html#How do I pass type information to a method?">How
+do I pass type information to a method so that it can be used at runtime?</a></font></font></td>
+</tr>
+</table>
+
+<h2>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ202"></a></h2>
+
+<h2>
+<a NAME="Can I create an array whose component type is a type parameter?"></a><font face="Arial,Helvetica"><font size=+0>Can
+I create an array whose component type is a type parameter?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No, because the compiler does not know
+how to create an object of an unknown component type.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">We can declare array variables whose component type is
+a type parameter, but we cannot create the corresponding array objects.&nbsp;
+The compiler does not know how to create an array of an unknown component
+type.&nbsp;
+<p>Example (before type erasure):
+<blockquote><tt>class Sequence<b><font color="#000099">&lt;T></font></b>
+{</tt>
+<br><tt>&nbsp; ...&nbsp;</tt>
+<br><tt>&nbsp; public T[] asArray() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; T[] array = <b><font color="#000099">new T[size]</font></b>;
+<b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return array;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+Example (after a conceivable translation by type erasure):
+<blockquote><tt>class Sequence {</tt>
+<br><tt>&nbsp; ...&nbsp;</tt>
+<br><tt>&nbsp; public <b><font color="#330033">Object</font></b>[] asArray()
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; <b><font color="#330033">Object</font></b>[]
+array = new <b><font color="#330033">Object</font></b>[size];</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return array;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+The type erasure of a type parameter is its leftmost bound, or type <tt>Object</tt>
+if no bound was specified. As a result, the compiler would create an array
+of <tt>Object</tt>s in our example.&nbsp; This is not what we want.&nbsp;
+If we later invoked the as<tt>Array</tt> method on a <tt>Sequence&lt;String></tt>
+a <tt>Object[]</tt> would be returned, which is incompatible to the <tt>String[]</tt>
+that we expect.
+<p>Example (invocation of illegal method):
+<blockquote><tt><nobr>Sequence&lt;String> seq = new Sequence&lt;String>();</nobr></tt>
+<br><tt><nobr>...</nobr></tt>
+<br><tt><nobr>String[] arr = seq.asArray();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// compile-time error</nobr></tt>
+<br><tt><nobr>String[] arr = (String[])seq.asArray();&nbsp; // runtime
+failure: ClassCastException</nobr></tt></blockquote>
+Not even a cast would help because the cast is guaranteed to fail at runtime.&nbsp;
+The returned array is really an array of <tt>Object</tt>s, not just a reference
+of type <tt>Object[]</tt> refering to a <tt>String[]</tt>.
+<p>If you need to create arrays of an unknown component type, you can use
+reflection as a workaround.&nbsp; It requires that you supply type information,
+typically in form of a <tt>Class</tt> object, and then use that type information
+to create arrays via reflection.&nbsp;
+<p>Example (workaround using reflection):
+<blockquote><tt>class Sequence<b><font color="#000099">&lt;T></font></b>
+{</tt>
+<br><tt>&nbsp; ...&nbsp;</tt>
+<br><tt>&nbsp; public T[] asArray(<b><font color="#000099">Class&lt;T></font></b>
+type) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; T[] array = (T[])Array.<b><font color="#000099">newInstance(type,size)</font></b>;
+<b><font color="#999900">//
+unchecked cast</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return array;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+By the way, the unchecked warning is harmless and can be ignored. It stems
+from the need to cast to the unknown array type, because the <tt>newInstance</tt>
+method returns an <tt>Object[]</tt> as a result.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ202">#FAQ202</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is type erasure?">What
+is type erasure?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ProgrammingIdioms.html#How do I generically create objects and arrays?">How
+do I generically create objects and arrays?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ProgrammingIdioms.html#How do I pass type information to a method?">How
+do I pass type information to a method so that it can be used at runtime?</a></font></font></td>
+</tr>
+</table>
+
+<h2>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ203"></a></h2>
+
+<h2>
+<a NAME="Can I cast to the type that the type parameter stands for?"></a><font face="Arial,Helvetica"><font size=+0>Can
+I cast to the type that the type parameter stands for?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Yes, you can, but it is not type-safe
+and the compiler issues an "unchecked" warning.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Type parameters do not have a runtime type representation
+of their own. They are represented by their leftmost bound, or type <tt>Object</tt>
+in case of an unbounded type parameter. A cast to a type parameter would
+therefore be a cast to the bound or to type <tt>Object</tt>.
+<p>Example (of unchecked cast):
+<blockquote><tt><nobr><font color="#000000">class Twins&lt;T> {</font></nobr></tt>
+<br><tt><nobr><font color="#000000">&nbsp; public T fst,snd;</font></nobr></tt>
+<br><tt><nobr><font color="#000000">&nbsp; public Twins(T s, T t) { fst
+= s; snd = t; }</font></nobr></tt>
+<br><tt><nobr><font color="#000000">&nbsp; ...</font></nobr></tt>
+<br><tt><nobr><font color="#000000">}</font></nobr></tt>
+<br><tt><nobr><font color="#000000">class Pair&lt;S,T> {</font></nobr></tt>
+<br><tt><nobr><font color="#000000">&nbsp; private S fst;</font></nobr></tt>
+<br><tt><nobr><font color="#000000">&nbsp; private T snd;</font></nobr></tt>
+<br><tt><nobr><font color="#000000">&nbsp; public Pair(S s, T t) { fst
+= s; snd = t; }</font></nobr></tt>
+<br><tt><nobr><font color="#000000">&nbsp; ...&nbsp;</font></nobr></tt>
+<br><tt><nobr><font color="#000000">&nbsp; public &lt;U> Pair(Twins&lt;U>
+twins) {</font></nobr></tt>
+<br><tt><nobr><font color="#000000">&nbsp;&nbsp;&nbsp; fst = </font><b><font color="#000099">(S)</font></b><font color="#000000">
+twins.fst;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font></nobr><b><font color="#666600">//
+unchecked warning</font></b></tt>
+<br><tt><nobr><font color="#000000">&nbsp;&nbsp;&nbsp; snd = </font><b><font color="#000099">(T)</font></b><font color="#000000">
+twins.snd;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font></nobr><b><font color="#666600">//
+unchecked warning</font></b></tt>
+<br><tt><nobr><font color="#000000">&nbsp; }</font></nobr></tt>
+<br><tt><nobr><font color="#000000">}</font></nobr></tt></blockquote>
+<font color="#000000">The two casts to the type parameters are pointless
+because they will never fail; at runtime they are casts to type <tt>Object</tt>.&nbsp;
+As a result any type of <tt><nobr>Pair</nobr></tt> can be constructed from
+any type of <tt><nobr>Twins</nobr></tt>.
+</font>We could end up with a
+<tt>Pair&lt;Long,Long></tt>
+that contains
+<tt>String</tt>s instead of <tt>Long</tt>s.&nbsp; This would
+be a blatant violation of the type-safety principle, because we would later
+trigger an unexpected <tt>ClassCastException</tt>, when we use this offensive
+<tt>Pair&lt;Long,Long>
+</tt>that
+contains <tt>String</tt>s. In order to draw attention to the potentially
+unsafe casts the compiler issues "unchecked" warnings.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ203">#FAQ203</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="Fundamentals.html#What does type-safety mean?">What
+does type-safety mean?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is type erasure?">What
+is type erasure?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is the type erasure of a parameterized type?">What
+is the type erasure of a type parameter?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ204"></a>
+<h2>
+<a NAME="Can I use a type parameter in exception handling?"></a><font face="Arial,Helvetica"><font size=+0>Can
+I use a type parameter in exception handling?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>It depends.&nbsp;</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">&nbsp;Type parameters can appear in <tt>throws</tt> clauses,
+but not in <tt>catch</tt> clauses.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ204">#FAQ204</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Can I use a type parameter in a catch clause?">Can
+I use a type parameter in a catch clause?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Can I use a type parameter in in a throws clause?">Can
+I use a type parameter in in a throws clause?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Can I throw an object whose type is a type parameter?">Can
+I throw an object whose type is a type parameter?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ205"></a>
+<h2>
+<a NAME="Can I derive from a type parameter?"></a><font face="Arial,Helvetica"><font size=+0>Can
+I derive from a type parameter?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No, because a type parameter does not
+have a runtime type representation of it own.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">As part of the translation by type erasure, all&nbsp; type
+parameters are replaces by their leftmost bound, or <tt>Object</tt> if
+the type parameter is unbounded.&nbsp; Consequently, there is no point
+to deriving from a type parameter, because we would be deriving from its
+bound, not from the type that the type parameter stands for.&nbsp; In addition,
+the actual type argument can be a final class or an enum type, from which
+we must not derive anyway.
+<p>Example (of illegal derivation from type parameter; before type erasure):
+<blockquote><tt>class Printable&lt;T extends Collection&lt;?>> <b><font color="#660000">extends
+T </font></b>{&nbsp;&nbsp;&nbsp; // illegal</tt>
+<br><tt>&nbsp; public void printElements(PrintStream out) {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; for (Object o : this)&nbsp; out.println(o);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public void printElementsInReverseOrder(PrintStream out)
+{&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; …&nbsp;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<br><tt>final class Test {</tt>
+<br><tt>&nbsp; public static void main(String[] args) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Printable&lt;LinkedList&lt;String>> list = new
+Printable&lt;LinkedList&lt;String>>();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; list.add(2,"abc");</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; list.printElements(System.out);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+The idea of this generic subclass is that it adds print functionality to
+all collection classes by means of derivation.&nbsp; A <tt>Printable&lt;LinkedList&lt;String>></tt>
+would have all the functionality of <tt>LinkedList&lt;String></tt> plus
+the print functionality. (This idiom is known in C++ as the <i>curiously
+recurring template pattern</i>). Since it is illegal to derive from a type
+parameter, this kind of programming technique is not possible in Java.
+Consider what the subclass would look like after type erasure.
+<p>Example (same example after a conceivable translation by type erasure):
+<blockquote><tt>class Printable extends <b><font color="#330033">Collection</font></b>
+{&nbsp;&nbsp;&nbsp; // error: Collection is an interface, not class</tt>
+<br><tt>&nbsp; public void printElements(<b><font color="#330033">PrintStream</font></b>
+out) {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; for (Object o : this)&nbsp; out.println(o);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public void printElementsInReverseOrder(<b><font color="#330033">PrintStream</font></b>
+out) {</tt>
+<br><tt>&nbsp; …&nbsp;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p><tt>final class Test {</tt>
+<br><tt>&nbsp; public static void main(String[] args) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Printable list = new Printable();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; list.add(2,"abc");&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// error: no such method can be found in class Printable</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; list.printElements(System.out);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+After type erasure the subclass <tt>Printable</tt> would not be a subclass
+of <tt>LinkedList</tt>, but a subclass of <tt>Collection</tt>, which is
+not even possible, because <tt>Collection</tt> is an interface, not a class.&nbsp;
+Even if we used a class as the bound of the type parameter, such as <tt>&lt;T
+extends AbstractCollection></tt>, none of the list-specific methods would
+be available in the subclass, which entirely defeats the purpose of this
+programming pattern.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ205">#FAQ205</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is type erasure?">What
+is type erasure?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeArguments.html#Which types are permitted as type arguments?">Which
+types are permitted as type arguments?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="http://www.informit.com/articles/article.asp?p=31473&seqNum=3">The
+Curiously Recurring Template Pattern in C++</a> (James O. Coplien. A Curiously
+Recurring Template Pattern. In C++ Gems, 135-144. Cambridge University
+Press, New York, 1996)</font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ206"></a>
+<p><a NAME="Why is there no class literal for a type parameter?"></a><b><font face="Arial,Helvetica">Why
+is there no class literal for a type parameter?</font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Because a type parameter does not have
+a runtime type representation of its own.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">As part of the translation by type erasure, all&nbsp; type
+parameters are replaces by their leftmost bound, or <tt>Object</tt> if
+the type parameter is unbounded.&nbsp; Consequently, there is no point
+to forming class literals such as <tt>T.class</tt>, where <tt>T</tt> is
+a type parameter, because no such <tt>Class</tt> objects exist.&nbsp; Only
+the bound has a <tt>Class object</tt> that represents its runtime type.&nbsp;
+<p>Example (before type erasure):
+<blockquote><tt>&lt;T extends Collection> Class&lt;?> someMethod(T arg){</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; return T.class;&nbsp; // error</tt>
+<br><tt>}&nbsp;</tt></blockquote>
+Example (after type erasure):
+<blockquote><tt>Class someMethod(<b><font color="#330033">Collection</font></b>
+arg){</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; return <b><font color="#330033">Collection</font></b>.class;</tt>
+<br><tt>}&nbsp;</tt></blockquote>
+The method in the example above would return the bound's type representation,
+no matter which instantiation of the generic method was invoked.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ206">#FAQ206</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is type erasure?">What
+is type erasure?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>&nbsp;
+<h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450></h3>
+
+<h3>
+<a NAME="Scope"></a>Scope</h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450><a NAME="FAQ301"></a>
+<h2>
+<a NAME="Where is a type parameter visible (or invisible)?"></a><font face="Arial,Helvetica"><font size=+0>Where
+is a type parameter visible (or invisible)?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Everywhere in the definition of a generic
+type or method, except any static context of a type.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2"><i>Generic Classes</i>
+<p>The scope of a class’s type parameter is the entire definition of the
+class, except any static members or static initializers of the class. This
+means that the type parameters cannot be used in the declaration of static
+fields or methods or in static nested types or static initializers.&nbsp;
+<p>Example (of illegal use of type parameter in static context of a generic
+class):
+<blockquote><tt>class SomeClass<b><font color="#000099">&lt;T></font></b>
+{</tt>
+<br><tt>&nbsp; // </tt><i>static initializer, static field, static method</i>
+<br><tt>&nbsp; <b>static</b> {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; SomeClass&lt;<b><font color="#000099">T</font></b>>
+test = new SomeClass&lt;<b><font color="#000099">T</font></b>>(); <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; private <b>static</b> <b><font color="#000099">T</font></b>
+globalInfo;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp; public&nbsp; <b>static</b> <b><font color="#000099">T </font></b>getGlobalInfo()
+{&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return globalInfo;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; // </tt><i>non-static initializer, non-static field, non-static
+method</i>
+<br><tt>&nbsp; {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; SomeClass&lt;<b><font color="#000099">T</font></b>>
+test = new SomeClass&lt;<b><font color="#000099">T</font></b>>();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; private&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#000099">T</font></b>
+localInfo;</tt>
+<br><tt>&nbsp; public&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#000099">T</font></b>
+getLocalInfo() {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return localInfo;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; // </tt><i>static nested types</i>
+<br><tt>&nbsp; public <b>static</b> <b>class</b> Failure extends Exception
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private final <b><font color="#000099">T</font></b>
+info;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public Failure(<b><font color="#000099">T</font></b>
+t) { info = t; }&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public <b><font color="#000099">T</font></b>
+getInfo() { return info; }&nbsp;&nbsp;&nbsp; <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp; private <b>interface</b> Copyable {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; <b><font color="#000099">T</font></b> copy();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<b><font color="#660000">// error</font></b></tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; private <b>enum</b> State {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; VALID, INVALID;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private <b><font color="#000099">T</font></b>
+info; // error</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public void setInfo(<b><font color="#000099">T</font></b>
+t) { info = t; } <b><font color="#660000">// error</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public <b><font color="#000099">T</font></b>
+getInfo() { return info; }&nbsp;&nbsp;&nbsp; <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; // </tt><i>non-static nested types</i>
+<br><tt>&nbsp; public <b>class</b> Accessor {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public <b><font color="#000099">T</font></b>
+getInfo() { return localInfo; }</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+The example illustrates that the type parameter cannot be used in the static
+context of a generic class.&nbsp; It also shows that nested interfaces
+and enum types are considered static type members of the class.&nbsp; Only
+inner classes, that is, non-static nested classes, can use the type parameter
+of the enclosing generic class.
+<p>
+<hr WIDTH="100%">
+<p><i>Generic Interfaces</i>
+<p>The scope of an interface’s type parameter is the entire definition
+of the interface, except any fields or nested types.&nbsp; This is because
+fields and nested types defined in an interface are implicitly static.
+<p>Example (of illegal use of type parameter in a generic interface):
+<blockquote><tt>interface SomeInterface<b><font color="#000099">&lt;T></font></b>
+{</tt>
+<br><tt>&nbsp; // </tt><i>field</i>
+<br><tt>&nbsp; SomeClass&lt;<b><font color="#000099">T</font></b>> value
+= new SomeClass&lt;<b><font color="#000099">T</font></b>>();&nbsp; <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp; // </tt><i>nested type</i>
+<br><tt>&nbsp; <b>class</b> Accessor {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public <b><font color="#000099">T </font></b>getInfo()
+{&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<b><font color="#660000">// error</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return value.getGlobalInfo();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; // </tt><i>methods</i>
+<br><tt>&nbsp; <b><font color="#000099">T</font></b> getValue();</tt>
+<br><tt>}</tt></blockquote>
+The example shows that fields of an interface are implicitly static, so
+that the type parameter cannot be used anywhere in the declaration of a
+field of a generic interface.&nbsp; Similarly, the nested class is considered
+a static nested class, not an inner class, and for this reason use of the
+type parameter anywhere in the nested class is illegal.
+<p>
+<hr WIDTH="100%">
+<p><i>Generic Methods</i>
+<p>The scope of a method’s or constructor's type parameter is the entire
+definition of the method; there is no exception, because a method has no
+static parts.
+<p>Example (of use of type parameter in a generic method):
+<blockquote><tt>private interface Copyable&lt;T> {</tt>
+<br><tt>&nbsp; T copy();</tt>
+<br><tt>}</tt>
+<br><tt>// </tt><i>non-static method</i>
+<br><tt><b><font color="#000099">&lt;T extends Copyable&lt;T>> </font></b>void
+nonStaticMethod(<b><font color="#000099">T</font></b> t) {</tt>
+<br><tt>&nbsp;&nbsp; final <b><font color="#000099">T</font></b> copy =
+t.copy();</tt>
+<p><tt>&nbsp;&nbsp; class Task implements Runnable {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; public void run() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#000099">T</font></b>
+tmp = copy;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; System.out.println(tmp);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; (new Task()).run();</tt>
+<br><tt>}</tt>
+<br><tt>// </tt><i>static method</i>
+<br><tt><b>static</b> <b><font color="#000099">&lt;T extends Copyable&lt;T>></font></b>
+void staticMethod(<b><font color="#000099">T</font></b> t) {</tt>
+<br><tt>&nbsp; final <b><font color="#000099">T</font></b> copy = t.copy();</tt>
+<p><tt>&nbsp; class Task implements Runnable {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public void run() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#000099">T</font></b>
+tmp = copy;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; System.out.println(tmp);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp; }&nbsp;</tt>
+<br><tt>&nbsp; (new Task()).run();</tt>
+<br><tt>}</tt></blockquote>
+The example illustrates that the type parameter can be used any place in
+the definition of a generic method.&nbsp; The type parameter can appear
+in the return and argument type.&nbsp; It can appear in the method body
+and also in local (or anonymous) classes defined inside the method.&nbsp;
+Note, that it does not matter whether the generic method itself is static
+or non-static.&nbsp; Methods, different from types, do not have any "static
+context"; there is no such thing as a static local variable or static local
+class.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ301">#FAQ301</a></font></font></td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#Why can't I use a type parameter in any static context of the parameterized class?">Why
+can't I use a type parameter in any static context of the generic class?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I use a type parameter as part of its own bounds or in the declaration of other type parameters?">Can
+I use a type parameter as part of its own bounds or in the declaration
+of other type parameters?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ302"></a>
+<h2>
+<a NAME="Can I use a type parameter as part of its own bounds or in the declaration of other type parameters?"></a><font face="Arial,Helvetica"><font size=+0>Can
+I use a type parameter as part of its own bounds?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Yes, the scope of a type parameter includes
+the type parameter section itself.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">The type parameters of a generic type or method are visible
+in the entire declaration of the type or method, including the type parameter
+section itself. Therefore, type parameters can appear as parts of their
+own bounds, or as bounds of other type parameters declared in the same
+section.
+<p>Example (of use of a type parameter in the type parameter section itself):
+<blockquote><tt><nobr>public final class Wrapper<b>&lt;<font color="#000099">T</font>
+extends Comparable<font color="#000000">&lt;</font><font color="#000099">T</font><font color="#000000">>></font></b>
+implements Comparable&lt;Wrapper&lt;T>> {</nobr></tt>
+<br><tt><nobr>&nbsp; private final T theObject;</nobr></tt>
+<br><tt><nobr>&nbsp; public Wrapper(T t) { theObject = t; }</nobr></tt>
+<br><tt><nobr>&nbsp; public T getWrapper() { return theObject; }</nobr></tt>
+<br><tt><nobr>&nbsp; public int compareTo(Wrapper&lt;T> other) { return
+theObject.compareTo(other.theObject); }</nobr></tt>
+<br><tt><nobr>}</nobr></tt></blockquote>
+In the example above, the type parameter <tt>T</tt> is used as type argument
+of its own bound <tt>Comparable&lt;T></tt>.
+<p>Example (of use of a type parameter in the type parameter section itself):
+<blockquote><b><tt>&lt;<font color="#000099">S</font>,T extends <font color="#000099">S</font>></tt></b><tt>
+T create(S arg) { ... }</tt></blockquote>
+In the example above, the first type parameter <tt>S</tt> is used as bound
+of the second type parameter <tt>T</tt>.
+<br>&nbsp;
+<p>Forward references to type parameters are not permitted.&nbsp; The type
+parameter cannot be used in the entire type parameter section, but only
+after its point of declaration.
+<p>Example (of an illegal forward reference to a type parameter):
+<blockquote><b><tt>&lt;<font color="#006600">S</font> extends <font color="#000099">T</font>,<font color="#000099">T</font>
+extends Comparable&lt;<font color="#006600">S</font>>></tt></b><tt> T create(S
+arg) { ... }&nbsp; <b><font color="#660000">// error</font></b></tt></blockquote>
+In the example above, the type parameter <tt>T</tt> is used in the type
+parameter section before it has been defined in the same type parameter
+section.&nbsp; This kind of forward reference is illegal.
+<br>&nbsp;
+<p>Forward references to types, not type parameters, are permitted, though.
+<p>Example (of an forward reference to a type):
+<blockquote><tt><font color="#000000">interface </font><b><font color="#006600">Edge</font><font color="#000000">&lt;N
+extends </font><font color="#000099">Node</font><font color="#000000">&lt;?
+extends Edge&lt;N>>></font></b><font color="#000000"> {</font></tt>
+<br><tt><font color="#000000">&nbsp; N getBeginNode();</font></tt>
+<br><tt><font color="#000000">&nbsp; void setBeginNode(N n);</font></tt>
+<br><tt><font color="#000000">&nbsp; N getEndNode();</font></tt>
+<br><tt><font color="#000000">&nbsp; void setEndNode(N n);</font></tt>
+<br><tt><font color="#000000">}</font></tt>
+<br><tt><font color="#000000">interface </font><b><font color="#000099">Node</font><font color="#000000">&lt;E
+extends </font><font color="#006600">Edge</font><font color="#000000">&lt;?
+extends Node&lt;E>>></font></b><font color="#000000"> {</font></tt>
+<br><tt><font color="#000000">&nbsp; E getOutEdge();</font></tt>
+<br><tt><font color="#000000">&nbsp; void setOutEdge(E e);</font></tt>
+<br><tt><font color="#000000">&nbsp; E getInEdge();</font></tt>
+<br><tt><font color="#000000">&nbsp; void setInEdge(E e);</font></tt>
+<br><tt><font color="#000000">}</font></tt></blockquote>
+In the example above, the type <tt>Node</tt> is used (in the type parameter
+section of type <tt>Edge</tt>) before it has been defined (probably in
+a different source file).&nbsp; This kind of forward reference this permitted,
+which is not surprising. It is the usual way of defining and using types
+in Java.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ302">#FAQ302</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#Where is a type parameter visible (or invisible)?">Where
+is a type parameter visible (or invisible)?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I use the type parameter of an outer type as part of the bounds of the type parameter of an inner type or a method?">Can
+I use the type parameter of an outer type as part of the bounds of the
+type parameter of an inner type or a method?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ303"></a>
+<p><a NAME="Can I use the type parameter of an outer type as part of the bounds of the type parameter of an inner type or a method?"></a><b><font face="Arial,Helvetica"><font size=+0>Can
+I use the type parameter of an outer type as part of the bounds of the
+type parameter of an inner type or a method?</font></font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Yes, the type parameter of an enclosing
+generic type or method can be used in the type parameter section of an
+inner generic type or method.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">The type parameters of a generic type or method can appear
+as parts of the bounds of the type parameters of any generic type or methods
+in that scope.&nbsp;
+<p>Example (of use of type parameter of enclosing class in the type parameter
+section of a method):
+<blockquote><tt><nobr>public final class Wrapper<b>&lt;T<font color="#000000">></font></b>
+{</nobr></tt>
+<br><tt><nobr>&nbsp; private final T theObject;</nobr></tt>
+<br><tt><nobr>&nbsp; public Wrapper(T t) { theObject = t; }</nobr></tt>
+<br><tt><nobr>&nbsp; public <b><font color="#000099">&lt;U extends </font><font color="#000000">T</font><font color="#000099">></font></b>
+Wrapper(Wrapper&lt;U> w) { theObject = w.theObject;}</nobr></tt>
+<br><tt><nobr>&nbsp; public T getWrapper() { return theObject; }</nobr></tt>
+<br><tt><nobr>}</nobr></tt></blockquote>
+In the example above, the type parameter <tt>T</tt> of the class <tt>Wrapper&lt;T></tt>
+is used as bound of the type paramter <tt>U </tt>of the class's generic
+constructor.
+<p>In principle, you can use the type parameters of a generic class anywhere
+in the class scope, including the type parameter sections of any generic
+methods or nested and inner types. For instance, the type parameters can
+appear in the type parameter declaration of&nbsp; an inner class.
+<p>Example (of use of type parameter of enclosing class in the type parameter
+section of an inner class):
+<blockquote><tt>public final class Wrapper<b>&lt;T></b> {</tt>
+<br><tt>&nbsp; private final T theObject;</tt>
+<br><tt>&nbsp; public Wrapper(T t) { theObject = t; }</tt>
+<br><tt>&nbsp; public T getWrapper() { return theObject; }</tt>
+<p><tt>&nbsp; private final class WrapperComparator<b><font color="#000099">&lt;W
+extends Wrapper&lt;? extends Comparable&lt;</font><font color="#000000">T</font><font color="#000099">>></font></b>>&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; implements Comparator&lt;W> {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; public int compare(W lhs, W rhs)
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return lhs.theObject.compareTo((T)(rhs.theObject));</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public <b><font color="#000099">&lt;V extends Wrapper&lt;?
+extends Comparable&lt;</font><font color="#000000">T</font><font color="#000099">>></font></b>>
+Comparator&lt;V> comparator() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return this.new WrapperComparator&lt;V>();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+In this example, the type parameter <tt>T</tt> of the class <tt>Wrapper&lt;T></tt>
+is used as part of the bound of the type parameter <tt>W </tt>of inner
+class <tt>WrapperComparator</tt>. In addition, it is also used as part
+of the bound of the type parameter <tt>V</tt> of the <tt>comparator</tt>
+method.&nbsp;
+<p>Similar rules apply to generic interfaces.&nbsp; Even the type parameters
+of a generic method can be used in the declaration of the type parameters
+of a local generic type.
+<p>Example (of use of type parameter of a method in the type parameter
+section of a local class):
+<blockquote><tt>class Test {</tt>
+<br><tt>&nbsp; private static <b>&lt;T></b> void method() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; class Local<b><font color="#000099">&lt;A extends
+</font><font color="#000000">T</font><font color="#000099">></font></b>
+{ ... }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+However, generic local classes are rather rare in practice.
+<p>The type parameters of a generic type or method can appear anywhere
+in the declaration of the type parameters of any generic type or methods
+in that scope.&nbsp; A type parameter <tt>T </tt>can appear&nbsp;
+<ul>
+<li>
+as the bound, as in <tt>&lt;U extends T></tt>, or&nbsp;</li>
+
+<li>
+as part of the bounds, as in <tt>&lt;U extends Comparable&lt;T>></tt>,
+or&nbsp;</li>
+
+<li>
+as the bound of a wildcard, as in <tt>&lt;U extends &lt;Comparable&lt;?
+super T>></tt>, or&nbsp;</li>
+
+<li>
+as part of the bound of a wildcard, as in<font color="#000000"> <tt>&lt;U
+extends Wrapper&lt;? extends Comparable&lt;T>>></tt></font>.</li>
+</ul>
+There is only one restriction: if a type parameter is used as the bound
+of another type parameter then there must not follow any further bounds.
+<p>Example (of illegal use of type parameter as a bound)::
+<blockquote><tt>class Wrapper&lt;T> implements Cloneable {</tt>
+<br><tt>&nbsp; private final T theObject;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; public &lt;U extends <font color="#000000"><b>T &amp; Cloneable</b>>
+</font>Wrapper&lt;U>
+clone() { ... }&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#660000">// error</font></b></tt>
+<br><tt>}</tt></blockquote>
+The type parameter <tt>T</tt> is followed by another bound, which is illegal.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ303">#FAQ303</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#Where is a type parameter visible (or invisible)?">Where
+is a type parameter visible (or invisible)?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I use a type parameter as part of its own bounds or in the declaration of other type parameters?">Can
+I use a type parameter as part of its own bounds?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450></h3>
+
+<h3>
+<a NAME="Static Context"></a>Static Context</h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450><a NAME="FAQ401"></a>
+<h2>
+<a NAME="Is there one instances of a static field per instantiation of a parameterized type?"></a><font face="Arial,Helvetica"><font size=+0>Is
+there one instances of a static field per instantiation of a generic type?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No, there is only one instance of a static
+field for all instantiations of a generic type.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">If a generic type has a static field, how many instances
+of this static field exist?&nbsp;
+<p>Example (of a generic class with a static field):
+<blockquote><tt>class SomeClass&lt;T> {</tt>
+<br><tt>&nbsp; public <b>static</b> int count;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt></blockquote>
+The generic type can be instantiated for an arbitrary number of type arguments.
+Is there a different instance of the static field for each instantiation
+of the generic type?&nbsp;
+<p>Example (of several instantiations and usage of the static field(s)):
+<blockquote><tt>SomeClass&lt;String> ref1 = new SomeClass&lt;String>();</tt>
+<br><tt>SomeClass&lt;Long>&nbsp;&nbsp; ref2 = new SomeClass&lt;Long>();</tt>
+<p><tt>ref1.count++;&nbsp;</tt>
+<br><tt>ref2.count++;&nbsp;</tt></blockquote>
+The question is: are we accessing two different static fields in the code
+snippet above? The answer is: no, there is only one instance of a static
+field per parameterized type, not several ones per instantiation of the
+generic type.&nbsp;
+<p>The reason is that the compiler translates the definition of a generic
+type into one unique byte code representation of that type.&nbsp; The different
+instantiations of the generic type are later mapped to this unique representation
+by means of
+<i>type erasure</i>. The consequence is that there is only
+one static <tt>count</tt> field in our example, despite of the fact that
+we can work with as many instantiations of the generic class as we like.
+<p>Example (showing the syntax for access to a static field of a generic
+type):
+<blockquote><tt>SomeClass&lt;String> ref1 = new SomeClass&lt;String>();</tt>
+<br><tt>SomeClass&lt;Long>&nbsp;&nbsp; ref2 = new SomeClass&lt;Long>();</tt>
+<p><tt><font color="#000000">ref1.count++;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// discouraged, but legal</font></tt>
+<br><tt><font color="#000000">ref2.coun</font>t++;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// discouraged, but legal</tt>
+<br><tt><b><font color="#000099">SomeClass</font></b>.count++; <font color="#000000">//</font><b><font color="#000099">
+fine, recommended</font></b></tt>
+<br><tt><font color="#000000">SomeClass&lt;String>.count++;&nbsp; // error</font></tt>
+<br><tt><font color="#000000">SomeClass&lt;Long>.count++;&nbsp;&nbsp;&nbsp;
+// error</font></tt></blockquote>
+Although we can refer to the static field through reference variables of
+different type, namely of type <tt>SomeClass&lt;String> </tt>and <tt>SomeClass&lt;Long>
+</tt>in
+the example, we access the same unique static <tt>count</tt> field.&nbsp;
+The uniqueness of the static field is more clearly expressed when we refer
+to the static field using the enclosing scope instead of object references.&nbsp;
+Saying <tt>SomeClass.count </tt>makes clear that there is only one static
+<tt>count</tt>
+field that is independent of the type parameters of the enclosing class
+scope.&nbsp; Since the static field is independent of the enclosing class's
+type parmeters it is illegal to use any instantiation of the generic enclosing
+class as scope qualifier.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ401">#FAQ401</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is type erasure?">What
+is type erasure?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do I refer to static members of a parameterized type?">How
+do I refer to static members of a parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Where is a type parameter visible (or invisible)?">Where
+is a type parameter visible (or invisible)?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Why can't I use a type parameter in any static context of the parameterized class?">Why
+can't I use a type parameter in any static context of the generic class?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ402"></a>
+<p><a NAME="Why can't I use a type parameter in any static context of the parameterized class?"></a><b><font face="Arial,Helvetica"><font size=+0>Why
+can't I use a type parameter in any static context of a generic class?</font></font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Because the static context is independent
+of the type parameters and exists only once per raw type, that is, only
+once for all instantiations of a generic type.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Type parameters must not appear in any static context of
+a generic type, which means that type parameters cannot be used in the
+declaration of static fields or methods or in static nested types or static
+initializers.&nbsp;
+<p>Example (of illegal use of a type parameter in static context):
+<blockquote><tt>public final class X<b><font color="#000099">&lt;T></font></b>
+{</tt>
+<br><tt>&nbsp; private <b>static</b> <b><font color="#000099">T</font></b>
+field;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<b><font color="#660000">// error</font></b></tt>
+<br><tt>&nbsp; public&nbsp; <b>static</b> <b><font color="#000099">T</font></b>
+getField() { return field; }&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp; public&nbsp; <b>static</b> void setField(<b><font color="#000099">T</font></b>
+t) { field = t; }&nbsp;&nbsp;&nbsp; <b><font color="#660000">// error</font></b></tt>
+<br><tt>}</tt></blockquote>
+The attempt of declaring a static field of the unknown type <tt>T</tt>
+is non-sensical and rightly rejected by the compiler. There is only one
+instance of the static field for <i>all</i> instantiations of the generic
+class. Of which type could that static field possibly be?&nbsp; The declaration
+of a static field, whose type is the type parameter, makes it look like
+there were several instances of different types, namely one per instantiation,
+which is misleading and confusing.&nbsp; For this reason, the use of type
+parameters for declaration of static fields is illegal.&nbsp;
+<p>As static methods often operate on static fields it makes sense to extend
+the rule to static methods: the type parameter must not appear in a static
+method.&nbsp;
+<p>Interestingly, the same rule applies to static nested types defined
+in a generic class. There is no compelling technical reason for this restriction.&nbsp;
+It's just that static nested types are considered independent of any instantiations
+of the generic class, like the static fields and methods.&nbsp; For this
+reason, use of the type parameter in a static nested type is illegal.&nbsp;&nbsp;
+(Note, static nested types include nested static classes, nested interfaces
+and nested enum types.)
+<p>Example (of illegal use of a type parameter in static context):
+<blockquote><tt>class Wrapper<b><font color="#000099">&lt;T></font></b>
+{</tt>
+<br><tt>&nbsp; private final <b><font color="#000099">T</font></b> theObject;</tt></blockquote>
+
+<blockquote><tt>&nbsp; public Wrapper(<b><font color="#000099">T</font></b>
+t) { theObject = t; }</tt>
+<br><tt>&nbsp; public <b><font color="#000099">T</font></b> getWrapper()
+{ return theObject; }</tt>
+<p><tt>&nbsp; public void sanityCheck() throws InsaneWrapperException {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (...) throw new InsaneWrapperException(theObject);</tt>
+<br><tt>&nbsp; }</tt>
+<p><tt>&nbsp; public <b>static</b> class InsaneWrapperException extends
+Exception {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private <b><font color="#000099">T</font></b>
+info;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+<b><font color="#660000">// error</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public InsaneWrapperException(<b><font color="#000099">T</font></b>
+arg) {&nbsp;&nbsp;&nbsp; <b><font color="#660000">// error</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; info = arg;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+In the example above the type parameter is used in the context of a nested
+exception type. The compiler rejects the use of the type parameter because
+the exception type is a nested <i>static</i> class.&nbsp;
+<p>In case of static nested classes and interfaces this is not a major
+calamity.&nbsp; As a workaround we can generify the static class or interface
+itself.
+<p>Example (workaround):
+<blockquote><tt>class Wrapper<b><font color="#000099">&lt;T></font></b>
+{</tt>
+<br><tt>&nbsp; private final <b><font color="#000099">T</font></b> theObject;</tt></blockquote>
+
+<blockquote><tt>&nbsp; public Wrapper(<b><font color="#000099">T</font></b>
+t) { theObject = t; }</tt>
+<br><tt>&nbsp; public <b><font color="#000099">T</font></b> getWrapper()
+{ return theObject; }</tt>
+<p><tt>&nbsp; public void sanityCheck() throws InsaneWrapperException<b><font color="#000099">&lt;T></font></b>
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (...) throw new InsaneWrapperException<b><font color="#000099">&lt;T></font></b>(theObject);</tt>
+<br><tt>&nbsp; }</tt>
+<p><tt>&nbsp; public <b>static</b> class InsaneWrapperException<b><font color="#003300">&lt;A></font></b>
+extends Exception {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; private <b><font color="#003300">A</font></b>
+info;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; public InsaneWrapperException(<b><font color="#003300">A</font></b>
+arg) {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; info = arg;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ402">#FAQ402</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#Where is a type parameter visible (or invisible)?">Where
+is a type parameter visible (or invisible)?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Is there one instances of a static field per instantiation of a parameterized type?">Is
+there one instances of a static field per instantiation of a generic type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>
+<hr WIDTH="100%">
+<br><font face="Arial,Helvetica"><font size=-2><a href="../JavaGenericsFAQ.html#TOC">CONTENT<a href="../JavaGenericsFAQ.html#TOC"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a>
+<font color="#666666"><a href="ParameterizedMethods.html">PREVIOUS<a href="ParameterizedMethods.html"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a></font><a href="TypeArguments.html">NEXT<a href="TypeArguments.html"><img SRC="../../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a>
+<a href="Index.html#IDX">INDEX</a></font></font>
+</body>
+</html>

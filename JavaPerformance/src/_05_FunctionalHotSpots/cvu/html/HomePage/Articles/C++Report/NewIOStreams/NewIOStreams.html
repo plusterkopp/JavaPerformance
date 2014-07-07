@@ -1,0 +1,714 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Article C++ Report June 1997">
+   <title>New Features in Standard IOStreams</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CppReportNewIOStreams"></a>
+<br><font color="#295AB5"><font size=+3>New Features in Standard IOStreams</font></font>
+<p><font color="#295AB5"><font size=+2>C++ Report, June 1997</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p>The most popular components of the Standard C++ Library are, beyond
+all doubt, the data structures and algorithms, which are based on the STL.
+Meanwhile, the STL and its descendants have been available for about 2
+years. Numerous programmers all over the world use them; hence for this
+part of the library we can generally base discussions in this column on
+already existing knowledge in the C++ community. That’s what we did in
+our last article on generic programming and object-oriented design.
+<p>This time we want to draw your attention to one of the components that
+usually is not in the limelight: IOStreams. We will briefly mention locales
+as well, because IOStreams use locales for internationalization. Locale
+is a component for internationalization of C++ programs. Preparing software
+for worldwide use is one the most challenging task in application development.
+The standard C++ locales provide an extensible framework for internationalization
+services in general. We will hear more about this in the next column.&nbsp;
+In this contribution we will describe the changes and extensions that distinguish
+the standard IOStreams from the old IOStreams.
+<br>&nbsp;
+<br>&nbsp;
+<p>Standard IOStreams is based on the classic IOStreams component that
+has been around since the first days of C++. Think of its use in
+<dir><font face="Courier,Courier New"><font size=-2>cout &lt;&lt; "Hello
+world" &lt;&lt; endl;</font></font></dir>
+
+<p><br>IOStreams is sometimes said to have lost most of its importance
+in the presence of graphical user interfaces. This is not quite true. IOStreams’
+capabilities go far beyond implementing command line oriented user interfaces
+via <font face="Courier,Courier New"><font size=-2>cin</font></font> and
+<font face="Courier,Courier New"><font size=-2>cout</font></font>.
+We still do work with files. Plus, the file abstraction can be vastly extended
+to communication channels for instance, like sockets, pipes, etc. In this
+article we will discuss differences between the traditional and the new
+standard IOStreams. This will be particularly interesting to those who
+have existing IOStreams applications and want to migrate to the standard
+IOStreams.
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<p><b>Templatizing the IOStreams Classes.</b>
+<p>When you look at the new IOStreams header files you will immediately
+notice that most classes that you might know from the traditional IOStreams
+turned into class <i>templates</i> in the standard IOStreams. The template
+parameters are the character type, and the character traits type. Here
+is an example:
+<p><font face="Courier,Courier New"><font size=-2>class ostream</font></font>
+turned into
+<p><font face="Courier,Courier New"><font size=-2>template &lt;class charT,
+class Traits = char_traits&lt;charT> > class basic_ostream.</font></font>
+<p>The <i>character type</i> usually is one of the built-in character types
+<font face="Courier,Courier New"><font size=-2>char</font></font>
+or <font face="Courier,Courier New"><font size=-2>wchar_t</font></font>.
+However, it can also be of any other conceivable, user-defined type. Naturally,
+a user-defined character type should exhibit the expected behavior of a
+character type, such as comparisons for instance. The exact requirements
+to a user-defined character type are not specified though, and depend on
+the respective implementation of the standard IOStreams.
+<p>The <i>character traits type</i> describes the properties of the character
+type, such as:
+<ul>
+<li>
+<b>The end-of-file value. </b>For type<b> </b><font face="Courier,Courier New"><font size=-2>char,</font></font>the
+end-of file value is represented by an integral constant called<font face="Courier,Courier New"><font size=-2>EOF</font></font><font face="Palatino,Book Antiqua"><font size=-1>.
+</font></font>For
+type<font face="Courier,Courier New"><font size=-2>wchar_t</font></font>,
+there is a constant defined that is called<font face="Courier,Courier New"><font size=-2>WEOF</font></font><font face="Palatino,Book Antiqua"><font size=-1>.
+</font></font>For
+an arbitrary user-defined character type, the associated character traits
+define what the end-of-file value for this particular character type is.
+This value can be obtained via the traits’ member function<font face="Courier,Courier New"><font size=-2>eof().</font></font></li>
+
+<li>
+<b>The equality of two characters. </b>For an "exotic" user-defined character
+type, the equality of two characters might mean something different from
+just bit-wise equality. You can define it by providing the traits’ member
+function<b> </b><font face="Courier,Courier New"><font size=-2>compare()</font></font><font face="Palatino,Book Antiqua"><font size=-1>.</font></font></li>
+</ul>
+The list above is just an excerpt of what character traits provide.
+<p>There is a standard character traits class template defined in the C++
+Standard. Its name is <font face="Courier,Courier New"><font size=-2>char_traits&lt;class
+charT>.</font></font> Specializations of this class template are defined
+for the built-in character types <font face="Courier,Courier New"><font size=-2>char</font></font>
+and <font face="Courier,Courier New"><font size=-2>wchar_t. </font></font>Every
+standard conforming library implementation has to provide them. Note, however,
+that <font face="Courier,Courier New"><font size=-2>char_traits&lt;class
+charT></font></font> is not meant to be instantiated for an arbitrary character
+type. It just defines the interface that a specialization of this class
+template is expected to provide. For all iostreams class templates the
+traits template parameter has a sensible default value. Class <font face="Courier,Courier New"><font size=-2>basic_ostream</font></font>
+for instance is defined as:
+<dir><font face="Courier,Courier New"><font size=-2>template &lt;class
+charT, class Traits = char_traits&lt;charT> ></font></font>
+<br><font face="Courier,Courier New"><font size=-2>class basic_ostream{
+... };</font></font></dir>
+The standards committee decided to turn the traditional IOStreams classes
+into class templates because templates allows input and output of character
+types other than <font face="Courier,Courier New"><font size=-2>char</font></font>
+or <font face="Courier,Courier New"><font size=-2>wchar_t</font></font>.
+<p>For ease of use, and for backward compatibility, the standard defines
+type definitions for the stream class templates instantiated with the character
+types <font face="Courier,Courier New"><font size=-2>char</font></font>
+and <font face="Courier,Courier New"><font size=-2>wchar_t</font></font>.
+For type <font face="Courier,Courier New"><font size=-2>char</font></font>
+these are:
+<dir><font face="Courier,Courier New"><font size=-2>typedef basic_istream&lt;char>
+istream;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>typedef basic_ostream&lt;char>
+ostream;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>typedef basic_iostream&lt;char>
+iostream;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>typedef basic_ifstream&lt;char>
+ifstream;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>typedef basic_ofstream&lt;char>
+ofstream;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>typedef basic_fstream&lt;char>
+fstream;</font></font></dir>
+Note that these typedefs define names identical to the class names in the
+traditional IOStreams. In other words, there still is an <font face="Courier,Courier New"><font size=-2>ostream</font></font>;
+the only difference is that it now stands for a <font face="Courier,Courier New"><font size=-2>basic_ostream&lt;char,
+char_traits&lt;char> >.</font></font>
+<br>&nbsp;
+<br>&nbsp;
+<p><b>Splitting Class </b><font face="Courier,Courier New"><font size=-2>ios.</font></font>
+<p>In the process of transforming the IOStreams classes into class templates,
+the base class of all traditional IOStreams classes, class <font face="Courier,Courier New"><font size=-2>ios,
+</font></font>was
+split into:
+<ul TYPE="SQUARE">
+<li>
+a common, character type independent part: <font face="Courier,Courier New"><font size=-2>ios_base</font></font>,
+and</li>
+
+<li>
+a character type dependent class template: <font face="Courier,Courier New"><font size=-2>basic_ios&lt;class
+charT, class Traits>,</font></font> having the character type and the character
+traits type as template parameters.</li>
+</ul>
+<font face="Courier,Courier New"><font size=-2>ios_base</font></font> is
+the base class of <font face="Courier,Courier New"><font size=-2>basic_ios&lt;class
+charT, class Traits>,</font></font> which again is the base class template
+of all remaining stream classes. <font face="Courier,Courier New"><font size=-2>ios_base</font></font>
+contains all the information in a stream that is independent of the stream’s
+character type, such as the definition of all flags that are used for formatting
+control, error indication, open modes, stream positioning, plus the type
+definitions for these flags. Additionally <font face="Courier,Courier New"><font size=-2>ios_base</font></font>
+manages the formatting information as well as the user allocable storage
+(<font face="Courier,Courier New"><font size=-2>iword / pword</font></font>).
+It also handles registration and invocation of callbacks, and imbuing of
+locales.
+<p>One might expect that the error handling would be contained in <font face="Courier,Courier New"><font size=-2>ios_base</font></font>
+because it is character independent. However, error indication is done
+in <font face="Courier,Courier New"><font size=-2>basic_ios&lt;class charT,
+class Traits></font></font>. This is because <font face="Courier,Courier New"><font size=-2>ios_base
+</font></font>is
+also used in the locale section of the standard library, where is serves
+as an abstraction for passing formatting information to the locale. Would
+<font face="Courier,Courier New"><font size=-2>ios_base</font></font>
+contain the error handling, which in the standard iostreams includes the
+indication of errors by throwing exceptions (see subsequent sections for
+details), then these exceptions could also be raised by the standard locale.
+This effect was neither intended nor acceptable. Hence, <font face="Courier,Courier New"><font size=-2>ios_base</font></font>
+only contains the definition of all flags for error indication; the raising
+of exceptions and the indication of error states is located in <font face="Courier,Courier New"><font size=-2>basic_ios&lt;class
+charT, class Traits>.</font></font>
+<p>The advantage of splitting class <font face="Courier,Courier New"><font size=-2>ios</font></font>
+into class <font face="Courier,Courier New"><font size=-2>ios_base</font></font>
+and class template<font face="Courier,Courier New"><font size=-2> basic_ios&lt;class
+charT, class Traits></font></font> is that all behavior that is independent
+of the template parameters is factored out into a non-template. This minimizes
+the binary code size of the library as well as a user programs. For instance,
+if you write a function that resets the formatting of a stream to the default
+settings, this functions does not have to be a function template; it can
+be an ordinary function receiving a reference to an <font face="Courier,Courier New"><font size=-2>ios_base</font></font>
+object as parameter:
+<dir><font face="Courier,Courier New"><font size=-2>void set_default_formatring(ios_base&amp;
+str)</font></font>
+<br><font face="Courier,Courier New"><font size=-2>{</font></font>
+<br><font face="Courier,Courier New"><font size=-2>str.width(0);</font></font>
+<br><font face="Courier,Courier New"><font size=-2>str.precision(6);</font></font>
+<br><font face="Courier,Courier New"><font size=-2>str.setf(ios_base::skipws);</font></font>
+<br><font face="Courier,Courier New"><font size=-2>str.setf(ios_base::left,
+ios_base::adjustfield);</font></font>
+<br><font face="Courier,Courier New"><font size=-2>str.setf(ios_base::dec,
+ios_base::basefield);</font></font>
+<br><font face="Courier,Courier New"><font size=-2>str.setf(ios_base::fixed,
+ios_base::floatfiled);</font></font>
+<br><font face="Courier,Courier New"><font size=-2>}</font></font>
+<br>&nbsp;</dir>
+<b>Indicating Errors.</b>
+<p>In IOStreams each stream maintains a stream state that indicates success
+or failure of a operation. The stream state can either be <i>good</i>,
+or any of the following three states when an exceptional condition occurred
+in a preceding operation:
+<ul TYPE="SQUARE">
+<li>
+<i>end-of-file</i>; an input operation reached the end of an input sequence.</li>
+
+<li>
+<i>fail; </i>an input operation failed to read the expected characters,
+or an output operation failed to generate the desired characters.</li>
+
+<li>
+<i>bad; </i>the stream or the underlying input or output sequence lost
+its integrity .</li>
+</ul>
+In the standard IOStreams the stream’s state can be checked in the same
+way as it was retrieved in the traditional IOStreams: Each stream offers
+member functions, e.g. <font face="Courier,Courier New"><font size=-2>good(),
+fail(), bad(),</font></font> to indicate its current state. The table below
+gives a detailed description of all functions supported.
+<center><table BORDER CELLPADDING=9 WIDTH="485" BORDERCOLOR="#000000" >
+<tr>
+<td VALIGN=TOP WIDTH="49%" BGCOLOR="#FFFFFF"><b><i><font face="AvantGarde,Century Gothic"><font size=-1>ios_base</font></font></i>member
+function</b></td>
+
+<td VALIGN=TOP WIDTH="51%" BGCOLOR="#FFFFFF"><b>Effect</b></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="49%"><font face="Courier,Courier New"><font size=-2>bool
+good()</font></font></td>
+
+<td VALIGN=TOP WIDTH="51%">True if no error flag is set.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="49%"><font face="Courier,Courier New"><font size=-2>bool
+eof()</font></font></td>
+
+<td VALIGN=TOP WIDTH="51%">True if <font face="Courier,Courier New"><font size=-2>eofbit</font></font>
+is set.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="49%"><font face="Courier,Courier New"><font size=-2>bool
+fail()</font></font></td>
+
+<td VALIGN=TOP WIDTH="51%">True if <font face="Courier,Courier New"><font size=-2>failbit</font></font>
+or <font face="Courier,Courier New"><font size=-2>badbit</font></font>
+is set.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="49%"><font face="Courier,Courier New"><font size=-2>bool
+bad()</font></font></td>
+
+<td VALIGN=TOP WIDTH="51%">True if <font face="Courier,Courier New"><font size=-2>badbit</font></font>
+is set.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="49%"><font face="Courier,Courier New"><font size=-2>bool
+operator!()</font></font></td>
+
+<td VALIGN=TOP WIDTH="51%">As <font face="Courier,Courier New"><font size=-2>fail().</font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="49%"><font face="Courier,Courier New"><font size=-2>operator
+void*()</font></font></td>
+
+<td VALIGN=TOP WIDTH="51%">Null pointer if <font face="Courier,Courier New"><font size=-2>fail()</font></font>
+and non-null value otherwise.</td>
+</tr>
+</table></center>
+
+<center>
+<p><i><font size=+0>Table 1: Stream member functions for error checking</font></i></center>
+
+<p><br>
+<br>
+<br>
+<br>
+<br>
+<p>The following code example demonstrates how to check whether some text
+is properly written to standard output:
+<dir><font face="Courier,Courier New"><font size=-2>if (!(cout &lt;&lt;
+"Hello World !"))</font></font>
+<br><font face="Courier,Courier New"><font size=-2>handle_error();</font></font></dir>
+One of the advantages of IOStreams is its intuitive use of the <font face="Courier,Courier New"><font size=-2>operator&lt;&lt;().</font></font>
+This is particularly convenient for grouping output operations; for instance,
+you can put into one line of source code all operations that are needed
+to produce one line of output. Here is an example:
+<dir><font face="Courier,Courier New"><font size=-2>int value;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>// some calculation</font></font>
+<br><font face="Courier,Courier New"><font size=-2>...</font></font>
+<br><font face="Courier,Courier New"><font size=-2>cout &lt;&lt; "The calculated
+value is: " &lt;&lt; value &lt;&lt; ‘\n’;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>if (!cout)</font></font>
+<br><font face="Courier,Courier New"><font size=-2>handle_error();</font></font></dir>
+As convenient as it may be, it has one drawback: In the example above is
+not possible to check the stream state after each output operation. C++
+exceptions can help in this situation because they allow a more active
+error indication. For this reason the standard IOStreams optionally allows
+error indication via exceptions.
+<p>Before we see how the code example changes when we use exceptions, lets
+have a more detailed look at exceptions in the standard IOStreams. The
+classes <font face="Courier,Courier New"><font size=-2>ios_base</font></font>
+and <font face="Courier,Courier New"><font size=-2>basic_ios&lt;class charT,
+class Traits></font></font> provide the means for enabling iostreams exception:
+<font face="Courier,Courier New"><font size=-2>ios_base</font></font>
+contains type definitions for a type called <font face="Courier,Courier New"><font size=-2>iostate</font></font>
+along with the following flags of that type:
+<dir><font face="Courier,Courier New"><font size=-2>static const iostate
+badbit;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>static const iostate
+eofbit;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>static const iostate
+failbit;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>static const iostate
+goodbit;</font></font></dir>
+<font face="Courier,Courier New"><font size=-2>basic_ios&lt;class charT,
+class Traits></font></font> contains the following two member functions:
+<dir><font face="Courier,Courier New"><font size=-2>void exceptions(iostate
+exept_mask);</font></font>
+<br><font face="Courier,Courier New"><font size=-2>iostate exceptions();</font></font></dir>
+The first function, <font face="Courier,Courier New"><font size=-2>exceptions(iostate),</font></font>
+sets a mask that determines for which exceptional conditions an exception
+shall be thrown by the stream. The mask can be set to either <font face="Courier,Courier New"><font size=-2>eofbit</font></font>,
+<font face="Courier,Courier New"><font size=-2>badbit</font></font>,
+<font face="Courier,Courier New"><font size=-2>failbit</font></font>
+,or by applying <font face="Courier,Courier New"><font size=-2>operator|()</font></font>
+to a combination of these flags. <font face="Courier,Courier New"><font size=-2>goodbit</font></font>
+can be used to deactivate the throwing of exceptions. The second function,
+<font face="Courier,Courier New"><font size=-2>exceptions(void),</font></font>
+returns the current mask settings.
+<p>The type of the exception that is thrown by the stream is <font face="Courier,Courier New"><font size=-2>ios_base::failure</font></font>.
+To determine which exceptional condition triggered the throw, you can either
+use he exception’s member functions <font face="Courier,Courier New"><font size=-2>what(),</font></font>
+which returns a descriptive text of type <font face="Courier,Courier New"><font size=-2>const
+char*</font></font>,or you check the stream with one of the stream’s member
+functions shown in table 1.
+<p>Let’s see how exceptions change our example code:
+<dir><font face="Courier,Courier New"><font size=-2>int value;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>// some calculation</font></font>
+<br><font face="Courier,Courier New"><font size=-2>...</font></font>
+<br><font face="Courier,Courier New"><font size=-2>ios_base::iostate old_flags
+= cout.exceptions();</font></font>
+<br><font face="Courier,Courier New"><font size=-2>try</font></font>
+<br><font face="Courier,Courier New"><font size=-2>{</font></font>
+<br><font face="Courier,Courier New"><font size=-2>cout.exceptions(ios_base::badbit
+| ios_base::failbit);</font></font>
+<br><font face="Courier,Courier New"><font size=-2>cout &lt;&lt; "The calculated
+value is: " &lt;&lt; value &lt;&lt; ‘\n’;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>}</font></font>
+<br><font face="Courier,Courier New"><font size=-2>catch(ios_base::failure&amp;
+exc)</font></font>
+<br><font face="Courier,Courier New"><font size=-2>{</font></font>
+<br><font face="Courier,Courier New"><font size=-2>cerr &lt;&lt; exc.what()
+&lt;&lt; endl;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>}</font></font>
+<br><font face="Courier,Courier New"><font size=-2>cout.exceptions(old_flags);</font></font></dir>
+In this example the old mask is saved and restored later on. Note that
+the new flags are set in a <font face="Courier,Courier New"><font size=-2>try</font></font>
+block. This is because setting the exception mask can raise an exception.
+The stream checks its state when a new mask is set and immediately propagates,
+via an exception, any exceptional state that matches the newly set mask.
+<p>Note, that it is not guaranteed that all exceptions will be suppressed
+after a call to <font size=-2><font face="Courier,Courier New">exceptions(ios_base::goodbit</font>),</font>
+although this call clears all bits in the exception mask . All that is
+assured is that errors detected by the stream and the stream buffer are
+not indicated via exceptions. Any other kind of error might as well result
+in an exception thrown. Think, for instance, of a stream that is instantiated
+with a user defined character and traits type. Imagine that an operation
+of the character or traits type throws exceptions, e.g. <font face="Courier,Courier New"><font size=-2>bad_alloc</font></font>.
+These exceptions will not be caught by the stream and might be propagated
+into your application.
+<br>&nbsp;
+<br>&nbsp;
+<p><b>Internationalizing IOStreams.</b>
+<p>As already mentioned above, the Standard Library includes a component
+for internationalization. Internationalization services are bundled into
+a so-called locale object. The standard IOStreams is internationalized
+and uses standard locales.
+<p>Each stream holds a locale object in its base object <font face="Courier,Courier New"><font size=-2>ios_base</font></font>.
+The stream stores an additional locale object in its stream buffer. When
+a locale is attached to the stream via <font face="Courier,Courier New"><font size=-2>basic_ios::imbue(locale
+loc)</font></font> the locale received is stored in <font face="Courier,Courier New"><font size=-2>ios_base</font></font>
+and, redundantly, in the stream buffer. A locale is a rather lightweight
+object. Hence, storing two locale objects in each stream does not impose
+much space overhead. The advantage is that those classes that eventually
+need a locale for processing have direct access to the locale object.
+<p>Moreover, the two locale objects are used for different purposes.
+<p><b>The locale in </b><font face="Courier,Courier New"><font size=-2>ios_base</font></font><b>.</b>
+<p>The locale that is held in <font face="Courier,Courier New"><font size=-2>ios_base</font></font>
+is used for the formatting of numeric values. The radix separator, for
+instance, is no longer hard-coded as a decimal point. Instead, a character
+that is specified by the attached locale is used. For example, in a German
+locale the radix separator will be ‘,’ and the output of <font face="Courier,Courier New"><font size=-2>0</font></font>
+as a <font face="Courier,Courier New"><font size=-2>float</font></font>
+will not be <font face="Courier,Courier New"><font size=-2>0.000000</font></font>
+but <font face="Courier,Courier New"><font size=-2>0,000000</font></font>.
+<p>In the traditional IOStreams the radix separator was hard-coded as a
+decimal point. In the standard IOStreams the radix separator depends on
+the locale imbued to the stream. This change might lead to surprising results.
+Consider a situation where a file, that was written with a traditional
+output stream, shall now be read with a standard input stream that holds
+a locale with ‘,’ as the radix separator. If the file contains rational
+numbers that were written in a decimal notation, the input stream will
+try to parse these numbers with its different radix separator. It is very
+likely that the input stream will fail to produce the same rational numbers
+that were once written to the file.
+<p>The problem can easily be solved be imbuing an appropriate locale into
+the standard input stream, i.e. a locale where the radix separator is a
+decimal point. The best thing to do is not to imbue a locale at all, in
+which case a default locale will be used. For reasons of compatibility
+the default locale in standard IOStreams is the US English ASCII locale.
+<p>The locale in <font face="Courier,Courier New"><font size=-2>ios_base</font></font>
+is not only used for formatting of numbers. It is also used to determine
+which characters of the character set are to be treated as white space
+characters. This information is needed when an input stream parses input
+data and has to skip white spaces during this process. There is a subtle
+difference between the traditional and the standard IOStreams: In the traditional
+IOStreams the recognition of white space character depends on the active
+C locale, because the functionality is based on the C standard function
+<font face="Courier,Courier New"><font size=-2>isspace(),
+</font></font>which
+is internationalized using the C locale. In the standard IOStreams the
+recognition of white space characters depends on the C++ locale imbued
+to each stream. However, it is safe to assume that for the same locale
+the behavior of the standard IOStreams is compatible to the behavior of
+the traditional IOStreams.
+<p><b>The locale in </b><font face="Courier,Courier New"><font size=-2>streambuf</font></font><b>.</b>
+<p>The locale that is held in the stream buffer is used for file i/o when
+code conversion between the internal and external character set is required.
+The traditional IOStreams did not perform any code conversions. Code conversion
+is a new feature in the standard IOStreams. Let’s see what it is and why
+it is needed.
+<p>Some cultures, such a Japan or China, have large alphabets with tens
+of thousands of characters. Characters of such a huge alphabet cannot be
+encoded in just one byte. Instead there are encodings that use two or more
+bytes for representing a character. Some of these encodings mix characters
+of different size (multibyte character encodings); in other encodings all
+characters are of same size (wide character encodings). It is common practice
+to use wide character encodings inside the program and multibyte character
+encodings outside on the external device.
+<ul TYPE="SQUARE">
+<li>
+The <i>internal</i> character set inside the program has to allow fast
+and arbitrary access to each character in a sequence. This is a functionality
+that comes with wide character encodings.</li>
+
+<li>
+The <i>external</i> character set is used for storing text data in a file
+or any other kind of external device. The main purpose is to keep the file
+size small. This is a functionality typically provided by multibyte character
+encodings.</li>
+</ul>
+With each input or output operation the program has to translate between
+the internal and the external representation of a character sequence. A
+typical example is computer software for the Japanese market. A "Japanese"
+program might want to handle multibytes text files, encoded in JIS (= Japanese
+Industry Standard) for instance. The program would internally use a wide
+character encoding, such as Unicode for instance. Hence the program would
+need to convert between the Unicode and the JIS encoding whenever it performs
+an input or output operation.
+<p>This chapter briefly sketched some aspects of internationalization that
+are related to IOStreams. As already mentioned before, a more detailed
+description of internationalization support in the Standard C++ Library
+supports will be given in our next column.
+<br>&nbsp;
+<br>&nbsp;
+<p><b>Removing </b><font face="Courier,Courier New"><font size=-2>_withassign</font></font><b>
+Classes.</b>
+<p>In the traditional IOStreams the classes <font face="Courier,Courier New"><font size=-2>istream</font></font>,
+<font face="Courier,Courier New"><font size=-2>ostream</font></font>,
+and
+<font face="Courier,Courier New"><font size=-2>iostream</font></font>
+had a <i>private</i> copy constructor and assignment operator. They were
+private in order to prevent copy and assignment for objects of these classes
+because they contained a stream buffer by reference. (To be precise, their
+common base class <font face="Courier,Courier New"><font size=-2>ios</font></font>
+held a pointer to the stream buffer.) The crucial point is that there is
+no ‘right’ semantics for copying or assigning a stream with respect to
+its stream buffer. There are different possibilities, e.g. sharing the
+stream buffer after the assignment, or flushing the stream buffer during
+the assignment and then providing both streams with entirely independent
+buffers, and so on. None of these possibilities is intuitively right, though.
+Consequently, copying and assigning was prohibited.
+<p>However, there is a need for assigning streams on the other hand. The
+most convincing example is the wish to redirect standard output (or any
+of the other standard i/o objects) by assigning a valid stream object to
+<font face="Courier,Courier New"><font size=-2>cout</font></font>.
+In order to satisfy this requirement, the classes <font face="Courier,Courier New"><font size=-2>istream_withassign</font></font>,<font face="Courier,Courier New"><font size=-2>
+ostream_withassign</font></font>, and <font face="Courier,Courier New"><font size=-2>iostream_withassign</font></font>
+were introduced. They implemented a <i>public</i> copy constructor and
+assignment operator, which let both streams share the stream buffer after
+the copying or assignment. One might expect that the references to the
+shared stream buffer would be counted. However, we don’t know of any traditional
+IOStreams implementation that counted the references to shared stream buffers.
+Instead, the shared stream buffer was deleted when the stream object that
+was constructed with the stream buffer went out of scope. In other words,
+the responsibility for the buffer stayed with the stream object that had
+initially created the stream buffer. Naturally, this imposed dependencies
+between the lifetimes of the two stream objects used in the copy constructor
+or assignment operator. In sum, the correct use of the <font face="Courier,Courier New"><font size=-2>_withassign</font></font>
+classes was rather complicated.
+<p>This is the reason why in the Standard IOStreams the classes <font face="Courier,Courier New"><font size=-2>istream_withassign</font></font>,
+<font face="Courier,Courier New"><font size=-2>ostream_withassign</font></font>,
+and <font face="Courier,Courier New"><font size=-2>iostream_withassign</font></font>
+do not exist anymore. To perform operations equivalent to the copy constructor
+and the assignment operator of the old <font face="Courier,Courier New"><font size=-2>_withassign</font></font>
+classes, the user of the standard streams has to explicitly implement this
+functionality. Standard streams have the following member functions defined
+in <font face="Courier,Courier New"><font size=-2>basic_ios&lt;class charT,
+class Traits>,</font></font> that can be used for this purpose:
+<ul TYPE="SQUARE">
+<li>
+<font face="Courier,Courier New"><font size=-2>iostate</font></font> <font face="Courier,Courier New"><font size=-2>rdstate(),</font></font>
+which allows to retrieve the stream state,</li>
+
+<li>
+<font face="Courier,Courier New"><font size=-2>void clear(iostate state
+= goodbit),</font></font> which allows to set the stream state,</li>
+
+<li>
+<font face="Courier,Courier New"><font size=-2>basic_streambuf&lt;class
+charT, class Traits>* rdbuf()</font></font> and<font face="Courier,Courier New"><font size=-2>
+basic_streambuf&lt;class charT, class Traits>* rdbuf(basic_streambuf&lt;class
+charT, class Traits>* sb),</font></font> which allows to retrieve and set
+the stream buffer, and</li>
+
+<li>
+<font face="Courier,Courier New"><font size=-2>basic_ios&lt;class charT,
+class Traits>&amp; copyfmt(basic_ios&lt;class charT, class Traits>&amp;
+rhs)</font></font>, which allows to set all other data members of <font face="Courier,Courier New"><font size=-2>rhs</font></font>.</li>
+</ul>
+The following functions template shows the use of these functions in an
+example:
+<dir><font face="Courier,Courier New"><font size=-2>template&lt;class Stream></font></font>
+<br><font face="Courier,Courier New"><font size=-2>streamcpy(Stream &amp;dest,
+const Stream&amp; src)</font></font>
+<br><font face="Courier,Courier New"><font size=-2>{</font></font>
+<br><font face="Courier,Courier New"><font size=-2>dest.copyfmt(src);</font></font>
+<br><font face="Courier,Courier New"><font size=-2>dest.clear(src.rdstate());</font></font>
+<br><font face="Courier,Courier New"><font size=-2>typedef StreamBase basic_ios&lt;typename
+Stream::char_type,typename Stream::traits_type>;</font></font>
+<br><font face="Courier,Courier New"><font size=-2>(static_cast&lt;StreamBase&amp;>
+dest).rdbuf((static_cast&lt;StreamBase&amp;> src).rdbuf());</font></font>
+<br><font face="Courier,Courier New"><font size=-2>}</font></font></dir>
+Please note that the stream classes in the standard library do not prevent
+copying and assigning streams, which they could easily prohibit by declaring
+the respective operations private. However, the use of this functionality
+is hazardous because its semantics is not defined by the standard. The
+functionality of copy constructor and assignment operator of streams is
+completely up to the library vendor. Even if the respective standard library’s
+reference manual guarantees the functionality you desire, the use of the
+copy constructor and assignment operator would still not be portable.
+<p><b>Removing File Descriptors.</b>
+<p>In the traditional IOStreams all file streams offered a member function
+<font face="Courier,Courier New"><font size=-2>fd().
+</font></font>It
+returned the file descriptor of the file that was associated with the file
+stream. This feature was helpful when some functionality of the underlying
+file system was needed, that was not available in IOStreams. For example
+the function <font face="Courier,Courier New"><font size=-2>int ftruncate(int
+fd, off_t length)</font></font> is available on some UNIX platforms and
+allows to set a file to a defined length. This non-portable feature was
+not supported in the traditional IOStreams.
+<p>The <font face="Courier,Courier New"><font size=-2>fd()</font></font>
+function is omitted from the C++ Standard. The simple reason is that the
+C++ standard does not want to exclude operating systems that do not have
+file descriptors from providing a standard conforming IOStreams library.
+<p>On the other hand, vendors of the Standard C++ Library are free to extend
+the library, as long as these extensions do not conflict with the standard.
+Hence it is quite possible that a functionality like<font face="Courier,Courier New"><font size=-2>
+fd()</font></font> will be included as a non standard extension in some
+library implementations.
+<br>&nbsp;
+<br>&nbsp;
+<p><b>String Streams: Replacing </b><font face="Courier,Courier New"><font size=-2>strstream</font></font><b>
+by </b><font face="Courier,Courier New"><font size=-2>stringstream.</font></font>
+<p>The string stream classes in the traditional IOStream, class <font face="Courier,Courier New"><font size=-2>strstream</font></font>,
+<font face="Courier,Courier New"><font size=-2>istrstream</font></font>,
+<font face="Courier,Courier New"><font size=-2>ostrstream</font></font>,
+and <font face="Courier,Courier New"><font size=-2>strstreambuf,</font></font>
+are deprecated features in the standard IOStreams. This means that they
+are still provided by implementations of the standard IOStreams, but will
+be omitted in the future. The purpose of string streams is to facilitate
+text input and output to memory locations. The deprecated <font face="Courier,Courier New"><font size=-2>strstream</font></font>
+classes allow input and output to and from character arrays of type <font face="Courier,Courier New"><font size=-2>char*.</font></font>
+In the standard IOStreams they are replaced by corresponding <font face="Courier,Courier New"><font size=-2>stringstream</font></font>
+classes that allow input and output to and from strings of type <font face="Courier,Courier New"><font size=-2>basic_string&lt;charT>,
+charT</font></font> being <font face="Courier,Courier New"><font size=-2>char</font></font>,
+<font face="Courier,Courier New"><font size=-2>wchar_t</font></font>,
+or any user-defined character type. The most obvious difference is that
+instead of providing character arrays to a <font face="Courier,Courier New"><font size=-2>strstream</font></font>you
+now provide string objects to a <font face="Courier,Courier New"><font size=-2>stringstream</font></font>.
+As you can convert character arrays into string objects and vice versa,
+there are no major restrictions regarding the functionality of string streams.
+However, there are subtle differences.
+<p>String streams are dynamic, which means that the internal character
+buffer is resized and reallocated once it is full. String streams also
+allow to retrieve the content of the internal character buffer by calling
+the member function <font face="Courier,Courier New"><font size=-2>str().</font></font>
+<p>In the traditional IOStreams <font face="Courier,Courier New"><font size=-2>str()</font></font>
+returns a pointer to the internal character buffer<font face="Courier,Courier New"><font size=-2>.</font></font>
+After such a call to <font face="Courier,Courier New"><font size=-2>str()</font></font>
+the string stream is <i>freezed, </i>i.e. the buffer is not resized any
+longer. This is very sensible since every reallocation would invalidate
+the buffer pointer.
+<p>In the standard IOStreams string streams are always dynamic; they do
+not freeze. A call to <font face="Courier,Courier New"><font size=-2>str()</font></font>
+provides a string object that is a copy of the internal buffer, but does
+not allow access to the buffer itself.
+<p>A similar difference occurs regarding the construction of string streams.
+There are constructors taking a character array or a string for use as
+the internal character buffer. In the traditional IOStreams this character
+array was actually used as the internal buffer, and the string stream constructed
+this way was frozen. In the standard IOStreams the string is not used as
+internal buffer; only its content is copied into an independent internal
+buffer area. Again, the internal buffer is not accessible from outside
+the string stream and freezing is not necessary.
+<p><b>Minor changes.</b>
+<p>Additional to the differences explained above, there are a couple of
+minor deviations from the traditional IOStreams. Some items are renamed,
+for instance. Examples are: the type <font face="Courier,Courier New"><font size=-2>io_state</font></font>
+from the traditional IOStreams, which now is named <font face="Courier,Courier New"><font size=-2>iostate</font></font>.
+The same holds for <font face="Courier,Courier New"><font size=-2>open_mode</font></font>
+and <font face="Courier,Courier New"><font size=-2>seek_dir</font></font>,
+which now are <font face="Courier,Courier New"><font size=-2>openmode</font></font>
+and <font face="Courier,Courier New"><font size=-2>seekdir</font></font>.
+And some more.
+<p>A standard IOStreams implementation is allowed to support the old names
+and interfaces for sake of compatibility with the traditional IOStreams.
+The draft working paper [] contains a list of these compatibility features.
+<br>&nbsp;
+<br>&nbsp;
+<p><b>Summary.</b>
+<p>The standard IOStreams are modeled after the traditional IOStreams.
+However, there are a couple substantial differences:
+<ul>
+<li>
+The standard IOStreams are templates taking the character type as a parameter.</li>
+
+<li>
+The base class ios is spilt into a character type dependent and a character
+type independent portions.</li>
+
+<li>
+Standard IOStreams may throw exceptions.</li>
+
+<li>
+Standard IOStreams are internationalized.</li>
+
+<li>
+Assignment and copying of streams is prohibited.</li>
+
+<li>
+File descriptors are not supported any longer.</li>
+
+<li>
+The character array based string streams are replaces by string based string
+streams.</li>
+</ul>
+
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+<font size=-1></font>
+<br>&nbsp;
+</body>
+</html>

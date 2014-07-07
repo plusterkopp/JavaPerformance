@@ -1,0 +1,646 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <title>Are Set Iterators Mutable or Immutable?</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CujSetIterators"></a>
+<br><font color="#295AB5"><font size=+3>Are Set Iterators Mutable or Immutable?</font></font>
+<br><font color="#295AB5"><font size=+2>Portability Issues in Using the
+Standard Library</font></font>
+<p><font color="#295AB5"><font size=+2>C/C++ Users Journal, October 2000</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p>In this column, we look into implementations of the Standard library
+container <b>set</b>, how these implementations vary, and how the differences
+affect the portability of our applications. In brief:
+<ul>
+<li>
+The <b>set</b> container in the Standard C++ library is implemented as
+a binary tree, which means that the value of an element contained in a
+set determines its position in the internal tree structure. Like all containers
+in the Standard library, the <b>set</b> container gives access to its contained
+elements via iterators. Iterators are designed to give read and write access
+to the element they refer to by means of the dereference operator. In other
+words, we can modify elements in a container via the container iterators.</li>
+
+<li>
+In a <b>set</b> container, the modification of a contained element can
+result in corruption of the underlying tree structure <a href="#1">[1]</a>.
+Consequently, <b>set</b> iterators that give write access (so-called <i>mutable
+</i>iterators)
+are considered dangerous. Even more so since iterators are passed to algorithms
+and for certain algorithms (including the remove algorithms), it is not
+at all obvious that they corrupt a <b>set</b> container.</li>
+
+<li>
+Some library implementers try to address the problem by not providing mutable
+<b>set</b>
+iterators in the first place. This is safe, but comes at the cost of major
+restrictions on the usability of the set container. For this reason, other
+implementers decide to trust the user, and they provide mutable
+<b>set</b>
+iterators. The net effect is that there are different implementations of
+the <b>set</b> container and its iterators available, so we must keep an
+eye on portability issues.</li>
+</ul>
+In this column, we look into the different <b>set</b> implementations,
+take a look at pitfalls and restrictions they introduce, and explore what
+the portability issues are and how they can be addressed.
+<p><b>The Underlying Tree Structure</b>
+<p>The <b>set</b> container provided by the C++ Standard library is internally
+organized as a binary tree structure because the Standard defines certain
+complexity guarantees for all algorithms and container operations. For
+the <b>set</b> container, it requires that access to an element contained
+in a set must be performed in logarithmic time. In order to meet this requirement,
+the implementation of the <b>set</b> container must be based on a binary
+tree structure. (Details on binary tree structures can be found in every
+computer science book on data structures and algorithms <a href="#4">[4]</a>.)
+<p>Elements in a binary tree are arranged in a way that their position
+in the tree is determined by a sorting order. This is visible in the <b>set</b>
+container: it needs a comparator that represents an ordering on the element
+type. Let us consider an example. Assume we have a bank account class.
+It has an account number and a balance. In our application, we maintain
+all the bank accounts in a <b>set</b> container. The sorting criteria is
+the account number. The <b>set</b> uses the less-than operator defined
+for the element type account as a comparator, and there is an corresponding
+version of <b>operator&lt;</b> defined that compares account objects by
+comparing their account numbers.
+<pre>class account {
+
+&nbsp;...
+
+&nbsp;size_t _number;&nbsp; // determines ordering
+
+&nbsp;double _balance; // irrelevant for ordering
+
+};
+
+
+
+bool operator&lt;(const account&amp; lhs,&nbsp;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; const account&amp; rhs)
+
+{ return lhs._number &lt; rhs._number; }
+
+
+
+set&lt;account> allAccounts;
+
+</pre>
+The <b>set</b> uses the ordering to determine an element’s position in
+the underlying binary tree. Whenever an element is inserted to the <b>set</b>,
+it is automatically placed into the right location in the tree structure
+so that the <b>set</b> elements are always maintained in sorted order.
+When an element must be found, the respective search also uses the ordering
+for efficient navigation through the tree structure. Since all operations
+performed on the <b>set</b> rely on the properly arranged binary tree,
+it is essential that the tree is kept intact at all times.
+<p>Naturally, the binary tree is hidden behind the interface of the <b>set</b>
+container class, and as long as we perform modifications on a <b>set</b>
+container via member functions of the <b>set</b> class, we will never corrupt
+the underlying tree structure. However, container classes in the standard
+library have iterators.
+<p><b>The Set Iterators</b>
+<p>Like all containers in the Standard library, the <b>set</b> container
+gives access to its contained elements by means of iterators. Iterators
+are pointer-like objects that can be dereferenced (via the dereference
+<b>operator*</b>)
+in order to access the element they point to. There are two types of iterators:
+those that give read and write access (let’s call them <i>mutable</i> iterators)
+and those that give only read access (the
+<i>immutable</i> iterators).
+In the Standard library, the mutable iterators are of type <b>container::iterator</b>;
+the immutable iterators are of type <b>container::const_iterator</b>. All
+container classes, including the <b>set</b> container, must defines these
+two iterator types.
+<p>If we have a mutable <b>set</b> iterator and dereference it, we will
+get write access to an element contained in a <b>set</b> container and
+can modify its content. Such a modification can be quite disastrous. Think
+of what we are doing here: the iterator points to a node in the binary
+tree. The position of the element in the tree is currently correct and
+reflects the element’s position in the sorted sequence of contained elements.
+When we change the element in a way that affects the sorting order (e.g.
+by modifying data members that are relevant to the comparator), then the
+element would have to appear in a different position regarding the sorting
+order. The tree structure would have to be reorganized in order to reflect
+the new sorting order. But that’s not what will happen. We silently modify
+the element without changing its position in the binary tree. The result
+is a corrupted tree, and the behavior of operations on a corrupted tree
+is entirely unpredictable.
+<p>Obviously, it is not sensible to modify <b>set</b> elements through
+mutable <b>set</b> iterators. Hence the unwritten rule is:
+<br>&nbsp;
+<br>&nbsp;
+<blockquote>Rule 1: Never modify elements contained in a set container
+in a way that breaks the sorting order.</blockquote>
+This rules applies to all modifications through iterators, pointers, and
+references to elements contained in the <b>set</b>. While this rule is
+plausible, it turns out that it is much harder to follow than one might
+think.
+<p><b>Replacing Set Elements</b>
+<p>Let us revisit the example to see how easy or difficult it is to follow
+the rule. We maintain a set of bank accounts that is sorted by account
+numbers. One of the clients wants to switch to another type of account
+and asks for his old account to be replaced by a new one. If we have an
+iterator pointing to the old account object, we can implement the replacement
+as follows:
+<pre>set&lt;account> s;
+
+...
+
+set&lt;account>::iterator iter;
+
+...
+
+*iter = *new account;&nbsp; // direct modification of element
+
+</pre>
+This clearly violates Rule 1. While the new account will have the same
+data as the old one (such as name, balance, etc.), it will most likely
+have a different account number. Overwriting the existing position in the
+tree with new content will therefore include overwriting the sorting criteria
+and corrupt the tree structure. In order to replace an existing element
+in a <b>set</b> with a new element, we should use the member functions
+<b>insert
+</b>and
+<b>erase
+</b>rather
+than performing the replacement through a <b>set</b> iterator. The correct
+approach would be:
+<pre>set&lt;account> s;
+
+...
+
+set&lt;account>::iterator iter;
+
+...
+
+s.insert(iter, *new account);
+
+s.erase (iter);
+
+</pre>
+The <b>insert</b> member function places the new element at the right position
+in the tree structure, thus keeping the tree intact. It follows another
+rule:
+<blockquote>Rule 2: Do not perform replacement of an element in a <b>set</b>
+through an iterator, pointer, or reference. Use the <b>set</b> operations
+<b>insert</b>
+and <b>erase</b> instead.</blockquote>
+<b>Set Containers and Generic Algorithms</b>
+<p>This is a relatively obvious violation of Rule 1. But often the violations
+are less obvious. How about the following program? In our bank application,
+cancelled bank accounts are not immediately eliminated for the set of all
+bank accounts, but stay there for a while until a garbage collector removes
+them. Obsolete bank accounts can be recognized by their zero balance. They
+can be removed all at once using the <b>remove_if</b> algorithm. All we
+need is a predicate function that determines whether the balance is zero:
+<pre>bool obsolete(const account&amp; acc)
+
+{ return acc.balance() == 0; }
+
+</pre>
+Then we apply the <b>remove_if</b> algorithm and get the job done real
+quick:
+<pre>set&lt;account> s;
+
+...
+
+// remove element if balance is less than 0
+
+s.erase(remove_if(s.begin(),s.end(),obsolete),
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s.end(),s.end());
+
+</pre>
+Looks good at first sight, but it turns out that we corrupt the <b>set</b>
+container with this approach.
+<p><b>Misnomers: remove Does Not Remove</b>
+<p>In this case, it is not so obvious why we violated Rule 1. Did we affect
+the sorting order in any way? From the specification of the <b>remove_if</b>
+algorithm, one might conclude that we just removed certain elements from
+the sorted sequence, which yields another sorted sequence. In fact, the
+Standard specifies the <b>remove_if</b> algorithm as:
+<pre>template&lt;class ForwardIterator, class Predicate>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ForwardIterator remove_if(ForwardIterator first,&nbsp;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ForwardIterator last,
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Predicate pred);&nbsp;
+
+</pre>
+Requires: Type <b>T</b> is EqualityComparable.
+<p>&nbsp;Effects: Eliminates all the elements referred to by iterator <b>i</b>
+in the range <b>[first, last)</b> for which the following corresponding
+conditions hold: <b>pred(*i) != false</b>.
+<p>&nbsp;Returns: The end of the resulting range.
+<p>&nbsp;Notes: Stable; the relative order of the elements that are not
+removed is the same as their relative order in the original range.
+<p>&nbsp;Complexity: Exactly <b>last - first</b> applications of the corresponding
+predicate.
+<p>Why then does the removal break the tree structure?
+<p>The answer is that all mutating algorithms potentially break the tree
+structure of a <b>set</b> container. This is because the generic algorithms
+in the Standard library access container elements via iterators, and if
+they are mutating algorithms, they perform the modification through container
+iterators. The <b>remove_if</b> algorithm is a mutating algorithm in this
+sense.
+<p>The crux it that the remove algorithms (this includes <b>remove</b>,
+<b>remove_if</b>,
+and consorts) are frequently misunderstood. Their names are misnomers:
+a remove algorithm does not remove anything. In fact, not a single element
+is erased from the sequence <a href="#3">[3]</a>. Instead, all the valid
+elements (those accounts that are not obsolete in our example) are copied
+to the beginning of the sequence, leaving a piece of garbage at the end.
+The <b>remove_if algorithm</b> returns an iterator pointing to the garbage
+at the end of the sequence and we must manually remove the invalid elements
+by invoking the <b>erase</b> member function of the <b>set</b> container
+class.&nbsp;<a NAME="r1"></a>Figure 1 below illustrates the functionality
+of the <b>remove_if</b> algorithm.<img SRC="Figure.gif" NOSAVE height=450 width=600>
+<p>Inside the <b>remove_if</b> algorithm, the copying of valid elements
+to the beginning of the sequence is performed through iterators pointing
+to elements in the sequence. The algorithm does exactly what we identified
+as a problem under Rule 2: it assigns one element to another element through
+dereferenced iterators. Inside the implementation of any remove algorithm,
+we will find a statement such as:
+<pre>*iter1 = *iter2;
+
+</pre>
+where <b>iter1</b> and <b>iter2</b> are <b>set</b> iterators in our case.
+This assignment breaks the sorting order.
+<p>Hence, it follows yet another rule for <b>set</b> containers:
+<blockquote>Rule 3: Never apply a mutating algorithm to a <b>set</b> container.</blockquote>
+In this context, "mutating algorithms" are algorithms that modify container
+elements through container iterators (or references or pointers to container
+elements) rather than performing modification through container operations
+(the member function of a container). All generic algorithms in the Standard
+library that are mutating algorithms (such as <b>copy</b>, <b>swap</b>,
+<b>replace</b>,
+<b>remove</b>,
+<b>reverse</b>)
+fall into this category.
+<p><b>The Dilemma</b>
+<p>It should be clear by now that mutable <b>set</b> iterators are a true
+pitfall, because they make it easy to (inadvertently) corrupt a <b>set</b>
+container. Why then would we want to have them at all? As we will see later,
+it makes perfect sense that containers have mutable iterators, since we
+not only want to inspect elements stored in a container, but occasionally
+we would also want to modify those elements. Furthermore, the Standard
+mandates that all containers must have a mutable and an immutable iterator
+type. This is intrinsic to the concept of a container. Dropping the mutable
+iterator type for the <b>set</b> container would defy the idea of genericity
+that is central to the design of the containers and algorithms in the Standard
+library. As a result, library implementers are in a bind, and the Standard
+does not say how to escape the dilemma.
+<p>Some library implementers decide to trust their users, and with those
+implementations (let’s call them the <i>relaxed</i> implementations), it
+is our responsibility to make sure that we do not damage the tree structure.
+This, however, is often more difficult than one might think, as demonstrated
+above.
+<p>Other implementations aim to reduce the inherent danger and decide not
+to provide a mutable <b>set</b> iterator at all. In those implementations
+(let’s call them the <i>safe</i> implementations), the type <b>set::iterator</b>
+is a <b>typedef</b> for <b>set::const_iterator</b>. The effect is that
+an element stored in a <b>set</b> container cannot be modified through
+an iterator. This is obviously safer, since it at least removes the potential
+to corrupt the tree structure through iterators. We can still damage the
+<b>set</b>
+container via pointers and references to contained elements, but not providing
+a mutable <b>set</b> iterator is certainly an improvement. However, it
+has its price; it is kind of restrictive.
+<p>Modifying an element does not necessarily affect the sorting order.
+What if we just change a part of the element that is not relevant to the
+ordering? That would be a harmless modification. Sadly, if the <b>set</b>
+does not have a mutable <b>set</b> iterator, then we cannot even perform
+harmless modifications through an iterator, although it would be safe to
+do so.
+<p><b>Harmless Modification of Set Elements</b>
+<p>Recall the example. We use a set of bank accounts and the sorting criteria
+is the account number.
+<pre>class account {
+
+&nbsp;...
+
+&nbsp;size_t _number;&nbsp; // determines ordering
+
+&nbsp;double _balance; // irrelevant for ordering
+
+};
+
+&nbsp;
+
+bool operator&lt;(const account&amp;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; lhs, const account&amp; rhs)
+
+{ return lhs._number &lt; rhs._number; }
+
+
+
+set&lt;account> allAccounts;
+
+</pre>
+In this case, the balance is irrelevant for the sorting order, and it would
+be safe to modify the balance data member of an account object stored in
+the <b>set</b> container.
+<br>set&lt;account>::iterator iter; ... // direct modification of part
+of the element iter->balance = 1000000;
+<p>In a <i>relaxed</i> <b>set</b> implementation, this will work; when
+using a <i>safe</i> <b>set</b> implementation, the compiler will complain
+about a <b>const</b>ness problem. No doubt, the program makes sense, but
+it is built on the assumption that the <b>set</b> iterator is mutable,
+which in practice is unnecessary. Hence we have a problem. The problem
+is mainly a portability issue <a href="#4">[5]</a>. What works under one
+implementation of the Standard library does not work under another.
+<p>How can we solve the problem?
+<p><b>The Brute Force Approach</b>
+<p>Constness problems can be solved by casting away constness, right? Instead
+of saying
+<pre>iter->balance = 1000000;
+
+</pre>
+we would say
+<pre>*(const_cast&lt;double*>(&amp;(iter->_balance))) = 1000000;&nbsp;
+
+</pre>
+Note that you cannot perform a <b>const_cast</b> on an object, but only
+on pointers and references. Alternatively we could define a <b>const</b>
+member function in the <b>account</b> class that lets us modify the balance,
+but I hope we agree that casts and faked <b>const</b> member functions
+are bad programming style and should be avoided if possible. Let’s try
+to do better.
+<p><b>An Iterator Adapter</b>
+<p>While we cannot eliminate the <b>const_cast</b>, we could still try
+to get to the core of the problem and solve it exactly where it pops up.
+It’s the <b>set</b> iterator that gets us into trouble. Why don’t we define
+a new iterator type that gives us access to the balance part of an account,
+but does not expose the account number? The idea is to adapt the <b>set</b>
+iterator so that the adapted iterator allows harmless modifications, but
+prohibits modification of the parts that are relevant for the sorting order.
+<p>Instead of accessing the element through a <b>set</b> iterator
+<pre>set&lt;account>::iterator iter;
+
+...
+
+iter->balance = 1000000;
+
+</pre>
+we would access it through an adapted iterator, called <b>balanceIter</b>:
+<pre>set&lt;account>::iterator iter;
+
+...
+
+*balanceIter(iter) = 1000000;
+
+</pre>
+In practice, C++ programmers are reluctant to implement their own user-defined
+iterator types because they think it is too complicated, but it is actually
+quite easy and very helpful. Below is the sketch of an implementation:
+<pre>class balanceIter {
+
+private:
+
+&nbsp;set&lt;account>::iterator _i;
+
+
+
+public:
+
+&nbsp;explicit balanceIter(set&lt;account>::iterator i)
+
+&nbsp;:_i(i) {}
+
+
+
+&nbsp;balanceIter&amp; operator++() { ++_i; return *this; }
+
+&nbsp;// ... postfix ++, pre- and postfix -- ...
+
+
+
+double&amp; operator*() const
+
+&nbsp;{ return *const_cast&lt;double*>(&amp;_i->_balance); }
+
+};
+
+</pre>
+The key points are:
+<ul>
+<li>
+The iterator adapter stores the original iterator (the <i>adaptee</i>)
+as a data member.</li>
+
+<li>
+The adaptee is provided at construction time; that is, the constructor
+takes the original iterator as a constructor argument.</li>
+
+<li>
+All typical iterator operations must be provided, such as <b>operator++</b>,
+<b>operator--</b>,
+<b>operator==</b>,
+and so on and so forth. They are implemented by delegation to the adaptee.</li>
+
+<li>
+The only interesting operation is the dereference operator. It must give
+write access to the balance part of the account object. Its signature differs
+from the signature of the adaptee’s dereference operator, because it returns
+a non-<b>const</b> reference to the balance part instead of a <b>const</b>
+reference to the entire account object.</li>
+</ul>
+There are a couple of further details to keep in mind when implementing
+iterator types, such as providing a <b>base</b> member function that gives
+access to the adaptee and providing certain types that are required of
+iterator types. (See&nbsp;<a NAME="r2"></a><a href="#Listing 1">Listing
+1</a> or <a href="#4">[2]</a> for further reading, or consult your favorite
+Standard library book for a recipe on implementation of iterator adapters).
+<p><b>Evaluation</b>
+<p>We still have to do the ugly <b>const_cast</b> in some places, but it
+is now hidden in the dereference operator of the iterator adapter. There
+was no modification of the <b>account</b> class necessary and no blatant
+violation of const-correctness rules. And we solved exactly the problem
+we had encountered without opening additional safety holes. There still
+is an the existing safety hole; we can apply mutating algorithms to the
+<b>set</b>
+via the adapted iterator, but this risk is already covered by Rule 3: never
+apply a mutating algorithm to a <b>set</b> container. In addition, this
+solution is portable. Even when we use a <i>relaxed</i><b>set</b> implementation,
+the iterator adapter would not hurt. Since all its operations are inline
+functions, it would not add any overhead.
+<p>In order to avoid portability problems, here is another recommendation:
+<blockquote>Rule 4: Never modify an element contained in a <b>set</b> through
+a <b>set</b> iterator (of type <b>set&lt;T>::iterator</b>). Use an iterator
+adapter for modification of <b>set</b> elements that do not break the sorting
+order.</blockquote>
+Modifications that do not break the sorting order are changes in those
+parts of the contained elements that do not contribute to the sorting order.
+<p><b>Summary</b>
+<p>The C++ Standard does not specify whether the iterator of a <b>set</b>
+container (type <b>set&lt;T>::</b>iterator) is a mutable or immutable iterator.
+As a result, popular compilers and their Standard libraries provide different
+implementations of the <b>set</b> iterator. Programs that work under one
+implementation might not work under another. In order to avoid portability
+problems, never make any assumptions regarding the (im)mutability of the
+<b>set</b>
+iterator.
+<p>We identified four rules that are relevant for using <b>set</b> containers:
+<blockquote>Rule 1: Never modify elements contained in a <b>set</b> container
+in a way that breaks the sorting order.
+<p>Rule 2: Do not perform replacement of an element in a <b>set</b> through
+an iterator, pointer, or reference. Use the <b>set</b> operations <b>insert</b>
+and <b>erase</b> instead.
+<p>Rule 3: Never apply to a <b>set</b> container an algorithm that modifies
+container elements through iterators, references, or pointers to container
+elements. This includes all mutating generic algorithms in the Standard
+library.
+<p>Rule 4: Never modify an element contained in a <b>set</b> through a
+<b>set</b>
+iterator (of type <b>set&lt;T>::iterator</b>). Use an iterator adapter
+for modification of <b>set</b> elements that do not break the sorting order.</blockquote>
+Rules 1 through 3 are always true independently of any particular implementation
+of the Standard library. Rule 4 addresses the portability issues that arise
+in practice due to different implementations of the <b>set</b> container
+and its iterator type.
+<p><a NAME="Listing 1"></a>
+<table BORDER CELLSPACING=0 CELLPADDING=0 >
+<tr BGCOLOR="#000066">
+<td><b><font color="#FFFFFF"><font size=+0>Listing 1: The balanceIterator
+adapter</font></font></b></td>
+</tr>
+
+<tr>
+<td><tt>class balanceIterator&nbsp;<br>
+{<br>
+public:<br>
+&nbsp; typedef set&lt;account>::iterator&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+adapted_type;<br>
+&nbsp; typedef adapted_type::iterator_category&nbsp; iterator_category;<br>
+&nbsp; typedef adapted_type::value_type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+value_type;<br>
+&nbsp; typedef adapted_type::distance_type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+difference_type;<br>
+&nbsp; typedef double*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+pointer;<br>
+&nbsp; typedef double&amp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+reference;<br>
+<br>
+&nbsp;&nbsp; balanceIterator() {}<br>
+&nbsp;&nbsp; explicit balanceIterator(adapted_type i) :adaptee(i) {}<br>
+&nbsp;&nbsp; template &lt;class Iter><br>
+<br>
+&nbsp;&nbsp; adapted_type base() const { return adaptee; }<br>
+<br>
+&nbsp;&nbsp; reference operator*() const&nbsp;<br>
+&nbsp;&nbsp; {return const_cast&lt;reference>(adaptee->balance()); }<br>
+&nbsp;&nbsp; pointer&nbsp; operator->() const { return &amp;(operator*());
+}<br>
+<br>
+&nbsp;&nbsp; balanceIterator&amp; operator++()<br>
+&nbsp;&nbsp; { ++adaptee;<br>
+&nbsp;&nbsp;&nbsp;&nbsp; return (*this);&nbsp;<br>
+&nbsp;&nbsp; }<br>
+&nbsp;&nbsp; balanceIterator operator++(int)<br>
+&nbsp;&nbsp; { balanceIterator _Tmp = *this;<br>
+&nbsp;&nbsp;&nbsp; ++adaptee;<br>
+&nbsp;&nbsp;&nbsp; return (_Tmp);<br>
+&nbsp;&nbsp; }<br>
+&nbsp;&nbsp; balanceIterator&amp; operator--()<br>
+&nbsp;&nbsp; { --adaptee;<br>
+&nbsp;&nbsp;&nbsp;&nbsp; return (*this);&nbsp;<br>
+&nbsp;&nbsp; }<br>
+&nbsp;&nbsp; balanceIterator operator--(int)<br>
+&nbsp;&nbsp; { balanceIterator _Tmp = *this;<br>
+&nbsp;&nbsp;&nbsp;&nbsp; --adaptee;<br>
+&nbsp;&nbsp;&nbsp;&nbsp; return (_Tmp);<br>
+&nbsp;&nbsp; }<br>
+private:<br>
+&nbsp;&nbsp; adapted_type adaptee;<br>
+};<br>
+<br>
+inline bool operator==(const balanceIterator&amp; x,&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+const balanceIterator&amp; y) {<br>
+&nbsp; return x.base() == y.base();<br>
+}<br>
+inline bool operator!=(const balanceIterator&amp; x,&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+const balanceIterator&amp; y) {<br>
+&nbsp; return x.base() != y.base();<br>
+}</tt></td>
+</tr>
+</table>
+
+<p><b>References</b>
+<p><a NAME="1"></a>[1] Herb Sutter. "Standard Library News, Part2, Sets
+and Maps," <i>C++ Report</i> (October 1999). This article gives background
+information on sets and maps; Sutter explains why keys in associative arrays
+like <b>set</b> must not be modified.
+<p><a NAME="2"></a>[2] Cormen, Leiserson, and Rivest <i>Introduction to
+Algorithms</i> (MIT Press, 1990).
+<p><a NAME="2"></a>[2] Klaus Kreft and Angelika Langer. "Iterators in the
+Standard C++ Library, " <i>C++ Report</i> (November/December 1996). The
+article is also available at http://www.langer.camelot.de/Articles/IteratorsInStdlib/cppr9612_kreft.html.
+<p><a NAME="3"></a>[3] Matt Austern. "Algorithms and Containers," <i>C++
+Report</i> (July/August 2000). This article also points out the problem
+of applying the remove algorithms to associative containers and suggests
+a solution using container-based generic algorithms and container traits,
+which are not part of the Standard.
+<p><a NAME="4"></a>[4] Cormen, Leiserson, and Rivest <i>Introduction to
+Algorithms</i> (MIT Press, 1990).
+<p><a NAME="5"></a>[5]How can one have a portability problem with the Standard
+library? After all, the purpose of a standard is that it defines a portability
+platform. True, it's just that in this case we are talking about an open
+issue in the C++ Standard: the implementation of the <b>set</b> iterators
+is still an open issue (#103) on the Standards Committee issue list. The
+problem is identified and a clarification will be added to the Standard.
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<br>&nbsp;
+</body>
+</html>

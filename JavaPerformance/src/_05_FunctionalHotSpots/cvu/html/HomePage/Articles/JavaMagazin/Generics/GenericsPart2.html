@@ -1,0 +1,860 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="pre-copyedit version of a feature article published in JavaMagazin in October 2004">
+   <meta name="KeyWords" content="Java Generics J2SE 1.5 parameterized type  Java 1.5">
+   <title>Java Generics - Type Erasure</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="JavaProOnline02"></a>
+<br><font color="#295AB5"><font size=+3>Java Generics - Type Erasure</font></font>
+<br>&nbsp;
+<p><font color="#295AB5"><font size=+2>JavaMagazin, Oktober 2004</font></font>
+<br><font color="#295AB5"><font size=+1>Angelika Langer &amp; Klaus Kreft</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<h1>
+Umw&auml;lzungen im Java-Typsystem</h1>
+
+<h2>
+Generische Typen,&nbsp; Type Erasure und wie sie sich das Ganze auf das
+Java-Typsystem auswirkt</h2>
+<b>Java Generics sind ein Sprachmittel, das in J2SE 5.0 neu zur Programmiersprache
+Java hingekommen ist.&nbsp; Das neue Sprachmittel erlaubt die Benutzung
+und Definition von Typen und Methoden, die mit Typvariablen parametrisiert
+sind (z.B. LinkedList&lt;String>).&nbsp;&nbsp; Die Integration der parametrisierten
+Typen in das Typsystem von Java hat interessante und zum Teil auch &uuml;berraschende
+Auswirkungen auf das Java-Typsystem.&nbsp; In diesem Artikel wollen wir
+uns einige dieser Effekte ansehen. Unter anderem wollen wir erkl&auml;ren,
+warum Arrays von parametrisierten Typen in Java nicht erlaubt sind und
+was die sogenannten „Checked Collections“ sind.</b>
+<br>&nbsp;
+<p>Wenn man mit Java Generics programmiert, stellt man rasch fest, dass&nbsp;
+die Semantik des Sprachmittels bisweilen &uuml;berraschend ist.&nbsp; Manche
+Dinge, von denen man intuitiv erwarten w&uuml;rde, dass sie problemlos
+m&ouml;glich sind, sind in Java Generics&nbsp; nicht erlaubt.&nbsp; Beispielweise
+k&ouml;nnte man erwarten, dass man Instanziierungen eines parametrierten
+Typs, wie zum Beispiel LinkedList&lt;String>, genauso verwenden kann wie
+einen regul&auml;ren nicht-parametrisierten Typen, wie zum Beispiel String.&nbsp;
+Das ist aber nicht so;&nbsp; f&uuml;r parametrisierte Typen gibt es eine
+Reihe von Einschr&auml;nkungen.&nbsp; Diese Limitationen muss man kennen,
+zum einen, um die entsprechenden Compiler-Meldungen zu verstehen, zum anderen,
+um Fehler zu vermeiden. Beispielsweise f&uuml;hrt ein Cast wie (LinkedList&lt;String>)&nbsp;
+ref zu folgender Warnung: warning: "unchecked cast". Der entsprechende
+instanceof-Ausdruck (ref instanceof LinkedList&lt;String>)&nbsp; ist gleich
+ganz verboten: error: „illegal generic type for instanceof“.&nbsp; Da stellt
+sich die Frage: Was ist mit dem instanceof-Ausdruck nicht in Ordnung?&nbsp;
+Was ist ein "unchecked cast"?&nbsp; Was will der Compiler mit dieser Warnung
+sagen?&nbsp; Mu&szlig; man diese Warnung ernst nehmen?&nbsp; Diesen und
+anderen Fragen wollen wir in diesem Artikel nachgehen.
+<p>Um die Effekte erl&auml;utern zu k&ouml;nnen, m&uuml;ssen wir etwas
+tiefer in das Typsystem von Java einsteigen.&nbsp; Wir haben in einem vorangegangenen
+Artikel (siehe /<a href="#MAG1">MAG1</a>/) bereits erkl&auml;rt, dass der
+Java-Compiler generisches Java in Java-Bytecode &uuml;bersetzt, indem er
+eine sogenannte „Type Erasure“ durchf&uuml;hrt. Bei der &Uuml;bersetzung
+per Type Erasure werden die Typparameter eines Typs oder einer Methode
+entfernt, so dass zur Laufzeit parametrisierte Typen nicht mehr von regul&auml;ren
+Typen unterschieden werden k&ouml;nnen.&nbsp; Diese &Uuml;bersetzungstechnik
+ist der Grund f&uuml;r die Effekte, denen wir uns in diesem Artikel widmen
+wollen.&nbsp; Wir beginnen deshalb mit einer Gegen&uuml;berstellung der
+Typinformation, die f&uuml;r regul&auml;re Typen einerseits und parametrisierte
+Typen andererseits zur Verf&uuml;gung steht.&nbsp; Anschlie&szlig;end gehen
+wir der Frage nach, welche Einschr&auml;nkungen es f&uuml;r die Benutzung
+von parametrisierten Typen gibt und worauf man im Umgang mit parametrisierten
+Typen achten sollte.
+<br>&nbsp;
+<h2>
+1 Nicht-Exakte Laufzeit-Typinformation</h2>
+Referenzvariablen haben in Java (wie auch in anderen Sprachen) einen statischen
+und einen dynamischen Typ.&nbsp; Etwas vereinfacht kann man sagen, der
+statische Typ ist beim &Uuml;bersetzen relevant und der dynamische Typ
+wird zur Laufzeit verwendet.&nbsp; Traditionell ist es in Java so, dass
+der dynamische Type exakter ist als der statische Typ.&nbsp; Das ist zum
+Beispiel bei einer Referenzvariablem vom Typ Object so.&nbsp; Der statische
+Typ der Referenz ist Object und sagt nicht viel &uuml;ber den Typ des referenzierten
+Objekts.&nbsp; Zur Laufzeit jedoch spiegelt der dynamische Typ der Referenz
+pr&auml;zise den Typ des referenzierten Objekts wider.&nbsp; In diesem
+Sinne ist in Java traditionell der dynamische Typ exakter als der statische
+Typ.&nbsp; Java Generics brechen mit dieser Tradition – ein Bruch, der
+gew&ouml;hnungsbed&uuml;rftig ist.&nbsp; Sehen wir uns im Folgenden den
+Effekt genauer an.
+<br>&nbsp;
+<h3>
+1.1 Typpr&uuml;fungen in Nicht-Generischem Java</h3>
+Um den Unterschied zwischen der Typinformation &uuml;ber generische und
+nicht-generische Typen zu erl&auml;utern, betrachten wird zuerst einmal
+die nicht-generischen, regul&auml;ren Typen.&nbsp; Die nachfolgende Tabelle
+zeigt Beispiele, die den Unterschied zwischen dem statischen und dynamischen
+Typ einer Referenzvariable illustrieren.
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td></td>
+
+<td>statischer Typ</td>
+
+<td>dynamischer Typ</td>
+</tr>
+
+<tr>
+<td><tt>String stringRefToString = new String();</tt></td>
+
+<td><tt>String</tt></td>
+
+<td><tt>String</tt></td>
+</tr>
+
+<tr>
+<td><tt>Object objectRefToString = new String();&nbsp;</tt></td>
+
+<td><tt>Object</tt></td>
+
+<td><tt>String</tt></td>
+</tr>
+
+<tr>
+<td><tt>Object objectRefToObject = new Object();&nbsp;</tt></td>
+
+<td><tt>Object</tt></td>
+
+<td><tt>Object</tt></td>
+</tr>
+</table>
+
+<p>Der statische und der dynamische Typ einer Variable sind immer dann
+potentiell verschieden, wenn eine Referenzvariable auf ein Objekt eines
+Subtyps verweist. Der zweite Eintrag in der Tabelle zeigt ein Beispiel:
+eine Variable vom Typ Object verweist auf ein Objekt vom Typ String. Der
+statische Typ ist der Typ der Variablen, n&auml;mlich Object, und der dynamische
+Typ ist der Typ des referenzierten Objekts, n&auml;mlich String.
+<p>Wann wirkt sich dieser Unterschied aus?&nbsp; Unter anderem bei Typpr&uuml;fungen.&nbsp;
+Der statische und der dynamische Typ werden f&uuml;r unterschiedliche Typpr&uuml;fungen
+ber&uuml;cksichtigt:
+<br>&nbsp;
+<ul>
+<li>
+Den statischen Typ einer Variablen ber&uuml;cksichtigt der Compiler bei
+Typpr&uuml;fungen bez&uuml;glich Typgleichheit und Typkompatibilit&auml;t.&nbsp;
+Das ist zum Beispiel der Fall bei Zuweisungen, wenn Argumente an Methoden
+&uuml;bergeben werden oder wenn der Compiler aus einer Menge von &uuml;berladenen
+Methoden die passende (den sogenannten „best match“) heraussucht.</li>
+</ul>
+
+<ul>
+<li>
+Der dynamische Typ wird bei Typpr&uuml;fungen verwendet, die zur Laufzeit
+durchgef&uuml;hrt werden. Das ist bei den meisten Casts der Fall, aber
+auch bei der Auswertung von instanceof-Ausdr&uuml;cken.&nbsp; Au&szlig;erdem
+basieren alle Mechanismen, die &uuml;ber Reflection zur Verf&uuml;gung
+stehen, auf den dynamischen Typen. Auch der Typ, den getClass() liefert,
+ist immer der dynamische Typ.</li>
+</ul>
+Zur Illustration sehen wir uns ein paar Beispiele an, in denen Zuweisungen
+und Casts eine Rolle spielen.
+<p>Was passiert, wenn wir einer String-Referenz eine Object-Referenz zuweisen?
+<p><tt>stringRefToString = objectRefToString;&nbsp; // compile-time failure</tt>
+<p>Der Compiler muss hier pr&uuml;fen, ob die beiden Variablen zuweisungsvertr&auml;glich
+sind.&nbsp; Dazu verwendet er die statischen Typen.&nbsp; Zuweisungsvertr&auml;glich
+w&auml;ren sie, wenn der statische Typ der linken Seite ein Supertyp der
+rechten Seite w&auml;re.&nbsp; In diesem Beispiel ist das nicht der Fall;
+String ist kein Supertyp von Object.&nbsp; Also meldet der Compiler einen
+Fehler.
+<p>Probieren wir es noch einmal, diesmal mit einem Cast.
+<p><tt>stringRefToString = (String)objectRefToString;&nbsp; // fine</tt>
+<p>Der Cast hat zur Folge, dass sich der statische Typ der rechten Seite
+&auml;ndert. Nach dem Cast ist die rechte Seite der Zuweisung vom statischen
+Typ String, genau wie die linke Seite, und damit akzeptiert der Compiler
+nun die Zuweisung.
+<p>Der Compiler l&auml;sst selbstverst&auml;ndlich nicht jeden beliebigen
+Cast zu.&nbsp; Casts, die unm&ouml;glich sinnvoll sein k&ouml;nnen, weist
+er als Fehler zur&uuml;ck. Ein Beispiel eines solchen unsinnigen Casts
+w&auml;re der Cast von String nach Integer; die Konvertierung von String
+nach Integer ist in Java nicht m&ouml;glich und wird deshalb vom Compiler
+zu Recht abgewiesen.&nbsp; Casts, die zur Laufzeit durchaus sinnvoll sein
+k&ouml;nnten, akzeptiert der Compiler hingegen.&nbsp; In unserem obigen
+Beispiel k&ouml;nnte es ja durchaus sein, dass die Object-Referenz zur
+Laufzeit tats&auml;chlich auf ein String-Objekt verweist, und deshalb wird
+der Cast vom Compiler zugelassen.&nbsp; Man sieht hier, dass Casts sowohl
+einen statischen als auch einen dynamischen Anteil haben. Der statische
+Anteil ist der, der die „unsinnigen“ Casts aussortiert; der dynamische
+Anteil ist der, der zur Laufzeit unter Umst&auml;nden eine ClassCastException
+ausl&ouml;st.
+<p>Das passiert beispielsweise im folgenden Fall:
+<p><tt>String stringRefToString;</tt>
+<br><tt>Object objectRefToObject = new Object();</tt>
+<br><tt>stringRefToString = (String)objectRefToObject; // runtime failure</tt>
+<p>Der Cast wird vom Compiler zugelassen und f&uuml;hrt dazu, dass auch
+die Zuweisung akzeptiert wird.&nbsp; Zur Laufzeit f&uuml;hrt die virtuelle
+Maschine dann den dynamischen Teil des Casts durch und pr&uuml;ft, ob die
+Referenz auf der rechten Seite tats&auml;chlich auf ein String-Objekt verweist,
+wie es im Cast verlangt wird.&nbsp; In diesem Beispiel ist das nicht der
+Fall; deshalb wird eine ClassCastException ausgel&ouml;st.
+<p>Das ist das traditionelle Verhalten von Typpr&uuml;fungen in nicht-generischem
+Java.&nbsp; Was ist nun anders im Zusammenhang mit generischen Typen?
+<br>&nbsp;
+<h3>
+1.2 Typpr&uuml;fungen in Generischem Java</h3>
+Betrachten wir einige Beispiel, in denen parametrisierte Typen vorkommen:
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td></td>
+
+<td>Statischer Typ</td>
+
+<td>Dynamischer Typ</td>
+</tr>
+
+<tr>
+<td><tt>LinkedList&lt;Integer> refToIntegerList = new LinkedList&lt;Integer>();&nbsp;</tt></td>
+
+<td><tt>LinkedList&lt;Integer></tt></td>
+
+<td><tt>LinkedList</tt></td>
+</tr>
+
+<tr>
+<td><tt>LinkedList&lt;String> refToStringList = new LinkedList&lt;String>();&nbsp;</tt></td>
+
+<td><tt>LinkedList&lt;String>&nbsp;</tt></td>
+
+<td><tt>LinkedList</tt></td>
+</tr>
+
+<tr>
+<td><tt>Object objectRefToStringList = new LinkedList&lt;String>();</tt></td>
+
+<td><tt>Object</tt></td>
+
+<td><tt>LinkedList</tt></td>
+</tr>
+</table>
+
+<p>Anders als bei nicht-parametrisierten Typen sind bei parametrisierten
+Typen der statische und der dynamische Typ immer verschieden.&nbsp; Das
+liegt daran, dass der statische Typ der exakte Typ inklusive Typparameter
+ist; der dynamische Typ ist aber immer der Typ, der nach der Type Erasure
+&uuml;brig bleibt, n&auml;mlich der Typ ohne Typparameter (der sogenannte
+„Raw Type“).&nbsp; Ansonsten beobachtet man den &uuml;blichen Unterschied
+zwischen statischen und dynamischem Typ, n&auml;mlich wenn Supertyp-Referenzen
+auf Subtyp-Objekte verweisen.
+<p>Schauen wir uns nun an, wie sich die parametrisierten Typen im Zusammenhang
+mit Zuweisungen und Casts verhalten.&nbsp; Als erstes weisen wir eine Referenz
+auf eine Integer-Liste einer Referenz auf eine String-Liste zu:
+<p><tt>refToStringList = refToIntegerList;&nbsp; // compile-time failure</tt>
+<p>Das ist offensichtlicher Unfug und, in der Tat, der Compiler weist es
+mit einer Fehlermeldung zur&uuml;ck. Der Compiler verwendet hier f&uuml;r
+die Pr&uuml;fung der Zuweisungsvertr&auml;glichkeit die statischen Typen,
+und die sind verschieden, n&auml;mlich LinkedList&lt;String> und LinkedList&lt;Integer>.
+Selbst ein Cast w&uuml;rde hier nichts n&uuml;tzen, weil der Compiler wei&szlig;,
+dass eine Konvertierung von LinkedList&lt;Integer> und LinkedList&lt;String>
+nicht m&ouml;glich ist.
+<p>Betrachten wir also ein weiteres Beispiel:
+<p><tt>refToStringList = objectRefToStringList;&nbsp; // compile-time failure</tt>
+<p>Auch hier weigert sich der Compiler, die Zuweisung zu akzeptieren, weil
+die statischen Typen LinkedList&lt;String> und Object verschieden und nicht
+zuweisungsvertr&auml;glich sind. Hier k&ouml;nnen wir mit einem Cast versuchen,
+den Compiler zu &uuml;berreden, die Zuweisung zu akzeptieren:
+<p><tt>refToStringList = (LinkedList&lt;String>)objectRefToStringList;&nbsp;
+// fine</tt>
+<p>Das ist erfolgreich: eine Object-Referenz kann potentiell auf ein Objekt
+vom Type LinkedList&lt;String> verweisen.&nbsp; Nach dem Cast sind linke
+und rechte Seite der Zuweisung vom gleichen statischen Typ und der Compiler
+l&auml;sst die Zuweisung zu. Nun w&uuml;rde man erwarten, dass ein solcher
+Cast zur Laufzeit gepr&uuml;ft wird und mit einer ClassCastException&nbsp;
+scheitert, falls die Referenz auf der rechten Seite der Zuweisung nicht
+auf den im Cast spezifizierten Typ verweist.&nbsp; Diese Erwartung wird
+aber leider entt&auml;uscht.&nbsp; Hier ist ein Beispiel:
+<p><tt>LinkedList&lt;Integer> refToIntegerList ;</tt>
+<br><tt>Object objectRefToStringList = new LinkedList&lt;String>();</tt>
+<br><tt>RefToIntegerList = (LinkedList&lt;Integer>)objectRefToStringList;&nbsp;
+// should fail,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// but is fine</tt>
+<p>Wir haben hier das Beispiel einer Object-Referenz, die auf eine String-Liste
+verweist und nach Integer-Liste gecastet wird.&nbsp; Das sollte zur Laufzeit
+eigentlich scheitern ...&nbsp; man beobachtet aber, das der Code zur Laufzeit
+klaglos, ohne eine ClassCastException&nbsp; auszul&ouml;sen, ausgef&uuml;hrt
+wird. Warum scheitert der Cast zur Laufzeit nicht?
+<p>Der Grund liegt in der Implementierungstechnik, die die Designer der
+Java Generics gew&auml;hlt haben, n&auml;mlich &Uuml;bersetzung per Type
+Erasure.&nbsp; Nach der Type Erasure ist zur Laufzeit kein Unterschied
+mehr zwischen einer String-Liste und einer Integer-Liste zu erkennen.&nbsp;
+Beide haben denselben Laufzeittyp, n&auml;mlich LinkedList in unserem Beispiel.&nbsp;
+Deshalb scheitert der Cast zur Laufzeit nat&uuml;rlich nicht.&nbsp; Zwar
+sieht der Cast zum Zieltyp LinkedList&lt;Integer> im Sourcecode so aus,
+als w&uuml;rde dort nach LinkedList&lt;Integer> gecastet.&nbsp; Das stimmt
+aber nur f&uuml;r den statischen Teil des Casts.&nbsp; Der dynamische Teil
+des Cast ist ein Cast nach LinkedList.&nbsp; Im Gegensatz zum Compiler
+kann die virtuelle Maschine keinen Typunterschied mehr erkennen zwischen
+einer LinkedList&lt;Integer>&nbsp; und einer LinkedList&lt;String>.
+<p>Alles, was zur Laufzeit passiert, geschieht auf Basis der dynamischen
+Typen, und die sind nach der Type Erasure nicht mehr exakt und damit nicht
+mehr so aussagekr&auml;ftig wie im Sourcecode zur Compilezeit.&nbsp; Das
+hei&szlig;t, Java Generics Sourcecode darf man nicht „w&ouml;rtlich“ nehmen.
+Man muss sich stets vor Augen halten, dass die Typparameter nur im Sourcecode
+vorkommen und nur f&uuml;r die &Uuml;bersetzung relevant sind.&nbsp; Zur
+Laufzeit sind sie komplett verschwunden und spielen keine Rolle mehr. Der
+Java-Entwickler mu&szlig; sich au&szlig;erdem im Klaren dar&uuml;ber sein,
+welcher Teil seines Sourcecodes f&uuml;r den Compiler bestimmt ist und
+welcher Teil von der virtuellen Maschine verarbeitet wird.&nbsp; Bei manchen
+Sprachmitteln, wie zum Beispiel beim Cast und beim instanceof-Operator,
+sind beide Aspekte vermischt, was das Verst&auml;ndnis nicht gerade erleichtert.
+<p>Weil im Zusammenhang mit generischen Typen einerseits und Casts und
+instanceof-Ausdr&uuml;cken andererseits durchaus ein Fehlerpotential vorhanden
+ist, sind instanceof-Ausdr&uuml;cke mit einem parametrisierten Zieltyp
+verboten und werden mit einer Fehlermeldung vom Compiler zur&uuml;ckgewiesen.
+Casts, deren Zieltyp ein parametrisierter Typ ist, l&auml;&szlig;t der
+Compiler zwar zu, aber mit einer sogenannten "unchecked" Warnung.&nbsp;
+Wir sehen uns sp&auml;ter in diesem Artikel noch genauer an, wie es sich
+auswirkt, wenn man eine "unchecked"-Warnung ignoriert.
+<p>Neben den interessanten Warnungen, die der Compiler zu einem Cast mit
+einem parametrisierten Zieltyp meldet, und dem Verbot der instanceof-Ausdr&uuml;cke
+mit parametrisiertem Zieltyp gibt es noch eine Reihe zus&auml;tzlicher
+Benutzungseinschr&auml;nkungen f&uuml;r die parametrisierten Typen.&nbsp;
+Diese Einschr&auml;nkungen wollen wir uns im Folgenden ansehen.
+<br>&nbsp;
+<h2>
+2 Einschr&auml;nkungen f&uuml;r Parametrisierte Typen</h2>
+Parametrisierte Typen kann man nicht ganz so uneingeschr&auml;nkt verwenden
+wie regul&auml;re Typen.&nbsp; Neben dem Verbot von instanceof-Ausdr&uuml;cken
+mit parametrisiertem Zieltyp gibt es 3 weitere Einschr&auml;nkungen:
+<br>&nbsp;
+<ul>
+<li>
+Class-Literal. Man kann von einem parametrisierten Typ kein Class-Literal
+bilden.&nbsp; Ein Ausdruck wie LinkedList&lt;String>.class ist unzul&auml;ssig
+und wird vom Compiler mit einer Fehlermeldung abgewiesen. Analog wird man
+beobachten, dass der Aufruf Class.forName(“LinkedList&lt;String>“) immer
+mit einer ClassNotFoundException scheitert. Dieses Verhalten ist eigentlich
+nicht &uuml;berraschend, wenn man bedenkt, dass es in Java Generics keine
+exakte Laufzeitrepr&auml;sentation eines parametrisierten Typen gibt.&nbsp;
+Der Laufzeittyp ist immer nur der unparametrisierte Typ LinkedList. Deshalb
+sind LinkedList.class und Class.forName(“LinkedList“) in Ordnung, wohingegen
+LinkedList&lt;String>.class und Class.forName(“LinkedList&lt;String>“)
+unzul&auml;ssig sind.</li>
+</ul>
+
+<ul>
+<li>
+Exceptions. Es ist nicht erlaubt, einen parametrisierten Typen direkt oder
+indirekt von Throwable abzuleiten. Mit anderen Worten, parametrisierte
+Exception-Typen sind nicht erlaubt.&nbsp; Das erkl&auml;rt sich dadurch,
+dass der Exception-Handling-Mechanismus ein Laufzeit-Mechanismus ist und
+das Laufzeitsystem, d.h. die JVM, wei&szlig; nichts von Java Generics.
+Deshalb machen parametrisierte Exception-Typen keinen Sinn.</li>
+</ul>
+
+<ul>
+<li>
+Arrays. Ein parametrisierter Typ ist als Elementtyp eines Arrays nicht
+zugelassen.&nbsp; Das hei&szlig;t, es darf zum Beispiel kein Array des
+Typs Comparable&lt;String>[] deklariert oder erzeugt werden. Die einzige
+Ausnahme ist die Wildcard-Instanziierung des parametrisierten Types: eine
+Deklaration wie Comparable&lt;?>[] ist erlaubt. Das Verbot parametrisierter
+Typen als Elementtyp eines Arrays ist zun&auml;chst einmal eine recht &uuml;berraschende
+Einschr&auml;nkung, die sich der Praxis dann auch als reichlich l&auml;stig
+erweist.&nbsp; Sehen wir uns die Hintergr&uuml;nde genauer an.&nbsp; Die
+Ursache der Einschr&auml;nkung liegt wieder in der Type Erasure.</li>
+</ul>
+
+<h3>
+2.1 Keine parametrisierten Typen als Array-Elemente</h3>
+Arrays mit einem Elementtyp, der ein parametrisierter Typ ist, sind nicht
+typsicher.&nbsp; Dabei bedeutet „Typsicherheit“ (engl. type-safety)&nbsp;
+folgende Garantie:&nbsp; wenn sich ein Programm fehler- und warnungsfrei
+&uuml;bersetzen l&auml;sst, dann ist es ausgeschlossen, dass zur Laufzeit
+eine unerwartete ClassCastException ausgel&ouml;st wird.&nbsp; Eine „unerwartete“
+ClassCastException w&auml;re eine, die ohne einen entsprechenden Cast im
+Sourcecode entsteht.&nbsp; Bei Verwendung von parametrisierten Typen als
+Elementtyp eines Arrays kann keine Typsicherheit gew&auml;hrleistet werden,
+da der Compiler au&szlig;erstande ist, alle Typverletzungen im Zusammenhang
+mit Arrays mit parametrisiertem Elementtyp zu entdecken.&nbsp; Deshalb
+sind solche Arrays unzul&auml;ssig.
+<p>Woran liegt es, dass der Compiler nicht alle Typverletzungen im Zusammenhang
+mit Arrays von parametrisiertem Typ erkennen kann?&nbsp; Das h&auml;ngt
+mit dem sogenannten „Array-Store-Check“ zusammen.&nbsp; In Java beinhaltet
+die Typinformation eines Arrays Information &uuml;ber den Elementtyp des
+Arrays.&nbsp; Diese Information wird benutzt, wenn zur Laufzeit ein Element
+an eine Position im Array zugewiesen wird.&nbsp; Bei dieser Zuweisung f&uuml;hrt
+die virtuelle Maschine den Array-Store-Check aus: sie pr&uuml;ft, ob das
+zuzuweisende Element vom erwarteten Elementtyp ist.&nbsp; Ziel dieser Pr&uuml;fung
+ist es, die Homogenit&auml;t des Arrays sicherzustellen, also dass z.B.
+ein String-Array nur Strings enth&auml;lt. Der Versuch, einen Integer in
+einem String-Array einzutragen, w&uuml;rde mit einer ArrayStoreException
+abgewiesen.&nbsp; Hier ist ein Beispiel:
+<p><tt>1 Object[] objArr = new String[10];</tt>
+<br><tt>2 objArr[0] = new Integer(); // compiles;</tt>
+<br><tt>3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// fails at runtime with ArrayStoreException</tt>
+<p>Nehmen wir nun einmal an, parametrisierte Typen w&auml;ren erlaubt als
+Elementtyp eines Arrays.&nbsp; Dann funktioniert der Array-Store-Check
+nicht mehr.&nbsp; Betrachten wir als Beispiel einen parametrisierten Typ
+Pair&lt;X,Y> (siehe Listing 1).
+<p><i>Listing 1: Auszug aus einer Implementierung eines Pair Typs</i>
+<p><tt>public final class Pair&lt;X,Y> {</tt>
+<br><tt>&nbsp;private X fst;</tt>
+<br><tt>&nbsp;private Y snd;</tt>
+<br><tt>&nbsp;public Pair(X fst, Y snd) {this.fst=fst; this.snd=snd;}</tt>
+<br><tt>&nbsp;public X getFirst() { return fst; }</tt>
+<br><tt>&nbsp;public Y getSecond() { return snd; }</tt>
+<br><tt>&nbsp;...</tt>
+<br><tt>}</tt>
+<p>Wenn wir ein Array von Integer-Paaren erzeugen d&uuml;rften, ganz analog
+zu unserem Array von Strings, dann k&ouml;nnten wir versuchen, in das Array
+ein Element von einem anderen Typ einzutragen.&nbsp; Normalerweise sollte
+das vom Compiler durch statische Typpr&uuml;fungen oder sp&auml;testens
+von der virtuellen Maschine durch den Array-Store-Check verhindert werden.&nbsp;
+Im nachfolgenden Beispiel versuchen wir, ein String-Paar in ein Array von
+Integer-Paaren einzutragen.
+<p><tt>1 Object[] arr = new Pair&lt;Integer,Integer>[10];&nbsp; // compile-time
+error</tt>
+<br><tt>2 arr[0] = new Pair&lt;String,String>("","");</tt>
+<p>Das Beispiel l&auml;&szlig;t sich nicht &uuml;bersetzen, weil der Compiler
+die Verwendung von Pair&lt;Integer,Integer>[10] mit der Fehlermeldung „arrays
+of generic types are not allowed“ abweist.&nbsp; Aber wenn der Compiler
+es zulie&szlig;e, dann w&auml;ren weder der Compiler noch die virtuelle
+Maschine in der Lage zu verhindern, dass das String-Paar in&nbsp; dem Array
+von Integer-Paaren abgelegt wird.
+<p>Der Compiler kann es nicht verhindern, weil wir auf das Array von Integer-Paaren
+&uuml;ber eine Variable objArr vom Typ Object-Array zugreifen. In Java
+sind Arrays kovariant, d.h. es ist erlaubt, dass eine Variable vom Typ
+Supertyp-Array auf ein Subtyp-Array verweist. Eine solche Situation haben
+wir in unserem Beispiel (in Zeile 1) hergestellt: die Object-Array-Variable
+verweist auf ein Array von&nbsp; Integer-Paaren.&nbsp; In der Zuweisung
+des Array-Elements (in Zeile 2) ist die linke Seite eine Position im Array.&nbsp;
+Da wir &uuml;ber eine Variable vom Typ ein Object-Array zugreifen, ist
+die linke Seite der Zuweisung vom statischen Typ Object. Die rechte Seite
+ist vom statischen Typ Pair&lt;String,String>.&nbsp; Damit liegt Zuweisungsvertr&auml;glichkeit
+vor und deshalb l&auml;sst der Compiler die Zuweisung des String-Paars
+an eine Position im Array zun&auml;chst einmal zu.&nbsp; Nun ist das Object-Array
+in Wirklichkeit ein Array von Integer-Paaren&nbsp; und deshalb wird die
+virtuelle Maschine zur Laufzeit sp&auml;ter den Array-Store-Check ausf&uuml;hren,
+um die Zuweisung des fremden Elements vom Typ String-Paar zu verhindern.
+<p>Der Array-Store-Check funktioniert aber nicht bei parametrisierten Elementtypen,
+weil er auf den dynamischen Typen der beteiligten Variablen basiert. In
+unserem Beispiel sind beide Seiten der Zuweisung (in Zeile 2) vom dynamischen
+Typ Pair.&nbsp; Wegen der Type Erasure ist aus dem Array von Integer-Paaren
+ein Array von einfachen Paaren geworden und das String-Paar auf der rechten
+Seite der Zuweisung ist ebenfalls zu einem einfachen Paar mutiert.&nbsp;
+Die virtuelle Maschine hat daher zur Laufzeit gar keine Chance mehr, im
+Array-Store-Check die Typabweichung zwischen einem Pair&lt;Integer,Integer>
+und einem Pair&lt;String,String> zu erkennen.&nbsp; Das Ablegen des String-Paares
+in dem Array von Integer-Paaren w&auml;re also ohne Fehler oder Warnung
+m&ouml;glich, wenn Arrays mit parametrisiertem Elementtyp erlaubt w&auml;ren.
+Trotz fehler- und warnungsfreier &Uuml;bersetzung w&uuml;rde es sp&auml;ter
+bei Herausholen von Elementen aus dem Array eine unerwartete ClassCastException
+geben, weil sich im Integer-Array unerwartet ein String befinden w&uuml;rde.&nbsp;
+Ein solches Verhalten entspr&auml;che nicht dem Ziel, Java als typsichere
+Sprache zu erhalten.&nbsp; Deshalb haben sich die Designer der Java Generics
+dazu entschlossen, Arrays mit Elementen von einem parametrisierten Typ
+grunds&auml;tzlich zu verbieten.
+<p>F&uuml;r die praktische Arbeit ist das Verbot von Arrays mit Elementen
+von einem parametrisierten Typ eine heftige Einschr&auml;nkung.&nbsp; Wenn
+man ernsthaft mit generischen Typen programmiert, dann ist es v&ouml;llig
+nat&uuml;rlich, dass man auch Arrays mit parametrisiertem Elementtyp anlegen
+will. Das geht aber nicht. Was bedeutet das in der Praxis? Der Entwickler
+hat zwei Alternativen:
+<ul>
+<li>
+Entweder er verzichtet auf die Verwendung von Arrays und verwendet statt
+dessen Collections; also statt eines Pair&lt;String,String>[] wird eine
+Collection&lt;Pair&lt;String,String>> verwendet.</li>
+
+<li>
+Oder er deklariert als Elementtyp des Arrays keine konkrete Instanziierung
+eines parametrisierten Typs, sondern verwendet als Elementtyp eine Wildcard-Instanziierung
+; also statt&nbsp; Pair&lt;String,String>[] wird ein Pair&lt;?,?>[] verwendet.</li>
+</ul>
+Wildcard-Instanziierungen sind - im Gegensatz zu den konkreten Instanziierungen
+- als Elementtyp von Arrays&nbsp; erlaubt.&nbsp; Dabei mu&szlig; das Wildcard
+das sogenannte „Unbounded Wildcard“ sein (syntaktisch bezeichnet durch
+ein Fragezeichen).
+<p>Eine Wildcard-Instanziierungen wie Pair&lt;?,?> ist als Elementtyp zul&auml;ssig,
+weil die Type Erasure sich auf diese Art der Wildcard-Instanziierungen
+nicht auswirkt.&nbsp; Ein „Unbounded Wildcard“ macht keinerlei Aussagen
+&uuml;ber einen Typparameter. Der Typ Pair&lt;?,?> zum Beispiel enth&auml;lt
+keine Information &uuml;ber die Typargumente der Instanziierung und ist
+damit genauso unexakt wie der „Raw Type“ Pair, der nach der &Uuml;bersetzung
+per Type Erasure &uuml;brig bleibt. Ein Array mit Elementtyp Pair&lt;?,?>&nbsp;
+ist semantisch gesehen ein Array von Paaren beliebigen Inhalts.&nbsp; Von
+einem Array-Store-Check wird man daher auch nur erwarten, dass er sicherstellt,
+dass ausschlie&szlig;lich Paare (beliebigen Inhalts) im Array abgelegt
+werden.&nbsp; Und das genau leistet ein Array-Store-Check auf Basis der
+nicht-exakten dynamischen Typinformation. Bei Verwendung von Wildcard-Instanziierungen
+wie Pair&lt;?,?> als Elementtyp eines Arrays ergeben sich daher keine &Uuml;berraschungen,
+und deshalb sind sie – im Gegensatz zu den Arrays mit konkret instanziiertem
+parametrisiertem Typ - zugelassen.
+<br>&nbsp;
+<p>Sehen wir uns die beiden Alternativen zum Array im Beispiel an:
+<p>Bei Verwendung einer Collection anstelle eines Arrays s&auml;he das
+Beispiel so aus:
+<p><tt>1 ArrayList&lt;Pair&lt;Integer,Integer>> arr</tt>
+<br><tt>2&nbsp;&nbsp;&nbsp; = new ArrayList&lt;Pair&lt;Integer,Integer>>(10);</tt>
+<br><tt>3 arr.set(0,new Pair&lt;String,String>("",""));&nbsp; // compile-time
+error message</tt>
+<p>Der Versuch, ein Paar vom falschen Typ in der Collection abzulegen,
+wird bereits vom Compiler mit einer Fehlermeldung abgefangen. Eine Pr&uuml;fung
+&agrave; la Array-Store-Check zur Laufzeit ist gar nicht n&ouml;tig.&nbsp;
+Die Pr&uuml;fung erfolgt schon zur Compile-Zeit auf Basis der Signatur
+der set()-Methode. Die set()-Methode einer ArrayList&lt;Pair&lt;Integer,Integer>>
+akzeptiert n&auml;mlich nur Argumente vom Typ Pair&lt;Integer,Integer>.&nbsp;
+Das Argument vom Typ Pair&lt;String,String> ist daher vom falschen Typ
+und wird vom Compiler abgelehnt.
+<br>&nbsp;
+<p>Bei Verwendung einer Wildcard-Instanziierung anstelle einer konkreten
+Instanziierung als Elementtype des Arrays s&auml;he das Beispiel so aus:
+<p><tt>1 Object[] arr = new Pair&lt;?,?>[10];&nbsp;&nbsp; // supposed to
+be Pair&lt;Integer,Integer>[]</tt>
+<br><tt>2 arr[0] = new Pair&lt;String,String>("","");</tt>
+<p>Jetzt ist das Array ein Pair&lt;?,?>-Array und es ist aus dem Sourcecode
+bereits klar ersichtlich, dass im Prinzip jeder beliebige Typ von Paar
+in diesem Array enthalten sein kann. Das Ablegen des String-Paares ist
+daher zul&auml;ssig.
+<p>Die beiden Alternativen zu Arrays mit parametrisiertem Elementtyp –
+Collections oder Wildcard-Arrays – sind beide semantisch verschieden von
+einem&nbsp; Array mit parametrisiertem Elementtyp.&nbsp; Die Collection
+bringt den &uuml;blichen Overhead einer Collection mit sich und ist nat&uuml;rlich
+nicht so effizient wie ein Array.&nbsp; Das Wildcard-Array ist zwar ein
+Array und entsprechend effizient, aber es ist keine Sequenz von Elementen
+desselben Typs, so wie es die Collection ist oder es ein Array mit parametrisiertem
+Elementtyp w&auml;re. Ein Pair&lt;?,?>-Array ist ein gemischtes Array von
+Paaren beliebigen Typs.&nbsp; M&ouml;glicherweise ist es nicht das, was
+wir haben wollten, aber wir haben in Java Generics nun mal keine M&ouml;glichkeit
+auszudr&uuml;cken, dass wir mit einem Array von Paaren eines bestimmten
+Typs arbeiten wollen.
+<br>&nbsp;
+<h3>
+2.2 Die Folgen ignorierter Warnungen</h3>
+Sehen wir uns an, was passiert, wenn man die "unchecked"-Warnungen, die
+der Compiler bisweilen ausgibt, ignoriert.&nbsp; F&uuml;r die Diskussion
+nehmen wir unser Array-Beispiel von oben her. Wir verwenden ein Pair&lt;?,?>-
+Array und f&uuml;llen Integer-Paare hinein.&nbsp; Wenn wir die Integer-Paare
+aus dem Array herausholen, sind sie vom statischen Type her keine Integer-Paare,
+sondern nur Paare unbestimmten Inhalts vom Typ Pair&lt;?,?>.&nbsp; Das
+f&uuml;hrt zu einer Fehlermeldung im folgenden Programmabschnitt:
+<p><tt>1 Pair&lt;?,?>[] arr = new Pair&lt;?,?>[10];</tt>
+<br><tt>2</tt>
+<br><tt>3 for (int i=0; i&lt;arr.length; i++)</tt>
+<br><tt>4&nbsp;&nbsp;&nbsp;&nbsp; arr[i] = new Pair&lt;Integer,Integer>(i,i);</tt>
+<br><tt>5</tt>
+<br><tt>6 for (int i=0; i&lt;arr.length; i++) {</tt>
+<br><tt>7&nbsp;&nbsp;&nbsp;&nbsp; Pair&lt;Integer,Integer> p = arr[i];&nbsp;
+// error !!!</tt>
+<br><tt>8&nbsp;&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>9 }</tt>
+<p>Der Compiler meldet einen Fehler in&nbsp; Zeile 7, weil ein Pair&lt;?,?>
+nicht einem Pair&lt;Integer,Integer> zugewiesen werden kann.&nbsp; Nehmen
+wir einmal an, wir w&uuml;&szlig;ten aufgrund der Semantik des Programms,
+dass alle Paare im Array Integer-Paare sind.&nbsp; Also k&ouml;nnten wir
+auf den Gedanken kommen, den Compiler mit geschickten Casts austricksen.&nbsp;&nbsp;
+Folgender Cast t&auml;uscht den Compiler, so dass er die Zuweisung – allerdings
+mit "unchecked warning" - akzeptiert:
+<p><tt>1 Pair&lt;?,?>[] arr = new Pair&lt;?,?>[10];</tt>
+<br><tt>2</tt>
+<br><tt>3 for (int i=0; i&lt;arr.length; i++)</tt>
+<br><tt>4&nbsp;&nbsp;&nbsp;&nbsp; arr[i] = new Pair&lt;Integer,Integer>(i,i);</tt>
+<br><tt>5</tt>
+<br><tt>6 for (int i=0; i&lt;arr.length; i++) {</tt>
+<br><tt>7&nbsp;&nbsp;&nbsp;&nbsp; Pair&lt;Integer,Integer> p = (Pair&lt;Integer,Integer)
+arr[i];&nbsp; // unchecked warning</tt>
+<br><tt>8&nbsp;&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>9 }</tt>
+<p>So gelingt es uns, Integer-Paare im Pair&lt;?,?>-Array abzulegen und
+die Array-Elemente sp&auml;ter auch so zu verwenden, als seien sie Integer-Paare.&nbsp;
+Wir brauchen zwar einen Cast und der Compiler gibt eine Warnung aus, aber
+diese Warnung haben wir beschlossen zu ignorieren.
+<p>Nun k&ouml;nnte es aber auch sein sein, dass sich im Pair&lt;?,?>-Array
+entgegen unseren Erwartungen ein String-Paar eingeschlichen hat.&nbsp;
+Diese Situation haben wir im folgenden Beispiel hergestellt; in Zeile 6
+schmuggeln wir ein String -Paar ein:
+<p><tt>1 Pair&lt;?,?>[] arr = new Pair&lt;?,?>[10];</tt>
+<br><tt>2</tt>
+<br><tt>3 for (int i=0; i&lt;arr.length; i++)</tt>
+<br><tt>4&nbsp;&nbsp;&nbsp;&nbsp; arr[i] = new Pair&lt;Integer,Integer>(i,i);</tt>
+<br><tt>5</tt>
+<br><tt>6 arr[0] = new Pair&lt;String,String>("...","...");&nbsp; // add
+alien pair</tt>
+<br><tt>7</tt>
+<br><tt>8 for (int i=0; i&lt;arr.length; i++) {</tt>
+<br><tt>9 Pair&lt;Integer,Integer> p = (Pair&lt;Integer,Integer>)arr[i];&nbsp;
+// unchecked warning</tt>
+<br><tt>10</tt>
+<br><tt>11 Integer first&nbsp; = p.getFirst();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// ClassCastException</tt>
+<br><tt>12 Integer second = p.getSecond();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// ClassCastException</tt>
+<br><tt>12&nbsp;&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>13 }</tt>
+<p>Das „Einschmuggeln“ funktioniert problemlos, weil ein Array von Pair&lt;?,?>-Elementen
+eben einfach keine Sequenz von Paaren eines bestimmten Typs ist. Selbstverst&auml;ndlich
+k&ouml;nnen wir jede Art von Paar im Array ablegen. Der Compiler kann und
+soll hier gar nichts melden.&nbsp; Erst beim Herausholen der Elemente kommt
+wegen des unvermeidlichen Casts die "unchecked"-Warnung, diesmal zu Zeile
+9. Was passiert, wenn wir die Warnung ignorieren? Wie wirkt es sich aus,
+wenn eine Referenzvariable vom statischen Typ Pair&lt;Integer,Integer>
+auf ein Objekt vom dynamischen Typ Pair&lt;String,String> verweist?
+<p>Das Integer-Paar p, das eigentlich ein String-Paar ist, wird im Programm
+weitergereicht und verwendet.&nbsp; Das funktioniert auch - solange, bis
+auf das Paar zugegriffen wird, in der Erwartung, es enthalte Integers.&nbsp;
+Dann erst gibt es eine ClassCastException. In unserem Beispiel passiert
+das in Zeile 11 bereits.&nbsp; In einem realistischen Programm kann das
+aber an einer ganz anderen Stelle im Programm sein. Das hei&szlig;t, lange
+nachdem der eigentliche Fehler, n&auml;mlich das Zuweisen eines String-Paares
+an eine Variable vom Typ Pair&lt;Integer,Integer>, passiert ist, wirkt
+sich der Fehler erst aus.&nbsp; Die Ursache eines solchen Fehlers dann
+noch zu identifizieren, ist in der Praxis meistens recht m&uuml;hselig.&nbsp;
+Es empfiehlt sich also, die "unchecked"-Warnungen nicht grunds&auml;tzlich
+zu ignorieren.
+<p>Nun gibt es leider einige Situationen, in denen die "unchecked"-Warnungen
+gar nicht verhindert werden k&ouml;nnen.
+<br>Dazu geh&ouml;rt die gemischte Verwendung von generischen und nicht-generischen
+Programmteilen.&nbsp; Das d&uuml;rfte in der Praxis ein recht h&auml;ufiger
+Fall sein, weil man alten „Legacy“-Code sicher nicht komplett generifizieren
+wird, sondern alten und neuen Code nebeneinander und gemischt verwenden
+wird. Daneben sind "unchecked"-Warnungen unvermeidlich bei der Implementierung
+von Methoden wie clone() und equals(), die aus historischen Gr&uuml;nden
+nicht parametrisiert sind und noch immer mit Object funktionieren.&nbsp;
+Eine detaillierte Diskussion dieser Situationen w&uuml;rde den Rahmen des
+Artikels sprengen.&nbsp; Es bleibt lediglich festzuhalten, dass sich "unchecked"-Warnungen
+nicht vollst&auml;ndig vermeiden lassen. Viele dieser Warnungen sind unberechtigt
+und die Kunst besteht darin, die berechtigten Warnungen unter den unberechtigten
+zu identifizieren.
+<br>&nbsp;
+<h3>
+2.3 Checked Collections</h3>
+Im Zusammenhang mit der Diskussion &uuml;ber Arrays mit parametrisiertem
+Elementtyp haben wird die Collections mit parametrisiertem Elementtyp als
+Alternative erw&auml;hnt.&nbsp; Bei der Collection ist im Gegensatz zum
+Wildcard-Array gew&auml;hrleistet, dass es nur Elemente desselben Typs
+enth&auml;lt, weil der Compiler Pr&uuml;fungen auf Basis der exakten statischen
+Typeinformation, wie z.B. List&lt;String>, macht. Da man den Compiler aber
+mit Casts leicht &uuml;berlisten kann, ist nat&uuml;rlich keineswegs gew&auml;hrleistet.,
+dass eine List&lt;String> tats&auml;chlich nur Strings enth&auml;lt.
+<p>Wenn man wirklich sicher gehen will, dass eine List&lt;String> tats&auml;chlich
+nur Strings enth&auml;lt, dann kann man einen sogenannten „checked“-Adapter
+verwenden.&nbsp; Die Klasse Collections bietet einen Adapter, der &auml;hnlich
+wie der synchronized- oder der unmodifiable-Adapter eine Sicht auf eine
+existierende Collection bietet.&nbsp; Der Unterschied zur Original-Collection
+besteht darin, dass eine checked-Collection jedes Mal, wenn ein Element
+eingef&uuml;gt wird, zur Laufzeit pr&uuml;ft, ob das Element vom richtigen
+Typ ist.
+<p>Hier wird zu den statischen Typpr&uuml;fungen, die der Compiler auf
+Basis der Typparameter macht&nbsp; - und die man mit geschickten Casts
+sabotieren kann - noch zus&auml;tzlich eine Typpr&uuml;fung zur Laufzeit
+gemacht. Das ist nat&uuml;rlich „doppelt-gemoppelt“ und dient allein dazu,
+die sabotierbaren statischen Typpr&uuml;fungen durch zus&auml;tzliche dynamische
+Typpr&uuml;fungen abzusichern.&nbsp; Hier ist das Beispiel einer checked-Collection:
+<p><tt>1&nbsp; Collection&lt;String> cc</tt>
+<br><tt>2&nbsp; = Collections.checkedCollection(new LinkedList&lt;String>(),
+String.class);</tt>
+<br><tt>3&nbsp; cc.add(new Integer(5));&nbsp; // compile-time error: wrong
+argument type</tt>
+<br><tt>4</tt>
+<br><tt>5&nbsp; Collection&lt;Integer> fake</tt>
+<br><tt>6&nbsp; =(Collection&lt;Integer>)(Collection&lt;?>)cc;&nbsp; //
+warning: unchecked cast</tt>
+<br><tt>7&nbsp; fake.add(new Integer(5)); // exception: attempt to insert
+element of wrong type</tt>
+<p>Der plumpe Versuch, einen Integer in eine String-Liste einzuf&uuml;gen,
+scheitert nat&uuml;rlich an den Typpr&uuml;fungen des Compilers: die Methode
+add() akzeptiert nur String-Argumente und das meldet der Compiler dann
+auch als Fehler (in Zeile 3).
+<br>Also greifen wir in die Trickkiste (in Zeile 5 und 6) und lassen die
+String-Collection so aussehen, als sei sie eine Integer-Collection.&nbsp;
+Dazu verwenden wir einen sogenannten "double-fisted cast", also ein Cast
+&uuml;ber zwei Stufen, wobei die erste Stufe ein v&ouml;llig generischer
+Typ wie Object oder ein Wildcard-Typ ist.&nbsp; Das klappt immer und legt
+jede wohlgemeinte Typpr&uuml;fung des Compilers lahm.&nbsp; Der Compiler
+gibt eine "unchecked"-Warnung aus und l&auml;&szlig;t das Einf&uuml;gen
+des Integer-Elements in die nun vermeintliche Integer-Collection zu (siehe
+Zeile 7). Zur Laufzeit schl&auml;gt dann die dynamische Pr&uuml;fung der
+checked-Collection zu und l&ouml;st eine ClassCastException aus.
+<p>In obigem Beispiel haben wir mit &auml;u&szlig;erst brutalen Mitteln
+den Fremdling eingeschmuggelt; so etwas macht in der Praxis nat&uuml;rlich
+nicht. Aber &auml;hnliche Probleme k&ouml;nnen auch versehentlich hervorgerufen
+werden, beispielsweise wenn nicht-generische Legacy-Methoden aufgerufen
+werden. Hier ein Beispiel:
+<p><tt>1&nbsp; class Legacy {</tt>
+<br><tt>2&nbsp;&nbsp; private List elements;</tt>
+<br><tt>3&nbsp;&nbsp; public Legacy(List l) { elements = l; }</tt>
+<br><tt>4&nbsp;&nbsp; ...</tt>
+<br><tt>5&nbsp;&nbsp;&nbsp;&nbsp; public List getElements() { return elements;
+}</tt>
+<br><tt>6&nbsp;&nbsp; }</tt>
+<br><tt>7</tt>
+<br><tt>8&nbsp; Collection&lt;String> cc = new LinkedList&lt;String>();</tt>
+<br><tt>9&nbsp; Legacy leg = new Legacy(cc);</tt>
+<br><tt>10 ...</tt>
+<br><tt>11 cc = leg.get();&nbsp; // unchecked warning</tt>
+<p>Nun mag es zwar sein, dass wir aufgrund der Dokumentation wissen (oder
+glauben zu wissen), dass die Liste, die von der get()-Methode geliefert
+wird, nur Strings enth&auml;lt, aber das kann der Compiler nicht pr&uuml;fen
+und es ist durch nichts in der Sprache abgesichert. Der Compiler l&auml;&szlig;t
+die Zuweisung der Raw-Type-Liste an die String-Collection-Variable aus
+Kompatibilit&auml;tsgr&uuml;nden dennoch zu – allerdings mit einer uncheckd-Warnung.
+Hier k&ouml;nnte nun wegen eines Mi&szlig;verst&auml;ndnisses eine Liste
+mit ganz anderen Elementen f&auml;lschlicherweise als eine Liste von Strings
+betrachtet und verwendet werden.&nbsp; Wenn man sicher gehen will, dass
+die String-Liste auch wirklich nur Strings enth&auml;lt, dann kann man
+eine checked-Collection verwenden, die das Einf&uuml;gen von unerw&uuml;nschten
+Elementen zur Laufzeit abf&auml;ngt.
+<p>Intern sieht die checked-Collection &uuml;brigens in etwa so aus:
+<p><tt>class CheckedCollection&lt;E> implements Collection&lt;E> {</tt>
+<br><tt>&nbsp; private final Collection&lt;E> c;</tt>
+<br><tt>&nbsp; private final Class&lt;E> type;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; public CheckedCollection(Collection&lt;E> c, Class&lt;E>
+type) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; this.c = c;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; this.type = type;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public boolean add(E o){</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (!type.isInstance(o)) throw new ClassCastException();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return c.add(o);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt>
+<p>Den Zusatzaufwand f&uuml;r die Extra-Typpr&uuml;fung zur Laufzeit wird
+man nat&uuml;rlich nur dann in Kauf nehmen, wenn es wirklich wichtig ist,
+dass die Collection homogen ist.&nbsp; Zu Debugging-Zwecken etwa kann eine
+checked-Exception sehr n&uuml;tzlich sein, beispielsweise wenn man eine
+ClassCastException beim Herausholen eines Elements aus einer Collection
+bekommt und wissen will, wann und wie das st&ouml;rende Element in die
+Collection gelangt ist.&nbsp; Dann kann die fragliche Collection zu Testzwecken
+durch eine checked-Collection ersetzen, so dass die ClassCastException
+bereits beim Einf&uuml;gen eines Elements in die Collection ausgel&ouml;st
+wird.
+<p>Dem aufmerksamen Leser ist nun m&ouml;glicherweise aufgefallen, dass
+die vermeintliche Sicherheit der checked-Collection trotz ihrer doppelten
+(statischen und dynamischen) Typpr&uuml;fung bei Elementtypen von parametrisiertem
+Type dann doch ihre Grenzen findet.&nbsp; Wenn der Elementtyp zum Beispiel
+Pair&lt;String,String> ist, dann werden die statischen Pr&uuml;fungen zwar
+auf den exakten Typ Pair&lt;String,String> pr&uuml;fen, aber die zus&auml;tzliche
+Pr&uuml;fung zur Laufzeit verwendet nat&uuml;rlich nur den nicht-exakten
+Typ Pair.&nbsp; Das ist dann dasselbe Problem wie beim Array-Store-Check.
+Allerdings treten Probleme mit Collections vom parametrisiertem Elementtyp
+nur in Programmen auf, die an irgendeiner Stelle eine "unchecked"-Warnung
+hervorgerufen haben. Bei warnungsfreier &Uuml;bersetzung ist vollst&auml;ndige
+Typsicherheit gew&auml;hrleistet und es treten keine &uuml;berraschenden
+ClassCastExceptions zutage, anders als das bei der Verwendung von Arrays
+mit parametrisiertem Elementtyp der Fall w&auml;re.&nbsp; Deshalb sind
+die Arrays verboten, die Collections hingegen zul&auml;ssig.
+<h2>
+3 Zusammenfassung</h2>
+In diesem Artikel haben wir erl&auml;utert, dass der Java–Compiler f&uuml;r
+parametrisierte Typen&nbsp; nicht-exakte Laufzeit-Typinformation generiert.&nbsp;
+Wir haben gesehen, dass Casts mit parametrisiertem Zieltyp fragw&uuml;rdig
+sind und zu „unchecked“-Warnungen f&uuml;hren.&nbsp; „Unchecked“-Warnungen
+sollten nicht ignoriert werden, denn sie k&ouml;nnen sp&auml;ter zu unerwarteten
+ClassClassExceptions f&uuml;hren. Das Fehlen von exakter Typinformation
+zur Laufzeit bringt einige Einschr&auml;nkungen mit sich, was die Benutzung
+von parametrisierten Typen angeht. Die wohl gravierendste dieser Einschr&auml;nkungen
+ist das Verbot, Arrays zu verwenden, deren Elementtyp ein parametrisierter
+Typ ist. Diese Einschr&auml;nkung ist n&ouml;tig, um die Typsicherheit
+zu gew&auml;hrleisten.
+<h2>
+4 Weitere Informationen</h2>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDK15"></a>/JDK15/&nbsp;</td>
+
+<td VALIGN=TOP><b><font face="Times New Roman, Times, serif"><font size=+0>Java<sup>TM</sup>
+2 SDK, Standard Edition 1.5.0</font></font></b>
+<br><font face="Times New Roman, Times, serif"><font size=+0>Update 1</font></font>
+<br><font face="Times New Roman, Times, serif"><font size=+0><a href="http://java.sun.com/developer/earlyAccess/j2sdk150_alpha/">http://java.sun.com/developer/earlyAccess/j2sdk150_alpha/</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="TUT"></a>/TUT/&nbsp;</td>
+
+<td><b>Java Generics Tutorial</b>
+<br>Gilad Bracha
+<br><a href="http://java.sun.com/j2se/1.5/pdf/generics-tutorial.pdf">http://java.sun.com/j2se/1.5/pdf/generics-tutorial.pdf</a></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td><a NAME="FAQ"></a>/FAQ/</td>
+
+<td><b>Java Generics FAQ</b>
+<br>Angelika Langer
+<br><a href="http://www.langer.camelot.de/GenericsFAQ/JavaGenericsFAQ.html">http://www.AngelikaLanger.com/GenericsFAQ/JavaGenericsFAQ.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="LAN"></a>/LAN/&nbsp;</td>
+
+<td><b>Links related to Java Generics</b>
+<br>Further references to articles, tutorials, conversations and other
+information related to Java Generics can be found on this website at <a href="http://www.langer.camelot.de/Resources/Links/JavaGenerics.htm">http://www.AngelikaLanger.com/Resources/Links/JavaGenerics.htm</a>.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="MAG1"></a>/MAG1/</td>
+
+<td><b>Java Generics - Parametrisierte Typen und Methoden</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaMagazin, April 2004
+<br><a href="GenericsPart1.html">http://www.AngelikaLanger.com/Articles/JavaMagazin/Generics/GenericsPart1.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="MAG2"></a>/MAG2/</td>
+
+<td><b>Wildcard Instantiations of Parameterized Types</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaMagazin, Oktober 2004
+<br><a href="GenericsPart2.html">http://www.AngelikaLanger.com/Articles/JavaMagazin/Generics/GenericsPart2.html</a><a href="http://www.ftponline.com/javapro/2004_05/online/kkreft_05_19_04/">/</a></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/J2SE1.5.html"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/J2SE1.5.html">Java
+5.0</a></font></b>- New Features in J2SE 5.0
+<br><font color="#000000"><font size=-1>1 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<dir>
+<dir>&nbsp;</dir>
+</dir>
+
+</body>
+</html>

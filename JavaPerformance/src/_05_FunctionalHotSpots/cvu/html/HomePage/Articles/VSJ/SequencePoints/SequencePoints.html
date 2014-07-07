@@ -1,0 +1,479 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Pre-Copyedit Version of Article in VSJ, August 2002">
+   <meta name="KeyWords" content="C++ Effective C++ expression evaluation sequence point">
+   <title>Sequence Points and Expression Evaluation in C++</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="VSJSequencePoints"></a>
+<br><font color="#295AB5"><font size=+3>Sequence Points and Expression
+Evaluation</font></font>
+<p><font color="#295AB5"><font size=+2>Visual Systems Journal, August 2002</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p><b>Does anybody know what a sequence point is?&nbsp; Every C++ programmer
+should know it.&nbsp; However, when we pose this question even experienced
+programmers with many years of hands-on experience concede they have no
+idea.&nbsp; In this article we want to shed some light on the secret and
+explain what sequence points are and why it is important to be aware of
+them.</b>
+<br>&nbsp;
+<h2>
+What is a sequence point?</h2>
+A C++ program consists of basically two types of statements:
+<ul>
+<li>
+<i>Declarations and definitions of types, constants, function names, etc.
+</i>This
+is information that the compiler will read and process at compile time.&nbsp;
+Only a minor fraction of this information will show up in the executable
+at runtime.</li>
+
+<li>
+<i>Expressions</i>.&nbsp; This kind of information is interpreted by the
+compiler and translated into instructions that will be executed at runtime
+in order to evaluate the expressions.</li>
+</ul>
+The expressions are the really interesting the part of the program because
+they have side effects at runtime and for this reason determine what the
+program will eventually do. Hence our main interest in programming is in
+evaluation of expressions.&nbsp; Sequence points have to do with expression
+evaluation.
+<br>&nbsp;
+<h3>
+Side Effects of Expression Evaluation</h3>
+Before we delve into sequence points, let's clarify what the side effects
+of expression evaluation are.&nbsp; The side effects that a C++ program
+can produce are:
+<ul>
+<li>
+Modification of an object, that is, modification of some memory location
+or register.</li>
+
+<li>
+Access to an object that is declared volatile.</li>
+
+<li>
+Invocation of a system routine that produces side effects, like for instance
+input or output to files.</li>
+
+<li>
+Invocation of functions that perform any of the above.</li>
+</ul>
+Hence, most of what a C++ program does is modification of memory locations
+and invocation of system-level routines. (If you are not sure about the
+effect of access to volatile objects, see the <a href="#Box 1">box 1</a>
+for further information.)
+<br>&nbsp;
+<center><table BORDER=0 CELLPADDING=5 COLS=1 WIDTH="80%" >
+<tr BGCOLOR="#000000">
+<td><a NAME="Box 1"></a><b><font color="#FFFFFF">Box 1: Volatile Variables</font></b></td>
+</tr>
+
+<tr BGCOLOR="#FFFFCC">
+<td>The common understanding of volatile is that is tells the compiler
+it must not do certain optimizations. More precisely it means that the
+compiler must not optimize away access to any variable that is declared
+volatile, even if the compiler knows that its value has not been changed
+between the last write access and the current read access.
+<br>Example:&nbsp; Let us assume the compiler sees a sequence of statements
+like the following:
+<blockquote><tt>int i=0;</tt>
+<br><tt>...&nbsp; many statements that do not touch i ...</tt>
+<br><tt>if (i==0)</tt>
+<br><tt>...</tt></blockquote>
+From the context the compiler can tell that the value of i must be 0 because
+there was no write access since it was initialized and it was not passed
+to any function that might have modified it.&nbsp; Hence the compiler could
+optimize away the actual access to the memory location that represents
+variable i because it already knows that the value must be 0. Exactly that
+optimization is disabled for a volatile variable.
+<p>What is volatile good for? Why would we ever want to disable such a
+useful optimization?
+<p>Well, sometimes we declare variables volatile that are modified from
+outside of the program.&nbsp; Examples are variables that represent a system
+clock for instance.&nbsp; The system will modify the variable's value and
+in such a case the compiler's program analysis will be pointless; the modification
+will not be visible in the program's source code. In system-level programming
+it is not unusual to occasionally declare variables as volatile.
+<p>But they are also used in concurrent programming where multiple threads
+may have access to the same variable. In that case one thread might change
+the value of a shared variable without any modifying access being visible
+in the other thread.&nbsp; Again, the compiler cannot tell from analysis
+of one thread's source code whether the variable has been changed by another
+thread or not, and the compiler must not optimize away any access to the
+shared variable.&nbsp; In concurrent programming we declare shared variables
+as volatile.
+<p>As you see from the examples, access to a volatile variable does produce
+a side effect: it retrieves a value from some memory location that has
+been provided by some other entity outside of the current program.</td>
+</tr>
+</table></center>
+
+<h3>
+Order of Evaluation of Expressions</h3>
+Back to sequence points:&nbsp; The compiler will generate executable instructions
+that will eventually evaluates all expressions in a program. The order
+in which the expressions will be evaluated is roughly the order in which
+they appear in the source code, that is, top to bottom and left to right.
+We say "roughly" because the compiler has some latitude to rearrange the
+order of expression evaluation if it sees potential for optimizations.
+However, the latitude granted to the compiler is limited - by sequence
+points. A sequence point is a point in the sequence of all expressions
+where the compiler is required to have finished the evaluation of all preceding
+expressions and has not yet started evaluation of any subsequent expressions.
+<p>Which means that a sequence point is a point in the program where we
+as programmers know which expressions (or subexpressions) have already
+been evaluated and which expressions (or subexpressions) have not yet been
+evaluated.&nbsp; In other words, sequence points are points in the program
+where we know where we stand in the process of execution of your program.&nbsp;
+Between sequence points we know nothing about the order of evaluation of
+expressions and subexpressions. To most programmers' surprise there are
+only very few sequence points defined in C++, which means that most of
+the time we have no idea what has happened yet and which subexpressions
+have not yet been evaluated.
+<h3>
+Examples</h3>
+Let's take&nbsp; a look at some examples. When we see an expression like&nbsp;
+i=2; then we expect that once control flow reaches the semicolon variable
+i will have the value 2.&nbsp; This expectation is correct because there
+is indeed a sequence point at the end of every "full expression". (For
+the time being&nbsp; do not worry about the term "full expression"; usually
+the end of an expression is the semicolon that marks the end of a statement.)&nbsp;
+Which means that at the end of each statement, the statement has been executed
+as expected.
+<p>But wait!&nbsp; How about this example:
+<blockquote><tt>x[i]=i++ + 1;</tt></blockquote>
+Let's assume variable i has the value 1 before we enter the statement.&nbsp;
+What will be the result of evaluation of this expression? The correct answer
+is: we don't know.&nbsp; However, programmers ever too often believe that
+they know what this program fragment does. Typical answers include: "x[1]
+will have the value 2", or "x[2] will have the value 2", or even "x[1]
+will have the value 3".
+<p>The third option is definitely wrong. This will not happen because i++
+is a postfix increment and returns i's initial value 1; hence the value
+of the right hand side of the assignment is 2, and definitely not 3. (For
+further information on the difference between prefix and postfix increment,
+see <a href="#Box 2">box 2</a>.)&nbsp; So far so good, but we do not know
+which entry of the array x will be modified.&nbsp; Will the index be 1
+or 2 when the right hand side value will be assigned to x[i]?
+<p>There is no definite answer to this question. It fully depends on the
+order in which the compiler evaluates the subexpressions.&nbsp; If the
+compiler starts on the right hand side of the assignment and evaluates
+i++ + 1 before it figures out which position in the array x must be assigned
+to then x[2] will be modified because i will have already been incremented
+in the course of evaluating the subexpression i++.&nbsp; Conversely, if
+the compiler starts on the left hand side and figures out that it must
+assign to position i in array x, which at that time will still be position
+1, before it evaluates the right hand side then we'll end up with a modification
+of x[1].&nbsp; Both outcomes are equally likely and equally correct.
+<br>&nbsp;
+<br>&nbsp;
+<center><table BORDER=0 CELLPADDING=5 COLS=1 WIDTH="80%" >
+<tr BGCOLOR="#000000">
+<td><a NAME="Box 2"></a><b><font color="#FFFFFF">Box 2: The Difference
+between Prefix and Postfix Increment and Decrement</font></b></td>
+</tr>
+
+<tr BGCOLOR="#FFFFCC">
+<td>Prefix operators differ from postfix operators in their return value.
+<p>Every operator produces a side effect and has a return value. The side
+effect of both prefix and postfix increment is incrementation of the variable's
+value.&nbsp; The return value, however, is different.&nbsp; The prefix
+operator return the value after the modification and the postfix operator
+returns the value before the modification.&nbsp;
+<p>Both effects, the side effect and the calculation of the return value,
+happen at the same time, namely when the pre- or postfix expression is
+evaluated.&nbsp; Sometimes people mistakenly believe that with a postfix
+increment the increment happens "afterwards", like in the following example:
+<blockquote><tt>f(i++);</tt></blockquote>
+is it sometimes expected that the i++ happens after the function call,
+which is not true.&nbsp; The expression i++ is evaluated before the function
+is called, which means that the increment happens before the function invoked.&nbsp;
+It is just that the return value of the expression i++ is the value before
+the modification and for that reason the original value is passed to the
+function.&nbsp; The side effect of the postfix increment however is definitely
+produced before the function will be called.</td>
+</tr>
+</table></center>
+
+<p>How can it be that the result of an innocent statement&nbsp; such as
+x[i]=i++ + 1; is undefined?&nbsp; Well, it is the immediate consequence
+of&nbsp; the fact that the order of evaluation of expressions and subexpression
+between sequences points is undefined. Remember, the only sequence point
+in this code fragment is at the end of the full expression, that is, at
+the semicolon.&nbsp; The common misconception is that people believe the
+assignment operator would introduce a sequence point, in which case the
+compiler would have to evaluate the left hand side before the right hand
+side. But the assignment operator does not mark a sequence point; practically
+none of the operators in C++ is a sequence point.&nbsp; (The only exception
+is the rarely used comma operator, as we will see later.)
+<br>&nbsp;
+<h2>
+Problematic vs. Safe Expressions</h2>
+What is it that renders the assignemnt x[i]=i++ + 1; a problematic one
+whereas the assignement i=2; is harmless, in the sense that its result
+is well-defined and predictable?&nbsp; The crux is that in the expression
+x[i]=i++ + 1; there are two accesses to variable i and one of the accesses,
+namely the i++,&nbsp; is a modifying access. Since the order of evaluation
+between sequence points is not defined we do not know whether i will be
+modified before it will be read or whether it will be read before the modification.
+Hence the root of the problem is multiple access to a variable between
+sequence points if one the accesses is a modification.
+<p>Here is another example.&nbsp; What will happen here if&nbsp; i and
+j have values 1 and 2 before the statement is executed?
+<blockquote><tt>f(i++, j++, i+j);</tt></blockquote>
+Which value will be passed to function f as the third argument?&nbsp; Again,
+we don't know. It could be any of the following: 3, 4, or 5. It depends
+on the order in which the function arguments are evaluated.&nbsp;&nbsp;
+The common misconception here is that the arguments would be evaluated
+left to right. Or maybe right to left? In fact, there is no order whatsoever
+mandated by the language definition.
+<br>&nbsp;
+<h3>
+Latitude for Optimizations</h3>
+Why actually does the language specification leave it open in which order
+compilers evaluate expressions between sequence points?&nbsp; Wouldn't
+matters be much clearer if a definite order of evaluation were defined?
+<p>The reason for the undefined order of evaluation between sequence points
+is, like ever so often in C++, efficiency.&nbsp; Compilers are given the
+liberty to evaluate expressions in the order that is most efficient for
+a given platform and processor.&nbsp;&nbsp; Which means that the sequence
+problems explained above are usually portability problems. The undefined
+order of evaluation might never ever bother you as long as you stick to
+the same compiler on the same platform.&nbsp; However, it can hit you as
+soon as you install the latest version of your compiler and recompile your
+source code. Or it hits you when you port your program to another platform.&nbsp;
+In any case, this type of bug is hard to track down because it hits you
+when you least expect it, because you can swear that you did not change
+a single line of code ...
+<br>&nbsp;
+<h2>
+The Complete List of Sequence Points in C++</h2>
+So far we have only talked of the sequence point at the end of the full
+expression. Here is the complete list of all sequence points in C++:
+<ul>
+<li>
+at the end of a full expression</li>
+
+<li>
+after the evaluation of all function arguments in a function call and before
+execution of any expressions in the function body</li>
+
+<li>
+after copying of a returned value and before execution of any expressions
+outside the function</li>
+
+<li>
+after evaluation of the first expression in a&amp;&amp;b,&nbsp; a||b,&nbsp;
+a?b:c,&nbsp; or&nbsp; a,b</li>
+
+<li>
+after the initialization of each base and member in the constructor initialization
+list</li>
+</ul>
+Let's look at each of the sequence points in brevity:
+<p><b><i>End of a full expression</i>.</b> The end of the full expression
+is the semicolon in regular statements.&nbsp; In a conditional expression
+such as if(i==0 &amp;&amp; j==f(x,y,z)) the end of the full expression
+not a semicolon but the closing bracket
+<p><b><i>Function calls.</i></b> The sequence points before and after a
+function call mean that execution of the invoked function and the calling
+context is not intermingled:&nbsp; all statements before the function call
+are executed, the function arguments are evaluated (in undefined order),
+and then the function body is executed.&nbsp; Similarly on&nbsp; return
+from the function:&nbsp; all statements of the function body are executed;
+the return expression is evaluated, and then control flow continues in
+the calling context with the statement after the function call.
+<p><b><i>Operators</i></b>. The sequence points in the logical expressions
+such as &amp;&amp; and || and ternary operator ?: and the comma operator
+mean that the left hand side operand is evaluated before the right hand
+side operand.&nbsp; These few operands are the only operands in C++ that
+introduce sequence points.
+<br>Note , that the comma operator is among them, which complicates matters
+even further, because the comma operator is often confused with the comma
+as a separator, as for instance in the list of function arguments.&nbsp;
+Most of the time a comma is a separator; the comma operator is rarely used.&nbsp;
+Its most common use is in for-loops like for(i=0, j=0; i&lt;100||j&lt;200;++i,++j).
+In a list of function arguments such as f(++i,++j) the comma is just the
+separator between function arguments and does not imply any order of evaluation
+of the function arguments.
+<br>Just to demonstrate how confusing it can get, consider the following:
+what if&nbsp; f is a function with just one argument and we pass (++i,++j)
+to the function, like in f((++i,++j))?&nbsp; In that case the comma would
+not be a separator between function arguments, but the comma operator.
+As a result ++i would be evaluated before ++j.&nbsp; The result of that
+evaluation would be passed as an argument to function f, which raises the
+question: what is the result of the comma operator?&nbsp; Its the result
+of the evaluation of the right operand.
+<br>Equally confusing is an expression such as array[++i,++j]. Remember,
+positions in a 2-dimensional array are referred to as array[i][j].&nbsp;
+Hence the comma in array[++i,++j] is not a separator, but the comma operator.
+<p><b><i>Constructor initialization list. </i></b>The last sequence point
+between initializations of base classes and members in the constructor
+initialization list exists because the order of these initializations is
+well-defined and not left to the compiler's discretion. Note, that the
+order is not the order in which bases and members appear in the constructor
+initialization list, but is the order in which they are listed in the class
+definition.&nbsp; Example:
+<blockquote><tt>class Array {</tt>
+<br><tt>private:</tt>
+<br><tt>&nbsp;int* data;</tt>
+<br><tt>&nbsp;unsigned size;</tt>
+<br><tt>&nbsp;int lBound, hBound;</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp;Array(int low, int high)</tt>
+<br><tt>&nbsp;:size(high-low+1), lBound(low), hBound(high), data(new int[size])
+{}</tt>
+<br><tt>};</tt></blockquote>
+The order of initialization is data(new int(size)) followed by size(high-low+1)
+followed by lBound(low) followed by hBound(high), which of course is problematic
+in this case because size will be used before is will be initialized to
+a sensible value. This is another known pitfall in C++, which you find
+explained in /<a href="#Meyers">MEY</a>/.
+<br>The sequence point between initialization of each base and member in
+the constructor initialization list just makes sure the initializations
+are not intermingled. Instead they happen one after other in the order
+the bases and members are listed in the class definition.
+<br>&nbsp;
+<h3>
+Hidden Dependencies</h3>
+Now that you know all sequence points you are ready for looking into a
+couple of additional examples. So far, we have only seen examples where
+the multiple access to at least variable was fairly obvious. How about
+this one?
+<blockquote><tt>x = f() + g() + h();</tt>
+<br>Is there any doubt about what will happen?&nbsp; At first sight it
+appears as though nothing could go wrong here. The 3 functions will be
+called in indefinite order, the sum of their return values will be calculated
+and an assignment will be performed.&nbsp; But, what if all 3 functions
+would access a shared static or global variable that they read and modify?&nbsp;
+We do not know in which order the 3 functions will be invoked and for that
+reason we would not know in which order read and write access to the shared
+data would be performed.&nbsp; Again, another sequence point challenge.</blockquote>
+
+<h3>
+Sequence Points and Exceptions</h3>
+Here is another interesting case:
+<blockquote><tt>f( new X(i++), new Y(i) );</tt></blockquote>
+Lots of things are going on here: we produce the side effects of modification
+of variable i, memory allocation for objects of type X and Y, and construction
+of these objects.&nbsp; We do not know in which order these side effects
+will be produced.&nbsp; Well, we do know that i++ will be evaluated before
+the constructor of X will be invoked and we can safely assume that the
+runtime system will allocate memory before it will try to initialize that
+memory be means of the constructor calls.&nbsp; But we do not know whether
+i will be incremented before it will be passed to the constructor of Y.&nbsp;
+And we do not know which object will be allocated first and/or which constructor
+will be called first. It is even allowed that the compiler may allocate
+the memory for both objects before it calls any of the constructors.
+<p>This lack of certainty is particularly problematic in case of exceptions
+being thrown by either operator new or any of the constructors.&nbsp; In
+case of an exception we would not know what has already happened and for
+this reason we would have no idea how to react and roll-back appropriately.
+<br>&nbsp;
+<h2>
+Avoid Complex Expressions</h2>
+The problem in the example above was again: multiple access to the same
+variable including a modification.&nbsp; We simply tried to squeeze too
+many things into one expression.&nbsp; As a rule of thumb: avoid complex
+expressions. All of the problems discussed in this article can be prevented
+by breaking complex expressions down into smaller expressions.&nbsp; For
+instance, instead of saying
+<blockquote><tt>x[i]=i++ + 1;</tt></blockquote>
+we could say
+<blockquote><tt>x[i]=i + 1;</tt>
+<br><tt>i++;</tt></blockquote>
+or whatever else we want to see happening. By taking the expression apart
+we introduce additional sequence points and as a result we have a defined
+order of expression evaluation.&nbsp; The same applies to the last examples:
+instead of saying
+<blockquote><tt>f( new X(i++), new Y(i) );</tt></blockquote>
+we could say
+<blockquote><tt>X* xptr = new X(i++);</tt>
+<br><tt>Y* yptr = new Y(i);</tt>
+<br><tt>f( xptr, yptr );</tt></blockquote>
+If we now catch a Yexception (from whose type we can tell that it was thrown
+by the Y constructor) then we would be able to tell that the X object must
+have already been successfully created and we have a much better chance
+to handle the exception more appropriately. Or we could wrap each of these
+statements into a try-block of its own if we wanted to catch and handle
+the bad_alloc exceptions from either of the calls to operator new.
+<br>&nbsp;
+<h3>
+Recommendation</h3>
+Avoid complex expressions and especially those that include read and write
+access to the same object within one expression.&nbsp; With simpler expression
+we have significantly more sequence points and thus more control over the
+order of evaluation of the expressions that make up our program.
+<br>&nbsp;
+<h2>
+Conclusion</h2>
+The order of evaluation of expressions and subexpressions is undefined
+between sequence points.&nbsp; C++&nbsp; has amazingly few sequence points
+defined.&nbsp; The pitfall lies in the common misconception that there
+were many more sequence points than there really are.&nbsp; Most operators
+are not sequence points; the only exceptions are &amp;&amp;, ||, ?:, and
+the comma operator.&nbsp; Separators are never sequence points. The only
+sequence point you can really rely on is the end of a full expression,
+which is normally a semicolon.
+<p>Sequence point problems are typically portability problem that are difficult
+to track down in practice.&nbsp; Hence the recommendation: avoid them before
+they hit you.&nbsp; Keep your source code simple.&nbsp; Avoid complex expressions
+and especially those that contain multiple access to the same variable
+if one of the accesses is a modification.&nbsp; In case of doubt, break
+the expression down into several statements whereby you will introduce
+additional sequence points and will have a defined order of evaluation
+of your expressions.
+<br>&nbsp;
+<h2>
+References</h2>
+
+<table BORDER=0 CELLPADDING=10 >
+<tr>
+<td VALIGN=TOP><a NAME="Meyers"></a>/MEY/</td>
+
+<td><b>Effective C++&nbsp;</b>
+<br>Scott Meyers&nbsp;
+<br>Addison-Wesley, 2nd Ed., 1998</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/ReliableC++.htm"><img SRC="../../../Images/abstract.gif" ALT="Reliable C++ - a course by Angelika Langer" NOSAVE BORDER=0 height=27 width=40></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/ReliableC++.htm">Reliable
+C++</a> </font></b>- Avoiding Common Traps and Pitfalls&nbsp;
+<br><font color="#000000"><font size=-1>3 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

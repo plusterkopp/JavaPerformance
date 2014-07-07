@@ -1,0 +1,306 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="FORMATTER" content="Microsoft FrontPage 2.0">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <meta name="KeyWords" content="exception handling exceptions C++ training seminar">
+   <title>C++ Exception Handling</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="ExceptionHandlingCourse"></a>
+<br><b><font face="Arial"><font color="#295AB5">COURSE DESCRIPTION</font></font></b>&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=5 CELLPADDING=2 WIDTH="98%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 CELLSPACING=0 CELLPADDING=3 COLS=1 WIDTH="98%" >
+<tr>
+<td><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p>Exception handling is the standard technique for indicating and handling
+errors in C++ programs. It provides a uniform way of reporting errors and
+makes up for several weaknesses of traditional error reporting techniques,
+but it also adds a whole new dimension of programming techniques to C++.
+<p>Are your programs exception safe? Raising exceptions is easy, but coping
+with exceptions raised by functions you invoke is challenging. Do your
+functions work reliably and predictably in presence of exceptions? What
+level of saefty guarantee do your functions give?&nbsp;
+<p>Today, only few programmers are capable of exploiting the full power
+of exception handling&nbsp; in C++. If you need&nbsp; to stay ahead of
+your time,&nbsp; keep your knowledge above average, and want to know everything
+about the latest progamming techniques in C++, then this is the right course
+for you.
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p><font color="#295AB5">The course is designed and conducted by Angelika
+Langer and backed by years of experience in teaching&nbsp; C++ related
+topics and more than a decade of real-world experience in industrial software
+development. Angelika Langer is a freelance trainer/consultant in the area
+of object-oriented software development in C++ and Java. She is member
+of the ANSI C++ standards committee since 1993, columnist of C++ Report,
+and a recognized speaker at OO conferences.&nbsp;</font></td>
+</tr>
+</table>
+&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 CELLSPACING=0 CELLPADDING=5 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="35%"><b><i><font color="#295AB5">Prerequisite Courses
+and Skills:</font></i></b></td>
+
+<td VALIGN=TOP WIDTH="65%">Introductory C++ course, or equivalent experience&nbsp;
+<p>One year of programming experience using C++</td>
+</tr>
+
+<tr>
+<td WIDTH="50%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td VALIGN=TOP WIDTH="50%">1 day</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="50%"><b><i><font color="#295AB5">Exercises:</font></i></b></td>
+
+<td WIDTH="50%">Workshops and hands-on labs&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<p><b><font face="Arial"><font color="#295AB5"><font size=+0>PERFORMANCE
+OBJECTIVES</font></font></font></b>
+<table BORDER=0 CELLSPACING=4 CELLPADDING=0 >
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Catch up on the language standard</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Know which language constructs raise exceptions</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Use exceptions for error indication</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Know how to cope with exceptions</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Understand exception safety issues</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Know how to terminate your application</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Cope with uncaught exceptions</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Know how to use exceptions specifications</td>
+</tr>
+</table>
+
+<p><b><font face="Arial"><font color="#295AB5"><font size=+0>BUSINESS OBJECTIVES</font></font></font></b>
+<table BORDER=0 CELLSPACING=4 CELLPADDING=0 >
+<tr>
+<td VALIGN=TOP><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Equip your software professional with state-of-the-art C++ skills&nbsp;</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Increase the reliabiity of your C++ programs</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Keep your software flexible and maintainable</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Build high-quality products</td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table></div>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial"><font color="#295AB5">COURSE OVERVIEW</font></font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+
+<table BORDER=0 CELLPADDING=2 WIDTH="98%" >
+<tr>
+<td VALIGN=TOP WIDTH="33%"><b><i>Language Features</i></b>
+<ul>
+<li>
+Throwing exceptions</li>
+
+<ul>
+<li>
+Stack snwinding</li>
+
+<li>
+Implicit destructor calls</li>
+
+<li>
+Grouping of exceptions in hierarchies</li>
+
+<li>
+A Copy of the exception object is thrown</li>
+</ul>
+
+<li>
+Catching and handling exceptions</li>
+
+<ul>
+<li>
+Handler sequences</li>
+
+<li>
+Order of catch clauses</li>
+
+<li>
+Catch-all clause</li>
+
+<li>
+Throw vs. re-throw&nbsp;</li>
+
+<li>
+Catch by reference</li>
+
+<li>
+Function try block</li>
+</ul>
+</ul>
+<b><i>Programming With Exceptions</i></b>
+<ul>
+<li>
+Resource management</li>
+
+<ul>
+<li>
+Resource acquisition is initialization idiom&nbsp;</li>
+
+<li>
+<tt>auto_ptr</tt> and other smart pointers</li>
+
+<li>
+Scope guards</li>
+
+<li>
+Exceptions in constructors</li>
+
+<li>
+Exceptions in destructors&nbsp;</li>
+</ul>
+
+<li>
+Exception hiding&nbsp;</li>
+
+<li>
+Exception safety</li>
+
+<ul>
+<li>
+Statement rearrangement&nbsp;</li>
+
+<li>
+Pessimistic programming</li>
+
+<li>
+Canonical exception-safe copy assignment</li>
+</ul>
+</ul>
+</td>
+
+<td VALIGN=BASELINE WIDTH="33%"><b><i>Design of Exception Types</i></b>
+<ul>
+<li>
+Standard exceptions</li>
+
+<li>
+Designing exception hierarchies</li>
+
+<li>
+Firewalls &amp; legacy code</li>
+</ul>
+<b><i>More Language Features</i></b>
+<ul>
+<li>
+Uncaught exceptions&nbsp;</li>
+
+<ul>
+<li>
+terminate(), uncaught-handler &amp; set_terminate()</li>
+
+<li>
+Program termination &amp; stack unwinding</li>
+
+<li>
+The uncaught_exception() function</li>
+</ul>
+
+<li>
+Exception specifications &amp; unexpected exceptions&nbsp;</li>
+
+<ul>
+<li>
+Language features</li>
+
+<li>
+Guidelines&nbsp;</li>
+
+<li>
+The unexpected-handler</li>
+
+<li>
+Callbacks</li>
+</ul>
+</ul>
+<b><i>The Cost of Exception Handling</i></b>
+<ul>
+<li>
+Space and Run-Time Overhead in Principle</li>
+
+<li>
+The Static Model</li>
+
+<li>
+The Dynamic Model</li>
+</ul>
+</td>
+</tr>
+</table>
+
+<br>&nbsp;
+</body>
+</html>

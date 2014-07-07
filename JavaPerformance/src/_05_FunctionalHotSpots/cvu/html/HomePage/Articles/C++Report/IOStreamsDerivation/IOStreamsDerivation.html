@@ -1,0 +1,456 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <title> Deriving from IOStreams </title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CppReportIOStreamsDerivation"></a>
+<br><font color="#295AB5"><font size=+3>Deriving from IOStreams</font></font>
+<br><font color="#295AB5"><font size=+1>Using the IOStreams Framework to
+Define Specialized Streams</font></font>
+<br><font color="#295AB5"><font size=+3></font></font>&nbsp;
+<p><font color="#295AB5"><font size=+2>C++ Report, September 1995</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font><font color="#295AB5"><font size=+1></font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p><b><font size=+0>Introduction.</font></b>
+<p><font size=+0>One common way to make use of the IOStreams framework
+is by deriving from its classes in order to define specialized streams
+for special purposes. Such kind of user defined streams will usually be
+derived from the 'ios' class family, e.g. class 'istream' or 'ostream'.
+Very often it will be necessary to define a specialized stream buffer,
+too, which will be derived from class 'streambuf' or its descendants. (An
+example for this way of using IOStreams can be found in [1].)</font>
+<p><font size=+0>However, these derivations are not completely trivial
+and there is a certain pitfall that may not be obvious to every IOStreams
+user. In this article we want to spend a few thoughts on where the pitfall
+actually is and take a deeper look at several ways to solve the problem.
+We will consider both derivation of a specialized stream and deriving a
+corresponding stream buffer to be used with the stream. Eventually we will
+address the forthcoming ANSI/ISO standard and show how to tackle the whole
+issue when using the standard IOStreams in the future.</font>
+<p>
+<hr>
+<p><b><font size=+0>Deriving a New Stream.</font></b>
+<p><font size=+0>Let's start with the following approach. (Basically it
+is the kind of solution Cay Horstmann chose in his article.)</font>
+<p><b><font size=+0>Approach 1.</font></b>
+<p><font size=+0>The idea is to define a specialized stream buffer together
+with a specialized output stream. The user defined stream will use the
+user defined stream buffer as its buffer component:</font>
+<blockquote><tt><font face="Courier"><font size=+0>class MyStreamBuf :
+public streambuf {</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>// ...</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>};</font></font></tt>
+<p><tt><font face="Courier"><font size=+0>class MyOutputStream_1 : public
+ostream {</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>public:</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyOutputStream_1() : ostream(&amp;msb),ios(0)
+{}</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>// ...</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>private:</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyStreamBuf msb;</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>// ...</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>};</font></font></tt></blockquote>
+<font size=+0>On construction of 'MyOutputStream_1' the respective constructors
+will be executed as listed below:</font>
+<blockquote><tt><font face="Courier"><font size=+0>ios(0)</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>ostream(&amp;msb)</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>streambuf()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyStreamBuf()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyOutputStream_1()</font></font></tt></blockquote>
+<font size=+0>Remark: In this list the constructors are ordered according
+to the instant of their completion, i.e. the constuctor which is completely
+executed first will be the first in this list. E.g. the constructor MyOutputStream_1()
+will be the last constructor to have accomplished its task, so it is the
+last one in this list. The idea behind this kind of ordering is that only
+after completion of a constructor the constructed object is ensured to
+be valid.</font>
+<p><font size=+0>In analogy the destructors will be ordered by the instant
+when their execution starts, i.e. the moment when the object to be destroyed
+becomes invalid.</font>
+<p><font size=+0>Considering the order of construction listed above it
+is visible that by the time ios() or ostream() are executed, the buffer
+component 'msb' will not yet be constructed. It follows that neither ios()
+nor ostream() must access the buffer.</font>
+<p><font size=+0>In fact, the pointer handed over to the stream on its
+construction points to a still invalid object.</font>
+<p><font size=+0>The same observation holds for destruction of a 'MyOutputStream_1'.
+Destructors are called in reverse order which means that neither ~ostream()
+nor ~ios() must access the stream buffer as it will already be destroyed.</font>
+<p><font size=+0>The approach outlined above is a widely used solution
+in practice. Surprisingly enough it actually works with all currently available
+IOStreams implementations known to the authors.</font>
+<p><font size=+0>This is possible because the IOStream implementations
+have constructors for class 'ios' and class 'ostream' that do not access
+the stream buffer at all.</font>
+<p><font size=+0>The destructors of class 'ios' or class 'ostream' on the
+other hand do access the stream buffer in some IOStreams implementations.
+Nevertheless is works because the raw data of the 'MyOutputStream_1' object
+is still available when ~ios() and ~ostream() are executed and ~MyStreamBuffer()
+usually does not really invalidate its data.</font>
+<p><font size=+0>Yet the approach seems to be hazardous because it relies
+on access to destroyed objects. Already tiny changes can break the whole
+code. Consider for example a change to MyStreamBuf so that it allocates
+data from the heap. On destruction of the buffer the heap data will probably
+be deleted which means a real invalidation as the storage management most
+likely will overwrite some data.</font>
+<p><font size=+0>The use of the MyStreamBuf data member in ~ios() or ~ostream()
+will in this case cause an error if by chance the use includes access to
+the deleted heap data.</font>
+<p><font size=+0>So what can we do? Is there another, more stable solution
+conceivable? Of course, there is.</font>
+<p><b><font size=+0>Approach 2.</font></b>
+<p><font size=+0>The idea is to allocate the stream buffer from the heap
+instead of using a data member of the stream object.</font>
+<blockquote><tt><font face="Courier"><font size=+0>class MyStreamBuf :
+public streambuf {</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>// ...</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>};</font></font></tt>
+<p><tt><font face="Courier"><font size=+0>class MyOutputStream_2 : public
+ostream {</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>public:</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyOutputStream_2() : ostream(new
+MyStreamBuf), ios(0) {};</font></font></tt>
+<p><tt><font face="Courier"><font size=+0>~MyOutputStream_2() {</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>bp->sync();</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>delete bp;</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>bp = 0;</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>}</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>// ...</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>};</font></font></tt></blockquote>
+<font size=+0>Just to remind readers to the innards of IOStreams: 'bp'
+is a protected member of class 'ios' which holds the pointer to the respective
+stream buffer. sync() is a virtual member function of class 'streambuf'
+which is responsible for cleanup activities.</font>
+<p><font size=+0>On construction of 'MyOutputStream_2' the constructors
+will be executed as listed below:</font>
+<blockquote><tt><font face="Courier"><font size=+0>ios(0)</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>streambuf()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyStreamBuf()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>ostream()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyOutputStream_2()</font></font></tt></blockquote>
+<font size=+0>This time ostream() receives a pointer to a valid, fully
+constructed stream buffer object.</font>
+<p><font size=+0>Thanks to the "delete bp;" in ~MyOutputStream_2() destructors
+are called in the following order:</font>
+<blockquote><tt><font face="Courier"><font size=+0>~MyOutputStream_2()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>~MyStreamBuf()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>~streambuf()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>~ostream()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>~ios()</font></font></tt></blockquote>
+<font size=+0>Again neither ~ostream() nor ~ios() may access the stream
+buffer via 'bp' anymore. This time it would be really lethal as 'bp' is
+assured to point to invalid data. So, why does this work? It turns out
+that a buffer pointer that equals null has special semantics in some IOStreams
+implementations: It indicates that the stream buffer is not valid and the
+stream classes pay attention to this particular situation and do not access
+it if "bp == 0". (This explains why ~MyOutputStream_2() set "bp = 0;".)</font>
+<p><font size=+0>Yet this is a solution that relies on peculiarities of
+the respective IOStream implementation and is not at all portable. AT&amp;T's
+IOStreams has this undocumented 'feature', others may not have ...</font>
+<p><font size=+0>Regarding portability ... The ANSI/ISO standard ensures
+that neither ~ios() nor ~ostream() will access the stream buffer on destruction.
+Hence "bp == 0" will not be necessary anymore. The whole problem evaporates
+in a sudden. See approach 4 below for further details.</font>
+<p><font size=+0>But, we don't have a standard IOStream yet. So, is there
+a way to solve the problem in a stable AND portable way?</font>
+<p><b><font size=+0>Approach 3.</font></b>
+<p><font size=+0>What about providing the stream buffer via private inheritance
+rather than allocating it from the heap or using a data member of the stream
+object?</font>
+<blockquote><tt><font face="Courier"><font size=+0>class MyStreamBuf :
+public streambuf {</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>// ...</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>};</font></font></tt>
+<p><tt><font face="Courier"><font size=+0>class MyOutputStream_3 : virtual
+private MyStreamBuf, public ostream {</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>public:</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyOutputStream_3() : ostream((MyStreamBuf*)
+this), ios(0) {};</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>// ...</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>};</font></font></tt>
+<p><font size=+0>On construction of 'MyOutputStream_3' the constructors
+will be executed as listed below:</font>
+<p><tt><font face="Courier"><font size=+0>streambuf()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyStreamBuf()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>ios(0)</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>ostream()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyOutputStream_3()</font></font></tt></blockquote>
+<font size=+0>Note that this order of executing the constructors is due
+to the 'virtual' private derivation from streambuf.</font>
+<p><font size=+0>See [2] ARM Section 12.6.2.: Virtual bases are constructed
+before any nonvirtual bases and in the order they appear on a depth-first
+left-to-right traversal of a directed acyclic graph of base classes; "left-to-right"</font>
+<p><font size=+0>is the order of appearance of the base class names in
+the declaration of the derived class.</font>
+<p><font size=+0>Obviously we have solved all problems, both on construction
+as well as on destruction: The stream buffer is constructed before any
+of the stream constructors is executed. As the destructors are called in
+reverse order the</font>
+<p><font size=+0>corresponding is true for the destructors: The stream
+buffer is destroyed no sooner than all stream destructors have been executed.</font>
+<p><font size=+0>Eventually we've found a stable and portable way to provide
+the stream buffer.</font>
+<p><font size=+0>The downside of this approach is that it uses private
+virtual inheritance, which is no problem in itself. But it is conceptually
+strange. The virtual derivation in this case is necessary only to attain
+this particular order of construction/destruction, and for no other reason.
+What does the idiom of 'private virtual inheritance' mean ??? Certainly
+more than forcing the compiler to call destructors in a specific order.</font>
+<p><font size=+0>Another philosophical remark about this solution: Private
+inheritance is frequently seen as conceptually equal to membership. This
+example proves it to be wrong: Membership, as used in approach 1, does
+not solve the problem, but private inheritance does!</font>
+<p><b><font size=+0>Using the ANSI/ISO Standard IOStreams. (For the future.)</font></b>
+<p><font size=+0>The ANSI/ISO standard will ensure that neither ~ios()
+nor ~istream()/~ostream() will access the stream buffer. The policy used
+by the IOStreams classes contained in the standard library is as follows:</font>
+<p><font size=+0>Only those descendants from class 'ios' which really provide
+a stream buffer may access the stream buffer on construction and destruction,
+for purpose of calling sync() for example. (This affects classes like e.g.
+'ofstream' and 'ifstream', as they provide a 'filebuf' object to be used
+as stream buffer.) All its base classes, which do not provide the stream
+buffer but make use of an externally provided buffer, must and will not
+touch the buffer on construction and destruction. (This concerns the classes
+'ios', 'istream' and 'ostream'.)</font>
+<p><font size=+0>What seems sensible and sound for the standard IOStreams
+classes will surely be good for most other IOStreams classes as well. We
+suggest to adopt this policy when deriving new classes from IOStreams.
+It fits neatly into the IOStreams framework and makes your new stream classes
+easy to comprehend.</font>
+<p><font size=+0>Let's glance over the 3 solutions cosidered above. Will
+they still be sensible in the presence of the standard IOStreams?</font>
+<p><font size=+0>Basically the problem was access to an already deleted
+stream buffer by one of the base classes' destructors for purpose of calling
+sync().</font>
+<p><font size=+0>Now, when using the standard IOStreams, there will be
+no such problem any more. Neither ~ios() nor ~ostream() will access the
+already deleted stream buffer.</font>
+<p><font size=+0>Following the general policy described above, the assignment
+of caring about synchronisation on destruction of a stream will be taken
+by the new stream class's destructor.</font>
+<p><font size=+0>All three solutions make use of a specialized stream buffer.
+To make it a bit more exciting, let's say it overwrites sync():</font>
+<blockquote><tt><font face="Courier"><font size=+0>class MyStreamBuf :
+public streambuf {</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>protected:</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>virtual int sync() {</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>// ... whatever is necessary
+for MyStreamBuf</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>}</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>};</font></font></tt></blockquote>
+<b><font size=+0>Approach 1.</font></b>
+<blockquote><tt><font face="Courier"><font size=+0>class MyOutputStream_1
+: public ostream {</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>public:</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyOutputStream_1() : ostream(&amp;msb),ios(0)
+{}</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>virtual ~MyOutputStream_1()
+{ msb.pubsync(); }</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>// ...</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>private:</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyStreamBuf msb;</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>// ...</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>};</font></font></tt></blockquote>
+<font size=+0>Remark: The function pubsync() is part of class streambuf's
+public interface and does no more than calling the private virtual sync()
+function.</font>
+<p><b><font size=+0>Approach 2.</font></b>
+<p><font size=+0>The previously necessary assignment 'sb = 0;' after having
+deleted the stream buffer is not needed anymore.</font>
+<blockquote><tt><font face="Courier"><font size=+0>class MyStreamBuf :
+public streambuf {</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>// ...</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>};</font></font></tt>
+<p><tt><font face="Courier"><font size=+0>class MyOutputStream_2 : public
+ostream {</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>public:</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyOutputStream_2() : ostream(new
+MyStreamBuf), ios(0) {};</font></font></tt>
+<p><tt><font face="Courier"><font size=+0>~MyOutputStream_2() {</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>sb->pubsync();</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>delete sb;</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>}</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>// ...</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>};</font></font></tt></blockquote>
+<b><font size=+0>Approach 3.</font></b>
+<p><font size=+0>With this approach it was necessary to make the private
+streambuf base class a virtual base class in order to achieve a particular
+order of destructor calls. This is no longer necessary, so we can dispense
+with the virtual derivation and use ordinary private inheritance which
+is much more intuitive anyway.</font>
+<blockquote><tt><font face="Courier"><font size=+0>class MyOutputStream_3
+: private MyStreamBuf, public ostream {</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>public:</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyOutputStream_3() : ostream((MyStreamBuf*)
+this), ios(0) {};</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>virtual ~MyOutputStream_3()
+{ sync(); }</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>// ...</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>};</font></font></tt></blockquote>
+<b><font size=+0>Conclusion.</font></b>
+<p><font size=+0>By and large, using the standardized IOStreams will lead
+to portable solutions in a much easier and more intuitive way.</font>
+<p><font size=+0>We faced the situation that we wanted to derive a new
+stream class which 'has-a' new stream buffer. We considered three approaches
+to provide the stream buffer: as a data member of the stream class,</font>
+<p><font size=+0>as a non-shared reference to a stream buffer on the heap
+and</font>
+<p><font size=+0>by private inheritance.</font>
+<p><font size=+0>With existing IOStream implementations there were subtle
+differences between the three approaches and we had to carefully pay attention
+to peculiarities of the various IOStream implementations. Hence, finding
+a portable solution was not trivial.</font>
+<p><font size=+0>Quite the converese with the standard IOStreams. All three
+approaches intuitively yield a correct and portable solution. No further
+headache required. That's what a standard is for, isn't it?</font>
+<p>
+<hr>
+<p><b><font size=+0>Deriving a New Stream Buffer.</font></b>
+<p><font size=+0>So far we have focused on deriving a new stream class
+and skillfully omitted all details about deriving the new stream buffer
+class. Will that be a similar hassle? Well, let's see ...</font>
+<p><font size=+0>There is a certain analogy between deriving a new stream
+class and deriving a new stream buffer class: Both class families have
+a resource which can or must be provided externally. For the 'ios' class
+family this resource is the stream buffer. It has to be provided externally
+and a pointer to the stream buffer is handed over via an according constructor.
+For the 'streambuf' class family this resource is the underlying character
+buffer, which is nothing but an ordinary character array. It is usually
+allocated by the stream buffer itself. Still, there is the possibility
+to provide it externally and hand over a pointer to the external buffer
+via a call to the setbuf() function.</font>
+<p><font size=+0>Given the latter situation we face an equivalent problem
+with stream buffers as we have discussed with streams: Do the 'streambuf'
+classes access the character buffer on construction or destruction? Construction
+is no issue as ther is no suitable 'streambuf' constructor which can take
+a pointer to the buffer as a parameter. You have to attach the external
+character buffer explicitly after construction by calling setbuf(). Fine!
+But what about destruction?</font>
+<p><font size=+0>Let's go and look for solutions!</font>
+<p><font size=+0>The only sensible reason for providing the character buffer
+externally we can conceive of is to have influence on the buffer size at
+runtime. (Surely one could contrive other reasons though.) Hence we will
+only consider solutions which allocate the character buffer dynamically
+at runtime from the heap.</font>
+<p><b><font size=+0>Approach 1.</font></b>
+<p><font size=+0>One can allocate the character buffer from the heap:</font>
+<blockquote><tt><font face="Courier"><font size=+0>class MyStreamBuf_1
+: public streambuf {</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>public:</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyStreamBuf_1(size_t s) : bfptr(new
+char[s])</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>{ setbuf(bfptr,s); };</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>virtual ~MyStreamBuf_1()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>{ delete [] bfptr; }</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>private:</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>char* bfptr;</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>}</font></font></tt>
+<p><font size=+0>The order of destructor calls will be:</font>
+<p><tt><font face="Courier"><font size=+0>~MyStreamBuf_1()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>~streambuf()</font></font></tt></blockquote>
+<font size=+0>Again we face a problem here. We can't know what our IOStream
+implementation does on destruction of a stream buffer. It might chose to
+access its character buffer ... It follows, that this again is a non-portable
+approach.</font>
+<p><b><font size=+0>Approach 2.</font></b>
+<p><font size=+0>Another idea is to provide the character buffer via private
+inheritance:</font>
+<blockquote><tt><font face="Courier"><font size=+0>class MyStreamBufResources
+{</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>public:</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyStreamBufResources(size_t
+s) : bfptr(new char[s])</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>{ }</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>~MyStreamBufResources()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>{ delete [] bfptr; }</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>private:</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>char* bfptr;</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>}</font></font></tt>
+<p><tt><font face="Courier"><font size=+0>class MyStreamBuf_2 : private
+MyStreamBufResources, public streambuf {</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>public:</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>MyStreamBuf_2(size_t s) : MyStreamBufResources(s)</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>{ setbuf(bfptr,s); }</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>// ...</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>}</font></font></tt></blockquote>
+<font size=+0>The order of destruction will be:</font>
+<blockquote><tt><font face="Courier"><font size=+0>~MyStreamBuf_2()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>~streambuf()</font></font></tt>
+<br><tt><font face="Courier"><font size=+0>~MyStreamBufResources()</font></font></tt></blockquote>
+<font size=+0>Hence, whatever ~streambuf() choses to do to its character
+buffer we will have no problem as the buffer will still be "alive".</font>
+<p><b><font size=+0>Using the ANSI/ISO Standard IOStreams. (For the future.)</font></b>
+<p><font size=+0>At present it is not yet specified what streambuf::setbuf()
+in the standard IOStreams will be supposed to do. But there will still
+be a protected virtual setbuf() function and a public non-virtual pubsetbuf()
+function. So, for reasons of retaining compatibilty to existing IOStreams
+one shouldn't expect any dramatic changes.</font>
+<br>&nbsp;
+<p>
+<hr>
+<p><b><font size=+0>Summary.</font></b>
+<p><font size=+0>The problem discussed above is basically about providing
+a resource to a class, that itself only holds a pointer to the resource
+and accesses the resource via this pointer. As soon as the resource is
+provided externally, one has to ensure that that the resource is valid
+whenever the class decides to access the resource.</font>
+<p><font size=+0>The really crucial point is access on construction and
+destruction as the resource might not yet or already be deleted.</font>
+<p><font size=+0>A solution which always will work is wrapping the resource
+into a class and provide the resource via private derivation from the wrapper
+class.</font>
+<br>&nbsp;
+<p>
+<hr>
+<p><b><font size=+0>References.</font></b>
+<p><font size=+0>[1] Cay Horstmann. Extending the iostream library. C++
+Report, May 1994</font>
+<p><font size=+0>[2] M. Ellis &amp; B. Stroustrup. The Annotated C++ Reference
+Manual, Addison-Wesley, 1990.</font>
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+</body>
+</html>

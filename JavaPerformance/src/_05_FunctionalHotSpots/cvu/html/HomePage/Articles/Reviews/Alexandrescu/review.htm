@@ -1,0 +1,229 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <title>Book Review  -  Modern C++ Design</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="BookReviewAlexandrescu"></a>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="489" >
+<tr>
+<td>&nbsp;</td>
+
+<td>&nbsp;</td>
+
+<td VALIGN=BOTTOM WIDTH="122"><img SRC="../../../Images/czonesub.gif" NOSAVE BORDER=0 height=33 width=106></td>
+
+<td WIDTH="50%">
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="387" >
+<tr>
+<td VALIGN=BOTTOM WIDTH="300"><b><sub><font face="Verdana"><font color="#FF0037"><font size=+3>&nbsp;
+Book Review</font></font></font></sub></b> <b><i><sub><font face="Verdana"><font color="#996666"><font size=+1>of
+the week</font></font></font></sub></i></b></td>
+
+<td ROWSPAN="2"><b><font face="Verdana"><font size=-2>&nbsp;</font></font></b></td>
+</tr>
+
+<tr>
+<td VALIGN=BOTTOM WIDTH="387"><img SRC="../../../Images/czonesubrule.gif" VSPACE=4 NOSAVE height=2 width=380></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td></td>
+
+<td></td>
+
+<td></td>
+</tr>
+</table>
+
+<table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="10%">
+<center><table BORDER=0 WIDTH="100%" >
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><img SRC="0201704315.jpg" NOSAVE height=151 width=120></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><b><font face="Verdana"><font size=-2>Modern
+C++ Design: Generic Programming and Design Patterns Applied</font></font></b></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><i><font face="Verdana"><font size=-2>By Andrei
+Alexandrescu</font></font></i></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><font face="Verdana"><font size=-2>Reading,MA:Addison-Wesley</font></font></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><font face="Verdana"><font size=-2>ISBN 0201704315</font></font></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><font face="Verdana"><font size=-2>352 pages&nbsp;</font></font></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><font face="Verdana"><font size=-2>Price: $39.95&nbsp;</font></font></td>
+</tr>
+
+<tr>
+<td></td>
+
+<td><i><font face="Verdana"><font size=-2>(Reviewed 5/22/01)&nbsp;</font></font></i></td>
+</tr>
+</table></center>
+&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="100%">
+<center><table BORDER=0 WIDTH="90%" >
+<tr>
+<td VALIGN=TOP WIDTH="60%"><b><font face="Verdana"><font color="#232990"><font size=+2>Generic
+Programming Revisited</font></font></font></b></td>
+</tr>
+
+<tr>
+<td WIDTH="60%"><i><font face="Verdana"><font size=-1>Innovative and creative
+ways of using templates for efficient problem solving in C++ programs</font></font></i></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>
+<br><font face="Verdana, Helvetica, Arial, sans-serif"><font color="#333399"><font size=+2>W</font></font><font size=-1>ith
+the exception of a handful of template gurus who delve deeply into C++
+template metaprogramming, hardly anybody makes much use of the C++ template
+feature. The vast majority of C++ programmers see templates mostly as a
+mechanism for implementing container class templates. At best, templates
+are understood as a means of avoiding code duplication because you can
+let the compiler generate various flavors of your class rather than duplicating
+the code manually via copy-and-paste. One programmer or the other might
+have even come across the principles of generic programming via templates,
+as demonstrated by the STL for instance. But nobody has used templates
+for problem-solving in practice as creatively as Andrei Alexandrescu has,
+or at least nobody has written such an interesting book about it before.</font></font>
+<p><font face="Verdana, Helvetica, Arial, sans-serif"><font size=-1>What
+is <i>Modern C++ Design: Generic Programming and Design Patterns Applied</i>
+about? Alexandrescu explains the implementation of a generic library called
+Loki, which is freely available and can be downloaded from the <a href="http://www.awprofessional.com/title/0201704315" target="_blank">book's
+site</a> (click on the "Source Code" link). This library contains a bunch
+of useful and reusable abstractions like a singleton, a smart pointer,
+object factories, and a multimethod dispatcher. The interesting aspect
+of Loki is not necessarily its functionality, but its implementation style:
+all abstractions are entirely generic and can be configured. The "configuration"
+is achieved by means of template instantiation. In essence, Alexandrescu
+uses the compiler's template instantiation mechanism to generate code—especially
+generate various flavors of a class from thoughtfully parameterized class
+templates.&nbsp;</font></font>
+<p><font face="Verdana, Helvetica, Arial, sans-serif"><font size=-1>Let's
+take a look at an example from Loki—the smart pointer abstraction—to get
+a better idea of what this "code generation technique" means. Smart pointers
+in general are a well-understood abstraction in software development, but
+the details of their functionality can vary substantially. For instance,
+in the way they handle ownership of the pointed-to object once the smart
+pointer is copied, one ownership policy is to copy the pointee object whenever
+the smart pointer is copied. This way there is exactly one smart pointer
+for each pointee object.&nbsp;</font></font>
+<p><font face="Verdana, Helvetica, Arial, sans-serif"><font size=-1>An
+alternative strategy is reference counting, where the smart pointer keeps
+track of the number of smart pointers that point to the same object. Yet
+another policy is "destructive copy," which means that during copying the
+object being copied is destroyed; this is also known as "transfer of ownership"
+and is the policy used by the standard auto_ptr class. Given these three
+choices for the ownership policy of a smart pointer implementation, Alexandrescu
+does not provide different smart pointer classes for each of these cases,
+but defines a template for a smart pointer class that takes the ownership
+policy as a template argument (as a "template template" argument, to be
+precise). This way different smart pointer classes can be generated with
+different behavior via template instantiation.&nbsp;</font></font>
+<p><font face="Verdana, Helvetica, Arial, sans-serif"><font size=-1>The
+ownership policy is not the only strategy relevant for a smart pointer
+implementation. Loki's smart pointer is one example out of a dozen of generic
+programming via templates. The idea of parameterizing classes by a policy
+and providing the policy as a template argument is not entirely new; the
+STL does it, too. But Alexandrescu takes it one step further by demonstrating
+truly creative uses of templates for achieving amazingly powerful result.
+The strength of <i>Modern C++ Design</i> is that it shows how to exploit
+the power of template programming for solving common problems like implementing
+well-known abstraction such as a smart pointer or other patterns. This
+book can teach you much about template programming; you will certainly
+close the book with a radically different view of this C++ language feature.&nbsp;</font></font>
+<p><font face="Verdana, Helvetica, Arial, sans-serif"><font size=-1>A word
+of caution, though. Alexandrescu's code is written in standard C++, which
+means that much of the code presented in this book will challenge your
+compiler. If it starts to smoke, move on to a more recent compiler version,
+or use a better compiler if you can. For instance, if you are a dedicated
+Microsoft programmer and use MVC 6.0, all bets are off—it won't fly! The
+same is true for every C++ compiler that does not support standard C++.
+That, of course, limits the usefulness of Alexandrescu's techniques—at
+least for the time being.</font></font>
+<p><font face="Verdana, Helvetica, Arial, sans-serif"><font size=-1>Another
+word of caution. Writing programs in the style suggested by <i>Modern C++
+Design</i> can be perceived as difficult. This is because this kind of
+template programming is not really programming in the usual sense of the
+word. It relies heavily on template instantiation. For instance, errors
+cannot be debugged because they do not happen while the programs is executed,
+but occur while the source code is compiled. There is no way to debug the
+compilation process. In addition, much of the code looks just weird, according
+to common C++ standards. We are just not accustomed to template programming
+in this style, mainly because intense use of template techniques is not
+yet common practice. Over time we might get accustomed to it, but it is
+not mainstream—not yet.&nbsp;</font></font>
+<p><font face="Verdana, Helvetica, Arial, sans-serif"><font size=-1>Having
+said that, we do see this sort of template programming pop up in many places.
+Another example can be found in Czarnecki and Eisenecker's <i><a href="http://www.cplus-zone.com/free/bookrevview.asp?content_id=452">Generative
+Programming</a></i>, which devotes an entire chapter to template metaprogramming.
+Further examples can be studied in the <a href="http://www.boost.org/libs/libraries.htm" target="_blank">Boost
+Library</a>, which is likely to be the foundation of future extensions
+to the standard C++ library.&nbsp;</font></font>
+<p><font face="Verdana, Helvetica, Arial, sans-serif"><font size=-1>It
+is certainly worth it for C++ programmers to familiarize themselves with
+these new techniques. They are not applicable in all places and they only
+solve a certain type of problem, but they are an addition to every C++
+programmer's skill set. In that sense <i>Modern C++ Design: Generic Programming
+and Design Patterns Applied</i> is definitely worth reading. If you want
+to learn more about templates and C++ and if you want to expand your horizon,
+go for it. This book will most likely change the way you use and understand
+C++ templates.&nbsp;</font></font>
+<p><i><font face="Verdana, Helvetica, Arial, sans-serif"><font size=-1><b>Angelika
+Langer</b> develops and teaches classes on Java, C++, multithreading, and
+internationalization. She is an internationally recognized speaker and
+served on the ANSI/ISO C++ Committee from 1993 to 1998. <b>Klaus Kreft</b>
+is a software architect and senior consultant with 15+ years of experience
+in industrial software development. He currently works for Siemens Business
+Services in Germany. Langer and Kreft are authors of "Standard C++ IOStreams
+and Locales" (Addison-Wesley, 2000) and are columnists for the C/C++ Users
+Journal.&nbsp;</font></font></i></td>
+</tr>
+</table></center>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,601 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Article C++ Report June 1998">
+   <title>Allocator Types</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CppReportAllocators"></a>
+<br><font color="#295AB5"><font size=+3>Allocator Types</font></font>
+<p><font color="#295AB5"><font size=+2>C++ Report, June 1998</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p>Allocators encapsulate memory allocation and are used by the container
+classes in the standard library for allocation and deallocation of the
+contained elements. "Container classes" in this context are the STL containers:
+vector, deque, list, (multi)set, and (multi)map, but also string, which
+is seen as containers of characters. Some container-related classes such
+as the container adapters stack, queue, and priority_queue, as well as
+string streams also use allocators. All remaining classes in the standard
+library do not use them at all.
+<h3>
+<b>Purpose of Allocators</b></h3>
+Allocators were introduced to the standard library in order to allow for
+allocation strategies other than just heap data allocated by <font face="Courier,Courier New">new</font>
+and for alternative pointer types. Basically, an allocator covers two areas:
+<ul>
+<li>
+memory management schemes and allocation strategies, and</li>
+
+<li>
+memory models and alternative pointer/reference types.</li>
+</ul>
+The default memory allocation in C++ is allocation of memory from the heap
+via <font face="Courier,Courier New">operator</font> <font face="Courier,Courier New">new</font>.
+By encapsulating the knowledge about allocation and deallocation of memory
+into a separate allocator abstraction, all containers in the standard library
+are independent of their memory management, and special-purpose allocation
+strategies can be used without modifying the container implementations.
+Conceivable non-default memory management schemes include use of pre-allocated
+memory pools, thread-specific memory, memory shared among processes, garbage-collected
+memory, persistent stores, etc. Note, however, that only the container
+elements are affected by allocators. Where and how memory for internal
+data is allocated and accessed is entirely implementation-specific. It
+is not the <i>container</i> that is placed into a non-standard memory location,
+it is the <i>contained elements</i> that are allocated and deallocated
+using the allocator.
+<p>In addition to the flexibility gained regarding memory allocation strategies,
+allocators are also intended for alternative pointer types. For example,
+think of near, far, and huge pointers in certain memory models. Such non-standard
+memory models introduce new pointer and reference types. Another category
+of alternative pointer types are user-defined pointer classes such as smart
+pointers or range-checked pointers. Allocators facilitate use of non-standard
+pointer types, and the containers use these facilities in their implementation
+and interface in all places where pointer and reference types are needed.
+This way non-standard memory models and alternative pointer types can be
+used in place of built-in C++ pointers.
+<br>&nbsp;
+<h3>
+<b>An Overview of Allocator Types</b></h3>
+The C++ standard [<a href="#Ref1">1</a>] requires that allocator types
+have a certain interface:
+<dir><font face="Courier,Courier New"><font size=-1>template &lt;class
+T> class <i>allocator_type</i> {</font></font>
+<br><font face="Courier,Courier New"><font size=-1>public:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>// constructors, destructors,
+and the like</font></font>
+<br><font face="Courier,Courier New"><font size=-1>allocator() throw();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>allocator(const allocator&amp;)
+throw();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>template &lt;class U>
+allocator(const allocator&lt;U>&amp;) throw();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>~allocator() throw();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>// types and functions
+for alternative pointer types</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef <i>allocator-specific</i>
+pointer;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef <i>allocator-specific</i>
+const_pointer;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef <i>allocator-specific</i>
+reference;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef <i>allocator-specific</i>
+const_reference;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef <i>allocator-specific</i>
+value_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef <i>allocator-specific</i>
+size_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef <i>allocator-specific</i>
+difference_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>pointer address(reference
+x) const;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>const_pointer address(const_reference
+x) const;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>// types and functions
+for alternative memory allocation strategies</font></font>
+<br><font face="Courier,Courier New"><font size=-1>pointer allocate(size_type,
+allocator&lt;void>::const_pointer hint = 0);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>void deallocate(pointer
+p, size_type n);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>void construct(pointer
+p, const T&amp; val);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>void destroy(pointer
+p);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>size_type max_size()
+const throw();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>template &lt;class U>
+struct rebind { typedef allocator&lt;U> other; };</font></font>
+<br><font face="Courier,Courier New"><font size=-1>};</font></font></dir>
+An allocator must define:
+<ul>
+<li>
+constructors and destructors, and</li>
+
+<li>
+a conversion function and a number of types such as <font face="Courier,Courier New">pointer</font>,
+<font face="Courier,Courier New">reference</font>,<font face="Courier,Courier New">
+difference_type</font>, etc. for specification of its pointer type, and</li>
+
+<li>
+member functions such as <font face="Courier,Courier New">allocate()</font>
+and <font face="Courier,Courier New">deallocate() </font>for memory allocation
+and deallocation.</li>
+</ul>
+We will discuss the details later in this article.
+<p>The standard library provides a standard allocator type, called <font face="Courier,Courier New">allocator</font>.
+It encapsulates allocation and deallocation of memory from the heap via
+<font face="Courier,Courier New">operator
+new</font> and uses the ordinary, built-in C++ pointer and reference types.
+The standard allocator is used as a default template argument in all templates
+that require an allocator type. The <font face="Courier,Courier New">vector</font>
+template, for example, is defined as:
+<dir><font face="Courier,Courier New"><font size=-1>template &lt;class
+T, class Allocator = allocator&lt;T> > class vector;</font></font></dir>
+Hence a vector of strings declared as a <font face="Courier,Courier New">vector&lt;string></font>
+is actually of type <font face="Courier,Courier New">vector &lt; string,
+allocator&lt;string> >,</font> where string is a typedef for type <font face="Courier,Courier New">basic_string
+&lt; char, char_traits&lt;char>, allocator&lt;char> ></font>.
+<p><b><i><font face="Arial">Use of Allocators in Containers</font></i></b>
+<p>Each container uses its allocator for memory allocation and deallocation
+of its elements and in all places where the container needs pointers, references,
+pointer differences, etc. that related to its elements. Here is an example
+taken from the <font face="Courier,Courier New">vector</font> interface:
+<dir><font face="Courier,Courier New"><font size=-1>template &lt;class
+T, class Allocator = allocator&lt;T> > class vector {</font></font>
+<br><font face="Courier,Courier New"><font size=-1>public:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>// types:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef typename Allocator::reference
+reference;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef typename Allocator::const_reference
+const_reference;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef <i>implementation
+defined</i> iterator;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef <i>implementation
+defined</i> const_iterator;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef <i>implementation
+defined</i> size_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef <i>implementation
+defined</i> difference_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef T value_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef Allocator allocator_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef typename Allocator::pointer
+pointer;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef typename Allocator::const_pointer
+const_pointer</font></font>
+<br><font face="Courier,Courier New"><font size=-1>// element access:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>reference operator[](size_type
+n);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>const_reference operator[](size_type
+n) const;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>reference at(size_type
+n);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>const_reference at(size_type
+n) const;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>reference front();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>const_reference front()
+const;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>reference back();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>const_reference back()
+const;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>// ...</font></font>
+<br><font face="Courier,Courier New"><font size=-1>};</font></font></dir>
+We can see that all element access is defined in terms of the allocator's
+reference types. The vector's <font face="Courier,Courier New">operator[]()</font>
+for instance, does not return a reference to the value type <font face="Courier,Courier New">T</font>,
+but an object of type <font face="Courier,Courier New">Allocator::reference</font>.
+<p>The allocation and deallocation functions are used whenever elements
+are created, copied, or discarded. Here is an example from the <font face="Courier,Courier New">vector's</font>
+member function <font face="Courier,Courier New">reserve()</font>:
+<dir><font face="Courier,Courier New"><font size=-1>void reserve(size_type
+newSize)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{ if (capacity() &lt;
+newSize)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{ iterator newFirst
+= _allocator.allocate(newSize, this);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>uninitialized_copy(_first,
+_last, newFirst);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>for (iterator i = _first;
+i != _last; ++i) _allocator.destroy(&amp;*i);}</font></font>
+<br><font face="Courier,Courier New"><font size=-1>allocator.deallocate(_first);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>_endOfStorage = newFirst
++ newSize;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>_last = newFirst + size();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>_first = newFirst;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>}</font></font>
+<br><font face="Courier,Courier New"><font size=-1>}</font></font></dir>
+The function <font face="Courier,Courier New">reserve()</font> takes a
+size argument and extends the vector's capacity to the specified size,
+i.e. is allocates enough memory, copies the contained elements to the newly
+allocated area, destroys and deallocates the original elements, and eventually
+adjusts the vector's internal data accordingly. For allocation and deallocation
+of memory the allocator's functions <font face="Courier,Courier New">allocate()</font>
+and <font face="Courier,Courier New">deallocate()</font> are used.
+<br>&nbsp;
+<h3>
+<b>Details of Allocator Types</b></h3>
+After this first overview, let us now take a more in-depth look at the
+functionality required of an allocator type. We will not discuss constructors,
+destructors, and the like, because they must have the expected functionality.
+More exciting are the nested types and member functions that an allocator
+type must provide. They fall into two categories: one part of the interface
+describes allocation strategies and the other part represents alternative
+pointer and reference types.
+<h4>
+Allocation Strategies</h4>
+For the purpose of alternative memory allocation schemes, an allocator
+type must define a number of member functions. These functions are supposed
+to reflect the functionality that is usually used by the run-time system
+for allocation, deallocation, construction, and destruction of objects.
+When the compiler sees a <font face="Courier,Courier New">new</font> expression
+then it decomposes this expression into two activities: memory allocation
+and object initialization. To put it simple, the allocation is performed
+by calling an allocation function, which is <font face="Courier,Courier New">operator
+new()</font> and can be overloaded. The initialization is performed by
+calling the right constructors. Similarly, deletion of an object falls
+into destruction and deallocation. Allocators allow the same decomposition.
+They define the functions <font face="Courier,Courier New">allocate()</font>
+and <font face="Courier,Courier New">deallocate()</font> for acquisition
+and release of (uninitialized) memory, and have functions <font face="Courier,Courier New">construct()</font>
+and <font face="Courier,Courier New">destroy()</font> for object initialization
+and cleanup. Here is the interface of the member functions required for
+alternative allocation strategies:
+<dir><font face="Courier,Courier New"><font size=-1>template &lt;class
+T> class allocator {</font></font>
+<br><font face="Courier,Courier New"><font size=-1>public:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>pointer allocate(size_type,
+allocator&lt;void>::const_pointer hint = 0);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>void deallocate(pointer
+p, size_type n);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>void construct(pointer
+p, const T&amp; val);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>void destroy(pointer
+p);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>// ...</font></font>
+<br><font face="Courier,Courier New"><font size=-1>};</font></font></dir>
+The second argument <font face="Courier,Courier New">hint</font> to the
+<font face="Courier,Courier New">allocate()</font>
+function is intended to be used by the allocator to aid locality. If for
+instance a sequence of list elements is allocated, it might be desired
+to place all these pieces of memory close to each other, e.g. onto the
+same memory page. By passing in the previous list element as a hint to
+allocation of the subsequent list element, the allocator can optimize the
+memory layout. Note, that this optimization is not required of an allocator
+type; the hint may be ignored.
+<p>The default allocator type <font face="Courier,Courier New">allocator</font>
+is an example of a conforming allocator type. Let us see how it implements
+these functions:
+<dir><font face="Courier,Courier New"><font size=-1>template &lt;class
+T> class allocator {</font></font>
+<br><font face="Courier,Courier New"><font size=-1>public:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>pointer allocate(size_t
+size, allocator&lt;void>::const_pointer hint = 0)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{ return (T*)::operator
+new(size*sizeof(T)); }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>void deallocate(pointer
+p, size_type n)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{ operator ::delete(p);
+}</font></font>
+<br><font face="Courier,Courier New"><font size=-1>void construct(pointer
+p, const T&amp; val)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{ new((void *)p) T(val);
+}</font></font>
+<br><font face="Courier,Courier New"><font size=-1>void destroy(pointer
+p)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{ ((T*)p)->~T(); }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>};</font></font></dir>
+Allocation and deallocation boil down to memory allocation and deallocation
+from the heap by means of the global operators <font face="Courier,Courier New">new</font>
+and <font face="Courier,Courier New">delete</font>. Initialization is a
+call to placement <font face="Courier,Courier New">new</font>, which calls
+the value type's constructor to initialize the previously allocated memory.
+The function <font face="Courier,Courier New">destroy()</font> is an explicit
+call of the value type's destructor.
+<p>There is an additional requirement to allocator types, that was introduced
+into the standard long after allocators had first been added to the standard
+library: All instances of a given allocator type are required to be interchangeable.
+This means that, for any two allocator objects of the same allocator type,
+it must not make a difference which allocator object is used for allocation
+or deallocation.
+<p>This requirement imposes quite a restriction on allocator types. Consider
+the example of an allocator type <font face="Courier,Courier New">thread_allocator</font>
+representing thread-specific memory. Each thread allocator might manage
+memory specific to another thread. An allocator object of type<font face="Courier,Courier New">
+thread_allocator</font> will therefore contain an identification of the
+thread which the memory belongs to. Obviously, it makes a significant difference
+which allocator object is used. Objects of type<font face="Courier,Courier New">
+thread_allocator</font> are <i>not</i> interchangeable and violate the
+additional requirement. As a consequence, it is not guaranteed that this
+kind of allocator can be used with standard-compliant container implementations.
+Why is this restriction?
+<p>Let us consider the "prohibited" situation of two containers with unequal
+allocator objects a little further. Some algorithms operates on two containers.
+An example of such an operation is the <font face="Courier,Courier New">swap()</font>
+algorithm. It exchanges the content of two objects. Both objects have to
+be of the same type. Say, they are <font face="Courier,Courier New">vector</font>s
+of <font face="Courier,Courier New">string</font>s, which are allocated
+via<font face="Courier,Courier New"> thread_allocator</font>s. Both <font face="Courier,Courier New">vector</font>s
+are of the same type, namely <font face="Courier,Courier New">vector&lt;string,
+thread_allocator&lt;string> ></font>, but they have different, unequal
+allocator objects referring to different threads.
+<dir><font face="Courier,Courier New"><font size=-1>vector&lt;string, thread_allocator&lt;string>
+> vec_1(thread_allocator(threadId_1));</font></font>
+<br><font face="Courier,Courier New"><font size=-1>vector&lt;string, thread_allocator&lt;string>
+> vec_2(thread_allocator(threadId_2));</font></font>
+<br><font face="Courier,Courier New"><font size=-1>vec_1.swap(vec_2);</font></font></dir>
+What does it mean to swap the elements of <font face="Courier,Courier New">vec_1</font>,
+lying in memory specific to thread 1, with the elements of <font face="Courier,Courier New">vec_2</font>,
+whose elements are located in memory specific to thread 2? Does it mean
+that all elements of <font face="Courier,Courier New">vec_1</font> are
+copied into the thread-specific memory of thread 2 and vice versa? Usually,
+the vector <font face="Courier,Courier New">swap()</font> is implemented
+much more efficiently and does not involve copying of elements at all.
+Instead, the vector <font face="Courier,Courier New">swap()</font> simply
+exchanges the vectors' internal data, i.e. the pointers to the first and
+last element and the pointer to the end of allocated storage. This cannot
+be the appropriate thing to do, if two different allocator objects are
+involved. Unfortunately, this question does not only apply to <font face="Courier,Courier New">swap()</font>,
+but to all operations that involve two containers of the same type.
+<p>The requirement of interchangeability of allocator objects was introduced
+into the standard in order to allow for efficient library implementations.
+For a library implementor the additional requirement means that the <font face="Courier,Courier New">swap()</font>
+algorithm for instance can be implemented in its most efficient form: It
+does not make a difference how (i.e. by means of which particular allocator
+object) the vectors were allocated; hence swapping the internal pointers
+is sufficient. The effort for providing a <font face="Courier,Courier New">swap()</font>
+algorithm for containers with non-interchangeable allocators is significantly
+higher. The library implementor would have to provide several versions
+of <font face="Courier,Courier New">swap()</font>: an optimized one for
+interchangeable allocators and , maybe several additional, versions for
+non-interchangeable allocators.
+<p>What does the requirement mean for users of the standard library? Well,
+it depends on what a user intends to do with allocators. Let's distinguish
+between <i>implementing</i> an allocator type and <i>using</i> allocators.
+<p>We <i>use</i> allocators, implicitly, when we use containers. Imagine
+a situation similar to the <font face="Courier,Courier New">swap()</font>
+algorithm: we want to use several containers of the same type and create,
+copy, or destroy container elements. In that case we can take advantage
+of the additional requirement of interchangeable allocators: We need not
+care which container's allocator we use. The containers' allocators are
+all of the same type and, meeting to the requirement, are interchangeable
+and basically all the same.
+<p>The requirement of interchangeable allocators has a fundamentally different
+meaning for programmers who aim to <i>implement</i> their own allocator
+types. In that case the requirement is a restriction imposed on the new
+allocator type. If the allocator type does not meet the requirement, then
+there is no guarantee that it can be used with containers and algorithms
+of any conforming standard library implementation.
+<br>&nbsp;
+<h4>
+Pointer and Reference Types</h4>
+
+<p><br>Besides memory allocation strategies, allocators are intended for
+representing alternative pointer types. For this purpose, an allocator
+type must define nested types for pointers, references, and related items,
+as well as member functions called <font face="Courier,Courier New">address()</font>.
+Specifically:
+<dir><font face="Courier,Courier New"><font size=-1>// types:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>value_type</font></font>
+<br><font face="Courier,Courier New"><font size=-1>pointer</font></font>
+<br><font face="Courier,Courier New"><font size=-1>const_pointer</font></font>
+<br><font face="Courier,Courier New"><font size=-1>reference</font></font>
+<br><font face="Courier,Courier New"><font size=-1>const_reference</font></font>
+<br><font face="Courier,Courier New"><font size=-1>size_type</font></font>
+<br><font face="Courier,Courier New"><font size=-1>difference_type</font></font>
+<br><font face="Courier,Courier New"><font size=-1>// functions:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>pointer address(reference
+x) const;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>const_pointer address(const_reference
+x) const;</font></font></dir>
+Non-standard pointer types must behave like native pointer types. For this
+reason, these types and conversions defined by an allocator must reflect
+the relationship among native pointer and reference types. Among built-in
+pointer and reference types, the C++ type system already defines implicit
+conversions between a type <font face="Courier,Courier New">T</font> and
+its reference type <font face="Courier,Courier New">T&amp;</font>. Also,
+there are conversions defined from <font face="Courier,Courier New">T</font>
+and <font face="Courier,Courier New">T&amp;</font> to <font face="Courier,Courier New">T*</font>
+by means of the address <font face="Courier,Courier New">operator&amp;()</font>
+and from <font face="Courier,Courier New">T*</font> to <font face="Courier,Courier New">T</font>
+via the dereferencing <font face="Courier,Courier New">operator*()</font>.
+<center>
+<p><img SRC="Folie2.JPG" height=264 width=400>
+<p><i><font size=-1>Figure 2: Conversions of built-in pointer and reference
+types in the C++ type system</font></i></center>
+
+<p>Non-standard pointer and reference types must mimic this behavior: The
+types <font face="Courier,Courier New">Allocator::value_type</font>, <font face="Courier,Courier New">Allocator::pointer</font>,
+and <font face="Courier,Courier New">Allocator::reference</font> are required
+to be convertible to each other, in the same way as <font face="Courier,Courier New">T</font>,
+<font face="Courier,Courier New">T*</font>,
+and <font face="Courier,Courier New">T&amp;</font>. This convertibility
+is achieved by imposing the following requirements on the types defined
+by an allocator:
+<ul>
+<li>
+The <font face="Courier,Courier New">reference</font> type must be implicitly
+convertible to <font face="Courier,Courier New">value_type&amp;.</font></li>
+
+<li>
+The <font face="Courier,Courier New">pointer</font> type must be implicitly
+convertible to <font face="Courier,Courier New">value_type*.</font></li>
+
+<li>
+The <font face="Courier,Courier New">pointer</font> type must be explicitly
+convertible to the <font face="Courier,Courier New">reference</font> type.
+A conversion function <font face="Courier,Courier New">address()</font>
+must be provided for this purpose.</li>
+</ul>
+All remaining required conversions are combinations of the conversions
+enabled by the requirements above.
+<center>
+<p><img SRC="Folie3.JPG" NOSAVE height=488 width=650>
+<br>&nbsp;
+<br>&nbsp;
+<p><i><font size=-1>Figure 3: Conversions of non-standard pointer and reference
+types defined by an allocator</font></i></center>
+
+<p>Let us see how the default allocator type allocator meets these requirements.
+The pointer, reference and related types are identical to those in the
+C++ type system. The<font face="Courier,Courier New"> address()</font>
+function for conversion from a reference type to a pointer type boils down
+to the address operator.
+<dir><font face="Courier,Courier New"><font size=-1>template &lt;class
+T> class allocator {</font></font>
+<br><font face="Courier,Courier New"><font size=-1>public:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef T* pointer;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef const T* const_pointer;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef T&amp; reference;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef const T&amp;
+const_reference;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef T value_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef size_t size_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>typedef ptrdiff_t difference_type;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>pointer address(reference
+x) const { return (&amp;x); }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>const_pointer address(const_reference
+x) const { return (&amp;x); }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>// ...</font></font>
+<br><font face="Courier,Courier New"><font size=-1>};</font></font></dir>
+Despite of the latitude this model seems to allow at first sight, we are
+not entirely free to define alternative pointer and reference types. The
+crux is that almost all operations in the STL are implemented as function
+templates, and convenient use of these function templates involves automatic
+function template argument deduction. Unfortunately, the automatic deduction
+does not work in presence of alternative pointer and reference types. Let
+us see why.
+<p>Assume, we had defined an allocator type with non-standard pointer and
+reference types. Let us call it <font face="Courier,Courier New">smartPtr_allocator</font>.
+The non-standard types defined by <font face="Courier,Courier New">smartPtr_allocator</font>
+would be used, for instance, as the return type of the index <font face="Courier,Courier New">operator[]()</font>
+of a <font face="Courier,Courier New">vector&lt;T,smartPtr_allocator&lt;T>
+></font>. Consider a function that takes a reference returned by <font face="Courier,Courier New">operator[]()</font>
+as a function argument, say we pick the <font face="Courier,Courier New">max()</font>
+algorithm from the standard library. To our very surprise, a call to <font face="Courier,Courier New">max()</font>
+like in the following code snippet
+<dir><font face="Courier,Courier New"><font size=-1>vector&lt;int,smartPtr_allocator&lt;int>
+> vec;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>... max(vec[0],vec[1])
+... // error</font></font></dir>
+will not compile. The reason is that <font face="Courier,Courier New">max()</font>
+is a function template. Normally, the compiler automatically deduces the
+function template arguments from the types of arguments passed to the function
+call. If <font face="Courier,Courier New">vec[0]</font> and <font face="Courier,Courier New">vec[1]</font>
+were of type <font face="Courier,Courier New">int&amp;</font>, then the
+compiler would conclude that <font face="Courier,Courier New">max&lt;int>()</font>
+must be called here. In our case of non-standard pointer and reference
+types, the arguments to <font face="Courier,Courier New">max() </font>are
+of type <font face="Courier,Courier New">smartPtr_allocator&lt;int>::reference.
+</font>The
+compiler is not capable of understanding that <font face="Courier,Courier New">smartPtr_allocator&lt;int>::reference</font>
+represents an alternative reference to type <font face="Courier,Courier New">int</font>,
+and it does not deduce <font face="Courier,Courier New">int</font> as the
+template argument, but the allocator's reference type itself. As we cannot
+rely on the compiler for template argument deduction under these circumstances,
+we would have to specify the template argument of <font face="Courier,Courier New">max()</font>
+explicitly and would call <font face="Courier,Courier New">max&lt;int>()</font>,
+or more precisely:
+<dir><font face="Courier,Courier New"><font size=-1>vector&lt;int,smartPtr_allocator&lt;int>
+> vec;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>... max&lt; vector&lt;int,smartPtr_allocator&lt;int>
+>::value_type>(vec[0],vec[1]) ...</font></font></dir>
+The same inconvenience occurs for the other nested types. For instance,
+the compiler is capable of deducing <font face="Courier,Courier New">T</font>
+as a template argument from a <font face="Courier,Courier New">T*</font>
+function argument, but it cannot deduce <font face="Courier,Courier New">Allocator::value_type</font>
+from <font face="Courier,Courier New">Allocator::pointer</font>. To make
+automatic function template argument deduction work, the standard makes
+the following requirements to the typedef members of an allocator type:
+<font face="Courier,Courier New">pointer</font>
+must be defined as <font face="Courier,Courier New">T*</font>,
+<font face="Courier,Courier New">const_pointer
+</font>as
+<font face="Courier,Courier New">const
+T*</font>, <font face="Courier,Courier New">reference</font> as <font face="Courier,Courier New">T&amp;</font>,<font face="Courier,Courier New">
+const_reference</font> as<font face="Courier,Courier New"> const T&amp;</font>,
+<font face="Courier,Courier New">value_type</font>
+as <font face="Courier,Courier New">T</font>,
+<font face="Courier,Courier New">size_type</font>
+as<font face="Courier,Courier New"> size_t</font>, and <font face="Courier,Courier New">difference_type</font>
+as <font face="Courier,Courier New">ptrdiff_t</font>.
+<p>This additional requirement was introduced into the standard to guarantee
+convenient use of standard library operations that use any of the types
+defined by allocators. Without the requirement, library implementers would
+have to find ways and means for allowing the desired convenience. They
+could, for instance, provide specializations of the <font face="Courier,Courier New">max()</font>
+algorithm, so that its use would not involve automatic argument deduction,
+but would work via function template overloading. Library implementers
+are encouraged, by the standards committee, to supply libraries that can
+accept allocator types with alternative pointer and reference types. To
+our knowledge, none of the available implementations does so.
+<p>As a user of allocators, we profit from the imposed requirement, because
+we, too, can assume that a container's pointer or reference type indeed
+is a pointer or reference type in the sense of the C++ type system, and
+that conversions and deductions automatically performed by the compiler
+for these types work as expected.
+<p>If, however, we implement a new allocator type, the requirement basically
+means that we cannot define alternative pointer and reference types at
+all.
+<br>&nbsp;
+<h3>
+<b>Summary</b></h3>
+Allocators are intended to allow for alternative pointer and reference
+types as well as for alternative memory allocation schemes. Allocators
+are used by all containers in the standard library, including the character
+container class <font face="Courier,Courier New">basic_string</font>. The
+support of allocators is slightly restricted to permit efficient library
+implementations.
+<br>&nbsp;
+<h3>
+<b>References</b><a NAME="Ref1"></a></h3>
+<a href="ftp://ftp.research.att.com/dist/c++std/WP/CD2">Working Paper for
+Draft Proposed International Standard for Information Systems</a>
+<br>Programming Language C++
+<br>Accredited Standards Committee X3, INFORMATION PROCESSING SYSTEMS
+<br>Doc No:X3J16/97-0079, WG21/N1117
+<br>Date: 29 September 1997
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

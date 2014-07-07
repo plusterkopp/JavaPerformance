@@ -1,0 +1,411 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="FORMATTER" content="Microsoft FrontPage 2.0">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <title>C++ IOStreams and Locales</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="IOStreamsCourse"></a>
+<br><b><font face="Arial"><font color="#295AB5">COURSE DESCRIPTION</font></font></b>
+<table BORDER=0 CELLSPACING=10 CELLPADDING=2 WIDTH="98%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%"><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p>Formatting and parsing of text is a problem that countless C++ programmers
+still solve by resorting to C functions like
+<font face="Courier New,Courier">printf()
+</font>and
+<font face="Courier New,Courier">scanf()</font>,
+despite of their indisputable drawbacks. A more reliable and less error
+prone tool for handling of text I/O is available in form of the C++ IOStreams
+library.&nbsp;
+<p>The IOStreams classes define the standard interface for input and output
+of text to external devices such as file systems, networks, etc. In fact,
+IOStreams is the standard formatting and parsing tool for both pre-defined
+and user-defined types.&nbsp;
+<p>Closely related to IOStreams are locales and facets, which form the
+standard C++ support for internationalization of programs.
+<p>Both IOStreams and locales can be seen a collection of ready-to-use
+components, but they are also frameworks that can be extended in interesting
+ways and for a variety of purposes.&nbsp;
+<p>In this seminar you will learn how to use IOStreams and locales effectively.
+In addition, we will study the extension techniques used in IOStreams and
+locales and can learn useful programming idioms that can be applied to
+other areas of software development.
+<br>&nbsp;
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p>This is a course for serious C++ programmers who want to gain an in-depth
+understanding of the standard IOStreams and locales frameworks.&nbsp;
+<p>If you want to stay ahead of your time and keep your knowledge above
+average you need to know everything about the latest progamming techniques
+in C++, then this is the right course for you.
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p>The seminar is based on the book:&nbsp;
+<blockquote><font color="#295AB5">"Standard C++ IOStreams and Locales"</font>
+<br><font color="#295AB5">Angelika Langer &amp; Klaus Kreft</font>
+<br><font color="#295AB5">Addison-Wesley, January 2000</font></blockquote>
+For more information on the book and the topics covered in this seminar
+go to the <font face="Arial,Helvetica"><font size=-2><a href="../iostreams.html">BOOK</a></font></font>,
+where you find the table of contents, a number of reviews, the preface,
+and lots of other information about the book, the publisher, and the authors.
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350></td>
+
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 CELLPADDING=2 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="35%"><b><i><font color="#295AB5">Prerequisite Courses
+and Skills:</font></i></b></td>
+
+<td VALIGN=TOP WIDTH="65%">Introductory C++ course, or equivalent experience;
+in-depth experience with iostreams not required;&nbsp;
+<br>basic knowledge of iostreams helpful&nbsp;
+<p>One year of programming experience using C++</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="50%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td WIDTH="50%">5 days</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="50%"><b><i><font color="#295AB5">Exercises:</font></i></b></td>
+
+<td WIDTH="50%">Workshops and hands-on labs</td>
+</tr>
+</table>
+
+<p>Attendants should feel comfortable with the basics of the language and
+be open for expanding their knowledge of the standard C++ library.&nbsp;
+<br>&nbsp;
+<p><b><font face="Arial"><font color="#295AB5"><font size=+0>PERFORMANCE
+OBJECTIVES</font></font></font></b>
+<table BORDER=0 CELLSPACING=4 CELLPADDING=0 >
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Understand text formatting and parsing in C++</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Prepare C++ programs for the global market</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Avoid re-invention of the wheel, know how to use standard tools instead</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Know how to use and extend C++ IOStreams and locales framework</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Add novel C++ programming techniques to your skill set</td>
+</tr>
+</table>
+
+<p><b><font face="Arial"><font color="#295AB5"><font size=+0>BUSINESS OBJECTIVES</font></font></font></b>
+<table BORDER=0 CELLSPACING=4 CELLPADDING=0 >
+<tr>
+<td VALIGN=TOP><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Equip your software professional state-of-the-art C++ skills&nbsp;</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Make your software ready for the global market</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Increase the flexibility of your C++ programs</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=14 width=10></td>
+
+<td>Build on reliable standard components</td>
+</tr>
+</table>
+
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p><font color="#295AB5">The course is designed and conducted by Angelika
+Langer and backed by years of experience in teaching&nbsp; C++ related
+topics and more than a decade of real-world experience in industrial software
+development. Angelika Langer is a freelance trainer/consultant in the area
+of object-oriented software development in C++ and Java. She is member
+of the ANSI C++ standards committee since 1993, columnist of C++ Report,
+a recognized speaker at OO conferences, and co-author of the book "Standard
+C++ IOStreams and Locales".&nbsp;</font>
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>&nbsp;</td>
+</tr>
+</table>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial"><font color="#295AB5">COURSE OVERVIEW</font></font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+
+<table BORDER=0 CELLPADDING=2 WIDTH="98%" >
+<tr>
+<td COLSPAN="2">This tutorial aims to explain techniques for implementing
+input and output operations as well as so-called manipulators for user-defined
+types. Along the way, we explore all the new stuff in the standard IOStreams
+library such as the exception mask, sentries, locales, callbacks, etc.
+We extend the IOStreams abstraction by adding new external devices and
+by adding new formatting and parsing abstractions. We compare derivation
+from the stream classes to use of the iword/pword fields of a stream. Along
+the way, we learn the basics of the internationalization support in C++
+and how it can be extended and used in conjunction with IOStreams.&nbsp;
+<br>A case study (formatting and parsing of monetary amounts in dual currency
+environments) runs as a thread through the hands-on labs. It is well suited
+to demonstrate the use of IOStreams on the one hand, but also use of locales
+for tackling the culture-dependencies introduced by monetary formats.</td>
+
+<td></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><b><font face="Arial"><font size=-1>INTRODUCTION TO THE
+STANDARD LIBRARY&nbsp;</font></font></b>
+<ul>
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Overview and Organization
+of the Library</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Strings</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Character Traits</font></font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font color="#000000"><font size=-1>(Lab)
+Case-Insensitive String Compare</font></font></font></li>
+</ul>
+<b><font face="Arial"><font size=-1>USING IOSTREAMS&nbsp;</font></font></b>
+<ul>
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Formatted Input/Output</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>The Stream State</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>File Input/Output</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>In-Memory Input/Output&nbsp;</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Unformatted Input/Output</font></font></font></li>
+
+<li>
+<font color="#000000"><font size=-1><font face="Arial,Helvetica">(Lab)</font><font face="Arial">
+Skipping Comments</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Simple User-Defined
+Input/Output</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Stream Iterators</font></font></font></li>
+
+<li>
+<font color="#000000"><font size=-1><font face="Arial,Helvetica">(Lab)</font><font face="Arial">
+Formatted I/O And Stream Iterators</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Stream Positioning</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Synchronization
+of Streams</font></font></font></li>
+</ul>
+<b><font face="Arial"><font color="#000000"><font size=-1>USING LOCALES</font></font></font></b>
+<ul>
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Introduction to
+Internationalization</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Creating and Accessing
+Locales</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Language-Related
+Standard Facets</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Standard Facets
+for Formatting and Parsing</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Direct and Indirect
+Use of Facets</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Facet Base Classes</font></font></font></li>
+
+<li>
+<font color="#000000"><font size=-1><font face="Arial,Helvetica">(Lab)</font><font face="Arial">
+Modified Monetary Output (user-defined moneypunct)</font></font></font></li>
+</ul>
+</td>
+
+<td VALIGN=TOP><b><font face="Arial"><font color="#000000"><font size=-1>EXTENDING
+IOSTREAMS&nbsp;</font></font></font></b>
+<ul>
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>The Stream Classes</font></font></font></li>
+
+<li>
+<font color="#000000"><font size=-1><font face="Arial,Helvetica">(Lab)</font><font face="Arial">
+Copying Streams</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>User-Defined Inserters
+and Extractors</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>The Refined Date
+Inserter/Extractor</font></font></font></li>
+
+<li>
+<font color="#000000"><font size=-1><font face="Arial,Helvetica">(Lab)</font><font face="Arial">
+User-Defined I/O for Monetary Amounts</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>User-Defined&nbsp;
+Manipulators</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Iword/Pword &amp;
+Stream Callbacks</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>User-Defined Stream
+Extensions (Iword/Pword)</font></font></font></li>
+
+<li>
+<font color="#000000"><font size=-1><font face="Arial,Helvetica">(Lab)</font><font face="Arial">
+Currency Symbol Manipulator (iword/pword)</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>User-Defined Stream
+Extensions (Derivation)</font></font></font></li>
+
+<li>
+<font color="#000000"><font size=-1><font face="Arial,Helvetica">(Lab)</font><font face="Arial">
+Currency Symbol Manipulator (Derivation)</font></font></font></li>
+</ul>
+<b><font face="Arial"><font color="#000000"><font size=-1>EXTENDING LOCALES</font></font></font></b>
+<ul>
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Facet Identification
+and Lookup</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Memory Management
+of Facets</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>User-Defined Facet
+Families</font></font></font></li>
+
+<li>
+<font color="#000000"><font size=-1><font face="Arial,Helvetica">(Lab)</font><font face="Arial">
+Facets for Dual Curreny Systems</font></font></font></li>
+</ul>
+<b><font face="Arial"><font color="#000000"><font size=-1>STREAM BUFFERS</font></font></font></b>
+<ul>
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>The Stream Buffer
+Classes</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>User-Defined Stream
+Buffer Classes</font></font></font></li>
+
+<li>
+<font color="#000000"><font size=-1><font face="Arial,Helvetica">(Lab)</font><font face="Arial">
+A Wrap-Around Buffer</font></font></font></li>
+</ul>
+<b><font face="Arial"><font color="#000000"><font size=-1>CHARACTERS</font></font></font></b>
+<ul>
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Characters Encodings</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Code Conversion
+Facets</font></font></font></li>
+
+<li>
+<font face="Arial"><font color="#000000"><font size=-1>Character Traits
+and Character Types</font></font></font></li>
+</ul>
+</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial"><font color="#295AB5">FURTHER READING</font></font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+
+<table CELLSPACING=10 CELLPADDING=2 >
+<tr>
+<td VALIGN=TOP WIDTH="60%"><a NAME="ReadingEffectiveJava"></a><font color="#000000">To
+get an impression of some topics covered in this course check out the sample
+reading:&nbsp;</font>
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=TOP WIDTH="50"><a href="../Articles/Papers/IOStreams/IOStreams.htm"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=27 width=31></a></td>
+
+<td NOWRAP><font color="#000000"><a href="../Articles/Papers/IOStreams/IOStreams.htm">New
+Features in Standard IOStreams</a></font>
+<br><font color="#000000"><font size=-1>White Paper</font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>
+<center><a href="../IOStreams/Excerpt/excerpt.htm"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=27 width=31></a></center>
+</td>
+
+<td VALIGN=TOP><font color="#000000"><a href="../IOStreams/Excerpt/excerpt.htm">The
+Stream Buffer Classes</a></font>
+<br><font color="#000000"><font size=-1>Excerpt from the book</font></font></td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+</body>
+</html>

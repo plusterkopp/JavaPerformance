@@ -1,0 +1,523 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <title>Explicit Function Template Argument Specification and STL</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CujSetIterators"></a>
+<br><font color="#295AB5"><font size=+3>Explicit Function Template Argument
+Specification and STL</font></font>
+<br><font color="#295AB5"><font size=+2>A New Language Feature and Its
+Impact on Old Programming Techniques</font></font>
+<p><font color="#295AB5"><font size=+2>C/C++ Users Journal, December 2000</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p>In this installment of the column, we will explain how the new language
+feature of explicit function template argument specification can break
+previously safe and sound code that was implemented before the feature
+was available. In order to avoid potential problems, new programming idioms
+are needed. We will study the effect taking real-world examples from STL.
+Many STL implementations were built before the new language feature was
+supported by compilers, and some implementations have never been updated
+and still contain problematic function templates, namely an outer function
+template calling an inner function template relying on automatic template
+argument deduction.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+Type Arguments of Function Templates</h3>
+Explicit specification of template arguments for function templates is
+a relatively new language feature, which was added during C++ standardization.
+When you look at the <i>ARM</i> (<i>Annotated Reference Manual</i>) <a href="#1">[1]</a>,
+which is <i>the</i> reference for pre-standard C++, you will find that
+initially there was no way to tell the compiler which types to use as template
+arguments for instantiation of a function template. In those days, a template
+such as the one shown below was illegal.
+<br>&nbsp;
+<br>&nbsp;
+<pre>template &lt;class T>
+T* create();</pre>
+Every template argument, like the type argument <b>T</b> in the example
+above, was required to be used in the argument types of the function template.
+Otherwise the compiler was not capable of deducing the template arguments.
+In the example above, the function does not have any arguments and for
+this reason the compiler cannot figure out which type to use for the instantiation
+of the function template.
+<h3>
+The New Language Feature</h3>
+Today, we can explicitly tell the compiler which types it must use for
+instantiation of a function template. In the case above, we can invoke
+the function using explicit argument specification syntax, as shown below:
+<br>&nbsp;
+<br>&nbsp;
+<pre>int n = create&lt;int>();</pre>
+The language construct <b>create&lt;int></b> is called <i>explicit specification
+of a function template argument</i>. The syntax is similar to the instantiation
+of class templates: the name of the template is followed by the list of
+template arguments.
+<br>&nbsp;
+<br>&nbsp;
+<p>Even in cases where explicit specification of the function template
+argument is unnecessary because the compiler can deduce the actual template
+arguments from the function argument types, we can circumvent the automatic
+deduction and use explicit specification instead. Here is an example:
+<br>&nbsp;
+<br>&nbsp;
+<pre>template &lt;class T>
+void add(T t);
+
+add("log.txt"); // automatic argument deduction
+add&lt;string>("log.txt"); // explicit argument specification</pre>
+The example also shows that automatic deduction and explicit specification
+can have different effects. Automatic argument deduction will trigger instantiation
+of <b>add&lt;char*></b>, and explicit argument specification will generate
+a different function, namely <b>add&lt;string></b>.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+The Catch</h3>
+The new language feature was added to the language in order to solve for
+instantiation of function templates where the template argument is not
+used in the function arguments types. It adds extra flexibility to the
+language, but there is a catch. Formerly safe code might now be problematic.
+In the old days before explicit function template argument specification,
+it was perfectly reasonable to implement function templates that pass their
+arguments to other function templates using automatic argument deduction,
+as shown below:
+<br>&nbsp;
+<br>&nbsp;
+<pre>template &lt;class T>
+void inner(T t) ;
+
+template &lt;class T>
+void outer(T t)
+{ ...
+&nbsp; inner(t);
+&nbsp; ...
+}</pre>
+The outer function template passes its function argument to the inner function
+template, and for invocation of the inner function template, it lets the
+compiler figure out the template argument.
+<br>&nbsp;
+<br>&nbsp;
+<p>Today, with explicit function template argument specification, this
+is a questionable implementation of a function template, because it has
+the potential to create object slicing problems if the outer function is
+instantiated for a reference type. It is still reasonable to pass arguments
+from one function template to another function template, but the syntax
+for safely doing so is different today.
+<h3>
+Automatic Function Template Argument Deduction<br>
+vs.<br>
+Explicit Function Template Argument Specification</h3>
+Let us analyze our problematic example from above:
+<br>&nbsp;
+<br>&nbsp;
+<pre>template &lt;class T>
+void inner(T t) ;
+
+template &lt;class T>
+void outer(T t)
+{ ...
+&nbsp; inner(t);
+&nbsp; ...
+}</pre>
+Why is it hazardous today, but was safe in the early days of C++ before
+explicit argument specification was invented for instantiation of function
+templates? It has to do with the extra flexibility that the new feature
+adds to the language.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+The Problem</h3>
+Using explicit template argument specification, the outer function template
+can be instantiated for a reference type, as shown below:
+<br>&nbsp;
+<br>&nbsp;
+<pre>class Base;
+class Derived : public Base {};
+Base&amp; ref = new Derived;
+outer&lt;Base&amp;>(ref);</pre>
+The generated function <b>outer&lt;Base&amp;></b> would look like this:
+<br>&nbsp;
+<br>&nbsp;
+<pre>void outer&lt;Base&amp;>(Base&amp; t)
+{ ...
+&nbsp; inner(t); // calls: void inner&lt;Base>(Base t);
+&nbsp; ...
+}</pre>
+When it invokes the inner function template, it relies on automatic template
+argument deduction, and the compiler instantiates the inner function template
+for the value type <b>Base</b> instead of the reference type <b>Base&amp;</b>.
+This might be surprising, but is intended: automatic function argument
+deduction involves a number of implicit type conversions, one of which
+is the lvalue-to-rvalue transformation (more details about the conversion
+later in this article). The consequence is that the function argument <b>t</b>,
+which is a base class reference pointing to a derived class object, is
+passed from the outer function to the inner function by value. Only a base
+class slice of the derived class object is made available to the inner
+function. This is called <i>object slicing,</i> and it is a well-know problem
+that arises when copies of base class references are created.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+A Solution</h3>
+In a correct implementation of outer, we would pass the argument <b>t</b>
+to the inner function as it was received (i.e., by reference when it was
+received by reference, and by value when it was received by value). This
+can easily be achieved via explicit argument specification for the inner
+function template, as shown below:
+<br>&nbsp;
+<br>&nbsp;
+<pre>template &lt;class T>
+void inner(T t) ;
+
+template &lt;class T>
+void outer(T t)
+{ ...
+&nbsp; inner&lt;T>(t);
+&nbsp; ...
+}</pre>
+The generated function <b>outer&lt;Base&amp;></b> would trigger instantiation
+of the inner function template for the reference type <b>Base&amp;</b>.
+<pre>void outer&lt;Base&amp;>(Base&amp; t)
+{ ...
+&nbsp; inner&lt;Base&amp;>(t); // calls: void inner&lt;Base&amp;>(Base&amp; t);
+&nbsp; ...
+}</pre>
+The function argument <b>t</b> is passed by reference to the inner function,
+and no object slicing can occur because no copies are created.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+Evaluation</h3>
+The problem of object slicing in function templates stems from the fact
+that the template is instantiated for a base class reference type. Now,
+you can see why the naive implementation of the outer and inner function
+templates was safe before explicit template argument specification was
+added to the language: it was just not possible to instantiate a function
+template for a reference type. For this simple reason, the implementer
+of outer had no need to prepare for a base class reference being passed
+as an argument. There was no danger of object slicing because no references
+were involved. Today, this restriction is gone, and the function template
+can be instantiated on any arbitrary type, including reference types. Hence,
+the implementer of a function template must be prepared to cope correctly
+with any arbitrary type.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+An Alternative Solution</h3>
+In principle, the implementer of the outer function template can take a
+different approach from our proposed solution. Maybe, he/she does not want
+to accept arbitrary types and decides to exclude reference types for instantiation
+of the outer function template and restrict its usability to value types.
+Here is a conceivable implementation that cannot be instantiated for a
+reference type:
+<br>&nbsp;
+<br>&nbsp;
+<pre>template &lt;class T>
+void inner(T t) ;
+
+template &lt;class T>
+void outer(T t)
+{ ...
+&nbsp; typedef T&amp; dummy;
+&nbsp; inner(t);
+&nbsp; ...
+}</pre>
+The attempt to instantiate <b>outer&lt;Base&amp;></b> would fail, because
+references to references are not allowed in C++. The generated function
+would look like this:
+<br>&nbsp;
+<br>&nbsp;
+<pre>void outer&lt;Base&amp;>(Base&amp; t)
+{ ...
+&nbsp; typedef Base&amp;&amp; dummy; // error : reference to reference
+&nbsp; inner(t);&nbsp;
+&nbsp; ...
+}</pre>
+The downside of this solution is that we usually strive for maximum applicability
+of a template rather that restricting its usability. Unless there is a
+compelling reason for the restriction to value types, the more flexible
+solution using explicit argument specification is superior.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+Implicit Type Conversions Involved in Template Argument Deduction</h3>
+For sake of comprehensiveness, let us point out that the lvalue-to-rvalue
+conversion that was involved in the automatic argument deduction in our
+example is not the only implicit type conversion that is applied before
+a template argument is deduced.
+<p>Before the template argument type is determined, the compiler performs
+the following implicit type conversions:
+<ul>
+<li>
+lvalue transformation</li>
+
+<li>
+qualification conversion</li>
+
+<li>
+derived class to base class conversion</li>
+</ul>
+See the <i>C++ Primer</i> (<a href="#2">[2]</a>, page 500) for comprehensive
+coverage of this topic.
+<p>Simply put, the compiler drops some type properties, like the lvalue
+property of the reference type in our example. For example, the compiler
+instantiates a function template for a value type rather than the corresponding
+reference type. Similarly it instantiates function templates for a pointer
+type rather than the corresponding array type. It drops <b>const</b> qualifications
+and would never instantiate a function template for a <b>const</b> type,
+but always for the corresponding non-<b>const</b> type.
+<br>&nbsp;
+<br>&nbsp;
+<p>The bottom line is that automatic template argument deduction involves
+type conversions, and certain type properties get lost when the compiler
+determines the template arguments automatically. These type properties
+can be retained when explicit function template argument specification
+is used.
+<h3>
+STL Algorithms</h3>
+Function templates that invoke inner function templates and rely on template
+argument deduction for this invocation can be found in many STL implementations.
+All algorithms in STL are function templates, and often they use other
+algorithms for their own implementation. The <b>remove_if</b> algorithm
+is an example. Here is an implementation that can be found in popular STL
+implementations:
+<br>&nbsp;
+<br>&nbsp;
+<pre>template &lt;class ForwardIterator, class Predicate>
+ForwardIterator remove_if(ForwardIterator first, ForwardIterator last,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Predicate pred) {
+first = find_if(first, last, pred);
+ForwardIterator next = first;
+return first == last ? first : remove_copy_if(++next, last, first, pred);
+}</pre>
+The <b>remove_if</b> algorithm invokes <b>find_if</b> and <b>remove_copy_if</b>.
+In both cases, <b>remove_if</b> relies on automatic argument deduction.
+The iterators and the predicate are passed by value regardless of the fact
+that they might be handed in to <b>remove_if</b> by reference.
+<br>&nbsp;
+<br>&nbsp;
+<p>Is the danger of object slicing likely in this case? How often do we
+pass iterators or predicates by reference?
+<p><b>Iterators.</b> Well, iterators are required by the standard to exhibit
+value semantics. An iterator type must be copyable; hence pass-by-value
+is guaranteed to work. Typically, an iterator type neither contains a lot
+of data nor any virtual functions; hence passing around references to iterators
+is unlikely.
+<br>&nbsp;
+<br>&nbsp;
+<p><b>Predicates.</b> The requirements for predicates are different. Predicate
+types requirements imposed by the standard are relatively relaxed. Here
+is the respective quote from the C++ Standard:
+<br>&nbsp;
+<br>&nbsp;
+<p>The Predicate parameter is used whenever an algorithm expects a function
+object that when applied to the result of dereferencing the corresponding
+iterator returns a value testable as true. In other words, if an algorithm
+takes Predicate <b>pred</b> as its argument and <b>first</b> as its iterator
+argument, it should work correctly in the construct if <b>(pred(*first)){...}</b>.
+The function object <b>pred</b> shall not apply any non-constant function
+through the dereferenced iterator. This function object may be a pointer
+to function, or an object of a type with an appropriate function call operator.
+<br>&nbsp;
+<br>&nbsp;
+<p>In plain English, predicate stands for a type that is either a function
+pointer type or a functor type. The function (object) must return a value
+that is convertible to <b>bool</b> and must accept an argument to which
+the result of dereferencing an iterator is convertible. In addition, the
+predicate must not modify the container elements. Other than that, the
+standard does not impose any further requirements on predicate types. Note,
+a predicate need not even be copyable.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+Predicate References and count_if</h3>
+The weak requirements for predicate types indeed suffice. Typically an
+algorithm does not do a lot with a predicate: it just invokes it by passing
+a reference to a container element (via a dereferenced iterator) to the
+predicate. Here is a typical example, the <b>count_if</b> algorithm, which
+illustrates how an algorithm uses its predicate:
+<br>&nbsp;
+<br>&nbsp;
+<pre>template &lt;class InputIterator, class Predicate>
+typename iterator_traits&lt;InputIterator>::difference_type
+count_if(InputIterator first, InputIterator last, Predicate pred) {
+&nbsp; typename iterator_traits&lt;InputIterator>::difference_type n = 0;
+&nbsp; for ( ; first != last; ++first)
+&nbsp;&nbsp;&nbsp; if (pred(*first))
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ++n;
+&nbsp; return n;
+}</pre>
+The algorithm just calls the predicate, provides a dereferenced iterator
+as an argument, and uses the predicate's return value in a conditional
+expression.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+Predicate References and remove_if</h3>
+In contrast, the implementation of <b>remove_if</b> algorithm shown earlier
+in this article requires more of its predicate than the standard allows.
+It passes on the predicate by value to other algorithms, which requires
+predicate type to be copyable in the first place and, in addition, risks
+object slicing in case of references to base class predicates.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+Polymorphic Predicate Types</h3>
+For illustration of the potential object slicing problem, think of a hierarchy
+of predicate types with an abstract base class and a number of concrete
+derived classes <a href="#3">[3]</a>. If you want to use it in conjunction
+with STL algorithms, then you might try to instantiate an STL algorithm
+for the base class reference type. The code below demonstrates the approach:
+<br>&nbsp;
+<br>&nbsp;
+<pre>template &lt;class Container>
+void foo(Container&amp; cont,&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; const predicateBase&lt;typename Container::value_type>&amp; pred)
+{&nbsp;
+&nbsp; remove_if&lt;typename Container::iterator,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; const predicateBase&lt;typename Container::value_type>&amp;>
+&nbsp; (cont.begin(),cont.end(),pred);
+}</pre>
+The generated <b>remove_if</b> function receives the predicate via a base
+class reference and, as we know from look into the implementation of
+<b>remove_if</b>,
+passes it by value to <b>find_if</b> and <b>remove_copy_if</b> -- a classical
+case of object slicing <a href="#4">[4]</a>.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+Predicate Types Containing Data</h3>
+Another reason for using references to predicates is that predicates have
+data members and accumulate information in these data members.
+<br>&nbsp;
+<br>&nbsp;
+<p>Think of a bank application where we have a list of bank accounts, and
+we need to check whether any balances are below a certain threshold; if
+so, the client is removed from the list of bank accounts. At the same time,
+whenever a balance exceeds a certain threshold, the client's name is added
+to a mailing list. We can achieve this using <b>remove_if</b> with an appropriate
+predicate that builds up the mailing list and returns true for all clients
+that must be removed.
+<br>&nbsp;
+<br>&nbsp;
+<p>There is just one tiny problem: how do we get access to the mailing
+list after execution of the algorithm, when the mailing list is a data
+member of the predicate? When the predicate is passed to <b>remove_if</b>
+by value then the algorithm works with a temporary copy of our predicate
+object, and all the accumulated information is discarded before we have
+a chance to extract it. For this reason, we pass it by reference, but then
+the algorithm passes it by value to <b>find_if</b> and <b>remove_copy_if</b>
+– and defeats the purpose of using a reference in the first place.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+Summary</h3>
+There are various reasons for passing function objects to algorithms by
+reference. Unfortunately, some standard library implementations create
+copies of the referred to objects and risk object slicing because they
+assume that an algorithm can never be instantiated for a reference type.
+<p>This STL problem is an instructive example of how an extension to the
+language suddenly requires new programming idioms. Today, we cannot safely
+make any assumptions about the template arguments that are used for instantiation
+of a function template. They can be reference types, they can have <b>const</b>
+qualifications, and they can have other type properties, which they did
+not have under automatic template argument deduction.
+<br>&nbsp;
+<br>&nbsp;
+<p>When we pass on function arguments of an "unknown" type to inner function
+templates, we can take two approaches to avoid the object slicing problem
+discussed in this article:
+<br>&nbsp;
+<br>&nbsp;
+<ul>
+<li>
+<b>Be restrictive.</b> If we intentionally impose restrictions on the type
+arguments of a template, then we must document them and should ideally
+make sure that the template cannot be instantiated for a type that does
+not meet the requirements. In our example, a dummy typedef that would resolve
+to a reference to a reference for unwanted reference types would do the
+trick.</li>
+
+<li>
+<b>Stay neutral.</b> Normally we strive for maximum usability of a template
+and avoid any restrictions if possible, and it is possible to pass on arguments
+of a function template without dropping type properties along the way:
+just invoke inner function templates using explicit function template argument
+specification.</li>
+</ul>
+
+<h3>
+References and Notes</h3>
+<a NAME="1"></a>[1] Margaret A. Ellis and Bjarne Stroustrup. <i>The Annotated
+C++ Reference Manual</i> (Addison-Wesley, 1990).
+<br>&nbsp;
+<br>&nbsp;
+<p><a NAME="2"></a>[2] Stan Lippman and Jos&eacute;e Lajoie. <i>The C++
+Primer</i> (Addison-Wesley, 1998).
+<br>&nbsp;
+<br>&nbsp;
+<p><a NAME="3"></a>[3] Hierarchies of polymorphic predicate types can be
+found in practice because the GOF book <a href="#5">[5]</a> suggests this
+kind of implementation for the <b>Strategy</b> pattern. Predicates in STL
+are typical strategies in the sense of the GOF strategy pattern.
+<br>&nbsp;
+<br>&nbsp;
+<p><a NAME="4"></a>[4] One might argue that use of polymorphic predicate
+types in conjunction with STL is not a wise thing to do. Generic programming
+provides enough alternatives (replace run-time by compile-time polymorphism),
+and there is no need for passing predicate base class references. True,
+in principle, yet the implementation of <b>remove_if</b>, which relies
+on automatic function argument deduction, creates a pitfall.
+<br>&nbsp;
+<br>&nbsp;
+<p><a NAME="5"></a>[5]Gamma, Helm, Johnson, Vlissides. <i>Design Patterns</i>
+(Addison-Wesley, 1995).
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

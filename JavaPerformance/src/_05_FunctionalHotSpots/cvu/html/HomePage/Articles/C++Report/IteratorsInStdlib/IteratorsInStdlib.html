@@ -1,0 +1,1231 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <title>Iterators in the Standard C++ Library</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CppReportIterators"></a>
+<br><font color="#295AB5"><font size=+3>Iterators in the Standard C++ Library</font></font>
+<p><font color="#295AB5"><font size=+2>C++ Report, Nov./Dec. 1996</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font><font color="#295AB5"><font size=+1></font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<blockquote>THE ISO/ANSI STANDARD C++ library will contain a set of general-purpose
+data structures and algorithms. They were proposed to the standards committee
+by Alexander Stepanov and Meng Lee of Hewlett-Packard in 1994. The proposal
+was based on what is known as the Standard Template Library (STL). The
+committee scrutinized the proposal, found it sound and convincing, and
+voted it in. Thus, the STL became part of the Standard C++ Library.</blockquote>
+
+<blockquote>At the time the STL was proposed to the committee, it was made
+available to the public, thanks to Hewlett-Packard. C++ programmers started
+to experiment with it and use it. Independently, the standardization process
+continued; changes and additions were made since 1994. Today the containers
+and algorithms in the Standard C++ Library depart from the original they
+stem from. Nowadays we have both: the original STL, in parallel to the
+Standard C++ Library.</blockquote>
+
+<blockquote>In a previous article<a href="#1">[1]</a>, we introduced you
+to the design of iterators in the STL; it was a tutorial on compile-time
+polymorphism. Compile-time polymorphism allows the C++ compiler to select
+which of your functions to invoke based on specific properties of their
+parameters without introducing the runtime overhead of inheritance and
+dynamic binding.
+<p>Until March 1996, iterators in the STL and iterators in the Standard
+C++ Library were almost identical. Today they differ. Bjarne Stroustrup
+proposed an alternative design for iterators in the Standard C++ Library,
+which was accepted by the standards committee.
+<p>In this article we will explain the new design of iterators in the Standard
+C++ Library. We want to introduce you to several general-purpose generic
+programming techniques and idioms that are used in the standard for building
+iterators. However, these techniques and idioms are not limited to this
+particular domain. In subsequent issues of the C++ Report, we'll continue
+to cover STL and the Standard C++ library in our new column entitled "Effective
+C++ Standard Library."
+<p><b>BACKGROUND</b> Let us start with a short recap: What are iterators
+in STL and Standard C++ Library?
+<p><b>Iterators</b> Iterators are pointer-like objects that allow programs
+to step through the elements of a container sequentially without exposing
+the underlying representation. Iterators can be advanced from one element
+to the next by incrementing them. Some iterators can also be decremented
+or allow arbitrary jumps from one element to another, as we will see later.
+When they are dereferenced, iterators yield a reference to a container
+element. In addition, they can be compared to each other for equality or
+inequality.</blockquote>
+
+<blockquote>Iterators interact seamlessly with built-in C++ types. In particular,
+native C++ pointers are treated as iterators to C++ arrays. Naturally,
+all containers in the Standard C++ Library define an iterator type, i.e.,
+a nested type iterator that represent their respective pointer-like type.
+<p><b>Iterator Categories </b>Iterators fall into categories. This is because
+different algorithms impose different requirements on an iterator they
+use. For example, the find() algorithms needs an iterator that can be advanced
+by incrementing it, whereas the reverse() algorithm needs an iterator that
+can be decremented as well, etc. Ultimately, there are five categories
+of iterators in STL and Standard C++ Library:</blockquote>
+
+<blockquote>
+<ul>
+<li>
+input iterators</li>
+
+<li>
+output iterators</li>
+
+<li>
+forward iterators</li>
+
+<li>
+bidirectional iterators</li>
+
+<li>
+random access iterators</li>
+</ul>
+</blockquote>
+
+<blockquote>For detailed references consult an STL or C++ Standard Library
+manual or take a look at one of the publications we have listed as references.
+<a href="#2">[2-6]</a>
+The first sidebar gives a brief overview of Iterator categories.</blockquote>
+
+<blockquote>An iterator category is an abstraction. It represents a set
+of requirements to an iterator.</blockquote>
+
+<blockquote>Using the knowledge of an iterator's category one can provide
+optimized implementations of an algorithm. The advance() operation is an
+example. It increments (or decrements for negative n) an iterator.</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>template &lt;class Iterator, class Distance></pre>
+</blockquote>
+
+<blockquote>
+<pre>inline void advance (Iterator&amp; i, Distance n);</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>Obviously, there are many ways to do this. For a C++ array
+one would simply perform pointer arithmetic, i.e., add n to the C++ pointer.</blockquote>
+
+<blockquote>
+<blockquote>
+<address>
+i += n;</address>
+</blockquote>
+</blockquote>
+
+<blockquote>For a list, Iterators must step through the sequence and advance
+step-by-step.</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>if (n >= 0)</pre>
+</blockquote>
+
+<blockquote>
+<pre>while (n--)</pre>
+</blockquote>
+
+<blockquote>
+<pre>++i;</pre>
+</blockquote>
+
+<blockquote>
+<pre>else</pre>
+</blockquote>
+
+<blockquote>
+<pre>while (n++)</pre>
+</blockquote>
+
+<blockquote>
+<pre>--i;</pre>
+</blockquote>
+</blockquote>
+
+<blockquote><i>Observation 1</i>: The iterator category, which is an abstraction
+that represents a set of requirements to an iterator, is information related
+to an iterator. It is useful for providing optimized versions of an operation
+like advance();
+<p>Certain type information is related to an iterator. One of the questions
+that must be answered when designing the iterators in STL and the Standard
+C++ Library is: how can information related to a type be expressed in C++?
+Let's defer this discussion for a moment until we discuss other information
+related to an iterator.
+<p><b>TYPES ASSOCIATED WITH AN ITERATOR</b>
+<p>There are two types that might vary depending on the iterator type:
+<p><b>The Distance Type </b>An operation like advance() obviously needs
+an argument that indicates how far to advance the iterator:
+<blockquote>
+<pre>template &lt;class Iterator, class Distance></pre>
+
+<pre>inline void advance (Iterator&amp; i, Distance n);</pre>
+</blockquote>
+The type of this distance argument must represent the distance between
+any two iterators. Hence the distance type depends on the iterator type.
+For C++ pointers the distance type is the C++ type ptrdiff_t, which can
+represent the differenc between any two C++ pointers. Also, ptrdiff_t is
+the distance type of all other iterators in STL and Standard Library. However,
+the distance type in STL and the Standard C++ Library is not limited to
+ptrdiff_t.</blockquote>
+
+<center><b>ITERATOR CATEGORIES</b></center>
+
+<blockquote>There are five categories of Iterators in STL and the Standard
+C++ Library:
+<ul>
+<li>
+Input iterators allow algorithms to advance the iterator and give "read
+only" access to the value.</li>
+
+<li>
+Output iterators allow algorithms to advance the iterator and give "write
+only" access to the value.</li>
+
+<li>
+Forward iterators combine read and write access, but only in one direction
+(i.e., forward).</li>
+
+<li>
+Bidirectional iterators allow algorithms to traverse the sequence in both
+directions, forward and backward.</li>
+
+<li>
+Random access iterators allow jumps and "pointer arithmetics."</li>
+</ul>
+</blockquote>
+
+<blockquote>Each category adds new features to the previous one. The iterator
+categories obey the following order:
+<center>
+<p><img SRC="Folie1.JPG" NOSAVE height=227 width=270></center>
+</blockquote>
+
+<blockquote><b>The Value Type</b> An iterator can be dereferenced. It then
+returns a reference to a value stored in a container. The type of this
+referenced value also depends on the respective iterator. For example,
+if the iterator refers to a container holding integers, the value type
+will be int. More generally, if the iterator refers to a container that
+stores elements of an arbitrary type T, the value type will be T.
+<p><i>Observation 2</i>: Each iterator has two related types, its value
+type and its distance type.
+<p>So, we have found more information related to an iterator type. What
+is this information used for?
+<p>Value type and distance type are sometimes needed to implement algorithms.
+In STL and Standard C++ Library algorithms are separated from containers,
+i.e., an algorithm takes an iterator and uses it to access the container.
+No information about the container itself is available to an algorithm.
+This clear separation of containers and algorithms is the basic idea of
+Generic Programming, which is the key design idea behind the STL.
+<p>To implement algorithms only in terms of iterators it is often necessary
+to infer both the value type and the distance type from an iterator. Here
+is an example of a fictitious reverse algorithm:
+<blockquote>
+<pre>template &lt;class BidirectionalIterator></pre>
+</blockquote>
+
+<blockquote>
+<pre>void reverse(BidirectionalIterator first, BidirectionalIterator last)</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>{</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>distance_type n = distance(first, last);</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>--n;</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>while(n>0)</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>{ value_type tmp = *first;</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>*first++ = *--last;</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>*last = tmp;</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>n-=2;</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>}</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>}</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>Note that distance_type and value_type aren't declared anywhere.
+How do we know what they are? We need to find a way to make available the
+distance type and value type associated to the iterator type.
+<p>Also, we want to implement optimized versions of operations like advance()
+for different iterator categories. Here we would want to make use of the
+related iterator category information. Assuming the category could be represented
+as a C++ type a tentative implementation could look like this:
+<blockquote>
+<pre>template &lt;class InputIterator, class Distance></pre>
+
+<pre>inline void advance (InputIterator&amp; i, Distance n)</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>{</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>__advance(i, n, iterator_category);</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>}</pre>
+</blockquote>
+</blockquote>
+
+<pre>&nbsp;</pre>
+
+<blockquote>
+<blockquote>
+<pre>template &lt;class RandomAccessIterator, class Distance></pre>
+
+<pre>inline void __advance (RandomAccessIterator&amp; i, Distance n, random_access_iterator_category)</pre>
+
+<pre>{</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>i += n;</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<pre>}</pre>
+</blockquote>
+
+<blockquote>
+<pre>template &lt;class BidirectionalIterator, class Distance></pre>
+
+<pre>inline void __advance (BidirectionalIterator&amp; i, Distance n,</pre>
+
+<pre>bidirectional_iterator_category)</pre>
+
+<pre>{</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>if (n>=0)</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>while (n--) ++i;</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>else</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>while (n++) --i;</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<pre>}</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>Again, it is not entirely obvious how we can represent and
+eventually find the category information associated to an iterator type.
+We'll explain how this is done shortly.
+<p><b>THE REQUIREMENTS </b>Basically, the requirements to the design of
+iterators in the STL and the Standard C++ Library are:
+<p><i>Algorithms shall be generic</i>, i.e., they shall be implemented
+only in terms of iterators. Hence we need to deduce type information associated
+with an iterator type, like the value and distance type, directly from
+the iterator type itself.
+<p><i>Operations shall be optimized if possible</i>. In other words, for
+reasons of efficiency we want to implement polymorphic operations that
+exhibit different behavior depending on some property of their argument
+types. For example, different versions of the advance() function, optimized
+for each iterator category, should be available.
+<p>There are additional requirements that stem from other design principles
+of the STL and the Standard C++ Library:
+<p><i>Everything must be resolved at compile-time rather than at runtime</i>.
+The goal is to make components as fast as possible at run-time. Hence,
+the function dispatch of polymorphic operations mentioned above can be
+performed at compile-time.
+<p><i>C++ pointers are iterators on a C++ array</i>. They stand on equal
+footing with all other iterator types. Hence, whatever solution we choose,
+it must work for C++ pointers as well.
+<p><i>The way in which information is associated to an iterator type is
+generic</i>. For example, the fact that an iterator is associated to a
+certain value type has nothing to do with the fact that the iterator falls
+into a certain category.</blockquote>
+
+<blockquote>In the July 1996 issue, <a href="#1">[1]</a> we explained the
+solution to the above requirements that was used in the original STL. Now,
+we'll explore the solution chosen for the Standard C++ Library.
+<p><b>THE SOLUTION CHOSEN FOR THE STANDARD C++ LIBRARY </b>In the Standard
+C++ Library iterators have <i>traits</i>. The traits technique is a means
+to associate information with class types as well as with nonclass types.
+See the second sidebar for more information about the traits technique
+in general. Here are the iterator traits:
+<blockquote>
+<pre>template &lt;class Iterator></pre>
+</blockquote>
+
+<blockquote>
+<pre>struct iterator_traits</pre>
+</blockquote>
+
+<blockquote>
+<pre>{</pre>
+</blockquote>
+
+<blockquote>
+<pre>typedef Iterator::distance_type distance_type;</pre>
+
+<pre>typedef Iterator::value_type value_type;</pre>
+
+<pre>typedef Iterator::iterator_category iterator_category;</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>};</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>The iterator traits are a class template to be instantiated
+with an iterator type that provides all the information associated with
+the respective iterator type as typedefs. Therefore, all iterators must
+define nested types, like Iterator::value_type, for each piece of related
+information. The value and distance type of an iterator are types in the
+sense of the C++ type system. Similarly, the information about the iterator
+category is represented by C++ types as well: There are<i> tag classes</i>
+for each of the iterator categories. They are empty structures named input_iterator_tag,
+output_iterator_tag, and so on.
+<p>Since native C++ pointers can be treated as iterators, we need traits
+for C++ pointers, as well. This is provided as a <i>partial specialization</i>
+of the iterator_traits template:
+<blockquote>
+<pre>template &lt;class T></pre>
+
+<pre>struct iterator_traits&lt;T*></pre>
+
+<pre>{</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>typedef ptrdiff_t distance_type;</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>typedef T value_type;</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>typedef random_access_iterator_tag iterator_category;</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<pre>};</pre>
+</blockquote>
+Now let us see how iterator traits help to meet the requirements. Here
+is our ctitious reverse function again:
+<blockquote>
+<pre>template &lt;class BidirectionalIterator></pre>
+</blockquote>
+
+<blockquote>
+<pre>void reverse(BidirectionalIterator first, BidirectionalIterator last)</pre>
+</blockquote>
+
+<blockquote>
+<pre>{</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>distance_type n = distance(first, last);</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>--n;</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>while(n>0)</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>{ value_type tmp = *first;</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>*first++ = *--last;</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>*last = tmp;</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>n-=2;</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>}</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>}</pre>
+</blockquote>
+Now that we have iterator traits it is easy to determine the mysterious
+distance and value type from the iterator type: The distance type is iterator_traits
+&lt;BidirectionalIterator> ::distance_type, and the value type is iterator_traits
+&lt;BidirectionalIterator> ::value_type.
+<p>Also, we wanted to offer versions of the advance() function that are
+optimized for each iterator category. Here is how this function dispatch
+is done using iterator traits:
+<blockquote>
+<pre>template &lt;class InputIterator, class Distance></pre>
+</blockquote>
+
+<blockquote>
+<pre>inline void advance (InputIterator&amp; i, Distance n)</pre>
+</blockquote>
+
+<blockquote>
+<pre>{</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>__advance(i, n, iterator_traits&lt;InputIterator>::iterator_category());</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<pre>}</pre>
+</blockquote>
+
+<pre>&nbsp;</pre>
+
+<blockquote>
+<pre>template &lt;class RandomAccessIterator, class Distance></pre>
+</blockquote>
+
+<blockquote>
+<pre>inline void __advance (RandomAccessIterator&amp; i, Distance n, random_access_iterator_tag)</pre>
+</blockquote>
+
+<blockquote>
+<pre>{</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>i += n;</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<pre>}</pre>
+</blockquote>
+
+<pre>&nbsp;</pre>
+
+<blockquote>
+<pre>template &lt;class BidirectionalIterator, class Distance></pre>
+</blockquote>
+
+<blockquote>
+<pre>inline void __advance (BidirectionalIterator&amp; i, Distance n, bidirectional_iterator_tag)</pre>
+</blockquote>
+
+<blockquote>
+<pre>{</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>if (n >= 0)</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>while (n--)</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>++i;</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>else</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>while (n++)</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>--i;</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<pre>}</pre>
+</blockquote>
+The global advance() function calls the overloaded versions of an __advance()
+function, which takes an iterator tag as function argument. The iterator
+tags are of different types. Each type of iterator tag represents an iterator
+category. Consequently, there are five types of iterator tags:
+<ul>
+<li>
+input_iterator_tag</li>
+
+<li>
+output_iterator_tag</li>
+
+<li>
+forward_iterator</li>
+
+<li>
+bidirectional_iterator_tag</li>
+
+<li>
+random_access_iterator_tag</li>
+</ul>
+</blockquote>
+
+<blockquote>These are empty types; their only purpose it to allow the above
+described function overloading.
+<p>Note that function overloading is always resolved at compile-time. No
+runtime overhead is imposed.
+<p>In addition, note that there are iterator traits for C++ pointers. Thus,
+the solution works for C++ pointers as well, as stated in the original
+requirements we listed above.
+<p><b>COMPARING THE STL TECHNIQUE TO THE STANDARD LIBRARY TECHNIQUE</b>
+<p>The solution using iterator traits meets the requirements listed above.
+So did the solution in STL. What did we gain? Why was it changed? The iterator
+traits have an edge over the old solution. Let's see why.
+<blockquote>Consider the count algorithm:</blockquote>
+
+<blockquote>
+<pre>template&lt;class InputIterator, class T></pre>
+</blockquote>
+
+<blockquote>
+<pre>iterator_traits&lt;InputIterator>::distance_type</pre>
+</blockquote>
+
+<blockquote>
+<pre>count (InputIterator first, InputIterator last, const T&amp; val)</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>{</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>iterator_traits&lt;InputIterator>::distance_type n = 0;</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>while (first != last)</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>if (*first++ == val)</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>++n;</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>return n;</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<pre>}</pre>
+</blockquote>
+The distance type is used here as the return type of an algorithm. Without
+iterator traits the count algorithm cannot deduce its return type from
+its iterator type. This explains why the count algorithm in STL looks like
+this:
+<blockquote>
+<pre>template &lt;class InputIterator, class T, class Distance></pre>
+</blockquote>
+
+<blockquote>
+<pre>void count (InputIterator first, InputIterator last, const T&amp; value, Distance&amp; n)</pre>
+</blockquote>
+
+<blockquote>
+<pre>{</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>while (first != last)</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>if (*first++ == value)</pre>
+
+<blockquote>
+<pre>++n;</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<pre>}</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>The distance type is explicitly specified by an additional
+template parameter. As template parameters can only be automatically deduced
+from the function argument types and never from the function return type,
+the result is returned via a fourth function argument. This way a call
+to the count algorithm in STL is error-prone and looks counterintuitive:
+<blockquote>
+<pre>list&lt;string> lst;</pre>
+</blockquote>
+
+<blockquote>
+<pre>int i = 0; // you'd better not forget to initialize !!!</pre>
+</blockquote>
+
+<blockquote>
+<pre>count(lst.begin(),lst.end(),"Hello",i)</pre>
+</blockquote>
+Compare to the call of the count algorithm in the Standard C++ Library:
+<blockquote>
+<pre>list&lt;string> lst;</pre>
+</blockquote>
+
+<blockquote>
+<pre>int i = count(lst.begin(),lst.end(),"Hello")</pre>
+</blockquote>
+Conclusion: The most convincing advantage of iterator traits compared to
+the old technique is that types associated to an iterator type can be deduced
+from the iterator alone. Hence associated types can be used as return types
+of function arguments, which improves the count algorithm.*
+<p>Of course there is more to iterator traits. They improve the design
+of iterators in the general. Consider for instance the way the iterator
+category is retrieved in STL. It is via the global function
+<p>iterator_category().For each type of iterator, including C++ pointers,
+there is an overloaded versions of iterator_category(). There is one version
+taking C++ pointers, and five function templates taking iterator types
+that are derived from certain iterator base classes. For sake of brevity,
+we will spare you the details of those base classes. See our July '96 article
+for reference <a href="#1">[1]</a>.
+<blockquote>
+<pre>template &lt;class T, class Distance></pre>
+
+<pre>inline input_iterator_tag iterator_category</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>(const input_iterator&lt;T,Distance>&amp;)</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<pre>{</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>return input_iterator_tag();</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<pre>}</pre>
+</blockquote>
+
+<pre>&nbsp;</pre>
+
+<blockquote>
+<pre>// etc. for output_iterator, forward_iterator,</pre>
+
+<pre>// and bidirectional_iterator</pre>
+</blockquote>
+
+<pre>&nbsp;</pre>
+
+<blockquote>
+<pre>template &lt;class T, class Distance></pre>
+
+<pre>inline random_access_iterator_tag iterator_category</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>(const random_access_iterator&lt;T,Distance>&amp;)</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<pre>{</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>return random_access_iterator_tag();</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<pre>}</pre>
+</blockquote>
+
+<pre>&nbsp;</pre>
+
+<blockquote>
+<pre>template &lt;class T></pre>
+
+<pre>inline random_access_iterator_tag iterator_category</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>(const T*)</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<pre>{</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>return random_access_iterator_tag();</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<pre>}</pre>
+</blockquote>
+The iterator_category() functions are empty. Their only purpose is to allow
+the selection of the associated iterator tag type, which is then used for
+function overload resolution.
+<p>It is certainly more intuitive to do a compile-time function dispatch
+via a type, i.e., iterator_traits &lt;Iterator> ::itertor_category, opposed
+to the return type of a function, iterator_category(). It somehow suggests
+that the function has "functionality," i.e., performs something at runtime,
+which in fact it doesn't.
+<p><b>SUMMARY</b> This article is the second in a series of articles on
+the iterators in STL and the Standard Library. It described iterator traits,
+which is the technique used to design iterators in the Standard C++ Library.
+It is a general-purpose technique for association of types to other types;
+it meets the following requirements:
+<p>The technique must allow a C++ compiler to
+<p>deduce the associated type only from the type, i.e., without requiring
+any other information or mechanism,
+<p>perform the deduction at compile-time so that it can be used for function
+overloading, and
+<p>associate types with nonclass types.
+<p>We compared this technique to the one used in the STL. The iterator
+traits technique is more elegant and less baroque than the STL technique.
+Also it allows us to improve the interface of certain algorithms.
+<p>Our forthcoming column in C++ Report will demonstrate the use of both
+techniques in terms of an example-we will illustrate how you can build
+a safe iterator adaptor.
+<br>&nbsp;
+<br>&nbsp;
+<br>
+<br>
+<center>
+<p><b>THE TRAITS IDIOM</b></center>
+
+<blockquote>Idioms for the use of templates in C++ are still evolving.
+One reason might be that, for a long time, templates were only seen as
+a mechanism to implement C++ containers in a generic way. Coplien,<a href="#7">[7]</a>
+for instance, discusses only this usage. To our recollection, the rst book
+that contained more advanced template idioms was by Barton and Nackman.<a href="#8">[8]</a>,
+One idiom they describe is the nested type definitions for name commonality
+idiom. Here is an example for this idiom from the STL:
+<blockquote>
+<pre>template &lt;class T></pre>
+
+<pre>class vector {</pre>
+
+<pre>public:</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>typedef typename allocator_type::types&lt;T>::pointer iterator;</pre>
+
+<pre>typedef typename allocator_type::types&lt;T>::const_reference&nbsp;
+
+const_reference;</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>//</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<pre>};</pre>
+</blockquote>
+This code is a simplified excerpt from the class declaration of vector.
+Like all other containers, vector establishes common names by using typedefs
+in its public interface. The type iterator can be used for implementing
+the algorithms, for instance:</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>template &lt;class Container></pre>
+
+<pre>void delete (Container&amp; c,</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>Container::iterator first,</pre>
+
+<pre>Container::iterator last);</pre>
+</blockquote>
+</blockquote>
+An alternative design without the nested type definitions for iterator
+would require a third template parameter for delete: the type of the container's
+iterator.
+<p>There are several benefits of using this idiom. First, it reduces the
+number of template parameters. Second, it clearly expresses the design
+relationship between the template parameter and its associated class(es),
+which makes the code more understandable and maintainable. Third, it eliminates
+a whole category of mistakes you could otherwise make inadvertently.
+<p>Without the nested type definition for a container's iterator the delete
+function would look like this:
+<blockquote>
+<pre>template &lt;class Container, class Iterator></pre>
+
+<pre>void delete (Container&amp; c, Iterator first, Iterator last);</pre>
+</blockquote>
+Hence you can do something like this:</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>void foo(vector&lt;int>&amp; v, int* first, int* last)</pre>
+
+<pre>{ delete(v,first,last); }</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>which works fine, because in most implementations of the STL
+a vector's iterator type is a plain pointer to the vector's value type.
+Now imagine you would change the type of container from a vector to a list
+later on:
+<blockquote>
+<pre>void foo(list&lt;int>&amp; v, int* first, int* last)</pre>
+
+<pre>{ delete(v,first,last); }</pre>
+</blockquote>
+The catch is that this will compile and crash at runtime. This is different
+with the interface for the delete function that uses the nested typedef
+for the container's iterator type; it would already cause a compile time
+error instead.</blockquote>
+
+<blockquote>Unfortunately the solution is limited: no built-in types can
+be used as template parameters because it is not possible to put associated
+types into the scope of a built-in type. For the iostream of the Standard
+Library Nathan Myers developed an idiom called "traits" which overcomes
+this limitation. He gave a detailed description of this idiom in the June
+1995 C++ Report.<a href="#9">[9]</a>,
+<p>Basically it is the introduction of an additional helper class template
+and its specializations for built-in types which contain the type definitions
+of the associated types. In the iostream the associated types are the traits
+of a certain character type, e.g. the type of the end-of-file character.
+Hence the name traits. Here is an example how we can use this idiom to
+enhance our example so that it can be used with built-in C++ arrays.
+<blockquote>Here is the above mentioned helper class:</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>template &lt;class Container></pre>
+
+<pre>class container_traits {</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>public:</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>typedef typename Container::iterator iterator;</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>};</pre>
+</blockquote>
+</blockquote>
+and the partial specialization for built-in pointers:
+<blockquote>
+<pre>template &lt;class T></pre>
+
+<pre>class container_traits&lt;T*> {</pre>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>public:</pre>
+</blockquote>
+</blockquote>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<pre>typedef typename T* iterator;</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+
+<pre>};</pre>
+Our algorithm can be improved and would now work for C++ arrays as well:</blockquote>
+
+<blockquote>
+<blockquote>
+<pre>template &lt;class Container></pre>
+
+<pre>void delete (Container&amp; c,</pre>
+
+<blockquote>
+<pre>container_traits&lt;Container>::iterator first,</pre>
+
+<pre>container_traits&lt;Container>::iterator last);</pre>
+</blockquote>
+</blockquote>
+The caveat with the traits technique is that it often requires partial
+specialization of templates. No compiler we know of supports this language
+feature at present.</blockquote>
+</blockquote>
+
+<blockquote><b>References</b>
+<p><a NAME="1"></a>1. Kreft, K., and A. Langer. "Iterators in the STL,"
+C++ Report 8(7), July 1996.
+<p><a NAME="2"></a>2. Vilot, M. J. "An introduction to the Standard Template
+Library," C++ Report 6(8), Oct. 1994.
+<p><a NAME="2"></a>3. Nelson, M. C++ Programmer's Guide to the Standard
+Template Library, IDG Books, Foster City, CA, 1995.
+<p><a NAME="2"></a>4. Working Paper for Draft Proposed International Standard
+for Information Systems Programming Language C++, Doc. No. X3J16/95-0185
+- WG21/N0785, Sept. 26, 1995.
+<p><a NAME="2"></a>5. Glass, G., and B. Schuchert. The STL&lt;Primer>,
+Prentice Hall, Englewood Cliffs, NJ, 1995.
+<p><a NAME="2"></a>6. Musser, D. R., and A. Saini. STL Tutorial and Reference
+Guide, Addison-Wesley, Reading, MA, 1996.
+<p><a NAME="7"></a>7. Coplien, J. O. Advanced C++ Programming Styles and
+Idioms, Addison-Wesley, Reading, MA, 1992.
+<p><a NAME="8"></a>8. Barton, J. J., and L. R. Nackman. Scientific and
+Engineering C++, Addison-Wesley, Reading, MA, 1994.
+<p><a NAME="9"></a>9. Myers, N. "A new and useful Template technique: 'Traits,'
+" C++ Report, June 1995.</blockquote>
+<b><font face="Arial"><font size=-1></font></font></b>
+<br><b><font face="Arial"><font size=-1></font></font></b>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<br><b><font face="Arial"><font size=-1></font></font></b>&nbsp;
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <meta name="KeyWords" content="Java Generics parameterized type parameterized methodwildcard">
+   <title>Java Generics FAQs - Generic Methods</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+
+<h1>
+<a NAME="Top"></a><a NAME="FAQParameterizedMethods"></a><a NAME="Parameterized Methods"></a>Generic
+Methods</h1>
+<font size=-2>&copy; Copyright 2004-2005&nbsp; by Angelika Langer.&nbsp;
+All Rights Reserved.</font>
+<table CELLPADDING=10 WIDTH="100%" >
+<tr>
+<td COLSPAN="2"><font size=+0><a href="#Fundamentals">Fundamentals</a></font>
+<ul>
+<li>
+<font size=+0><a href="#What is a parameterized (or generic) method?">What
+is a parameterized or generic method?</a></font></li>
+
+<li>
+<font size=+0><a href="#How do I invoke a parameterized method?">How do
+I invoke a generic method?</a></font></li>
+</ul>
+</td>
+</tr>
+
+<tr>
+<td></td>
+</tr>
+</table>
+<img SRC="../../Images/bar.gif" NOSAVE height=5 width=600>
+<h2>
+<a NAME="Fundamentals"></a>Generic Methods</h2>
+<img SRC="../../Images/bar.gif" NOSAVE height=5 width=600><a NAME="FAQ001"></a>
+<h2>
+<a NAME="What is a parameterized (or generic) method?"></a><font face="Arial,Helvetica"><font size=+0>What
+is a generic method?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>A method with type parameters.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Not only types can be generic, but methods can be generic,
+too. Static and non-static methods as well as constructors can have type
+parameters. The syntax for declaration of the formal type parameters is
+similar to the syntax for generic types. The type parameter section is
+delimited by angle brackets and appears before the method's return type.
+Its syntax and meaning is identical to the type parameter list of a generic
+type.
+<p>Here is the example of a generic <tt>max</tt> method that computes the
+greatest value in a collection of elements of an unknown type <tt>A</tt>.
+<p>Example (of a generic method):
+<blockquote><tt>class Collections {</tt>
+<br><tt>&nbsp; public static <b><font color="#000099">&lt;A extends Comparable&lt;A>>
+A</font></b> max(Collection&lt;<b><font color="#000099">A</font></b>> xs)
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Iterator&lt;<b><font color="#000099">A</font></b>>
+xi = xs.iterator();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; <b><font color="#000099">A</font></b> w = xi.next();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; while (xi.hasNext()) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#000099">A</font></b>
+x = xi.next();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (w.compareTo(x) &lt; 0) w = x;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return w;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}&nbsp;</tt></blockquote>
+The <tt>max</tt> method has one type parameter, named<tt> A</tt>.&nbsp;
+It is a place holder for the element type of the collection that the method
+works on. The type parameter has a bound; it must be a type that is a subtype
+of <tt>Comparable&lt;A></tt>.&nbsp;</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ001">#FAQ001</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#What is a parameterized (or generic) type?">What
+is a generic type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ParameterizedTypes.html#How is a parameterized type defined?">How
+do I define a generic type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeParameters.html#What is a type parameter?">What
+is a type parameter?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeParameters.html#What is a bounded type parameter?">What
+is a bounded type parameter?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ002"></a>
+<h2>
+<a NAME="How do I invoke a parameterized method?"></a><font face="Arial,Helvetica"><font size=+0>How
+do I invoke a generic method?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Usually by calling it. Type arguments
+need not be provided explicitly;&nbsp; they are almost always automatically
+inferred.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Generic methods are invoked like regular non-generic methods.&nbsp;
+The type parameters are inferred from the invocation context.&nbsp;
+<p>Example (of invocation of a generic method; taken from the preceding
+item):
+<blockquote><tt>class <font color="#000000">Collections {</font></tt>
+<br><tt><font color="#000000">&nbsp; public static &lt;A extends Comparable&lt;A>>
+A max (Collection&lt;A> xs) {</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp; Iterator&lt;A> xi = xs.iterator();</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp; A w = xi.</font>next();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; while (xi.hasNext()) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A x = xi.next();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (w.compareTo(x) &lt; 0) w = x;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return w;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}&nbsp;</tt>
+<br><tt>final class Test {</tt>
+<br><tt>&nbsp; public static void main (String[ ] args) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; LinkedList&lt;Long> list = new LinkedList&lt;Long>();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; list.add(0L);&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; list.add(1L);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Long y = <b><font color="#000099">Collections.max(list)</font></b>;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+In our example, the compiler would automatically invoke an instantiation
+of the <tt>max</tt> method with the type argument <tt>Long</tt>, that is,
+the formal type parameter <tt>A</tt> is replaced by type <tt>Long</tt>.&nbsp;
+Note, that we do not have to explicitly specify the type argument.&nbsp;
+The compiler automatically infers the type argument by taking a look at
+the type of the arguments provided to the method invocation. The compiler
+finds that a <tt>Collection&lt;A></tt> is asked for and that a <tt>LinkedList&lt;Long>
+</tt>is
+provided.&nbsp; From this information the compiler concludes at compile
+time that <tt>A </tt>must be replaced by <tt>Long</tt>.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ002">#FAQ002</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Type Argument Inference">What
+is type argument inference?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What explicit type argument specification?">What
+explicit type argument specification?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What happens if a type parameter does appear in the method parameter list?">What
+happens if a type parameter does not appear in the method parameter list?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Why doesn't type argument inference fail when I provide inconsistent method">Why
+doesn't type argument inference fail when I provide inconsistent method
+arguments?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>
+<hr WIDTH="100%">
+<br><font face="Arial,Helvetica"><font size=-2><a href="../JavaGenericsFAQ.html#TOC">CONTENT<img SRC="../../Images/bluebullet.gif" NOSAVE height=6 width=4></a>
+
+<font color="#666666"><a href="ParameterizedTypes.html">PREVIOUS<img SRC="../../Images/bluebullet.gif" NOSAVE height=6 width=4></a></font>
+
+<a href="TypeParameters.html">NEXT<img SRC="../../Images/bluebullet.gif" NOSAVE height=6 width=4></a>&nbsp;
+<a href="Index.html#IDX">INDEX</a></font></font>
+</body>
+</html>

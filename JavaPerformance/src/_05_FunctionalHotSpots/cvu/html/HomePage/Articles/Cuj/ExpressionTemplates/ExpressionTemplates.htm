@@ -1,0 +1,1565 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Pre-Copyedit Version of Article in C/C++ Users Journal, January 2003">
+   <title>Expression Templates</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CujExpressionTemplates"></a>
+<br><font color="#295AB5"><font size=+3>C++ Expression Templates</font></font>
+<br><font color="#295AB5"><font size=+2>An Introduction to the Principles
+of Expression Templates</font></font>
+<p><font color="#295AB5"><font size=+1>Draft version of an article published
+in C/C++ Users Journal, March 2003</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p><a NAME="Introduction"></a>
+<br>Templates were introduced to the C++ programming language as a means
+to express parameterized types.&nbsp; The prototypical example of a parameterized
+type is a list, of which you do not want to implement a separate version
+for each type of element maintained in that list.&nbsp; Instead you want
+to provide one list implementation (the template), which uses a placeholder
+for the element type (the template parameter), from which the compiler
+can generate different list classes (the instantiations of the template).
+<p>Today templates are used in ways that the inventors of C++ templates
+certainly hadn't anticipated. Template programming these day includes techniques
+such as generic programming, compile-time computations, expression template
+libraries, template meta-programming, and generative programming, just
+to name a few.&nbsp; In this article we aim to explain some of the principles
+of expression templates and more specifically the programming techniques
+that are used to build expression template libraries.
+<p>To say it right away: expression template libraries are complex.&nbsp;
+For this reason, pretty much every explanation of expression templates
+that we've read so far got rather challenging and advanced pretty rapidly.&nbsp;
+The ambitious goal of this article is making complex matters easy so that
+they can be understood without getting lost in all the details that you
+would find otherwise, if for instance you studied the source code of a
+template library.&nbsp; We will try to distill some of the principles of
+expression templates; yet full coverage of all aspects of expressions templates
+is beyond the scope of the article.
+<br>&nbsp;
+<br>&nbsp;
+<h2>
+Table of Contents</h2>
+
+<ul>
+<li>
+&nbsp; <a href="#Introduction">An Introduction to the Principles of Expression
+Templates</a></li>
+
+<li>
+&nbsp; <a href="#Where it all started">Where it all started ...</a></li>
+
+<li>
+&nbsp; <a href="#Factorial">A First Example of a Compile-Time Computation
+- Factorial</a></li>
+
+<li>
+&nbsp; <a href="#Square Root">Another Example of a Compile-Time Computation
+- Square Root</a></li>
+
+<li>
+&nbsp; <a href="#Moving on to Expression Templates">Moving on to Expression
+Templates</a></li>
+
+<li>
+&nbsp; <a href="#Dot Product">A First Expression Template - Dot Product</a></li>
+
+<li>
+&nbsp; <a href="#A Compile-Time Version of the Dot Product">A Compile-Time
+Version of the Dot Product</a></li>
+
+<li>
+&nbsp; <a href="#Arithmetic Expressions">Another Expression Template -
+Arithmetic Expressions</a></li>
+
+<li>
+&nbsp; <a href="#Creator Functions">Creator Functions</a></li>
+
+<li>
+&nbsp; <a href="#Further Elaboration of the Expression Template Solution">Further
+Elaboration of the Expression Template Solution</a></li>
+
+<li>
+&nbsp; <a href="#Traits">Traits</a></li>
+
+<li>
+&nbsp; <a href="#Repeated Evaluation of an Expression Object">Repeated
+Evaluation of an Expression Object</a></li>
+
+<li>
+&nbsp; <a href="#References">References</a></li>
+</ul>
+
+<h2>
+<a NAME="Where it all started"></a>Where it all started ...</h2>
+I vividly remember the day when a colleague of mine, Erwin Unruh, stepped
+into one of these C++ standards committee meetings proudly presenting a
+program that did not compile, yet it calculated the prime numbers (see
+/<a href="#UNR">UNR</a>/).&nbsp; It emitted error messages when it was
+compiled and with each of the error messages the next prime number was
+printed.&nbsp; Of course, it is nonsensical to write programs that do not
+compile, but this program was deliberately set up so that it would not
+compile in order to point out that this was a computation that was done
+at compile-time.&nbsp; There was no executable, nothing happening at run
+time.&nbsp; The prime number computation was a side effect of the compilation.
+<p>This tiny silly program treaded off an avalanche of research and experimentation
+in the following years which lead to what is known as template meta-programming
+these days. In this article we will discuss some of the resulting programming
+techniques and principles.
+<br>How does Template Meta-Programming Work?
+<p>Basically, the prime number calculation and many of the techniques that
+we will explain in this article build on the fact that instantiation of
+templates is a recursive process.&nbsp; When the compiler instantiates
+a template it might find that for the instantiation of one template it
+might need an instantiation of another template.&nbsp; It then instantiates
+that other template, which might require the instantiation of yet another
+template, and so on and so forth.&nbsp; Many of the template meta-programming
+techniques take advantage of the recursive nature of the template instantiation
+process and use it to perform recursive calculations.
+<br>&nbsp;
+<h2>
+<a NAME="Factorial"></a>A First Example of a Compile-Time Computation -
+Factorial</h2>
+As a first example let us calculate the factorial of N at compile time.&nbsp;
+The factorial of n (the mathematical notation of which is&nbsp; n!) is
+the product of all number from 1 to n., the factorial of 0 being 1. Normally,
+without use of templates, you would calculate the factorial by means of
+recursive function calls. Here is a conceivable runtime implementation:
+<p><tt>int factorial (int n)</tt>
+<br><tt>{ return (n==0) ? 1: n*factorial(n-1); }</tt>
+<p>This function calls itself recursively until n drops down to 0.&nbsp;
+It would be used like this:
+<p><tt>cout &lt;&lt; factorial(4) &lt;&lt; endl;</tt>
+<p>Recursive function calls are expensive, especially since the compiler
+will probably refuse to inline the recursive calls and we will end up with
+quite a number of function calls.&nbsp; We can do better than that - using
+compile-time computations instead.&nbsp; It goes like this:&nbsp; replace
+the recursive function calls by recursive template instantiations. Instead
+of providing a function named factorial we will implement a class named
+factorial.&nbsp; To be more precise it will be a class template named factorial.&nbsp;
+Here it is:
+<p><tt>template &lt;int n></tt>
+<br><tt>struct factorial {</tt>
+<br><tt>&nbsp; enum { ret = factorial&lt;n-1>::ret * n };</tt>
+<br><tt>};</tt>
+<p>This class template has neither data nor function members, it just defines
+an unnamed enum type with exactly one enum value.&nbsp; (As it will turn
+out later, this enum value factorial::ret will serve as the return value
+of our compile time calculation.)&nbsp; In order to compute the value of
+this enum the compiler must instantiate another version of the factorial
+template, namely the version for n-1, and this is what starts the recursive
+template instantiation.
+<p>Note, that the template argument of the factorial template is kind of
+unusual: it is a non-type template argument, namely a constant value of
+type int.&nbsp; Usually, templates have type arguments like in template
+&lt;class T> class X { ...}; where T is a placeholder for a concrete type
+that will later replace the placeholder T when a class like X&lt;int> will
+be generated from the class template.&nbsp; In our example we have a non-type
+template argument of type int, which means that this template will be instantiated
+providing a constant value of type int.&nbsp; Using this factorial class
+template a user would calculate the factorial of n as follows:
+<p><tt>cout &lt;&lt; factorial&lt;4>::ret &lt;&lt; endl;</tt>
+<p>The compiler would recursively instantiate factorial&lt;4>, and factorial&lt;3>,
+and so on and so forth, until ... actually, until when?&nbsp; How does
+this recursion come to a halt?&nbsp; Every recursion needs an end.&nbsp;
+Using the template technique the end of the recursion is provided by means
+of a template specialization.&nbsp; In our example the specialization is
+for the case that n equals 0:
+<p><tt>template &lt;></tt>
+<br><tt>struct factorial&lt;0> {</tt>
+<br><tt>&nbsp; enum { ret = 1 };</tt>
+<br><tt>};</tt>
+<p>As you can tell from the code snippet above the recursion will stop
+here because the value of the enum value ret does not depend on any further
+instantiations of the factorial template anymore.
+<p>If you are not familiar with template specialization, don't worry.&nbsp;
+Just make a mental note that a special version of a class template can
+be provided for special template arguments.&nbsp; In our example we provide
+a special implementation of the factorial template for the case that the
+template argument n is 0.&nbsp; And this specialization will end the recursion.
+<p>Now, what have we achieved using the template version of the computation
+of a factorial?&nbsp; Well, the expression factorial&lt;4>::ret will boil
+down to a mere 24 (which is the value of 4!) at run time, that is, in the
+executable you will not find any computation at all.&nbsp; Instead there
+will simply be the constant value 24 in the executable in all places where
+factorial&lt;4>::ret appears in the source code.
+<br>&nbsp;
+<h2>
+<a NAME="Square Root"></a>Another Example of a Compile-Time Computation
+- Square Root</h2>
+Let's try it again and study another compile-time computation of a value.&nbsp;
+This time we aim to approximate the square root of N, or more precisely
+we want to find the integral value greater and closest to the square root
+of N.&nbsp; Example: the square root of 10 is 3.1622776601; that is, we
+would like to find the integral value 4, which is the next integer greater
+than 3.1622776601. Using runtime calculations we can calculate the desired
+value using&nbsp; C library functions as ceil(sqrt(N)).&nbsp; However,
+we want to use the approximated square root as the size of an array that
+we need to declare, but a declaration such as
+<br>int array[ceil(sqrt(N))];
+<br>is illegal because the array size must be a compile-time constant value.
+For this reason we need to approximate the square root at compile-time.
+<p>Remember , what we did in our first example of a compile-time computation:
+we took advantage of recursive template instantiation.&nbsp; Again, we
+will trigger a recursive template instantiation to approximate the desired
+value. Again, we will define a class template that takes a non-type template
+argument, namely N, and returns the result in form of a nested value.&nbsp;
+Let's call the class template for our square root approximation Root. We
+could then declare an array of the size of square root of 10 as
+<br><tt>int array[Root&lt;10>::ret];</tt>
+<p>Here is the class template Root:
+<p><tt>template &lt;size_t N, size_t Low=1, size_t Upp=N></tt>
+<br><tt>struct Root {</tt>
+<br><tt>&nbsp; static const size_t ret = Root&lt;N,(down?Low:mean+1),(down?mean:Upp)>::ret;</tt>
+<p><tt>&nbsp; static const size_t mean = (Low+Upp)/2;</tt>
+<br><tt>&nbsp; static const bool&nbsp;&nbsp; down = ((mean*mean)>=N);</tt>
+<br><tt>};</tt>
+<p>We don't want to delve into the details here.&nbsp; Just a couple of
+comments:&nbsp; The class template takes 3 non-type template arguments,
+2 of which have defaults.&nbsp; The 3 arguments are
+<ul>
+<li>
+the value whose square root is to be calculated and</li>
+
+<li>
+the lower and upper bound of an interval in which the result will be located.&nbsp;
+The default values are 1 and N because the square root of N will be a value
+somewhere between 1 and N.</li>
+</ul>
+In this example, the return value ret is not an enum value, but a static
+constant data member whose initialization triggers the recursion.&nbsp;
+The remaining static data members mean and down serve as helpers to ease
+the calculation of the template arguments for the next step in the recursion.
+<p>Where does the recursion end?&nbsp; Again, the end of the recursion
+is specified by means of a template specialization that does not require
+any further template instantiations.&nbsp; Here is the specialization of
+the Root class template:
+<p><tt>template &lt;size_t N, size_t Mid></tt>
+<br><tt>struct Root&lt;N,Mid,Mid></tt>
+<br><tt>{ static const size_t ret = Mid; };</tt>
+<p>Note that the specialization has only 2 template arguments.&nbsp; This
+is because the recursion ends when the interval in which the result lies
+collapses to a single value, namely the desired result.
+<p>In our example the recursion will instantiate the template for the following
+arguments:
+<br><tt>Root&lt;10,1,10></tt>
+<br><tt>Root&lt;10,1,5></tt>
+<br><tt>Root&lt;10,4,5></tt>
+<br><tt>Root&lt;10,4,4></tt>
+<br>and the result will be 4, as expected.
+<p>The point to take home from these two examples is that compile-time
+computations are often recursive processes that take advantage of the recursive
+nature of the template instantiation process.&nbsp; What would be a function
+in a runtime computation is typically a class template in a compile-time
+computation.&nbsp; What would be the argument of a function in a runtime
+computation is typically a non-type template argument in a compile-time
+computation. What would be the return value of a function in a runtime
+computation is typically the a nested constant in the class template in
+a compile-time computation. And the condition that ends the recursion in
+a runtime computation is typically a template specialization in a compile-time
+computation.&nbsp; Equipped with this knowledge, it is no long stretch
+anymore to imagine how Erwin Unruh's prime number calculation was built
+on the exact same principles that we've been using in our two calculations.
+<br>&nbsp;
+<h2>
+<a NAME="Moving on to Expression Templates"></a>Moving on to Expression
+Templates</h2>
+So far we have been calculating values at compile-time, which is nice,
+but not overly exciting.&nbsp; Let's get more ambitious: let's evaluate
+more complex expressions at compile-time.&nbsp; In a first step, we will
+implement a compile-time version of a vector dot product.&nbsp; The dot
+product of two vectors is the sum of the products of its corresponding
+elements.&nbsp; Example:&nbsp; The dot product of the two 3-dimensional
+vectors (1,2,3) and (4,5,6) would be 1*4 + 2*5 + 3*6, which is 32.&nbsp;
+The goal is to set up expression templates for the calculation of the dot
+product of vectors of arbitrary dimensions, like in the following example:
+<p><tt>int a[4] = {1,100,0,-1};</tt>
+<br><tt>int b[4] = {2,2,2,2};</tt>
+<br><tt>cout &lt;&lt; dot&lt;4>(a,b);</tt>
+<p>The dot product is a first primitive example of an expression template,
+but the techniques that we will apply for the vector dot product have been
+generalized for arithmetic operations on multi-dimensional matrices. Naturally,
+the gain in runtime performance that the compile-time computation will
+provide, is much more dramatic for a matrix operation than it is for a
+vector dot product.&nbsp; The techniques however are based on the same
+principles.
+<p>Another powerful generalization is the use of expression templates in
+a more dynamic fashion: we eventually want to evaluate an expression repeatedly,
+passing in different values for each expression evaluation.&nbsp; By means
+of expression templates these evaluations would be performed at compile-time
+incurring zero overhead at runtime.&nbsp; Expression evaluations play a
+role in the calculation of integrals, for instance.&nbsp; An example:&nbsp;
+the integral
+<br><img SRC="Integral.gif" NOSAVE height=150 width=200>
+<br>can be approximated by evaluating the expression x/(1+x) for n equidistant
+points in the interval [1.0,5.0]. A function that calculates integrals
+for arbitrary arithmetic expressions could look like this, provided we
+manage to implement expression templates that can be evaluated repeatedly
+for different values:
+<p><tt>template &lt;class ExprT></tt>
+<br><tt>double integrate (ExprT e,double from,double to,size_t n)</tt>
+<br><tt>{&nbsp; double sum=0, step=(to-from)/n;</tt>
+<br><tt>&nbsp;&nbsp; for (double i=from+step/2; i&lt;to; i+=step)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sum+=e.eval(i);</tt>
+<br><tt>&nbsp;&nbsp; return step*sum;</tt>
+<br><tt>}</tt>
+<p>ExprT in this example would somehow represent an expression such as
+x/(1+x).&nbsp; We will see how exactly it works later in the article.
+<br>&nbsp;
+<h2>
+<a NAME="Dot Product"></a>A First Expression Template - Dot Product</h2>
+In order to distill the essence of expression templates let us explain
+the vector dot product and the arithmetic expressions, which we will explore
+later, in terms of commonly known patterns as described in the classic
+patterns book by Gamma et.al. (/<a href="#GOF">GOF</a>/).&nbsp; A vector
+dot product can be seen as a special case of a composite.
+<p>The Composite pattern provides a way to represent a part-whole relationship
+where the client can ignore the difference between individual objects and
+compositions of objects.&nbsp; The key elements of the Composite pattern
+are the leaf and the composite:
+<ul>
+<li>
+The leaf defines the behavior for primitive objects in the composition.</li>
+
+<li>
+The composite defines the behavior for components consisting of leaves.</li>
+</ul>
+Examples of composites are syntax trees, aggregations and recursive structures
+and recursive algorithms.&nbsp; Here is the example of a typical composite
+structure:
+<center>
+<p><img SRC="Composite.gif" NOSAVE height=242 width=322>
+<br><i>Figure 1: A Typical Composite Structure</i></center>
+
+<p>The GOF book suggests an object-oriented implementation of the Composite
+pattern with an abstract base class, which defines the operation that leaves
+and composites have in common and two derived classes, which represent
+the leaf and the composite respectively.
+<br>&nbsp;
+<br>&nbsp;
+<br>
+<center>
+<p><img SRC="ClassDiagramComposite.gif" NOSAVE height=262 width=350>
+<br><i>Figure 2: Class diagram of the Composite pattern</i></center>
+
+<p>The vector dot product can be seen as a special case of the Composite
+pattern. A dot product can be split into a leaf (namely the dot product
+of two vectors of dimension 1) and a composite (namely the dot product
+of the two vectors of dimension N-1).
+<br>&nbsp;
+<br>&nbsp;
+<br>
+<center>
+<p><img SRC="DotProduct.gif" NOSAVE height=400 width=533>
+<br><i>Figure 3: Composite Structure of a Dot Product</i></center>
+
+<p>Obviously, this is a degenerated form of the prototypical composite
+because each composite consists of exactly one leaf and one composite.&nbsp;
+Using the suggested object-oriented implementation technique we would represent
+the dot product by a base class and two derived classes as shown in the
+class diagram below:
+<br>&nbsp;
+<br>&nbsp;
+<br>
+<center>
+<p><img SRC="ClassDiagramDotProduct.gif" NOSAVE height=283 width=379>
+<br>F<i>igure 4: Class Diagram of Dot Product as a Composite</i></center>
+
+<p>The implementation is straightforward and shown in Listing 1 thru 3.
+Listing 4 shows a helper function that eases use of these classes and Listing
+5 eventually demonstrates how we can&nbsp; calculate the dot product of
+two vectors.
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><i>Listing 1: The Base Class</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>template &lt;class T></tt>
+<br><tt>class DotProduct&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp; public:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; virtual ~DotProduct () {}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; virtual T eval() = 0;</tt>
+<br><tt>};</tt></td>
+</tr>
+</table>
+
+<table BORDER >
+<tr>
+<td><i>Listing 2: The Composite</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>template &lt;class T></tt>
+<br><tt>class CompositeDotProduct&nbsp; : public DotProduct&lt;T> {</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp; CompositeDotProduct (T* a, T* b, size_t dim)&nbsp;</tt>
+<br><tt>&nbsp; :s(new SimpleDotProduct&lt;T>(a,b))</tt>
+<br><tt>&nbsp; ,c((dim==1)?0:new CompositeDotProduct&lt;T>(a+1,b+1,dim-1))</tt>
+<br><tt>&nbsp; {}</tt>
+<br><tt>&nbsp; virtual ~CompositeDotProduct () { delete c; delete s; }</tt>
+<br><tt>&nbsp; virtual T eval()</tt>
+<br><tt>&nbsp; { return (s->eval() + ((c)?c->eval():0)); }</tt>
+<br><tt>protected:</tt>
+<br><tt>&nbsp; SimpleDotProduct&lt;T>* s;</tt>
+<br><tt>&nbsp; CompositeDotProduct&lt;T> * c;</tt>
+<br><tt>};</tt></td>
+</tr>
+</table>
+
+<table BORDER >
+<tr>
+<td><i>Listing 3: The Leaf</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>template &lt;class T></tt>
+<br><tt>class SimpleDotProduct&nbsp; : public DotProduct&lt;T> {</tt>
+<br><tt>&nbsp;&nbsp; public:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SimpleDotProduct (T* a, T* b) :v1(a),
+v2(b) {}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; virtual T eval() { return (*v1)*(*v2);
+}</tt>
+<br><tt>&nbsp;&nbsp; private:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T* v1; T* v2;</tt>
+<br><tt>};</tt></td>
+</tr>
+</table>
+
+<table BORDER >
+<tr>
+<td><i>Listing 4: Helper Function</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>template &lt;class T> T dot(T* a, T* b, size_t dim)&nbsp;</tt>
+<br><tt>{ return (dim==1)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ? SimpleDotProduct&lt;T>(a,b).eval()</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : CompositeDotProduct&lt;T>(a,b,dim).eval();</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<table BORDER >
+<tr>
+<td><i>Listing 5: Using the Dot Product Implementation</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>int a[4] = {1,100,0,-1};</tt>
+<br><tt>int b[4] = {2,2,2,2};</tt>
+<br><tt>cout &lt;&lt; dot(a,b,4);</tt></td>
+</tr>
+</table>
+
+<p>Naturally, this is not the most efficient way of calculating the dot
+product of two vectors.&nbsp; We can substantially simplify the implementation
+by eliminating the representation of the composite and the leaf object
+as data members in the derived classes.&nbsp; Instead of passing the vectors
+to the leaf and the composite at construction time and memorizing them
+for subsequent evaluation we could pass the information directly to the
+evaluation function.
+<p>Constructor and evaluation function
+<p><tt>SimpleDotProduct&lt;T>::SimpleDotProduct (T* a, T* b) :v1(a), v2(b)
+{}</tt>
+<br><tt>virtual T SimpleDotProduct&lt;T>::eval() { return (*v1)*(*v2);
+}</tt>
+<p>would be replaced by an evaluation function that takes arguments:
+<p><tt>T SimpleDotProduct::eval(T* a, T* b, size_t dim) { return (*a)*(*b);
+}</tt>
+<p>The simplified implementation of the derived classes is shown in Listing
+6; the base class would remain unchanged as shown in Listing 1; the helper
+function must be adjusted.
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><i>Listing 6: A Simplified Object-Oriented Implementation of the Vector
+Dot Product</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>template &lt;class T></tt>
+<br><tt>class CompositeDotProduct&nbsp; : public DotProduct &lt;T> {</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp; virtual T eval(T* a, T* b, size_t dim)</tt>
+<br><tt>&nbsp; { return&nbsp; SimpleDotProduct&lt;T>().eval(a,b,dim)&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; + ((dim==1) ? 0</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : CompositeDotProduct&lt;T>().eval(a+1,b+1,dim-1));&nbsp;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>};</tt>
+<br>&nbsp;
+<p><tt>template &lt;class T></tt>
+<br><tt>class SimpleDotProduct&nbsp; : public DotProduct &lt;T> {</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp; virtual T eval(T* a, T* b, size_t dim)&nbsp;</tt>
+<br><tt>&nbsp; { return (*a)*(*b); }</tt>
+<br><tt>};</tt>
+<br>&nbsp;</td>
+</tr>
+</table>
+
+<p>Figure 5 shows the corresponding class diagram for the simplified solution.
+<center>
+<p><img SRC="SimpleDotProduct.gif" NOSAVE height=277 width=370>
+<br><i>Figure 5: Class Diagram of a Simplified Dot Product Implementatio</i>n</center>
+
+<h2>
+<a NAME="A Compile-Time Version of the Dot Product"></a>A Compile-Time
+Version of the Dot Product</h2>
+Let us now take the object-oriented approach and translate it to a compile-time
+solution.&nbsp; The two classes representing the leaf and the composite
+have a common base class that defines the operation that they have in common.&nbsp;
+This is a well-known technique in object-orientation: commonalities are
+expressed by means of a common base class.&nbsp; In template programming,
+commonalities are expressed in terms of naming conventions and name commonalities.&nbsp;
+What is a virtual function in the object-oriented approach will become
+a plain non-virtual function that has a certain name.&nbsp; The two derived
+classes will no longer be derived from a common base class.&nbsp; Instead
+they will be stand-alone classes that happen to have a member function
+with the same name and a compatible signature.&nbsp; That is, we will eliminate
+the base class.
+<p>Next, we will implement the composite as a class template using structural
+information as template arguments.&nbsp; This structural information is
+the dimension of the vectors.&nbsp; Remember what we did for the calculation
+of the factorial and the square root: the former function argument in the
+runtime implementation became a template argument in the compile-time implementation.
+We will be doing a similar thing here: the vectors' dimension is passed
+as an argument to the evaluation function in the object-oriented approach;
+we will pass it as a template argument in the compile-time implementation.&nbsp;
+Hence the dimension of the vectors will be become a non-type template argument
+of the composite class.
+<p>The leaf will be implemented as a specialization of the composite class
+template for dimension N = 1.&nbsp; As before we will replace the runtime
+recursion by a compile-time recursion: we will replace the recursive invocation
+of the virtual evaluation function by recursive template instantiation
+of a static evaluation function.&nbsp; Here is the class diagram of our
+compile-time implementation of the vector dot product:
+<center>
+<p><img SRC="CompileTimeDotProduct.gif" NOSAVE height=306 width=409>
+<br><i>Figure 6: Class Diagram of a Compile-Time Implementation of the
+Dot Product</i></center>
+
+<p>The implementation is shown in Listing 7.&nbsp; Usage of the implementation
+is shown in Listing 8.
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><i>Listing 7: The Compile-Time Implementation of the Dot Product</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>template &lt;size_t N, class T></tt>
+<br><tt>class DotProduct&nbsp; {</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp; static T eval(T* a, T* b)</tt>
+<br><tt>&nbsp; { return&nbsp; DotProduct&lt;1,T>::eval(a,b)&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; + DotProduct&lt;N-1,T>::eval(a+1,b+1);&nbsp;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>};&nbsp;</tt>
+<p><tt>template &lt;class T></tt>
+<br><tt>class DotProduct&lt;1,T> {</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp; static T eval(T* a, T* b)</tt>
+<br><tt>&nbsp; { return (*a)*(*b); }</tt>
+<br><tt>};</tt>
+<br>&nbsp;</td>
+</tr>
+</table>
+
+<table BORDER >
+<tr>
+<td><i>Listing 8: Using the Dot Product Implementation</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>template &lt;size_t N, class T></tt>
+<br><tt>inline T dot(T* a, T* b)&nbsp;</tt>
+<br><tt>{ return DotProduct&lt;N,T>::eval(a,b); }</tt>
+<p><tt>int a[4] = {1,100,0,-1};</tt>
+<br><tt>int b[4] = {2,2,2,2};</tt>
+<br><tt>cout &lt;&lt; dot&lt;4>(a,b);</tt>
+<br>&nbsp;</td>
+</tr>
+</table>
+
+<p>Note the difference between the expressions <tt>dot(a,b,4)</tt> in the
+runtime implementation and <tt>dot&lt;4>(a,b)</tt> in the compile-time
+implementation:
+<p><tt>dot(a,b,4)</tt> evaluates to <tt>CompositeDotProduct&lt;size_t>().eval(a,b,4)</tt>
+which recursively triggers the following function calls as runtime:
+<br><tt>SimpleDotProduct&lt;size_t>().eval(a,b,1), CompositeDotProduct&lt;size_t>().eval(a+1,b+1,3),
+SimpleDotProduct&lt;size_t>().eval(a+1,b+1,1), CompositeDotProduct&lt;size_t>().eval(a+2,b+2,2),
+SimpleDotProduct&lt;size_t>().eval(a+2,b+2,1), CompositeDotProduct&lt;size_t>().eval(a+3,b+3,1),
+SimpleDotProduct&lt;size_t>().eval(a+3,b+3,1),</tt>
+<br>which sums up to a total of 7 virtual function calls.
+<p><tt>dot&lt;4>(a,b)</tt> on the other hand evaluates to <tt>DotProduct&lt;4,size_t>::eval(a,b)
+</tt>which
+recursively triggers instantiation of further class templates and gradually
+unfolds as follows:
+<br><tt>DotProduct&lt;4,size_t>::eval(a,b)</tt> evaluates to
+<br><tt>DotProduct&lt;1,size_t>::eval(a,b) + DotProduct&lt;3,size_t>::eval(a+1,b+1)</tt>
+<br>which evaluates to
+<br><tt>(*a)*(*b) + DotProduct&lt;1,size_t>::eval(a+1,b+1) + DotProduct&lt;2,size_t>::eval(a+2,b+2)</tt>
+<br>which evaluates to
+<br><tt>(*a)*(*b) + (*a+1)*(*b+1) + DotProduct&lt;1,size_t>::eval(a+2,b+2)
++ DotProduct&lt;1,size_t>::eval(a+3,b+3)</tt>
+<br>which evaluates to
+<br><tt>(*a)*(*b) + (*a+1)*(*b+1) + (*a+2)*(*b+2) + (*a+3)*(*b+3) </tt>.
+<br>Visible in the executable is only the resulting expression <tt>(*a)*(*b)
++ (*a+1)*(*b+1) + (*a+2)*(*b+2) + (*a+3)*(*b+3)</tt>; the recursive template
+instantiation itself will have been performed at compile-time already.
+<p>Evidently the template approach to the problem is significantly more
+efficient in terms of runtime performance - at the expense of increased
+compilation time. The recursive template instantiation takes time and not
+surprisingly the compile time consumption goes up by orders of magnitude
+for the template solution compared to the object-oriented solution, which
+compiles fast, but runs slowly.
+<p>Another limitation of the template solution is that the dimension of
+the vectors must be known at compile-time because the dimension is a template
+argument of the DotProduct template.&nbsp; In practice this is not much
+of a restriction because the vector dimension is often known in advance;
+in many applications we simply know that we will be performing arithmetic
+operation on 3-dimensional vectors representing points in space, for instance.
+<p>The implementation of the vector dot product might no be overly impressive,
+after all we could have achieved the same high performance by unfolding
+the dot product expression manually. But the techniques demonstrated here
+for implementation of the dot product can be generalized to arithmetic
+operations on multi-dimensional matrices.&nbsp; The real benefit of the
+solution lies in its expressiveness.&nbsp; Imagine an expression such as
+a*b+c, where a, b and c are 10x20 matrices.&nbsp; You would not want to
+unfold the resulting expression manually, if the compiler can do it automatically
+and reliably.
+<br>&nbsp;
+<h2>
+<a NAME="Arithmetic Expressions"></a>Another Expression Template - Arithmetic
+Expressions</h2>
+Let us know take the techniques one step further and consider a real composite
+structure: arithmetic expressions consisting of unary and binary arithmetic
+operators and variable and constant operands.&nbsp; The GOF book has a
+pattern for exactly this case - the Interpreter pattern.
+<p>The Interpreter pattern provides a way to represent a language in form
+of an abstract syntax tree and an interpreter that uses the syntax tree
+to interpret language constructs.&nbsp; It is a special case of the Composite
+pattern.&nbsp; The part-whole relationship of the Composite pattern corresponds
+to the relationship of an expression and its subexpressions in the Interpreter
+pattern.
+<ul>
+<li>
+The leaf is a terminal expression.</li>
+
+<li>
+The composite is a non-terminal expression.</li>
+
+<li>
+Evaluation of the components is interpretation of the syntax tree and its
+expressions.</li>
+</ul>
+The syntax tree will represent arithmetic expressions such (a+1)* c or
+log(abs(x-N)).&nbsp; There are two types of terminals: numeric literals
+and numeric variables.&nbsp; The literals have a constant value whereas
+the variables' values might change between interpretations of the expression.&nbsp;
+The non-terminals are unary or binary expression consisting of one or two
+subexpressions.&nbsp; The expressions have different semantics such as
++, -, *, / , ++, --, exp, log, sqrt.
+<p>Let us take the concrete example of an expression, say (x+2)*3. The
+composite structure, that is, the syntax tree for this expression would
+look like this:
+<br>&nbsp;
+<br>&nbsp;
+<br>
+<br>
+<center>
+<p><img SRC="SyntaxTree.gif" NOSAVE height=256 width=341>
+<br><i>Figure 7: Example of a Syntax Tree for an Arithmetic Expression</i></center>
+
+<p>The classic object-oriented technique for implementing the Interpreter
+pattern, as it is suggested in the GOG book, would involve the following
+classes:
+<center>
+<p><img SRC="ClassDiagramArithmeticExpression.gif" NOSAVE height=407 width=543>
+<br><i>Figure 8: Class Diagram of an Object-Oriented Implementation of
+an Interpreter for Arithmetic Expressions</i></center>
+
+<p><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<p>Samples of the corresponding source code of an implementation are shown
+in Listing 9.&nbsp; The base class for UnaryExpr is implemented in analogy
+to class BinaryExpr and all the concrete unary and binary expressions follow
+the example of class Sum.
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><i>Listing 9: Object-Oriented Implementation of the Interpreter for
+Arithmetic Expressions</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>class AbstractExpr {</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp;&nbsp; virtual double eval() const = 0;</tt>
+<br><tt>};</tt>
+<p><tt>class TerminalExpr : public AbstractExpr {</tt>
+<br><tt>};</tt>
+<p><tt>class NonTerminalExpr : public AbstractExpr {</tt>
+<br><tt>};</tt>
+<p><tt>class Literal : public TerminalExpr {</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp;&nbsp; Literal(double v) : _val(v) {}</tt>
+<br><tt>&nbsp;&nbsp; double eval() const { return _val; }</tt>
+<br><tt>private:</tt>
+<br><tt>&nbsp;&nbsp; const double _val;</tt>
+<br><tt>};</tt>
+<p><tt>class Variable : public TerminalExpr&nbsp; {</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp;&nbsp; Variable(double&amp; v) : _val(v) {}</tt>
+<br><tt>&nbsp;&nbsp; double eval() const { return _val; }</tt>
+<br><tt>private:</tt>
+<br><tt>&nbsp;&nbsp; double&amp; _val;</tt>
+<br><tt>};</tt>
+<p><tt>class BinaryExpr : public NonTerminalExpr {</tt>
+<br><tt>protected:</tt>
+<br><tt>&nbsp;&nbsp; BinaryExpr(const AbstractExpr* e1, const AbstractExpr*
+e2)&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; : _expr1(e1),_expr2(e2) {}</tt>
+<br><tt>&nbsp;&nbsp; virtual ~BinaryExpr ()&nbsp;</tt>
+<br><tt>&nbsp;&nbsp; { delete const_cast&lt;AbstractExpr*>(_expr1);&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; delete const_cast&lt;AbstractExpr*>(_expr2);&nbsp;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; const AbstractExpr* _expr1;</tt>
+<br><tt>&nbsp;&nbsp; const AbstractExpr* _expr2;</tt>
+<br><tt>};&nbsp;</tt>
+<p><tt>class Sum : public BinaryExpr {</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp;&nbsp; Sum(const AbstractExpr* e1, const AbstractExpr* e2)&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; : BinExpr(e1,e2) {}</tt>
+<br><tt>&nbsp;&nbsp; double eval() const&nbsp;</tt>
+<br><tt>&nbsp;&nbsp; { return _expr1->eval() + _expr2->eval(); }</tt>
+<br><tt>};</tt>
+<p><tt>...</tt>
+<br>&nbsp;</td>
+</tr>
+</table>
+
+<p>Listing 10 shows how the interpreter would be used for the evaluation
+of the expression (x+2)*3.
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><i>Listing 10: Using the Interpreter for Arithmetic Expressions</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>void someFunction(double x)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; Product expr(new Sum(new Variable(x),new Literal(2)), new
+Literal(3));</tt>
+<br><tt>&nbsp; cout &lt;&lt; expr.eval() &lt;&lt; endl;</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<p>First an expression object expr is created that represents the expression
+(x+2)*3, and then the expression object is told to evaluate itself.&nbsp;
+Naturally, this is an utterly inefficient way to calculate the result of
+a primitive expression such as (x+2)*3.&nbsp; But hold on; we will now
+turn the object-oriented approach into a template-based solution.
+<p>As before in the case of the dot product, we will eliminate all abstract
+base classes, because template solutions are based on name commonality
+rather than inheritance.&nbsp; For this reason, we need no base classes.&nbsp;
+Instead all terminal and non-terminal expressions will be represented by
+stand-alone classes that happen to have an evaluation function named eval().
+<p>Next we will express all the non-terminal expressions, such as Sum or
+Product, as classes generated from class templates UnaryExpr and BinaryExpr,
+both of which are parameterized on structural information.&nbsp; These
+class template will take the types of their subexpression(s) as type template
+arguments.&nbsp; In addition, we will parameterize the expression class
+templates on the type of the operation that they represent, that is, the
+actual operation (+,-,*,/,++,--,abs,exp,log) will be provided as a function
+object and its type is one of the template arguments of the expression
+class template.
+<p>The terminal expressions will be implemented as regular (non-template)
+classes, pretty much like they are in the object-oriented approach.
+<p>Instead of run time recursion we will again use compile time recursion:
+we will replace the recursive invocation of the virtual evaluation function
+by recursive template instantiation of the expression class templates.
+<p>Figure 9 below shows the classes in the template-based solution:
+<center><img SRC="TemplateBasedExpression.gif" NOSAVE height=389 width=518>
+<br><i>Figure 9: Class Diagram of a Template-Based Implementation of an
+Interpreter for Arithmetic Expressions</i></center>
+
+<p>The source code of the implementation is shown in Listing 11.
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><i>Listing 11: Template-Based&nbsp; Implementation of the Interpreter
+for Arithmetic Expressions</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>class Literal {</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp;&nbsp; Literal(const double v) : _val(v) {}</tt>
+<br><tt>&nbsp;&nbsp; double eval() const { return _val; }</tt>
+<br><tt>private:</tt>
+<br><tt>&nbsp;&nbsp; const double _val;</tt>
+<br><tt>};</tt>
+<p><tt>class Variable {</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp;&nbsp; Variable(double&amp; v) : _val(v) {}</tt>
+<br><tt>&nbsp;&nbsp; double eval() const { return _val; }</tt>
+<br><tt>private:</tt>
+<br><tt>&nbsp;&nbsp; double&amp; _val;</tt>
+<br><tt>};</tt>
+<br>&nbsp;
+<p><tt>template &lt;class ExprT1,class ExprT2, class BinOp></tt>
+<br><tt>class BinaryExpr {</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp;&nbsp; BinaryExpr(ExprT1 e1, ExprT2 e2,BinOp op=BinOp())</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : _expr1(e1),_expr2(e2),_op(op)
+{}</tt>
+<br><tt>&nbsp;&nbsp; double eval() const&nbsp;</tt>
+<br><tt>&nbsp;&nbsp; { return _op(_expr1.eval(),_expr2.eval()); }</tt>
+<br><tt>private:</tt>
+<br><tt>&nbsp;&nbsp; ExprT1 _expr1;</tt>
+<br><tt>&nbsp;&nbsp; ExprT2 _expr2;</tt>
+<br><tt>&nbsp;&nbsp; BinOp&nbsp; _op;</tt>
+<br><tt>};</tt>
+<p><tt>...</tt>
+<br>&nbsp;</td>
+</tr>
+</table>
+
+<p>The class template for UnaryExpr is implemented in analogy to class
+BinaryExpr.&nbsp; As operations we can use the pre-defined STL function
+object types plus, minus, multiplies, divides, etc. or we define our own
+function object types as needed.&nbsp; A binary expression representing
+a sum for instance would be of type BinaryExpr&lt; ExprT1, ExprT2, plus&lt;double>
+>.&nbsp; Since this type name is rather unwieldy we add a creator function
+for more convenient use of our solution.
+<br><a NAME="Creator Functions"></a>
+<table BORDER=0 COLS=1 WIDTH="100%" >
+<tr>
+<td BGCOLOR="#000000"><b><font color="#FFFFFF"><font size=+1>Creator Functions</font></font></b></td>
+</tr>
+
+<tr>
+<td BGCOLOR="#FFFFCC">Creator functions are a widely used technique in
+conjunction with template programming.&nbsp; There are many examples of
+creators functions in the STL for example; make_pair() is of them. Creator
+functions are convenience functions that take advantage of the fact that
+the compiler automatically deduces the type arguments of function templates,
+while no such automatic deduction exists for class templates.&nbsp;
+<p>Each time we create an object of a type that is generated from a class
+template, we must specify the entire generated type name including all
+template type arguments. Often, these generated type names are very long
+and hard to read and comprehend.&nbsp; As an example think of a pair of
+pairs. Its type would be something like pair&lt; pair&lt;string, complex&lt;double>
+>, pair&lt;string, complex&lt;double> > >. Creator functions make life
+as a template user a lot easier: a creator function creates an object of
+a type that is generated from a class template without requiring that we
+type in very long type names.
+<p>More precisely, creator functions are function templates and they have
+the same template type arguments as the class template that describes the
+type of the object that is to be created. In our example of pairs, the
+pair class template has two type arguments T1 and T2 representing the types
+of the contained elements, and the make_pair() creator function has the
+same two type arguments.&nbsp;
+<p><tt>template &lt;class T1, class T2>&nbsp;</tt>
+<br><tt>class pair {</tt>
+<br><tt>public:&nbsp; pair(T1 t1,T2 t2);</tt>
+<br><tt>&nbsp;…&nbsp;</tt>
+<br><tt>};</tt>
+<br><tt>template &lt;class T1, class T2>&nbsp;</tt>
+<br><tt>pair&lt;T1,T2> make_pair(t1 t1, T2 t2)</tt>
+<br><tt>{ return pair&lt;T1,T2>(t1,t2); }</tt>
+<p>A creator function is similar to a constructor: the arguments that we
+pass to a creator function are exactly the arguments that we would otherwise
+pass to the constructor of the object that is to be created. Since the
+compiler automatically deduces the template arguments of function templates,
+we need not specify all the template arguments when we call a creator function;
+the compiler will automatically deduce them from the arguments passed to
+the creator function.&nbsp; Instead of creating a pair via its constructor
+as&nbsp;
+<p><tt>pair&lt; pair&lt;string,complex&lt;double>>, pair&lt;string,complex&lt;double>
+> ></tt>
+<br><tt>( pair&lt;string,complex&lt;double> >(“origin”, complex&lt;double>(0,0)),</tt>
+<br><tt>&nbsp; pair&lt;string,complex&lt;double> >(“saddle”, aCalculation())</tt>
+<br><tt>)</tt>
+<p>we can create the pair by means of the creator function as
+<p><tt>make_pair(make_pair(“origin”, complex&lt;double>(0,0)),&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make_pair(“saddle”,
+aCalculation())</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</tt></td>
+</tr>
+</table>
+
+<p>We will use the creator function technique to ease creation of our expression
+objects.&nbsp; Listing 12 below shows two examples of these creator functions:
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><i>Listing 12: Creator Functions for Expression Objects</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>template&nbsp; &lt;class ExprT1,class ExprT2></tt>
+<br><tt>BinaryExpr&lt;ExprT1,ExprT2,plus&lt;double> ></tt>
+<br><tt>makeSum(ExprT1 e1, ExprT2 e2)&nbsp;</tt>
+<br><tt>{ return BinaryExpr&lt;ExprT1,ExprT2,plus&lt;double> >(e1,e2);
+}&nbsp;</tt>
+<p><tt>template&nbsp; &lt;class ExprT1,class ExprT2></tt>
+<br><tt>BinaryExpr &lt;ExprT1,ExprT2,multiplies&lt;double> ></tt>
+<br><tt>makeProd(ExprT1 e1, ExprT2 e2)&nbsp;</tt>
+<br><tt>{ return&nbsp;</tt>
+<br><tt>&nbsp;&nbsp; BinaryExpr&lt;ExprT1,ExprT2,multiplies&lt;double>
+>(e1,e2); }</tt>
+<br>&nbsp;</td>
+</tr>
+</table>
+
+<p>Listing 13 shows how the template-based implementation of an interpreter
+would be used for the evaluation of the expression (x+2)*3.
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><i>Listing 13: Using the Template-Based Interpreter for Arithmetic
+Expressions</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>void someFunction (double x)&nbsp;</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; BinaryExpr&lt; BinaryExpr &lt; Variable,Literal,plus&lt;double>
+>,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Literal,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+multiplies&lt;double> >&nbsp;</tt>
+<br><tt>&nbsp; expr = makeProd (makeSum (Variable(x), Literal(2)), Literal(3));</tt>
+<br><tt>&nbsp; cout &lt;&lt; expr.eval() &lt;&lt; endl;</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<p>First, an expression object expr is created that represents the expression
+(x+2)*3, and then the expression object is told to evaluate itself.&nbsp;
+Note, that in this solution the type of the expression object already reflects
+the structure of the syntax tree.
+<p>Often the rather long name of the type of the expression object need
+not even be specified.&nbsp; In the example above we do not need the variable
+expr and could directly use the result of the creator function makeProd()
+for evaluation of the expression, as shown below:
+<p><tt>cout</tt>
+<br><tt>&nbsp; &lt;&lt; makeProd(makeSum(Variable(x),Literal(2)),Literal(3)).eval()</tt>
+<br><tt>&nbsp; &lt;&lt; endl;</tt>
+<br>&nbsp;
+<h3>
+Evaluation</h3>
+What have we gained by reimplementing the Interpreter pattern using templates
+instead of inheritance? Well, under the assumption that the compiler inlines
+all the creator functions and constructors and eval() functions (which
+is likely since all of them are trivial) the expression
+<br><tt>makeProd(makeSum(Variable(x),Literal(2)),Literal(3)).eval()</tt>
+<br>evaluates to nothing more than (x+2)*3.
+<p>Compare this to the effect of
+<br><tt>Product expr(new Sum(new Variable(x),new Literal(2)), new Literal(3)).eval()</tt>
+<br>(see Listing 10). It results in a number of allocations from the heap
+and subsequent constructions plus a number of invocations of the virtual
+eval() function. Most likely none of the calls to eval() will be inlined
+because compilers typically do not inline functions that are invoked through
+a pointer.
+<p>In essence, the template-based solution is much faster at runtime than
+the object-oriented implementation.
+<br>&nbsp;
+<h2>
+<a NAME="Further Elaboration of the Expression Template Solution"></a>Further
+Elaboration of the Expression Template Solution</h2>
+Let us now tweak the expression templates a bit and we will see that we
+turn them into something really useful.&nbsp; The first intended improvement
+addresses readability of the expression templates.&nbsp; We want to make
+an expression such as
+<br><tt>makeProd(makeSum(Variable(x),Literal(2)),Literal(3)).eval()</tt>
+<br>more readable in the sense that it looks more or less like the expression
+that is represents, namely&nbsp; (x+2)*3 in this case.&nbsp; This can be
+achieved by means of operator overloading.&nbsp; We will make it look like
+eval((v+2)*3.0) with just a few minor modifications.
+<p>The first change is to rename the creator functions so that they are
+overloaded operator; that is, we rename makeSum() into operator+(), makeProd()
+into operator*(), and so on and so forth.&nbsp; The effect is that the
+term
+<br><tt>makeProd(makeSum(Variable(x),Literal(2)),Literal(3))</tt>
+<br>turns into
+<br><tt>((Variable(x) + Literal(2)) * Literal(3))</tt>
+<p>That's good, but not good enough.&nbsp; We would like to write it as
+((x+2)*3).&nbsp; Hence, our goal is to eliminate the creation of a Variable
+and a Literal, which still clutter the expression.
+<p>In order to find out how we can improve the solution let us examine
+what an expression such as x+2 means, now that we renamed the creator function
+makeSum() into operator+().&nbsp; The implementation of operator+() is
+shown in Listing 14 below.
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><i>Listing 14: Creator Function for Sum Expression as Overloaded Operator+</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>template&nbsp; &lt;class ExprT1,class ExprT2></tt>
+<br><tt>BinaryExpr&lt;ExprT1,ExprT2,plus&lt;double> ></tt>
+<br><tt>operator+(ExprT1 e1, ExprT2 e2)&nbsp;</tt>
+<br><tt>{ return BinaryExpr&lt;ExprT1,ExprT2,plus&lt;double> >(e1,e2);
+}&nbsp;</tt></td>
+</tr>
+</table>
+
+<p>We would like for x+2 to be the same as operator+(x,2), which formerly
+was makeSum(x,2).&nbsp; For this reason x+2 is the result of creating a
+binary expression object that represents a sum and which was created with
+the double variable x and the int literal 2 as constructor arguments.&nbsp;
+More precisely, it is an unnamed object created as BinaryExpr&lt;double,int,plus&lt;double>>(x,2).&nbsp;
+Note that the type of the object is not quite what we want.&nbsp; We need
+an object of type BinaryExpr&lt;Variable,Literal,plus&lt;double>>, but
+the automatic template argument deduction does not know that x is a Variable
+and 2 is a Literal in our context.&nbsp; The compiler deduces type double
+from argument x and type int from argument 2, because the compiler examines
+the types of the arguments passed to the function.
+<p>It turns out that we must nudge the compiler a little bit so that it
+deduces what we need.&nbsp; If we passed an object of type Variable instead
+of the original variable x then the automatic argument deduction would
+at least yield type BinaryExpr&lt;Variable,int,plus&lt;double>>, which
+is a little closer to the goal.&nbsp; (We will address the remaining int-to-Literal
+conversion in a minute).&nbsp; For this reason, a minimal degree of cooperation
+from the users' side is inevitable: they must wrap their variables into
+objects of type Variable to make it work, as shown in Listing 15 below:
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><i>Listing 15: Using the Template-Based Interpreter for Arithmetic
+Expressions</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>void someFunction (double x)&nbsp;</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; Variable v = x;</tt>
+<br><tt>&nbsp; cout &lt;&lt; ((v + 2) * 3).eval() &lt;&lt; endl;</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<p>With the use of a Variable object v instead of a plain numeric variable
+we achieved that an expression such as v+2 evaluates to an unnamed object
+equivalent to BinaryExpr&lt;Variable,int,plus&lt;double>>(v,2).&nbsp; Such
+a BinaryExpr object has two data members, which are of type Variable and
+int respectively.&nbsp; The evaluation function BinaryExpr&lt;Variable,int,plus&lt;double>>::eval()
+would return the sum of the result of the evaluation of its two data members.&nbsp;
+The crux is that the int data member does not know how to evaluate itself;
+we need to turn the literal 2 into an object of type Literal, which does
+know how to evaluate itself.&nbsp; How can we automatically convert constants
+of any numerical type to objects of type Literal?&nbsp; In order to solve
+the problem we'll define expression traits.
+<p><a NAME="Traits"></a>
+<table BORDER=0 COLS=1 WIDTH="100%" >
+<tr>
+<td BGCOLOR="#000000"><b><font color="#FFFFFF"><font size=+1>Traits</font></font></b></td>
+</tr>
+
+<tr>
+<td BGCOLOR="#FFFFCC">Use of traits is another common programming technique
+in conjunction with template programming.&nbsp; A traits class is a shadow
+class that accompanies another type and contains information that is associated
+with the other type.
+<p>The standard C++ library has several examples of traits: the character
+traits are an example.&nbsp; As you might know the standard string class
+is a class templates that is parameterized on the character type in order
+to allow for representation of tiny character and wide character string,
+at least.&nbsp; In principle, the string class template, which is actually
+named basic_string, can be instantiated on any character type, not just
+the two character type that are predefined by the C++ language.&nbsp; If
+for instance someone needs to represent, say Japanese, characters as a
+structure named Jchar, then the basic_string template can be used to create
+a string class for Japanese characters, namely basic_string&lt;Jchar>.
+<p>Imagine you are implementing such a string class template?&nbsp; You
+would find that there is information that you would need, but that is not
+contained in the character type.&nbsp; For instance, how would you calculate
+the string length?&nbsp; By counting all characters in the string until
+you find the end-of-string character.&nbsp; How would you know which is
+the end-of-string character?&nbsp; Okay, we know it is '\0' in the case
+of tiny characters of type char, and there is a corresponding end-of-string
+character defined for characters of type wchar_t, but how would you identify
+the end-of-string character for Japanese characters of type Jchar?&nbsp;
+Quite obviously the information about the end-of-string character is a
+piece of information that is associated with each character type, but is
+not contained in the character type.&nbsp; And this is exactly what traits
+are for: they provide information that is associated with a type, but is
+not contained in the type.
+<p>A traits type is a shadow type, typically a class template that can
+be instantiated or specialized for a group of types and provides information
+associated with each type.&nbsp; The character traits for instance, see
+the char_traits class template in the standard C++ library, contains a
+static character constant that designates the end-of-string character for
+the character type it is instantiated for.</td>
+</tr>
+</table>
+
+<p>We will apply the traits technique to solve our problem with the conversion
+of numeric literals to objects of type Literal.&nbsp; We will define expression
+traits that provide for every expression type the information about how
+they should be stored inside the expression objects that they are operands
+of.&nbsp; All entities of numeric types shall be stored as objects of type
+Literal; all objects of type Variable shall be stored as they are, namely
+as Variables; and all non-terminal expression objects shall also be stored
+as they are.&nbsp; Listing 16 shows the definition of the expression traits:
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><i>Listing 16: Expression Traits</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>template &lt;class ExprT> struct exprTraits&nbsp;</tt>
+<br><tt>{ typedef ExprT expr_type; };</tt>
+<p><tt>template &lt;> struct exprTraits&lt;double>&nbsp;</tt>
+<br><tt>{ typedef Literal expr_type; };</tt>
+<p><tt>template &lt;> struct exprTraits&lt;int>&nbsp;</tt>
+<br><tt>{ typedef Literal expr_type; };</tt>
+<p><tt>...</tt>
+<br>&nbsp;</td>
+</tr>
+</table>
+
+<p>The expression traits class defines a nested type expr_type, which represents
+the expression type of an expression object.&nbsp; There is a general expression
+traits template that defines the expression type for all expressions that
+are class types, such as BinaryExpr, UnaryExpr or Variable.&nbsp; In addition
+there are specializations of the general class template for all those type
+that are built-in numeric types such as short, int, long, float, double,
+etc.&nbsp; For all non-class expressions the expression type is defined
+as type Literal.
+<p>Inside the definition of the BinaryExpr and UnaryExpr classes we will
+use the expression traits to determine the type of the data member that
+will hold the subexpression.
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><i>Listing 17: Using the Expression Traits</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>template &lt;class ExprT1,class ExprT2, class BinOp></tt>
+<br><tt>class BinaryExpr {</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp;&nbsp; BinaryExpr(ExprT1 e1, ExprT2 e2,BinOp op=BinOp())</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : _expr1(e1),_expr2(e2),_op(op)
+{}</tt>
+<br><tt>&nbsp;&nbsp; double eval() const&nbsp;</tt>
+<br><tt>&nbsp;&nbsp; { return _op(_expr1.eval(),_expr2.eval()); }</tt>
+<br><tt>private:</tt>
+<br><tt>&nbsp;&nbsp; exprTraits&lt;ExprT1>::expr_type _expr1;</tt>
+<br><tt>&nbsp;&nbsp; exprTraits&lt;ExprT2>::expr_type _expr2;</tt>
+<br><tt>&nbsp;&nbsp; BinOp&nbsp; _op;</tt>
+<br><tt>};</tt></td>
+</tr>
+</table>
+
+<p>Thanks to the use of the expression traits an expression object of type
+BinaryExpr&lt;Variable,int,plus&lt;double>> will contain its two operands
+as objects of type Variable and Literal, as desired.
+<p>Now we have achieved that an expression such as ((v + 2) * 3).eval(),
+where v is a Variable that wraps a double variable x, will evaluate to
+(x+2)*3.&nbsp; Let us do some minor tweaking to make it even more readable.&nbsp;
+Most people find it weird to invoke a member function of something that
+looks like an expression.&nbsp; If we define a helper function we can turn
+the expression ((v + 2) * 3).eval() into something like eval((v + 2) *
+3), which looks more natural to most people, but is otherwise equivalent.&nbsp;
+Listing 18 shows the helper function:
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><i>Listing 18: The eval() Helper Function</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>template &lt;class ExprT></tt>
+<br><tt>double eval(ExprT e) { return e.eval(); }</tt></td>
+</tr>
+</table>
+
+<p>Figures 10 illustrates how the expression ((v + 2) * 3).eval(), where
+v is a Variable that wraps a double variable x, gradually unfolds at compile-time
+to the expression (x+2)*3.
+<center><img SRC="ExpressionTemplatesEvaluation1.jpg" NOSAVE height=375 width=500>
+<br><img SRC="ExpressionTemplatesEvaluation2.jpg" NOSAVE height=375 width=500>
+<br><i>Figure 10: Compile-Time Evaluation of the Expression Object (v+2)*3</i></center>
+
+<h2>
+<a NAME="Repeated Evaluation of an Expression Object"></a>Repeated Evaluation
+of an Expression Object</h2>
+You might still wonder where the benefit of expression objects is.&nbsp;
+Each expression object represents the syntactical decomposition of an arithmetic
+expression; it's a syntax tree that knows how to interpret itself to produce
+a numeric value.&nbsp; Basically, we've set up a machinery for evaluation
+of expressions - something that is built into the language anyway.&nbsp;
+So, what's the point?&nbsp; Well, a minimal further adjustment of the solution
+will get us to the point.
+<p>So far, the interpretation of the syntax tree is rather static. Each
+syntax tree is created and interpreted only once.&nbsp; A more dynamic
+usage model is possible, where a given syntax tree can be evaluated repeatedly
+for different input values.&nbsp; Remember, that we ultimately want to
+calculate integrals such as
+<blockquote><img SRC="Integral.gif" NOSAVE height=150 width=200></blockquote>
+using an integration function such as the one below, which approximates
+the integral by evaluating an expression for a specifed number of equidistant
+points in an interval:
+<p><tt>template &lt;class ExprT></tt>
+<br><tt>double integrate (ExprT e,double from,double to,size_t n)</tt>
+<br><tt>{&nbsp; double sum=0, step=(to-from)/n;</tt>
+<br><tt>&nbsp;&nbsp; for (double i=from+step/2; i&lt;to; i+=step)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sum+=e.eval(i);</tt>
+<br><tt>&nbsp;&nbsp; return step*sum;</tt>
+<br><tt>}</tt>
+<p>This function could be used as shown below to approximate the integral
+of x/(1+x) from the example above:
+<p><tt>Identity&lt;double> x;</tt>
+<br><tt>cout &lt;&lt; integrate (x/(1.0+x),1.0,5.0,10) &lt;&lt; endl;</tt>
+<p>Here we need an expression object that can be interpreted repeatedly,
+something that our expression templates do not allow yet.&nbsp; It just
+takes a minor modification to turn our static syntax tree interpretation
+into a repeatable interpretation.&nbsp; We just have to change all evaluation
+functions of all our expression class templates so that they accept an
+input argument, namely the value for which they evaluate themselves.&nbsp;
+The non-terminal expressions will pass on the argument on to their subexpressions.&nbsp;
+The Literal will accept the argument and ignore it; it will continue returning
+the constant value that it represents.&nbsp; The Variable will no longer
+return the value of a variable that it refers to, but will return the value
+of its argument.&nbsp; For this reason we rename it to Identity.&nbsp;
+Listing 19 below shows the modified classes:
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><i>Listing 19: Expression Templates with Repeatable Evaluation</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>class Literal {</tt>
+<br><tt>public:&nbsp;&nbsp; Literal(double v) : _val(v) {}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; double eval(double)
+const { return _val; }</tt>
+<br><tt>private:&nbsp; const double _val;</tt>
+<br><tt>};</tt>
+<p><tt>template&lt;class T></tt>
+<br><tt>class Identity {</tt>
+<br><tt>public:&nbsp;&nbsp; T eval(T d) const { return d; }</tt>
+<br><tt>};</tt>
+<p><tt>template &lt;class ExprT1,class ExprT2, class BinOp></tt>
+<br><tt>class BinExpr {</tt>
+<br><tt>public:&nbsp;&nbsp; double eval(double d) const&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; { return
+_op(_expr1.eval(d),_expr2.eval(d)); }</tt>
+<br><tt>};</tt>
+<p><tt>...</tt>
+<br>&nbsp;</td>
+</tr>
+</table>
+
+<p>If we add non-terminal expressions for incorporation of numeric functions
+such as sqrt(), sqr(), exp(), log(), etc. we can even calculate the Gauss
+distribution:
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><i>Listing 20: Calculating the Gauss Distribution</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>double sigma=2.0, mean=5.0;</tt>
+<br><tt>const double Pi = 3.141593;</tt>
+<br><tt>cout &lt;&lt; integrate(</tt>
+<br><tt>&nbsp;1.0/(sqrt(2*Pi)*sigma) * exp(sqr(x-mean)/(-2*sigma*sigma)),</tt>
+<br><tt>&nbsp;2.0,10.0,100) &lt;&lt; endl;</tt></td>
+</tr>
+</table>
+
+<p>For providing the expressions that represent numeric functions we can
+use the functions that come with the standard C library.&nbsp; All we need
+to do is adding creator functions for unary or binary expressions whose
+operation is one of the predefined C functions.&nbsp; Listing 21 below
+shows a couple of examples:
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><i>Listing 21: Numeric Functions as Non-Terminal Expression Templates</i></td>
+</tr>
+
+<tr>
+<td>
+<br><tt>template&nbsp; &lt;class ExprT></tt>
+<br><tt>UnaryExpr&lt;ExprT,double(*)(double)></tt>
+<br><tt>sqrt(const ExprT&amp; e)&nbsp;</tt>
+<br><tt>{return UnaryExpr&lt;ExprT,double(*)(double)>(e,::std::sqrt);}</tt>
+<p><tt>template&nbsp; &lt;class ExprT></tt>
+<br><tt>UnaryExpr&lt;ExprT,double(*)(double)></tt>
+<br><tt>exp(const ExprT&amp; e)&nbsp;</tt>
+<br><tt>{ return UnaryExpr&lt;ExprT,double(*)(double)>(e,::std::exp); }</tt>
+<p><tt>...</tt>
+<br>&nbsp;</td>
+</tr>
+</table>
+
+<p>With these additions in place we now have a powerful and high-performance
+solution for evaluation of arithmetic expressions.&nbsp; It is not much
+of a stretch to imagine that application of the techniques demonstrated
+in this article allows setting up expression templates for logical expressions.&nbsp;
+By renaming the evaluation function from eval() to operator()(), which
+is the function call operator, we can easily turn the expression objects
+into function objects, which can then be used in conjunction with STL algorithms.&nbsp;
+Below is an example of a logical expression that is used as a predicate
+for counting elements in a list:
+<p><tt>list&lt;int> l;</tt>
+<br><tt>Identity&lt;int> x;</tt>
+<br><tt>count_if(l.begin(),l.end(), x >= 0 &amp;&amp; x &lt;= 100 );</tt>
+<p>The example nicely illustrates the gain in readability that expression
+templates enable, at zero cost in terms of runtime performance.&nbsp; Provided
+that the expression templates are already in place they are easy and convenient
+to use.&nbsp; Building an expression template library is a different story;
+it involves many more template programming techniques than we've discussed
+in this article.&nbsp; However, all template libraries are built on principles
+like the ones discussed in this article.
+<br>&nbsp;
+<h2>
+<a NAME="References"></a>References</h2>
+Quite a number of expression template libraries are available for free
+download, some of which are mentioned in the list of reference below.&nbsp;
+However, the list by no means claims to be comprehensive or representative.&nbsp;
+If you are interested in further information we recommend commencing your
+search at one of the directories (see /<a href="#JÜL">J&Uuml;L</a>/ and
+/<a href="#OON">OON</a>/).
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="10%"><a NAME="GOF"></a>/GOF/&nbsp;</td>
+
+<td>Design Patterns: Elements of Reusable Object-Oriented Software&nbsp;
+<br>Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides&nbsp;
+<br>Addison-Wesley, January 1995&nbsp;
+<br>ISBN: 0201633612</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="VAN"></a>/VAN/&nbsp;</td>
+
+<td>C++ Templates – The Complete Guide
+<br>&nbsp;David Vandevoorde and Nicolai Josuttis
+<br>&nbsp;Addison-Wesley 2003</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="UNR"></a>/UNR/&nbsp;</td>
+
+<td>Compile-Time Computation of Prime Numbers
+<br>Erwin Unruh
+<br><a href="http://www.erwin-unruh.de/Prim.html">http://www.erwin-unruh.de/Prim.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="DUR"></a>/DUR/&nbsp;</td>
+
+<td>Design Patterns for Generic Programming in C++&nbsp;
+<br>Alexandre Duret-Lutz, Thierry G&eacute;raud, and Akim Demaille
+<br><a href="http://www.lrde.epita.fr/dload/papers/coots01.html">http://www.lrde.epita.fr/dload/papers/coots01.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="VEL"></a>/VEL/</td>
+
+<td>T. Veldhuizen, "Expression Templates," C++ Report, Vol. 7 No. 5 June
+1995, pp. 26-31
+<br>The article has been reprinted in the book "C++ Gems" edited by Stanley
+Lippman.
+<br><a href="http://osl.iu.edu/~tveldhui/papers/Expression-Templates/exprtmpl.html">http://osl.iu.edu/~tveldhui/papers/Expression-Templates/exprtmpl.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JÜL"></a>/J&Uuml;L/</td>
+
+<td>Research Centre J&uuml;lich
+<br><a href="http://www.fz-juelich.de/zam/cxx/">http://www.fz-juelich.de/zam/cxx/</a>
+<br>An impressive directory of C++ resources such as books, articles, FAQs,
+other C++ pages, compilers, libraries, etc. See in particular the links
+to other C++ libraries at <a href="http://www.fz-juelich.de/zam/cxx/extmain.html#lib">http://www.fz-juelich.de/zam/cxx/extmain.html#lib</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="OON"></a>/OON/&nbsp;</td>
+
+<td>The Object-Oriented Numerics Page
+<br><a href="http://www.oonumerics.org/oon/#libraries">http://www.oonumerics.org/oon/#libraries</a>
+<br>A directory of links to freely available numeric libraries.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="BLI"></a>/BLI/&nbsp;</td>
+
+<td>The Blitz Project&nbsp;
+<br><a href="http://oonumerics.org/blitz/">http://oonumerics.org/blitz/</a>
+<br>A C++ class library for scientific computing which uses template techniques
+to achieve high performance.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="PET"></a>/PET/&nbsp;</td>
+
+<td>PETE (Portable Expression Template Engine)
+<br><a href="http://www.acl.lanl.gov/pete/">http://www.acl.lanl.gov/pete/</a>
+<br>A portable C++ framework to easily add powerful expression templates.&nbsp;</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="POO"></a>/POO/</td>
+
+<td>POOMA (Parallel Object-Oriented Methods and Applications)
+<br><a href="http://www.acl.lanl.gov/pooma/">http://www.acl.lanl.gov/pooma/</a>
+<br>An object-oriented framework for applications in computational science
+requiring high-performance parallel computers.&nbsp;</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="MET"></a>/MET/&nbsp;</td>
+
+<td>MET (Matrix Expression Templates)
+<br><a href="http://met.sourceforge.net/">http://met.sourceforge.net/</a>
+<br>A C++ matrix class library. C++ overloaded operators enable one to
+write the simplest code like u = m*v + w.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="MTL"></a>/MTL/&nbsp;</td>
+
+<td>MTL (Matrix Template Library)&nbsp;
+<br><a href="http://www.osl.iu.edu/research/mtl/">http://www.osl.iu.edu/research/mtl/</a>
+<br>A high-performance generic component library that provides linear algebra
+functionality for a wide variety of matrix formats.&nbsp; Uses an STL-style
+approach.&nbsp; Provides generic algorithms corresponding to the mathematical
+operations that define linear algebra.&nbsp; Containers, adaptors, and
+iterators are used to represent and to manipulate matrices and vectors.
+<br>See also the following paper:
+<br>The Matrix Template Library: A Generic Programming Approach to High-Performance
+<br>Jeremy G. Siek and Andrew Lumsdaine
+<br><a href="http://www.lsc.nd.edu/downloads/research/mtl/papers/iscope_final.pdf">http://www.lsc.nd.edu/downloads/research/mtl/papers/iscope_final.pdf</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="FAC"></a>/FAC/&nbsp;</td>
+
+<td>FACT! (Functional Additions to C++ through Templates and Classes)
+<br><a href="http://www.kfa-juelich.de/zam/FACT/start/index.html">http://www.kfa-juelich.de/zam/FACT/start/index.html</a>
+<br>A library that offers lambda expressions built on top of <a href="http://www.acl.lanl.gov/pete">PETE</a>.&nbsp;
+By using FACT!'s lambda syntax the programmer can define generic functions
+for use with the STL on the fly.&nbsp;</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="FCP"></a>/FCP/&nbsp;</td>
+
+<td>FC++ (Functional Programming in C++)
+<br><a href="http://www.cc.gatech.edu/~yannis/fc++/">http://www.cc.gatech.edu/~yannis/fc++/</a>
+<br>A library for functional programming in C++, which you can use to define
+your own higher-order polymorphic functions.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="BLL"></a>/BLL/</td>
+
+<td>BLL (The Boost Lambda Library)
+<br><a href="http://www.boost.org/libs/lambda/doc/index.html">http://www.boost.org/libs/lambda/doc/index.html</a>
+<br>A C++ template library, which implements lambda abstractions for C++.
+The primary motivation for the BLL is to provide flexible and convenient
+means to define unnamed function objects for STL algorithms.&nbsp;</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="PHO"></a>/PHO/</td>
+
+<td>Phoenix (A parser used by <a href="http://spirit.sourceforge.net/index.php?doc=home.php">Spirit</a>)
+<br><a href="http://spirit.sourceforge.net/index.php?doc=docs/phoenix_v1_0/index.html">http://spirit.sourceforge.net/index.php?doc=docs/phoenix_v1_0/index.html</a>
+<br>Phoenix is a&nbsp; framework that opens up functional programming techniques
+such as Lambda (unnamed functions) and Currying (partial function evaluation),
+similar to FC++ and BLL.</td>
+</tr>
+</table>
+
+<h2>
+Acknowledgements</h2>
+Our thanks to Gary Powell, who read our article in CUJ and sent us email.&nbsp;
+He brought FACT!, FC++, the Boost Lambda Library, and Phoenix to our attention.
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/Templates.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/Templates.htm">Template
+Programming</a> </font></b>- All you ever wanted to know about templates
+<br><font color="#000000"><font size=-1>3 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

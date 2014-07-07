@@ -1,0 +1,670 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="pre-copyedit version of a feature article published in JavaPro Online in May 2004">
+   <meta name="KeyWords" content="Java Generics J2SE 5.0 parameterized type  Java 1.5">
+   <title>Java Generics - Wilcard Instantiations of Parameterized Types</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="JavaProOnline02"></a>
+<br><font color="#295AB5"><font size=+3>Wildcard Instantiations of Parameterized
+Types</font></font>
+<br>&nbsp;
+<p><font color="#295AB5"><font size=+2>JavaPro Online, May 2004</font></font>
+<br><font color="#295AB5"><font size=+1>Angelika Langer &amp; Klaus Kreft</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<blockquote><a href="#Wildcard Instantiations of Parameterized Types">Wildcard
+Instantiations of Parameterized Types</a>
+<blockquote><a href="#What is the purpose of wildcards?">What is the purpose
+of wildcards?</a>
+<br><a href="#More Details Regarding the Wildcard Language Feature">More
+Details Regarding the Wildcard Language Feature</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="#Access Restrictions">Access Restrictions</a>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#Rules for Unbounded Wildcards">Rules
+for Unbounded Wildcards</a>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#Rules for Upper Bound Wildcards">Rules
+for Upper Bound Wildcards</a>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#Rules for Lower Bound Wildcards">Rules
+for Lower Bound Wildcards</a></blockquote>
+<a href="#Using Wildcard Instantiations">Using Wildcard Instantiations</a>
+<blockquote><a href="#Using Wildcards With An Upper Bound">Using Wildcards
+With An Upper Bound</a>
+<br><a href="#Using Unbounded Wildcards">Using Unbounded Wildcards</a>
+<br><a href="#Using Wildcards With A Lower Bound">Using Wildcards With
+A Lower Bound</a>
+<br>&nbsp;&nbsp;&nbsp; <a href="#Remaining Limitations">Remaining Limitations</a></blockquote>
+<a href="#Summary">Summary</a>
+<br><a href="#References">References</a></blockquote>
+
+<h1>
+<a NAME="Wildcard Instantiations of Parameterized Types"></a>1 Wildcard
+Instantiations of Parameterized Types</h1>
+With the release of J2SE 1.5 (announced for August 2004) parameterized
+types and methods, also known as Java Generics, will be available as a
+new language feature of the Java programming language. We gave an overview
+of most of the Java Generics features in a previous article (see /<a href="#PRO">PRO1</a>/).&nbsp;
+This time we aim to explain wildcards – another language construct relevant
+in the context of Java Generics.&nbsp; Wildcards can be used for instantiation
+of parameterized types.&nbsp; In its simplest form a wildcard is a question
+mark “?” and permits type declarations such as List&lt;?>, for instance.
+<br>&nbsp;
+<h2>
+<a NAME="What is the purpose of wildcards?"></a>1.1 What is the purpose
+of wildcards?</h2>
+Consider a hierarchy of shape classes with an abstract superclass Shape
+and several subclasses such as Circle, Triangle, Rectangle, etc.&nbsp;
+All shape classes have a draw() method.
+<blockquote><tt>public abstract class Shape {</tt>
+<br><tt>&nbsp;&nbsp; public abstract void draw();</tt>
+<br><tt>}</tt>
+<br><tt>public final class Circle {</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public void draw() { ... }</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>}</tt>
+<br><tt>public final class Triangle {</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public void draw() { ... }</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>}</tt>
+<br><tt>...</tt></blockquote>
+Given a collection of shapes we might want to implement a drawAllShapes()
+method.&nbsp; How would we declare this method?&nbsp; Here is a first approach
+:
+<blockquote><tt>public void drawAllShapes(Collection&lt;Shape> c) {</tt>
+<br><tt>&nbsp;&nbsp; for (Shape s : c) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s.draw();</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+This method can be invoked as follows:
+<blockquote><tt>Collection&lt;Shape> c = new LinkedList&lt;Shape>();</tt>
+<br><tt>... fill the collection with shapes ...</tt>
+<br><tt>drawAllShapes(c);</tt></blockquote>
+It does, however, disallow the following invocation:
+<blockquote><tt>Collection&lt;Triangle> c = new LinkedList&lt;Triangle>();</tt>
+<br><tt>... fill the collection with triangles ...</tt>
+<br><tt>drawAllShapes(c);</tt></blockquote>
+Although triangles are shapes and have a draw() method we cannot invoke
+the drawAllShapes() method supplying a collection of triangles as an argument.&nbsp;
+This is because the method parameter is declared to be of type Collection&lt;Shape>
+and the argument supplied is of type Collection&lt;Triangle>. Both types
+are incompatible with each other.&nbsp; More generally, there is no assignment
+compatibility relationship between different instantiations of the same
+parameterized type.&nbsp; A Collection&lt;Triangle> cannot be assigned
+to a variable of type Collection&lt;Shape>.&nbsp; This may or may not be
+in line with our intuition.&nbsp; We might expect assignment compatibility,
+in particular in the case of collections, because collections are similar
+to arrays and built-in array types with different element types are assignment
+compatible if the element types have a super-sub-type relationship.&nbsp;
+For instance, a method declared as taking a parameter of type Shape[] would
+accept an argument of type Triangle[].&nbsp; This type relationship is
+known as covariance. It means that an array of a subtype, such as Triangle[],
+is assignment compatible to an array of a supertype, such as Shape[].&nbsp;
+No such covariance relationship exists for instantiations of parameterized
+types.
+<p>In order to make up for the lack of covariance among instantiations
+of a parameterized type, the language designers invented wildcards.&nbsp;
+Using wildcards we can declare the drawAllShapes() method as follows:
+<blockquote><tt>public void drawAllShapes(Collection&lt;? extends Shape>
+c) {</tt>
+<br><tt>&nbsp;&nbsp; for (Shape s : c) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s.draw();</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+The expression “? extends Shape” is an example of a wildcard. It stands
+for a family of types, namely all types that are subtypes of Shape, the
+type Shape itself included. Consequently, the instantiation Collection&lt;?
+extends Shape> stands for the family of types that are instantiations of
+class Collection for an element type from the family of subtypes of Shape.
+<p>Given this parameter declaration we can invoke the drawAllShapes() method
+as before, supplying a collection of shapes to the method:
+<blockquote><tt>Collection&lt;Shape> c = new LinkedList&lt;Shape>();</tt>
+<br><tt>... fill the collection with shapes ...</tt>
+<br><tt>drawAllShapes(c);</tt></blockquote>
+In addition we can invoke the method with a collection containing subtypes
+of Shape:
+<blockquote><tt>Collection&lt;Triangle> c = new LinkedList&lt;Triangle>();</tt>
+<br><tt>... fill the collection with triangles ...</tt>
+<br><tt>drawAllShapes(c);</tt></blockquote>
+In essence, wildcards are predominantly used for definition of relatively
+relaxed APIs, that is, wildcards permit declaration of methods that accept
+a broad range of argument types – broader than would be possible without
+wildcards.
+<h2>
+<a NAME="More Details Regarding the Wildcard Language Feature"></a>1.2
+More Details Regarding the Wildcard Language Feature</h2>
+The expression “? extends Shape” is just one example of a wildcard.&nbsp;
+There is a total of 3 different wildcard flavors:
+<ul>
+<li>
+“? extends Type” is a wildcard with an upper bound; it stands for the family
+of types that are subtypes of Type.</li>
+
+<li>
+“? super Type” is a wildcard with a lower bound; it stands for the family
+of types that are supertypes of Type.</li>
+
+<li>
+“?” is an unbounded wildcard; it stands for “all types”.</li>
+</ul>
+Wildcards can be used for instantiating parameterized types, that is, we
+can form types such as Collection&lt;? extends Shape>, Comparable&lt;?
+super Triangle>,&nbsp; LinkedList&lt;?>. The resulting instantiations stand
+for families of types: Collection&lt;? extends Shape> represents the set
+of collection types that have an element type that is a subtype of Shape.&nbsp;
+Similarly, Comparable&lt;? super Triangle> stands for instantiations of
+the Comparable interface that allow comparison to objects of supertypes
+of Triangle. LinkedList&lt;?> comprises all instantiations of the parameterized
+type LinkedList, regardless of the element type.
+<p>The wildcard instantiations of parameterized types can be used as argument
+and return types of methods, as type arguments to other parameterized types
+and for declaration of variables.&nbsp; They can not be used for creation
+of objects or arrays, that is, a wildcard instantiation is not permitted
+in a new expression.&nbsp; Wildcard instantiations are not types, they
+are placeholders for a member from a family of types.&nbsp; In a way, a
+wildcard instantiation is similar to an interface:&nbsp; we can declare
+variables of interface types, but we cannot create objects of interface
+types; the created objects must be of a class type that implements the
+interface.&nbsp; Similar with wildcard instantiations: we can declare variables
+of a wildcard instantiated type, but we cannot create objects of such a
+type; the created objects must be of a concrete instantiation from the
+family of instantiations designated by the wildcard instantiation.&nbsp;
+Here is an example:
+<blockquote><tt>LinkedList&lt;?> list1 = new LinkedList&lt;String>();&nbsp;
+// fine</tt>
+<br><tt>LinkedList&lt;?> list2 = new LinkedList&lt;?>();&nbsp; // error:
+cannot create objects of a wildcard type</tt>
+<p><tt>LinkedList&lt;? extends Shape> list3 = new LinkedList&lt;Triangle>();
+// fine</tt>
+<br><tt>LinkedList&lt;? extends Shape> list4 = new LinkedList&lt;String>();
+// error: does not belong to the family</tt>
+<br>&nbsp;</blockquote>
+
+<h3>
+<a NAME="Access Restrictions"></a>1.2.1 Access Restrictions</h3>
+Reference variables or parameters of wildcard type refer to an object of
+a concrete type.&nbsp; Access to the referenced object via a reference
+variable or parameter of a wildcard type is restricted. The restriction
+is different depending on the kind of wildcard that is being used.
+<h4>
+<a NAME="Rules for Unbounded Wildcards"></a>1.2.1.1 Rules for Unbounded
+Wildcards</h4>
+A “?” wildcard prohibits invocation of methods that take arguments of the
+type that the wildcard stands for.&nbsp; For instance, the wildcard List&lt;?>
+stands for an arbitrary instantiation of the parameterized type List and
+the element type is unknown; it can be any type.&nbsp; When we try to add
+an element to a list of elements of unknown type then there is no way of
+telling whether the element to be added is of the right type.&nbsp; Here
+is an example to illustrate the situation. A reference variable of type
+List&lt;?> refers to an object of type that is a concrete instantiation
+of the parameterized type List:
+<blockquote><tt>List&lt;?> list = new LinkedList&lt;String>();</tt></blockquote>
+In our example, the reference variable list refers to a list of strings.&nbsp;
+If we were allowed to invoke the add() method through a List&lt;?> reference
+variable we could attempt to insert any type of element into the list,
+like in the example below:
+<blockquote><tt>void f(List&lt;?> list) {</tt>
+<br><tt>&nbsp;&nbsp; list.add(new Date());&nbsp; // error: must not invoke
+methods that take arguments of the „?“ type</tt>
+<br><tt>}</tt></blockquote>
+Method f(List&lt;?> list) is declared to accept any instantiation of List.
+There is no way the compiler can know what concrete instantiation of List
+the parameter of type List&lt;?> refers to.&nbsp; Hence, the compiler must
+not permit invocation of the add() method, because it would permit inserting
+alien elements into the list.
+<p>The general rule is that through a reference variable of an unbounded
+wildcard type we cannot invoke any method of the referenced object that
+takes an argument of the unknown type that the “?” wildcard stands for.&nbsp;
+The only exception from this rule is invocation with null as an argument,
+because null has no type.&nbsp; Hence the following invocation would be
+permitted:
+<blockquote><tt>void f(List&lt;?> list) {</tt>
+<br><tt>&nbsp;&nbsp; list.add(null);&nbsp; // fine</tt>
+<br><tt>}</tt></blockquote>
+Conversely, methods that return an object of the unknown type may be invoked
+through a reference variable of a unbounded wildcard type.
+<blockquote><tt>void f(List&lt;?> list) {</tt>
+<br><tt>&nbsp;&nbsp; Object ret = list.get(0); // fine</tt>
+<br><tt>}</tt></blockquote>
+The invocation of the get() method is permitted because receiving elements
+of unknown type does not create any problems; no matter what the type of
+the elements stored in the list may be, the elements are assignment compatible
+to Object.
+<h4>
+<a NAME="Rules for Upper Bound Wildcards"></a>1.2.1.2 Rules for Upper Bound
+Wildcards</h4>
+Similar rules apply to the other wildcard types.&nbsp; Via a reference
+variable of an “extends” wildcard type we cannot invoke any method of the
+referenced object that takes an argument of the unknown type that the “extends”
+wildcard stands for, except null. Invocation of methods that return an
+object of the unknown type may be invoked.&nbsp; The example below illustrates
+the restrictions:
+<blockquote><tt>void f(List&lt;? extends Shape> list) {</tt>
+<br><tt>&nbsp;&nbsp; list.add(new Triangle());&nbsp; </tt>// error: must
+not invoke methods that take arguments of the „? extends Shape“ type
+<br><tt>}</tt></blockquote>
+Again, the compiler does not know whether the reference variable of type
+List&lt;? extends Shape> refers to a list of triangles, as is assumed in
+the invocation of the add() method.&nbsp; The reference variable of type
+List&lt;? extends Shape> may equally well refer to a list of circles or
+rectangles, in which case the insertion of a triangle into the list would
+be harmful.
+<p>Again, retrieving an element from the list is safe, because all elements
+in the list are guaranteed to be Shapes.
+<blockquote><tt>void f(List&lt;? extends Shape> list) {</tt>
+<br><tt>&nbsp;&nbsp; Shape ret = list.get(0);&nbsp;&nbsp; // fine</tt>
+<br><tt>}</tt></blockquote>
+Note, that for an “extends” wildcard type, different from an unbounded
+wildcard type, we have more knowledge regarding the type of the returned
+object.&nbsp; We know that the returned object is at least a Shape, not
+just an Object.
+<h4>
+<a NAME="Rules for Lower Bound Wildcards"></a>1.2.1.3 Rules for Lower Bound
+Wildcards</h4>
+Different rules apply for “super” wildcards.&nbsp; Here it is the other
+way round: invocation of methods that return an object of an unknown type
+is restricted and only allowed if we make no assumptions regarding the
+returned type and treat the returned object as if of type Object. Invocation
+of methods that take arguments of the unknown type is permitted without
+any restrictions.&nbsp; For illustration, here is an example:
+<blockquote><tt>void f(List&lt;? super Triangle> list) {</tt>
+<br><tt>&nbsp;&nbsp; Triangle ret = list.get(0); // error: must not invoke
+methods that return the „? super Triangle“ type</tt>
+<br><tt>&nbsp;&nbsp; Object&nbsp;&nbsp; obj = list.get(0); // fine</tt>
+<br><tt>}</tt></blockquote>
+The compiler has no way of knowing whether the reference of type List&lt;?
+super Triangle> refers to a list of triangles, as the first&nbsp; invocation
+of the get() method suggests.&nbsp; The references variable may well refer
+to a list of Shapes and might contain a mix of various types of shapes.&nbsp;
+Hence, what is returned from the get() method may be a circle or a rectangle
+and not a triangle.&nbsp; The call to get() is only permitted if we treat
+the return value as an Object, thus making no assumptions regarding its
+type.
+<p>Addition of elements to the list is permitted, but it must be visible
+to the compiler that the elements are within bounds.&nbsp; Here is an example:
+<blockquote><tt>void f(List&lt;? super Triangle> list) {</tt>
+<br><tt>&nbsp;&nbsp; list.add(new Triangle());&nbsp; // fine</tt>
+<p><tt>&nbsp;&nbsp; Shape shape = new Triangle();</tt>
+<br><tt>&nbsp;&nbsp; list.add(shape);&nbsp; // error: argument must be
+of type Triangle</tt>
+<br><tt>}</tt></blockquote>
+We may add a triangle to the list, but only if we pass it to the add()
+method through a reference of the wildcard’s lower bound, namely type Triangle
+in our example.&nbsp; If we supply a reference variable of a supertype
+of Triangle to the add() method, like for instance a reference of type
+Shape, then the compiler cannot know whether the Shape reference refers
+to a Triangle or a Circle or another subtype of Shape.&nbsp; For this reason
+the call to add() is rejected unless the argument is of the type that is
+specified as the wildcard’s lower bound.
+<br>&nbsp;
+<h1>
+<a NAME="Using Wildcard Instantiations"></a>2 Using Wildcard Instantiations</h1>
+Let us explore typical use of the different types of wildcards.
+<h2>
+<a NAME="Using Wildcards With An Upper Bound"></a>2.1 Using Wildcards With
+An Upper Bound</h2>
+We already saw a typical example for use of a wildcard instantiations,
+when we discussed the drawAllShapes() method.&nbsp; If we want that the
+drawAllShapes() method&nbsp; accepts not only collections of shapes but
+also collections of subtypes of Shape, then we can achieve this by declaring
+the argument as a Collection&lt;? extends Shape>.
+<blockquote><tt>public void drawAllShapes(Collection&lt;? extends Shape>
+c) {</tt>
+<br><tt>&nbsp;&nbsp; for (Shape s : c) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s.draw();</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<br><tt>Collection&lt;Triangle> c = new LinkedList&lt;Triangle>();</tt>
+<br><tt>... fill the collection with triangles ...</tt>
+<br><tt>drawAllShapes(c);</tt></blockquote>
+Essentially, the wildcard is used to relax the requirements imposed on
+the method arguments and to permit a broader range of argument types.
+<p>Programmers familiar with parameterized methods might have noticed that
+the same effect can be achieved without wildcards as well:&nbsp; if we
+declare the drawAllShapes() method as a parameterized method we would also
+allow collections of subtypes of Shape as arguments.&nbsp; The parameterization
+would look like this:
+<blockquote><tt>public &lt;T extends Shape> void drawAllShapes(Collection&lt;T>
+c) {</tt>
+<br><tt>&nbsp;&nbsp; for (Shape s : c) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s.draw();</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+The parameterized drawAllShapes() method accepts collections whose element
+type is a subtype of Shape, exactly as the non-parameterized version with
+the wildcard instantiation does.&nbsp; The difference is that the parameterized
+version does not restrict access to the method argument, while the wildcard
+instantiations disallows the invocation of methods that take arguments
+of the unknown type. In this example, it does not make any difference,
+because the only method we invoke on the Shape type (or subtype thereof)
+is method draw(), which does not take any arguments.&nbsp; In another context
+the parameterized method might be more flexible than its non-parameterized
+counterpart with the wildcard argument. The point to take home is: wildcards
+with an upper bound can often be replaced by parameterization with a bounded
+type parameter.
+<br>&nbsp;
+<h2>
+<a NAME="Using Unbounded Wildcards"></a>2.2 Using Unbounded Wildcards</h2>
+Unbounded wildcards are used when the type of the type parameter does not
+matter, either because the object referred to is not used or because no
+methods of that type are invoked.&nbsp; An example of using an unbounded
+wildcard would be a method that prints all elements in a collection, as
+shown below:
+<blockquote><tt>void printAll(Collection&lt;?> c) {</tt>
+<br><tt>&nbsp;&nbsp; for (Object o : c)&nbsp; System.out.println(o.toString());</tt>
+<br><tt>}</tt></blockquote>
+All that is required of the elements in the collection is that they must
+have a toString() method.&nbsp; Since the toString() method is defined
+in class Object, this is not much of a requirement.&nbsp; Basically we
+need not know anything about the type of the objects contained in the collection.&nbsp;
+Hence a declaration as Collection&lt;?> is appropriate.
+<p>Note the difference between use of a Collection&lt;?> and use of a Collection&lt;Object>:
+a method declared as void printAll(Collection&lt;Object> c) would not accept
+a LinkedList&lt;String> as an argument, while a method declared as void
+printAll(Collection&lt;?> c) permits it.&nbsp; Both expressions look like
+they denote a “collection of anything”.&nbsp; The difference is that Collection&lt;Object>
+is a concrete type, while Collection&lt;?> is not a type.&nbsp; It just
+stands for a representative from the family of types that are instantiations
+of Collection.&nbsp; Hence a method parameter declared as Collection&lt;Object>
+must be of exactly that type, or a subtype thereof.&nbsp; A method parameter
+declared as Collection&lt;?> can be of any type that is an instantiation
+of Collection, or a subtype of any of these types.
+<p>The type Collection&lt;?>&nbsp; is also different from the raw type
+Collection.&nbsp; Invocation of methods that would be flagged as errors
+when invoked via a reference of type Collection&lt;?> would lead to “unchecked
+warning” when invoked via a reference of type Collection.&nbsp; Also, the
+raw type is a concrete type, of which objects and arrays can be created,
+while Collection&lt;?>&nbsp; must not appear in new expressions.
+<p>Unbounded wildcards are also used for partial instantiations and express
+that no requirements are imposed on a type. Here is an example.&nbsp; Say,
+we have a parameterized pair class with two fields of different unknown
+types:
+<blockquote><tt>class Pair&lt;S,T> {</tt>
+<br><tt>&nbsp;&nbsp; private S first;</tt>
+<br><tt>&nbsp;&nbsp; private T second;</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; &lt;A extends S> void setFirst(Pair&lt;A,?> p) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; first = p.first;</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>}</tt></blockquote>
+The parameterized class Pair&lt;S,T> has two instance fields of type S
+and T respectively. The declaration of the parameter of method setFirst()
+as a Pair&lt;A,?> indicates that the method has no interest in the second
+instance field of the pair.&nbsp; The type Pair&lt;A,?> would denote a
+partial instantiation of the parameterized Pair type.
+<br>&nbsp;
+<h2>
+<a NAME="Using Wildcards With A Lower Bound"></a>2.3 Using Wildcards With
+A Lower Bound</h2>
+Wildcards with a lower bound are used for a similar purpose as wildcards
+with an upper bound: they are used as arguments types of methods and relax
+the requirements imposed on the argument type.&nbsp; Let us take a look
+at an example. Consider a class hierarchy of value types such as the following:
+<blockquote><tt>class Person {</tt>
+<br><tt>&nbsp;&nbsp; private String firstName;</tt>
+<br><tt>&nbsp;&nbsp; private String lastName;</tt>
+<br><tt>&nbsp;&nbsp; private Date&nbsp;&nbsp; dateOfBirth;</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>}</tt>
+<br><tt>class Employee extends Person {</tt>
+<br><tt>&nbsp;&nbsp; private Person Supervisor;</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>}</tt></blockquote>
+If the classes in such a hierarchy of value classes were supposed to implement
+a parameterized interface such a Comparable we run into the problem that
+super- and subclass cannot implement different instantiations of the same
+parameterized interface, although semantically it would make a lot of sense.&nbsp;
+What we would like to do – but are not permitted to do - is the following:
+<blockquote><tt>class Person implements Comparable&lt;Person> {</tt>
+<br><tt>&nbsp;&nbsp; private String firstName;</tt>
+<br><tt>&nbsp;&nbsp; private String lastName;</tt>
+<br><tt>&nbsp;&nbsp; private Date&nbsp;&nbsp; dateOfBirth;</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public int compareTo(Person other) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<br><tt>class Employee extends Person implements Comparable&lt;Employee>
+{&nbsp; // error: already implements Comparable</tt>
+<br><tt>&nbsp;&nbsp; private Person Supervisor;</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public int compareTo(Employee other) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+The compiler rejects the declaration of the subclass because it would implement
+different instantiations of the same interface, namely Comparable&lt;Person>
+and Comparable&lt;Employee>, which is not permitted.&nbsp; The restriction
+stems from the fact that parameterized types and methods are translated
+by type erasure.&nbsp; In the process of type erasure the two instantiations
+of the parameterized interface are mapped onto the raw type and there would
+be no longer a difference between the interface that the super- and subclass
+implement.
+<p>The result is that the superclass determines which instantiation of
+a parameterized interface all its subclasses implement.&nbsp; This, on
+the other hand, renders it impossible to pass the subclass to certain methods,
+unless the methods use wildcards with lower bounds.&nbsp; Below is an example
+of such a method. But&nbsp; let us first fix our class hierarchy, so that
+all classes in the hierarchy of&nbsp; Person classes would implement Comparable&lt;Person>:
+<blockquote><tt>class Person implements Comparable&lt;Person> {</tt>
+<br><tt>&nbsp;&nbsp; private String firstName;</tt>
+<br><tt>&nbsp;&nbsp; private String lastName;</tt>
+<br><tt>&nbsp;&nbsp; private Date&nbsp;&nbsp; dateOfBirth;</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public int compareTo(Person other) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<br><tt>class Employee extends Person {</tt>
+<br><tt>&nbsp;&nbsp; private Person Supervisor;</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public int compareTo(Person other) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+Now, consider a method that asks for comparable objects:
+<blockquote><tt>&lt;T extends Comparable&lt;T>> void someMethod(T arg1,
+T arg2) {</tt>
+<br><tt>&nbsp;&nbsp; ... arg1.compareTo(arg2) ...</tt>
+<br><tt>}</tt></blockquote>
+This method can be invoked with reference variables of type Person as arguments,
+but an argument of type Employee would not be accepted, because an Employee
+is comparable to Person, but not to an Employee.&nbsp; In other words,
+the Employee would not be within bounds.&nbsp; The code snippet below illustrates
+the situation:
+<blockquote><tt>Person p1 = new Employee(“Peter”, “Miller”, new Date(4,3,69));</tt>
+<br><tt>Person p2 = new Employee(“Jim”, “Anderson”, new Date(10,8,84));</tt>
+<p><tt>someMethod(p1, p2);&nbsp; // fine</tt>
+<p><tt>Employee e1 = new Employee(“Peter”, “Miller”, new Date(4,3,69));</tt>
+<br><tt>Employee e2 = new Employee(“Jim”, “Anderson”, new Date(10,8,84));</tt>
+<p><tt>someMethod(e1, e2);&nbsp; // error:&nbsp; arguments are not within
+bounds</tt></blockquote>
+As the example demonstrates, it is essential that methods that take parameters
+through a parameterized interface type are declared to accept upper bound
+wildcard instantiations of the parameterized interface instead of concrete
+instantiations.&nbsp; Otherwise, applicability of the method would be severely
+– and unnecessarily – restricted.
+<p>Let us relax the method signature. If we declare the method using an
+upper bound wildcard instantiation – instead of the concrete instantiation
+- the method accepts super- and subclass objects as arguments, that is,
+Person and Employee objects would be permitted.
+<blockquote><tt>&lt;T extends Comparable&lt;? super T>> void someMethod(T
+arg1, T arg2) {</tt>
+<br><tt>&nbsp;&nbsp; ... arg1.compareTo(arg2) ...</tt>
+<br><tt>}</tt></blockquote>
+The example nicely illustrates the need for lower bound wildcards. They
+help solving a problem that would otherwise remain insurmountable.&nbsp;
+Classes in a class hierarchy can never implement different instantiation
+of the same parameterized interface; they must implement the same parameterized
+interface, namely the one that the topmost superclass decided to implement.&nbsp;
+Methods taking arguments that must implement a concrete instantiations
+of the parameterized interface type would accept only superclass objects.
+With the use of lower bound wildcard instantiations these methods are substantially
+more useful.
+<p>Note also, that lower bound wildcards – different from upper bound wildcards
+– cannot be replaced by a parameterization of the method itself.&nbsp;
+This is because type variables can only have upper bounds, but no lower
+bounds, while for wildcards both variants exist.
+<h3>
+<a NAME="Remaining Limitations"></a>2.3.1 Remaining Limitations</h3>
+While the upper bound wildcard solves the problem discussed above, there
+are still cases, in which not even wildcards come to rescue.&nbsp; If the
+interface defined a method that returned a value of the wildcard type,
+instead of taking it as an argument, then we would be limited by the rule
+that methods returning values of the unknown type cannot be invoked through
+a reference to a lower bound wildcard.&nbsp; Here is an example using a
+parameterized interface Copyable that has a value returning method copy()
+and a hierarchy of classes that implement the interface :
+<blockquote><tt>interface Copyable&lt;T> {</tt>
+<br><tt>&nbsp;&nbsp; T copy();</tt>
+<br><tt>}</tt>
+<br><tt>class Person implements Copyable&lt;Person> {</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public Person copy() { ... }</tt>
+<br><tt>}</tt>
+<br><tt>class Employee extends Person {</tt>
+<br><tt>...</tt>
+<br><tt>&nbsp;&nbsp; public Employee copy() { ... }</tt>
+<br><tt>}</tt></blockquote>
+As discussed earlier, a method such as the following would be problematic:
+<blockquote><tt>&lt;T extends Copyable&lt;T>> T produceCopy(T arg) {</tt>
+<br><tt>&nbsp;&nbsp; return arg.copy();</tt>
+<br><tt>}</tt></blockquote>
+This method does not permit Employees as arguments:
+<blockquote><tt>Person p1 = new Employee(“Peter”, “Miller”, new Date(4,3,69));</tt>
+<p><tt>Person p2 = produceCopy(p1);// fine</tt>
+<p><tt>Employee e1 = new Employee(“Peter”, “Miller”, new Date(4,3,69));</tt>
+<p><tt>Employee e2 = produceCopy(e1); // error:&nbsp; arguments are not
+within bounds</tt></blockquote>
+Use of a lower bound wildcard would in theory allow Employees as arguments,
+but would disallow invocation of the copy() method inside method produceCopy():
+<blockquote><tt>&lt;T extends Copyable&lt;? super T>> T produceCopy(T arg)
+{</tt>
+<br><tt>&nbsp;&nbsp; return arg.copy();&nbsp; // error: type „? super T“
+incompatible with type T</tt>
+<br><tt>}</tt></blockquote>
+The value returned from the copy() method would be of type “? super T”,
+which means it can be of any supertype of T.&nbsp; Arbitrary supertypes
+of T are not necessarily assignment compatible to the declared return type
+T, and for this reason the compiler rightly complains.
+<br>&nbsp;
+<h1>
+<a NAME="Summary"></a>3 Summary</h1>
+Wildcards are part of the language extension known as Java Generics and
+added as a new language feature in Java 1.5.&nbsp; Wildcards can be used
+as the type argument of a parameterized type and represent a member from
+a family of types.&nbsp; Three different types of wildcards exist: the
+unbounded wildcard, wildcards with a lower and wildcards with an upper
+bound.&nbsp; Wildcard instantiations of parameterized types are typically
+used as parameter and return types in method declarations and permit a
+broader range of arguments than would be possible without use of wildcards.
+<br>&nbsp;
+<h1>
+<a NAME="References"></a>4 References</h1>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDK15"></a>/JDK15/&nbsp;</td>
+
+<td VALIGN=TOP><b><font face="Times New Roman, Times, serif"><font size=+0>Java<sup>TM</sup>
+2 SDK, Standard Edition 1.5.0</font></font></b>
+<br><font face="Times New Roman, Times, serif"><font size=+0>Update 1</font></font>
+<br><font face="Times New Roman, Times, serif"><font size=+0><a href="http://java.sun.com/developer/earlyAccess/j2sdk150_alpha/">http://java.sun.com/developer/earlyAccess/j2sdk150_alpha/</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="TUT"></a>/TUT/&nbsp;</td>
+
+<td><b>Java Generics Tutorial</b>
+<br>Gilad Bracha
+<br><a href="http://java.sun.com/j2se/1.5/pdf/generics-tutorial.pdf">http://java.sun.com/j2se/1.5/pdf/generics-tutorial.pdf</a></td>
+</tr>
+
+<tr VALIGN=TOP>
+<td><a NAME="FAQ"></a>/FAQ/</td>
+
+<td><b>Java Generics FAQ</b>
+<br>Angelika Langer
+<br><a href="http://www.langer.camelot.de/GenericsFAQ/JavaGenericsFAQ.html">http://www.AngelikaLanger.com/GenericsFAQ/JavaGenericsFAQ.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="LAN"></a>/LAN/&nbsp;</td>
+
+<td><b>Links related to Java Generics</b>
+<br>Further references to articles, tutorials, conversations and other
+information related to Java Generics can be found on this website at <a href="http://www.langer.camelot.de/Resources/Links/JavaGenerics.htm">http://www.AngelikaLanger.com/Resources/Links/JavaGenerics.htm</a>.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="PRO"></a>/PRO1/</td>
+
+<td><b>Java Generics Language Features&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaPro Online, March 2004
+<br>The predecessor of this article providing an introduction to Java Generics.
+<br><a href="http://www.AngelikaLanger.com/Articles/JavaPro/01.JavaGenericsIntroduction/JavaGenerics.html">http://www.AngelikaLanger.com/Articles/JavaPro/01.JavaGenericsIntroduction/JavaGenerics.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="PRO2"></a>/PRO2/</td>
+
+<td><b>Wildcard Instantiations of Parameterized Types</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaPro Online, May 2004
+<br>The version of this article as published at the JavaPro Online site.
+<br><a href="http://www.ftponline.com/javapro/2004_05/online/kkreft_05_12_04/">http://www.ftponline.com/javapro/2004_05/online/kkreft_05_12_04/</a><a href="http://www.ftponline.com/javapro/2004_05/online/kkreft_05_19_04/">http://www.ftponline.com/javapro/2004_05/online/kkreft_05_19_04/</a></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/J2SE1.5.html"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/J2SE1.5.html">Java
+1.5</a> </font></b>- New Features in J2SE 1.5&nbsp;
+<br><font color="#000000"><font size=-1>1 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<dir>
+<dir>&nbsp;</dir>
+</dir>
+
+</body>
+</html>

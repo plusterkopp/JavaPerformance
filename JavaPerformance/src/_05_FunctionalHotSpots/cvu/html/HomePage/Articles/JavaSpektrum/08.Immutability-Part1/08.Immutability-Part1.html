@@ -1,0 +1,660 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Pre-Copyedit Version of Article in JavaSpektrum, November 2002">
+   <meta name="KeyWords" content="Java clone copy Effective Java">
+   <title>Immutability  - Part 2</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="EffectiveJava08"></a>
+<br><font color="#295AB5"><font size=+3>Unver&auml;nderliche Typen in Java</font></font>
+<br><font color="#295AB5"><font size=+2>Teil 1: Wie implementiert man unver&auml;nderliche
+Typen, lesende Zugriffsmethoden, Immutability-Adaptoren und "duale Klassen"?</font></font>
+<p><font color="#295AB5"><font size=+2>JavaSPEKTRUM, M&auml;rz 2003</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p><b>Weil die Unver&auml;nderlichkeit (engl. immutability) von Typen ein
+wichtiges Thema in Java ist, widmen wir ihm diesen und den n&auml;chsten
+Artikel. Wir diskutieren die Implementierung von lesenden Methoden und
+die Eigenschaften von unver&auml;nderlichen Typen. In diesem Zusammenhang
+besprechen wir Read-Only-Adaptoren und sogenannte "duale Klassen". Im n&auml;chsten
+Artikel sehen wir uns die Immutability-Adaptoren in Collection-Framework
+des JDK an und diskutieren den Sinn und Zweck des Schl&uuml;sselworts final.</b>
+<br>&nbsp;
+<br>&nbsp;
+<h2>
+Wof&uuml;r werden unver&auml;nderlichen Typen gebraucht?</h2>
+Immutability spielt immer dann eine Rolle, wenn Objekte gemeinsam verwendet
+werden (engl. object sharing).&nbsp; Diese Situation entsteht in Java,
+wenn Referenzen einander zugewiesen oder von und an Methoden &uuml;bergeben
+werden.&nbsp; Es verweisen dann mehrere Referenzen auf ein Objekt und die
+Besitzer dieser Referenzen k&ouml;nnen abwechselnd lesend und/oder schreibend
+auf das gemeinsam verwendete Objekt zugreifen.
+<br>Manchmal ist es unerw&uuml;nscht, dass das gemeinsam verwendete Objekt
+von allen Beteiligten nach Belieben ver&auml;ndert werden kann. Dann kann
+man auf das Sharing verzichtet und Kopien anlegen, so dass jede Referenz
+auf ihre eigene Kopie des Objekts verweist.(Das Kopieren von Objekten haben
+wir ausf&uuml;hrlich in /<a href="#Kreft1">KRE1</a>/ besprochen.) Es geht
+aber unter Umst&auml;nden auch ohne das Kopieren. Den Aufwand f&uuml;r
+das Kopieren kann man vermeiden, wenn das gemeinsam verwendete Objekt gar
+nicht ver&auml;ndert werden kann. Und hier kommen unver&auml;nderliche
+Typen ins Spiel; sie helfen, den Performance-Overhead f&uuml;r das Kopieren
+von Objekten zu eliminieren.
+<br>Es gibt eine weitere Situation, in der unver&auml;nderliche Typen n&uuml;tzlich
+sind.&nbsp; In Programmen mit mehreren parallelen Threads k&ouml;nnen Objekte
+gemeinsam von mehreren Threads verwendet werden. Dann gibt es ebenfalls
+mehrere Referenzen auf ein gemeinsam verwendetes Objekt.&nbsp; Die Referenzen
+werden in verschiedenen parallel ablaufenden Threads gehalten und in solchen
+F&auml;llen ist das Object Sharing ausdr&uuml;cklich erw&uuml;nscht: es
+soll eine Kommunikation zwischen den Threads &uuml;ber das gemeinsam verwendete
+Objekt stattfinden.
+<p>Wenn auf das gemeinsam verwendete Objekt schreibend zugegriffen werden
+kann, dann m&uuml;ssen die Zugriffe auf das gemeinsam verwendete Objekt
+synchronisiert werden, damit sie nacheinander und nicht ineinander verschr&auml;nkt
+ablaufen. Sonst k&ouml;nnte es beispielsweise passieren, dass ein lesender
+Thread ein halb geschriebenes Objekt zu sehen bekommt, weil der schreibende
+Thread noch gar nicht fertig war, als er unterbrochen wurde.&nbsp; Hier
+helfen unver&auml;nderlichen Typen, den Synchronisationsaufwand zu vermeiden.
+Wenn man wei&szlig;, dass das Objekt unver&auml;nderlich ist, dann kann
+man auf die Synchronisation g&auml;nzlich verzichten.
+<p>Im folgenden werden wir den Fall von Multithread-Anwendungen nicht weiter
+vertiefen, sondern wir werden den Nutzen von unver&auml;nderlichen Typen
+am Beispiel des Object Sharing in Single-Thread-Programmen&nbsp; betrachten.
+Alle Techniken und Vor- und Nachteile, die wir diskutieren werden, gelten
+aber f&uuml;r die Nutzung von ver&auml;nderlichen und unver&auml;nderlichen
+Typen in Multithread-Umgebungen ganz genauso.
+<br>Unser Ziel in diesem Artikel ist es, unver&auml;nderliche Typen zu
+implementieren.&nbsp; Eine Eigenschaft von unver&auml;nderlichen Typen
+ist, dass alle ihre Methoden read-only-Funktionalit&auml;t haben, d.h.
+sie ver&auml;ndern das this-Objekt nicht, sondern "lesen" es nur.&nbsp;
+Fangen wir also damit an, dass wir uns &uuml;berlegen, wie man eigentlich
+eine lesende Methoden implementiert.
+<br>&nbsp;
+<h2>
+Lesende Zugriffsmethoden</h2>
+Nehmen wir einmal an, wir wollen eine Zugriffsmethode implementieren, die
+nur lesenden Zugriff auf private Daten eines Objekts gibt. Betrachten wir
+dazu das folgende Beispiel:
+<p><tt>public final class Widget</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private Stamp lastModification = null;</tt>
+<p><tt>&nbsp; ... other methods and fields ...</tt>
+<p><tt>&nbsp; public Stamp getLastModification();</tt>
+<p><tt>}</tt>
+<p>Es handelt sich um eine Klasse, die in einem Feld vom Typ Stamp Informationen
+&uuml;ber die letzte erfolgte Modifikation des Objekts festh&auml;lt.&nbsp;
+Der Typ Stamp ist hier nicht n&auml;her ausgef&uuml;hrt, aber man stelle
+sich vor, er enth&auml;lt Informationen wie den Zeitpunkt der Ver&auml;nderung,
+den Urheber der Ver&auml;nderung, etc. Das Feld wird an geeigneter Stelle
+initialisiert und in jeder ver&auml;ndernden Methode mit neuen Werten belegt.
+Wie das genau gemacht wird, ist an dieser Stelle ohne Belang.&nbsp; Uns
+interessiert vielmehr die Zugriffsmethode getLastModification(). Sie gibt
+Zugriff auf das private Feld.&nbsp; Dabei soll sie sicher keinen Schreibzugriff
+gestatten, sondern nur Lesezugriff. Sonst k&ouml;nnte "von Au&szlig;en"
+der Zeitstempel manipuliert werden; er soll aber ausschlie&szlig;lich "von
+Innen", d.. von den Methoden der Klasse Widget, ver&auml;ndert werden.
+Wie kann man diese nur lesende Zugriffsmethode implementieren?
+<p>Also, so ist es sicher falsch:
+<p><tt>public final class Widget</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private Stamp lastModification;</tt>
+<p><tt>&nbsp; ... other methods and fields ...</tt>
+<p><tt>&nbsp; public Stamp getLastModification()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return lastModification ;&nbsp;&nbsp; // don't
+do this !!!</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Hier kann jeder nach dem Aufruf von getLastModification() auf das private
+Feld der Klasse&nbsp; Widget zugreifen und den Eintrag &auml;ndern.&nbsp;
+Zum Beispiel so:
+<p><tt>Widget w = new Widget();</tt>
+<br><tt>...</tt>
+<br><tt>Stamp log = w.getLastModification();</tt>
+<br><tt>log.setDate(new Date());</tt>
+<br><tt>log.setAuthor("Molly Malicious");</tt>
+<p>Mit der Ver&auml;nderung des Felds w&auml;re dann die logische Konsistenz
+des Widget Objekts zerst&ouml;rt. Das sollte eigentlich nicht passieren.
+Das Problem r&uuml;hrt daher, dass&nbsp; Stamp&nbsp; ein ver&auml;nderlicher
+Typ ist.&nbsp; Hat man erst einmal Referenz auf ein Objekt des Typs Stamp,
+dann hat man nicht nur Lese- sondern auch Schreibzugriff auf das Objekt.
+Man kann das Problem l&ouml;sen, indem man das Feld kopiert, damit dem
+Aufrufer von getLastModification() eine eigene unabh&auml;ngige Kopie zur
+Verf&uuml;gung steht, die er nach Belieben &auml;ndern kann, ohne dass
+es Auswirkungen auf die Klasse&nbsp; Widget hat.
+<p><tt>public final class Widget</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private Stamp lastModification;</tt>
+<p><tt>&nbsp; ... other methods and fields ...</tt>
+<p><tt>&nbsp; public Stamp getLastModification()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return (Stamp)lastModification.clone();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Das Kopieren von Objekten kann u.U. relativ teuer sein, abh&auml;ngig
+von der inneren Struktur und Gr&ouml;&szlig;e des zu kopierenden Objekts.
+Generell wird man versuchen, den Overhead des Kopierens zu vermeiden, wann
+immer es geht, schon allein, weil es das neu erzeugte Objekt den Garbage
+Collector mit zus&auml;tzlicher Arbeit belastet.&nbsp; Und in diesem Fall
+geht es. Man kann ohne Kopie auskommen,&nbsp; n&auml;mlich mit Hilfe von&nbsp;
+unver&auml;nderlichen Typen.
+<br>&nbsp;
+<h2>
+Unver&auml;nderliche Typen</h2>
+Referenzvariablen von einem unver&auml;nderlichen Typ zeigen entweder auf
+Objekte, die sich tats&auml;chlich nicht ver&auml;ndern, oder sie lassen
+ver&auml;nderliche Objekte zumindest so aussehen, als seien sie unver&auml;nderlich.
+Man unterscheidet zwischen Read-Only-Sichten und "echten" unver&auml;nderlichen
+Typen. Im folgenden sehen wir uns Adaptoren an, die diese beiden Arten
+von unver&auml;nderlichen Typen erzeugen.
+<br>&nbsp;
+<h3>
+Read-Only-Adaptoren</h3>
+Sehen wir uns einen Read-Only-Adaptor am Beispiel unserer Stamp Klasse
+an, die vermutlich die folgenden Methoden haben wird:
+<p><tt>public final class Stamp</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private Date date;</tt>
+<br><tt>&nbsp; private String author;</tt>
+<p><tt>&nbsp; ... other methods and fields ...</tt>
+<p><tt>&nbsp; public Date getDate()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return (Date)date.clone();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public void setDate(Date d)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; date = (Date)d.clone();</tt>
+<br><tt>&nbsp; }</tt>
+<p><tt>&nbsp; public String getAuthor()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return author;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public void setAuthor(String a)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; author = a;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Wenn wir ein Interface definieren, das nur die lesenden Methoden der&nbsp;
+Klasse&nbsp; Stamp enth&auml;lt, dann haben wir eine Read-Only-Sicht auf
+Objekte des Typs Stamp:
+<p><tt>public interface ImmutableStamp</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; public Date getDate();</tt>
+<br><tt>&nbsp; public String getAuthor();</tt>
+<br><tt>}</tt>
+<p>Die Klasse&nbsp; Stamp&nbsp; kann nun dieses Interface implementieren:
+<p><tt>public final class Stamp implements ImmutableStamp</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private Date date;</tt>
+<br><tt>&nbsp; private String author;</tt>
+<p><tt>&nbsp; ... other methods and fields ...</tt>
+<p><tt>&nbsp; public Date getDate();</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return (Date)date.clone();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public void setDate(Date d)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; date = (Date)d.clone();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public String getAuthor()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return author;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public void setAuthor(String a)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; author = a;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Mit dem Read-Only-Adaptor wollten wir erreichen, dass wir in der lesenden
+Zugriffsmethode getLastModification() m&ouml;glichst ohne Kopieren auskommen.
+Nun schaffen wir es nicht, das Kopieren von Objekten g&auml;nzlich zu vermeiden,
+weil ja bereits in den Methoden der Stamp-Klasse Kopien erzeugt werden,
+aber wir k&ouml;nnen es doch deutlich reduzieren. Man k&ouml;nnte n&auml;mlich
+nun die Methode&nbsp; getLastModification() so &auml;ndern, dass sie&nbsp;
+anstelle einer Referenz auf ein Stamp-Objekt eine Referenz vom Typ ImmutableStamp
+zur&uuml;ck gibt. Das s&auml;he dann so aus:
+<p><tt>public final class Widget</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private Stamp lastModification;</tt>
+<p><tt>&nbsp; ... other methods and fields ...</tt>
+<p><tt>&nbsp; public ImmutableStamp getLastModification()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return lastModification;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Durch die R&uuml;ckgabe einer Referenz vom Typ ImmutableStamp auf das
+existierende Stamp-Feld des Widget-Objekts haben wir das Kopieren des Stamp-Objekts
+vermieden.Gleichzeitig haben wir aber mit Hilfe des Read-Only-Interfaces
+aber auch erreicht, dass der Aufrufer nur noch lesend auf das&nbsp; Stamp-Feld&nbsp;
+zugreifen kann. Das sieht man im nachfolgenden Beispiel:
+<p><tt>Widget w = new Widget();</tt>
+<br><tt>...</tt>
+<p><tt>ImutableStamp log = w.getLastModification();</tt>
+<br><tt>log.setDate(new Date());&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// does not compile</tt>
+<br><tt>log.setAuthor("Molly Malicious");&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// does not compile</tt>
+<p>Bereits zur Compilezeit bekommt man hier eine Fehlermeldung, weil &uuml;ber
+das Interface ImmutableStamp nur noch die lesenden Methoden getDate() und
+getAuthor() sichtbar sind.
+<p>Read-Only-Adaptoren haben einen gravierenden Haken. Das Stamp-Objekt
+sieht, durch die Brille des ImmutableStamp-Interfaces gesehen,&nbsp; nur
+so aus, als sei es unver&auml;nderlich. In Wahrheit kann das Stamp-Objekt
+nat&uuml;rlich immer noch ge&auml;ndert werden. Wir haben lediglich eine
+Art Absichtserkl&auml;rung erreicht: die getLastModification()-Methode
+gibt zu erkennen, dass sie keinen schreibenden Zugriff auf das&nbsp; Stamp-Objekt
+geben m&ouml;chte. Und in der Tat kann man auch versehentlich &uuml;ber
+das&nbsp; ImmutableStamp-Interface keine Ver&auml;nderungen vornehmen.&nbsp;
+Aber das Interface gibt keine Garantie, dass das&nbsp; Stamp-Objekt tats&auml;chlich
+unver&auml;ndert bleibt.&nbsp; Es k&ouml;nnte ja an anderer Stelle &uuml;ber
+eine Stamp-Referenz ver&auml;ndert werden.&nbsp; Und nat&uuml;rlich kann
+man die&nbsp; ImmutableStamp-Referenz mit einem expliziten Cast in eine
+Stamp-Referenz verwandeln, und dann kann man sogar selber ver&auml;ndernd
+auf das referenzierte&nbsp; Stamp-Objekt zugreifen.&nbsp; Ein Read-Only-Adapter
+gibt also keine Garantie, dass das referenierte Objekt unver&auml;ndert
+bleibt.
+<p>Ob eine Read-Only-Sicht auf ein ver&auml;nderliches Objekt nun gut oder
+schlecht ist, h&auml;ngt ganz von den Umst&auml;nden und der Erwartungshaltung
+ab.&nbsp; Es kann durchaus erw&uuml;nscht sein, dass man selbst keine Ver&auml;nderungen
+am Shared Object vornehmen will (und dies durch die Read-Only-Sicht zum
+Ausdruck bringt), man aber die Ver&auml;nderungen am Shared Object, die
+von anderen herbeigef&uuml;hrt werden, sehen m&ouml;chte. Dann ist eine
+Read-Only-Sicht auf ein ver&auml;nderliches Objekt v&ouml;llig in Ordnung.&nbsp;
+Es kann aber auch sein, dass man sich auf die Unver&auml;nderlichkeit des
+Objekts verlassen will.&nbsp; Das ist zum Beispiel bei Shared Objects in
+Multithread-Programmen der Fall. Die Synchronisation der Zugriffe auf das
+von mehreren Threads gemeinsam verwendete Objekt kann nur dann entfallen,
+wenn das Objekt sich tats&auml;chlich nicht &auml;ndern kann. Bei Shared
+Objects in Multithread-Programmen&nbsp; w&auml;re es ein fataler Fehler,
+wegen der Read-Only-Sicht auf die Synchronisation zu verzichten, weil das
+referenzierte Shared Objekt durch den Read-Only-Adapter keineswegs for
+Ver&auml;nderungen gesch&uuml;tzt ist.
+<p>Im Beipiel unserer&nbsp; getLastModification()-Methode kann man dar&uuml;ber
+streiten, ob die Read-Only-Sicht auf das ver&auml;nderliche Stamp-Objekt
+gut oder schlecht ist.&nbsp; In jedem Falle sollte aber&nbsp; sorgf&auml;ltig
+dokumentiert sein, was genau die Methode zur&uuml;ck gibt.
+<p>Ganz allgemein muss man sich dar&uuml;ber klar sein, was ein&nbsp; Read-Only-Interface
+tats&auml;chlich bedeutet: es ist reine Read-Only-Sicht auf etwas m&ouml;glicherweise
+Ver&auml;nderliches. Die Gefahr liegt darin, dass u.U. nicht jedem auf
+Anhieb klar ist,&nbsp; dass etwas, das unver&auml;nderlich aussieht, dennoch
+ver&auml;ndert werden kann. Ein Read-Only-Interface k&ouml;nnte zu Missverst&auml;ndnissen
+f&uuml;hren. Deshalb ist es nicht ganz unproblematisch. Das gleiche gilt
+&uuml;brigens auch f&uuml;r&nbsp; Superklassen, die Immutability versprechen,
+dann aber auf Subklassen verweisen k&ouml;nnen, die gar nicht unver&auml;nderlich
+sind.
+<br>&nbsp;
+<h3>
+Duale Klassen</h3>
+In folgenden wollen wir eine L&ouml;sung vorstellen, die beide Aspekte
+von Immutability abdeckt: die&nbsp; Read-Only-Sicht auf etwas m&ouml;glicherweise
+Ver&auml;nderliches und die Referenz auf ein echt inver&auml;nderliches
+Objekt. Das kann man mit sogenannten dualen Klassen erreichen. Bei diesem
+Ansatz ist die Grundidee, dass man zwei verschiedene Klassen, eine f&uuml;r
+ver&auml;nderliche und eine f&uuml;r unver&auml;nderliche Objekte, hat.
+Im Beispiel unserer Stamp-Abstraktion w&uuml;rde es neben der&nbsp; Stamp
+-Klasse noch eine zweite Klasse&nbsp; ImmutableStamp&nbsp; geben, die wie
+folgt auss&auml;he:
+<p><tt>public final class ImmutableStamp</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private Stamp stamp;</tt>
+<p><tt>&nbsp; public ImmutableStamp(Stamp s) { stamp = (Stamp)s.clone();
+}</tt>
+<p><tt>&nbsp; public Date getDate()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return stamp.getDate();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public String getAuthor()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return stamp.getAuthor();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Objekte vom Typ ImmutableStamp sind im Prinzip Kopien der korrespondierenden
+Stamp-Objekte. Sie haben, genau wie unser Read-Only-Interface zuvor, nur
+die lesenden Methoden getDate() und getAuthor().&nbsp;&nbsp; Die Zugriffsmethode
+getLastModification() unserer&nbsp; Widget-Klasse w&uuml;rde dann wie folgt
+aussehen:
+<p><tt>public final class Widget</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private Stamp lastModification;</tt>
+<p><tt>&nbsp; ... other methods and fields ...</tt>
+<p><tt>&nbsp; public ImmutableStamp getLastModification()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return new ImmutableStamp(lastModification);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Mit dieser L&ouml;sung hat man ebenfalls erreicht, dass die Methode&nbsp;
+getLastModification() nur noch lesenden Zugriff auf den Zeitstempel gibt.&nbsp;
+Dieses Mal verweist die zur&uuml;ckgelieferte Referenz auf ein Objekt,
+das wirklich unver&auml;nderlich ist, weil es ein ImmutableStamp-Objekt
+ist, das &uuml;berhaupt keine ver&auml;ndernden Methoden hat. Anders als
+in der zuvor besprochenen Adapter-L&ouml;sung mit dem ImmutableStamp-Interface,
+wo wir eine Referenz auf das Original-Stamp-Objekt zur&uuml;ckgeliefert
+hatten, welches nach wie .vor ver&auml;nderlich ist.
+<p>Nun kann man sich fragen, was man mit dieser L&ouml;sung an Kopieraufwand
+gespart hat.&nbsp; Zun&auml;chst einmal nichts. In unserer Original-Implementierung
+der Widget-Klasse hatte die Methode getLastModification() einen Klon erzeut.
+Jetzt passiert genau dasselbe, allerdings implizit im Konstruktor des unver&auml;nderlichen
+Typs. Von nun an spart man aber Kopieraufw&auml;nde ein, weil man mit dem
+ImmutableStamp-Objekt ein unver&auml;ndliches Objekt hat, das man nie mehr
+kopieren muss und das man immer per Referenz weiterreichen kann. Wenn die
+ImmutableStamp-Klasse nicht existiert, dann gibt es keine M&ouml;glichkeit
+sicher zu stellen, dass&nbsp; in einem bestimmten Kontext Schreibzugriffe
+ausgeschlossen sind.&nbsp; Im Zweifelsfall muss man dann Kopien von Stamp-Objekten
+erzeugen, um sich gegen Ver&auml;nderungen an gemeinsam verwendeten Stamp-Objekten
+zu sch&uuml;tzen, so wie wir das in unserer allerersten L&ouml;sung gemacht
+hatten.
+<p>Klassen, die wie unser Stamp/ImmutableStamp-Paar in zwei Auspr&auml;gungen
+daher kommen, bezeichnet man als duale Klassen.&nbsp; Das wohl bekannteste
+Beipiel f&uuml;r ein solches Paar ist die String-Abstraktion im JDK, die
+in Form der beiden Klassen&nbsp; String und StringBuffer implementiert
+ist.
+<br>&nbsp;
+<h2>
+Duale Klassen im Detail</h2>
+Mit der dualen Klasse haben wir eine M&ouml;glichkeit gefunden, sowohl
+ver&auml;nderliche
+als auch unver&auml;nderliche Auspr&auml;gungen einer Abstraktion zu verwenden.&nbsp;
+Fehlt uns also noch die Read-Only-Sicht f&uuml;r all die Situationen, in
+denen wir durch die Read-Only-Brille auf ein ver&auml;nderliches Objekt
+blicken wollen.
+<p>Die Read-Only-Sicht auf eine duale Klasse dr&uuml;ckt man aus durch
+eine gemeinsame Superklasse oder ein gemeinsames Super-Interface, das es
+erlaubt, die beiden Typen von Objekten austauschbar zu verwenden.&nbsp;
+Das ist n&uuml;tzlich, wenn man Schnittstellen hat, denen es egal ist,&nbsp;
+ob die Objekte ver&auml;nderlich oder unver&auml;nderlich sind.&nbsp; Diese
+Schnittstellen w&uuml;rden dann so deklariert, dass sie mit Superklassen-
+oder Super-Interface-Referenzen arbeiten, hinter denen sich beide Auspr&auml;gungen
+der Abstraktion verbergen k&ouml;nnen. Diese gemeinsame Superklasse oder
+das gemeinsame Super-Interface ist dann die Read-Only-Sicht auf beiden
+Arten von Objekten.
+<p>Im Beispiel unserer Stamp-Abstraktion s&auml;he das so aus, wenn man
+ein gemeinsames Interface definiert:
+<p><tt>public interface StampBase</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp;public Date getDate();</tt>
+<br><tt>&nbsp;public String getAuthor();</tt>
+<br><tt>}</tt>
+<br>&nbsp;
+<p><tt>public final class Stamp implements StampBase</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private Date date;</tt>
+<br><tt>&nbsp; private String author;</tt>
+<p><tt>&nbsp; ... other fields and methods ...</tt>
+<p><tt>&nbsp; public Stamp(Date d, String a)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; date = (Date)d.clone():</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; author = a;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public Date getDate()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return (Date)date.clone();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public void setDate(Date d)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; date = (Date)d.clone();</tt>
+<br><tt>&nbsp; }</tt>
+<p><tt>&nbsp; public String getAuthor()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return author;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public void setAuthor(String a)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; author = a;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p><tt>public final class ImmutableStamp implements StampBase</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; private Stamp stamp;</tt>
+<p><tt>&nbsp; public ImmutableStamp(Stamp s) { stamp = (Stamp)s.clone();
+}</tt>
+<p><tt>&nbsp; public Date getDate()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return stamp.getDate();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public String getAuthor()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return stamp.getAuthor();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Man kann auch noch einen Schritt weiter gehen und Gemeinsamkeiten der
+beiden Stamp-Klassen in eine gemeinsame Superklasse herausziehen. Das sieht
+dann wie folgt aus:
+<p><tt>public class StampBase</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp;protected Date date;</tt>
+<br><tt>&nbsp;protected String author;</tt>
+<p><tt>&nbsp;... other common fields ...</tt>
+<p><tt>&nbsp;public StampBase(Date d, String a)</tt>
+<br><tt>&nbsp;{</tt>
+<br><tt>&nbsp;&nbsp; date = (Date)d.clone():</tt>
+<br><tt>&nbsp;&nbsp; author = a;</tt>
+<br><tt>&nbsp;}</tt>
+<p><tt>&nbsp;public Date getDate()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return (Date)date.clone();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public String getAuthor()</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return author;</tt>
+<br><tt>&nbsp; }</tt>
+<p><tt>&nbsp; ... other common read-only methods ...</tt>
+<br><tt>}</tt>
+<br>&nbsp;
+<p><tt>public final class Stamp extends StampBase</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; public Stamp(Date d, String a)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; super(d,a);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public Stamp(StampBase s)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; super(s.date,s.author);</tt>
+<br><tt>&nbsp; }</tt>
+<p><tt>&nbsp; public void setDate(Date d)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; date = (Date)d.clone();</tt>
+<br><tt>&nbsp; }</tt>
+<p><tt>&nbsp; public void setAuthor(String a)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; author = a;</tt>
+<br><tt>&nbsp; }</tt>
+<p><tt>&nbsp; ... other mutating methods ...</tt>
+<br><tt>}</tt>
+<p><tt>public final class ImmutableStamp extends StampBase</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; public ImmutableStamp(Date d, String a)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; super(d,a);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public ImmutableStamp(StampBase s)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; super(s.date,s.author);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>In beiden F&auml;llen sollte man aber nicht etwa auf die Idee kommen,
+Stamp von ImmutableStamp abzuleiten. Diese Idee ist ziemlich naheliegend;
+schlie&szlig;lich w&uuml;rde man dann die lesenden Methoden erben und m&uuml;&szlig;te
+sie nicht re-implementieren. Wenn man diese Ableitung macht, dann ist die
+Semantik der ImmutableStamp-Klasse radikal anders: sie gibt keine Immutability-Garantie
+mehr.&nbsp; Die ImmutableStamp-Klasse degeneriert dann zu einer Read-Only-Sicht.
+Das liegt daran, dass&nbsp;&nbsp; eine Referenzvariable vom Typ ImmutableStamp
+wegen der Vererbungsbeziehung auf ein ver&auml;nderliches Stamp-Objekt
+verweisen kann. Das ist nicht die Idee einer dualen Klasse.
+<p>Bei der dualen Klasse hat man getrennte Typen f&uuml;r die ver&auml;nderliche
+und die unver&auml;nderliche Auspr&auml;gung der Abstraktion. Die beiden
+Typen sind nicht&nbsp; zuweisungsvertr&auml;glich, d.h. nicht voneinander
+abgeleitet. Variablen des einen Typs k&ouml;nnen nicht in Variablen des
+anderen Type gecastet werden. Allerdings sind "Konvertierungen" m&ouml;glich,
+indem aus dem Objekt des einen Typs ein Objekt des anderen Type konstruktiert
+wird.&nbsp; Das sind aber keine Typkonvertierungen, sondern Objektkonvertierungen,
+die Kopieraufw&auml;nde beinhalten.
+<p>Typkonvertierungen sind m&ouml;glich zwischen dem dritten Supertyp (falls
+vorhanden) und den beiden Sybtypen.&nbsp; Das hei&szlig;t, man kann eine
+Read-Only-Sicht (durch den gemeinsame Supertyp) auf beide Arten von Objekten
+haben, und man kann zwischen der Read-Only-Sicht und der uneingeschr&auml;nkten
+"echten" Sicht hin und her konvertieren. Bei dieser Art der Konvertierung
+sind werden keine Kopien gemacht, sondern nur Sichten ver&auml;ndert.&nbsp;
+Zwischen den beiden Subtypen, dem&nbsp; ver&auml;nderlichen und unver&auml;nderlichen
+Typ, kann jedoch nicht konvertiert werden.
+<p>Mit dualen Klassen ist man nun sehr flexibel:
+<ul>
+<li>
+Man hat die M&ouml;glichkeit, Methoden zu implementieren, die mit StampBase-Referenzen
+arbeiten.&nbsp; Solche Methoden greifen nur lesend auf die Stamp-Objekte
+zu, interessieren sich aber desweiteren nicht daf&uuml;r, ob die Stamp-Objekte
+ver&auml;nderlich oder unver&auml;nderlich sind. Man kann auch jederzeit
+einen Cast auf den ver&auml;nderlichen oder unver&auml;nderlichen Subtyp
+machen, wenn das gebraucht wird.</li>
+
+<li>
+Wo man sicherstellen muss, dass sich Stamp-Objekte nicht &auml;ndern, kann
+man ImmutableStamp-Objekte verwenden.&nbsp; &Uuml;ber den Konstruktor ImmutableStamp(StampBase
+s) kann man&nbsp; jederzeit aus ver&auml;nderlichen Stamp-Objekten unver&auml;nderliche&nbsp;
+ImmutableStamp-Objekte erzeugen.</li>
+
+<li>
+Und wo die gesamte Funktionalit&auml;t der Stamp-Abstraktion inklusive
+der ver&auml;ndernden Methoden gebraucht wird, da kann man mit Stamp-Objekten
+arbeiten, die man ebenfalls per Konstruktion aus ImmutableStamp-Objekten
+erzeugen kann.</li>
+</ul>
+
+<h2>
+Marker-Interface f&uuml;r Immutability</h2>
+Leider bietet die Sprache Java praktisch keine Unterst&uuml;tzung f&uuml;r
+die Immutability an.&nbsp; Es gibt ein winziges bischen an Unterst&uuml;tzung
+in Form des Schl&uuml;sselwortes final; darauf kommen wir in der n&auml;chsten
+Ausgabe der Kolumne zur&uuml;ck. Ansonsten ist man auf Konventionen und
+Programmierdisziplin angewiesen. Die Tatsache, dass eine Klasse unver&auml;nderlich
+ist, kann man nur im Namen der Klasse und/oder in der Dokumentation zur
+Klasse ausdr&uuml;cken.
+<p>Wer es etwas deutlicher sagen will, kann sich ein leeres Marker-Interface
+Immutable definieren und alle unver&auml;nderlichen Klassen davon ableiten.&nbsp;
+Das hat den Vorteil, dass man zur Laufzeit ein Objekt mit Hilfe des instanceof-Operators
+fragen kann, ob es unver&auml;nderlich ist.
+<p>Aber auch das bietet keine absolute Sicherheit, insbesondere dann nicht,
+wenn Vererbung im Spiel ist. Wir haben in unserem Beispiel einer dualen
+Abstraktion bewu&szlig;t die ver&auml;nderliche und die unver&auml;nderliche
+Klasse als final Klassen deklariert.&nbsp; Bei einer non-final Klasse,
+die unver&auml;nderlich ist, ist es reine Disziplin und guter Wille, dass
+diese Semantik in den Subklassen auch beibehalten wird.
+<br>&nbsp;
+<h2>
+Zusammenfassung und Ausblick</h2>
+In diesem Artikel haben wir uns angesehen, wie man unver&auml;nderliche
+Typen implementiert. Unver&auml;nderliche Typen sind n&uuml;tzlich, weil
+sie die Notwendigkeit, Kopien von Objekten zu erzeugen,&nbsp; reduzieren&nbsp;
+und weil sie den Synchronisationsaufwand&nbsp; in Multithread-Umgebungen
+vermindern.
+<br>Unver&auml;nderliche Typen haben nur lesende Methoden und sind idealerweise
+final Klassen oder haben nur Subklassen, die ebenfalls unver&auml;nderliche
+Typen sind. Unver&auml;nderliche Typen sollte man nicht mit Read-Only-Sichten
+auf ver&auml;nderliche Typen verwechseln.
+<br>Als duale Klasse bezeichnet man Abstraktionen, die als Paar von einer
+ver&auml;nderlichen und einer unver&auml;nderlichen Klasse implementiert
+sind. Duale Klassen haben h&auml;ufig einen gemeinsamen Supertyp, der die
+Read-Only-Sicht auf beide Klassen repr&auml;sentiert.
+<br>In der n&auml;chsten Ausgabe dieser Kolumne sehen wir uns das Schl&uuml;sselwort
+final an und was es mit Immutability zu tun hat. Dar&uuml;ber hinaus untersuchen
+wir die Immuability-Adaptoren des JDK-Collection-Frameworks.
+<br>&nbsp;
+<br>&nbsp;
+<h2>
+Literaturverweise</h2>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft1"></a>/KRE1/</td>
+
+<td VALIGN=TOP><b>Das Kopieren von Objekten in Java (Teil 1 - 3)&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaSpektrum, September 2002 + November 2002 + Januar 2003
+<br>URL: <a href="../05.Clone-Part1/05.Clone-Part1.html">http://www.langer.camelot.de/Articles/JavaSpektrum/05.Clone-Part1/05.Clone-Part1.html</a>
+<br>URL: <a href="../06.Clone-Part2/06.Clone-Part2.html">http://www.langer.camelot.de/Articles/JavaSpektrum/06.Clone-Part2/06.Clone-Part2.html</a>
+<br>URL: <a href="../07.Clone-Part3/07.Clone-Part3.html">http://www.langer.camelot.de/Articles/JavaSpektrum/07.Clone-Part3/07.Clone-Part3.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft2"></a>/KRE2/</td>
+
+<td><b>Unver&auml;nderliche Typen in Java (Teil 2)&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaSpektrum, Juli 2003
+<br><a href="../09.Immutability-Part2/09.Immutability-Part2.html">http://www.langer.camelot.de/Articles/JavaSpektrum/09.Immutability-Part2/09.Immutability-Part2.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Davies1"></a>/DAV1/&nbsp;</td>
+
+<td><b>Durable Java – Immutables</b>
+<br>Mark Davis
+<br>URL:&nbsp; <a href="http://www.macchiato.com/columns/Durable2.htm">http://www.macchiato.com/columns/Durable2.htm</a></td>
+</tr>
+
+<tr>
+<td><a NAME="Davies2"></a>/DAV2/&nbsp;</td>
+
+<td><b>Durable Java – Abstraction</b>
+<br>Mark Davis
+<br>URL:&nbsp; <a href="http://www.macchiato.com/columns/Durable3.htm">http://www.macchiato.com/columns/Durable3.htm</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Goetz1"></a>/GOE1/&nbsp;</td>
+
+<td><b>Java theory and practice: To mutate or not to mutate?</b>
+<br>Immutable objects can greatly simplify your life
+<br>Brian Goetz
+<br>IBM developerWorks, February 18, 2003
+<br>URL: <a href="http://www-106.ibm.com/developerworks/java/library/j-jtp02183.html">http://www-106.ibm.com/developerworks/java/library/j-jtp02183.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Goetz2"></a>/GOE2/&nbsp;</td>
+
+<td><b>Java theory and practice: Is that your final answer?</b>
+<br>Guidelines for the effective use of the final keyword
+<br>Brian Goetz
+<br>IBM developerWorks, October 1, 2002
+<br>URL: <a href="http://www-106.ibm.com/developerworks/java/library/j-jtp1029.html">http://www-106.ibm.com/developerworks/java/library/j-jtp1029.html</a></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

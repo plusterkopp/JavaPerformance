@@ -1,0 +1,1075 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="pre-copyedit version of a feature article published in JavaSolutions in April 2002">
+   <title>Secrets of equals()</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="JavaSolutions01"></a>
+<br><font color="#295AB5"><font size=+3>Secrets of equals() - Part 1</font></font>
+<br><font color="#295AB5"><font size=+1>Not all implementations of equals()
+are equal</font></font>
+<br>&nbsp;
+<p><font color="#295AB5"><font size=+2>JavaSolutions, April 2002</font></font>
+<br><font color="#295AB5"><font size=+1>Angelika Langer &amp; Klaus Kreft</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p><b><font face="Arial"><font size=+1>Object Comparison - </font><i>Implementing
+equals() correctly is harder than it looks at first sight</i></font></b>
+<p>Java magazines are full of articles describing the hottest and latest
+Java novelty to the interested reader. There is, however, little discussion
+of seemingly trivial core features of the Java programming language itself.
+Take for instance the <tt>equals()</tt> method. It is a piece of basic
+infrastructure that is common to all classes. It is defined in class <tt>Object</tt>
+and as a consequence all objects are equality-comparable. <tt>Object.equals()</tt>
+provides a default implementation of equality-comparison and at times the
+default implementation is just fine and semantically correct for a newly
+defined class. In other situations the new class must override <tt>equals()</tt>
+to provide meaningful and semantically correct equality-comparison.
+<p>One would expect that overriding <tt>equals()</tt>, since it is a fairly
+common task, should be a piece of cake. The reality is far from that. There
+is an amazing amount of disagreement in the Java community regarding correct
+implementation of <tt>equals()</tt>. Look into the next best Java source
+code or open the an arbitrary Java textbook and take a look at what you
+find. Chances are good that you will find several different approaches
+and a variety of recommendations.
+<p>In this article we want to take a closer look at the different techniques
+that are around for implementing <tt>equals()</tt><font face="Lucida Console">
+.</font> The goal is to evaluate the approaches in order to gain a deeper
+understanding of the related up- and downsides. For purpose of the discussion
+we arbitrarily picked a number of sample implementations that are accessible
+to our readers, because they have been published. They are taken from "Program
+Development in Java" by Barbara Liskov with John Guttag (see /<a href="#Liskov">
+LIS</a> /), "Effective Java" by Joshua Bloch (see /<a href="#Bloch">BLO</a>
+/), "Practical Java" by Peter Haggar (see /<a href="#Haggar">HAG</a> /),
+and from the JDK 1.3 source code (see /<a href="#JDK">JDK</a> /; authors:
+James Gosling, Arthur van Hoff, Alan Liu). Listing 1 thru 4 show the examples.
+<br>&nbsp;
+<table BORDER CELLPADDING=5 WIDTH="704" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="Listing1"></a>Listing 1: Barbara Liskov, "Program
+Development in Java", page 182</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font face="Lucida Console"><font size=-2>public class Point3
+extends Point2 {</font></font>
+<dir><font face="Lucida Console"><font size=-2>private int z;</font></font>
+<br><font face="Lucida Console"><font size=-2>...</font></font>
+<p><font face="Lucida Console"><font size=-2>public boolean equals(Object
+p) { // overriding definition</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; if (p instanceof Point3)
+return equals((Point3)p);</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return super.equals();</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font>
+<p><font face="Lucida Console"><font size=-2>public boolean equals(Point2
+p) { // overriding definition</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; if (p instanceof Point3)
+return equals((Point3)p);</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return super.equals();</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font>
+<p><font face="Lucida Console"><font size=-2>public boolean equals(Point3
+p) { // extra definition</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; if (p==null || z!=p.z)
+return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return super.equals();&nbsp;</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font>
+<p><font face="Lucida Console"><font size=-2>...</font></font></dir>
+<font face="Lucida Console"><font size=-2>}</font></font></td>
+</tr>
+</table>
+
+<table BORDER CELLPADDING=5 WIDTH="704" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="Listing2"></a>Listing 2: JDK 1.3, package java.util,
+class Date&nbsp;
+<br>authors: James Gosling, Arthur van Hoff, Alan Liu</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font face="Lucida Console"><font size=-2>public class Date
+implements java.io.Serializable, Cloneable, Comparable {</font></font>
+<dir><font face="Lucida Console"><font size=-2>private transient Calendar
+cal;</font></font>
+<br><font face="Lucida Console"><font size=-2>private transient long fastTime;</font></font>
+<br><font face="Lucida Console"><font size=-2>private static Calendar staticCal
+= null;</font></font>
+<p><font face="Lucida Console"><font size=-2>// ... lots of static fields
+...</font></font>
+<p><font face="Lucida Console"><font size=-2>...</font></font>
+<p><font face="Lucida Console"><font size=-2>public long getTime() {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return getTimeImpl();</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font>
+<p><font face="Lucida Console"><font size=-2>private final long getTimeImpl()
+{</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return (cal == null)
+? fastTime : cal.getTimeInMillis();</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font>
+<p><font face="Lucida Console"><font size=-2>...</font></font>
+<p><font face="Lucida Console"><font size=-2>public boolean equals(Object
+obj) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return obj instanceof
+Date &amp;&amp; getTime() == ((Date) obj).getTime();</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+<font face="Lucida Console"><font size=-2>}</font></font></td>
+</tr>
+</table>
+
+<table BORDER CELLPADDING=5 WIDTH="704" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="Listing3"></a>Listing 3: Josh Bloch, "Effective
+Java", item 7 and item 8</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font face="Lucida Console"><font size=-2>public final class
+PhoneNumber {</font></font>
+<dir><font face="Lucida Console"><font size=-2>private final short areaCode;</font></font>
+<br><font face="Lucida Console"><font size=-2>private final short exchange;</font></font>
+<br><font face="Lucida Console"><font size=-2>private final short extension;</font></font>
+<p><font face="Lucida Console"><font size=-2>...</font></font>
+<p><font face="Lucida Console"><font size=-2>public boolean equals(Object
+o) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; if (o==this)</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; return
+true;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; if (!(o instanceof
+PhoneNumber))</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; return
+false;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; PhoneNumber pn = (PhoneNumber)o;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return pn.extensions
+== extension &amp;&amp;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+pn.exchange == exchange &amp;&amp;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+pn.areaCode == areaCode;</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font>
+<p><font face="Lucida Console"><font size=-2>...</font></font></dir>
+<font face="Lucida Console"><font size=-2>}</font></font></td>
+</tr>
+</table>
+
+<table BORDER CELLPADDING=5 WIDTH="704" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="Listing4"></a>Listing 4: Peter Haggar, "Practical
+Java", praxis 8 thru praxis 14</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font face="Lucida Console"><font size=-2>class Golfball
+{</font></font>
+<dir><font face="Lucida Console"><font size=-2>private String brand;</font></font>
+<br><font face="Lucida Console"><font size=-2>private String make;</font></font>
+<br><font face="Lucida Console"><font size=-2>private int compression;</font></font>
+<p><font face="Lucida Console"><font size=-2>...</font></font>
+<p><font face="Lucida Console"><font size=-2>public String brand() {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return brand;</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font>
+<p><font face="Lucida Console"><font size=-2>...</font></font>
+<p><font face="Lucida Console"><font size=-2>public boolean equals(object
+obj) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; if (this == obj)</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; return
+true;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; if (obj!=null &amp;&amp;
+getClass() == obj.getClass())</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; Golfball
+gb = (Golfball)obj; // Classes are equal, downcast.</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; if (brand.equals(gb.brand())
+&amp;&amp; // Compare atrributes.</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+make.equals(gb.make()) &amp;&amp;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+compression == gb.compression())</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return true;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+<font face="Lucida Console"><font size=-2>}</font></font>
+<p><font face="Lucida Console"><font size=-2>class MyGolfball extends Golfball
+{</font></font>
+<dir><font face="Lucida Console"><font size=-2>public final static byte
+TwoPiece = 0;</font></font>
+<br><font face="Lucida Console"><font size=-2>public final static byte
+ThreePiece = 1;</font></font>
+<br><font face="Lucida Console"><font size=-2>private byte ballConstruction;</font></font>
+<p><font face="Lucida Console"><font size=-2>...</font></font>
+<p><font face="Lucida Console"><font size=-2>public byte constuction()
+{</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return ballConstruction;</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font>
+<p><font face="Lucida Console"><font size=-2>...</font></font>
+<p><font face="Lucida Console"><font size=-2>public boolean equals(Object
+obj) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; if (super.equals(obj))</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; MyGolfball
+bg = (MyGolfball)obj; // Classes equal, downcast.</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; if (ballConstruction
+== gb.construction())</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return true;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+<font face="Lucida Console"><font size=-2>}</font></font></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<p>A first glance at the source code reveals that the respective authors
+use quite a variety of techniques.
+<ul>
+<li>
+<i><b>Signature</b>.</i> It starts with disagreement regarding the signature
+of <tt>equals()</tt>. One author (<a href="#Listing1">Listing 1</a> ) uses
+overriding in combination with overloading and provides several versions
+of the <tt>equals()</tt> method, while most authors just override the <tt>equals()</tt>
+method defined in class <tt>Object</tt>, namely <tt>Object.equals(Object
+o)</tt>, without adding further versions with different signatures.</li>
+</ul>
+
+<ul>
+<li>
+<b><i>Comparing fields</i></b>. All authors agree that an implementation
+of <tt>equals()</tt> must compare fields defined in the class if these
+fields contribute to the state of the object. Listing 2 demonstrates, that
+in particular transient and static fields are not considered.</li>
+</ul>
+
+<ul>
+<li>
+<b><i>Delegation to super</i></b>. There is agreement that <tt>super.equals()</tt>
+should be invoked if the class has a superclass other than <tt>Object</tt>
+.</li>
+</ul>
+
+<ul>
+<li>
+<b><i>Type check and downcast</i></b>. All authors agree that a check must
+be performed to make sure that the other object is of a type to which this
+object can be compared. Note, that there is disagreement regarding the
+way, in which the type check is performed: most authors use the <tt>instanceof</tt>
+operator, while one author (<a href="#Listing4">Listing 4</a> ) uses the
+<tt>getClass()
+</tt>method.</li>
+</ul>
+Obviously there is not just one way of implementing <tt>equals()</tt>.
+Each of the issues listed above is worth further exploration. In this article
+we want to focus on the possibilities that we have to perform the necessary
+type check. Basically there are two approaches: using the <tt>instanceof</tt>
+operator or using the <tt>getClass()&nbsp;</tt> method. But before we delve
+into the details let us see why we would want to override <tt>Object.equals()</tt>
+in the first place.
+<br>&nbsp;
+<br>&nbsp;
+<p><font face="Arial">Entity Types vs. Value Types</font>
+<p>When I define a new class, do I have to override <tt>Object.equals()</tt>
+?
+<p>To answer this question we need to understand what the default implementation
+provided by <tt>Object.equals()</tt> does. It exhibit the same behavior
+as the <tt>==</tt> operator, namely a check for <i>identity</i> of two
+objects. Two objects are identical if they occupy the same memory location
+and are effectively the "same" object. Identity is different from <i>equality</i>
+. Two objects are equal when they behave in the same way, which often means
+that they have the same state or content. Equality is what the <tt>equals()</tt>
+method is supposed to checks for; identity is what operator <tt>==</tt>
+(and
+<tt>Object.equals()</tt>) check for.
+<p>Whether or not a class must override the default behavior of <tt>equals()</tt>
+(namely the check for identity provided by <tt>Object.equals()</tt>) depends
+on the semantics of the class. There is a fundamental distinction between
+value types on the one hand and non-value types, sometimes called entity
+types, on the other hand.
+<ul>
+<li>
+<b><i>Value types</i></b> are types that have content and whose behavior
+depends vitally on this content. Typical examples are classes like <tt>BigDecimal</tt>
+, <tt>String</tt>, <tt>Date</tt>, <tt>Point</tt>, etc. Two strings, for
+instance, behave differently when they have different content and they
+behave in the same way and compare equal if the have the same content.</li>
+</ul>
+
+<ul>
+<li>
+<b><i>Entity types</i></b> are types whose behavior is not strictly determined
+by their content. Examples are <tt>Thread</tt>, <tt>FileOutputStream</tt>
+, or entity beans in EJB. There is a variety of entity types. Some entity
+types are service-based types, which means that their behavior, not their
+state, is the most important feature. Other entity types represent handles
+to an underlying object, like for instance a stream: it is nothing but
+a handle to a file in the file system.</li>
+</ul>
+Entity types normally do not override <tt>Object.equals()</tt>, because
+there is no point to comparing their content, since it is not overly relevant
+anyway. In contrast, value types do override<tt>Object.equals()</tt>, because
+equality means "equal content". For a value type there is a significant
+difference between identity and equality. In other words, only classes
+that represent value types have a need to override <tt>Object.equals()</tt>.
+For this reason, the subsequent discussion of implementing <tt>equals()</tt>
+is only relevant for value types.
+<br>&nbsp;
+<br>&nbsp;
+<p><font face="Arial">The equals() Contract</font>
+<p>Classes that override <tt>Object.equals() </tt>must provide an implementation
+that compares for equality of objects. That's the intended and expected
+semantic meaning of method <tt>equals()</tt>. In addition to that, there
+are a couple of other requirements that an implementation of <tt>equals()</tt>must
+meet. These requirements stem from the fact that the Java platform libraries
+use
+<tt>equals()</tt> in various places, most notably in the hash-based
+collections such as <tt>HashSet</tt> and <tt>HashMap</tt>. These collections
+have certain expectations regarding the behavior of <tt>equals()</tt>;
+otherwise they do not work properly. This behavior expected of <tt>equals()</tt>
+is defined in the so-called <tt>equals()</tt> contract. It is described
+in the documentation that comes with the Java platform libraries. Here
+is the contract as stated in the Java 2 Platform, Standard Edition, v 1.3.1
+API Specification (see /JDOC/), to be looked up under <tt>Object.equals()</tt>:
+<dir><font face="Arial"><font size=-1>The equals method implements an equivalence
+relation:</font></font></dir>
+
+<ul>
+<ul>
+<li>
+<font face="Arial"><font size=-1>It is reflexive: for any reference value
+x, x.equals(x) should return true.</font></font></li>
+
+<li>
+<font face="Arial"><font size=-1>It is symmetric: for any reference values
+x and y, x.equals(y) should return true if and only if y.equals(x) returns
+true.</font></font></li>
+
+<li>
+<font face="Arial"><font size=-1>It is transitive: for any reference values
+x, y, and z, if x.equals(y) returns true and y.equals(z) returns true,
+then x.equals(z) should return true.</font></font></li>
+
+<li>
+<font face="Arial"><font size=-1>It is consistent: for any reference values
+x and y, multiple invocations of x.equals(y) consistently return true or
+consistently return false, provided no information used in equals comparisons
+on the object is modified.</font></font></li>
+
+<li>
+<font face="Arial"><font size=-1>For any non-null reference value x, x.equals(null)
+should return false.</font></font></li>
+</ul>
+</ul>
+In plain English the <tt>equals()</tt> contract requires the following
+properties:
+<ul>
+<li>
+<i>Reflexivity</i>. An object must be equal to itself.</li>
+
+<li>
+<i>Symmetry</i>. It does not make a difference whether I compare <font face="Lucida Console">x</font>
+to <font face="Lucida Console">y</font> or <font face="Lucida Console">y
+</font>to
+<font face="Lucida Console">x</font>;
+the result is the same.</li>
+
+<li>
+<i>Transitivity</i>. If one object is equal to a second and the second
+is equal to a third, then the first and the third object must be equal,
+too.</li>
+
+<li>
+<i>Consistency</i>. I can compare two objects as often as I want; the result
+is remains the same, unless the objects have been modified between subsequent
+comparisons.</li>
+
+<li>
+<i>Comparison to null</i>. No object is equal to <tt>null</tt>.</li>
+</ul>
+Consistency with the <tt>equals() </tt>contract is a fundamental requirement
+to every implementation of <tt>equals() </tt>. Not only the hash-based
+collections rely on reflexivity, symmetry, and transitivity, but everybody
+who calls
+<tt>equals()&nbsp;</tt> will expect exactly this behavior. Failure
+to comply to the <tt>equals()&nbsp;</tt> contract leads to subtle bugs
+that are difficult to track down, because they are conceptual problems.
+When the resulting bugs will eventually show up (typically in the production
+and test phase of a project) the underlying conceptual problem will be
+extremely hard to identity; conceptual problem are not detected by debugging
+source code. The recommendation is: never provide a incorrect implementation
+of <tt>equals() </tt>.
+<p>Let us now take a look at the sample implementations in Listing 1 -
+4. It will turn out that not all of them are correct.
+<br>&nbsp;
+<br>&nbsp;
+<p><font face="Arial"><a href="#Listing1">Listing 1</a> : An Incorrect
+Implementation of equals()</font>
+<p>Closer examination discloses that the implementation in <a href="#Listing1">Listing
+1</a> is not transitive and for that reason incorrect. The example in Listing
+1 shows a subclass <tt>Point3</tt> derived of a superclass <tt>Point2</tt>
+that provides three versions of <tt>equals()</tt> with three different
+signatures. Let us see what happens when we use these classes. Consider
+the following situation:
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 >
+<caption>&nbsp;</caption>
+
+<tr>
+<td>
+<blockquote><font face="Lucida Console"><font size=-2>Point2 origin(0,0);</font></font>
+<br><font face="Lucida Console"><font size=-2>Point3 p1(0,0,-1);</font></font>
+<br><font face="Lucida Console"><font size=-2>point3 p2(0,0,1);</font></font></blockquote>
+</td>
+
+<td>
+<blockquote><img SRC="Folie1.JPG" NOSAVE height=263 width=350></blockquote>
+</td>
+</tr>
+</table>
+
+<dir><font face="Lucida Console"><font size=-2>System.out.println(p1.equals(origin));
+// calls Point3.equals(Point2)</font></font>
+<br><font face="Lucida Console"><font size=-2>System.out.println(origin.equals(p2));
+// calls Point2.equals(Point2)</font></font>
+<br><font face="Lucida Console"><font size=-2>System.out.println(p1.equals(p2));
+// calls Point3.equals(Point3)</font></font></dir>
+We would expect that the program prints:
+<dir><font face="Lucida Console"><font size=-2>true</font></font>
+<br><font face="Lucida Console"><font size=-2>true</font></font>
+<br><font face="Lucida Console"><font size=-2>true</font></font></dir>
+Instead the program prints:
+<dir><font face="Lucida Console"><font size=-2>true</font></font>
+<br><font face="Lucida Console"><font size=-2>true</font></font>
+<br><font face="Lucida Console"><font size=-2>false</font></font></dir>
+Apparently the implementation of <tt>equals()</tt> is not transitive. The
+lack of transitivity stems from the fact that the different <tt>equals()</tt>
+methods in <tt>Point2</tt> and <tt>Point3</tt> perform semantically different
+comparisons. Let us see how this happens.
+<p>Let's start with the first comparison<tt> p1.equals(origin)</tt>. Method
+<tt>Point3.equals(Point2)</tt>
+is called. Here is it implementation:
+<dir><font face="Lucida Console"><font size=-2>public class Point3 extends
+Point2 {</font></font>
+<dir><font face="Lucida Console"><font size=-2>...</font></font>
+<br><font face="Lucida Console"><font size=-2>public boolean equals(Point2
+p) { // overriding definition</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; if (p instanceof Point3)
+return equals((Point3)p);</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return super.equals();</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font>
+<br><font face="Lucida Console"><font size=-2>...</font></font></dir>
+<font face="Lucida Console"><font size=-2>}</font></font></dir>
+Method <tt>Point3.equals(Point2)</tt> checks whether the other object (namely
+<tt>origin</tt>)
+is a subobject of this object (namely <tt>p1</tt>), which is false; it
+is the other way round: <tt>p1</tt> is a subobject of <tt>origin</tt>.
+The<tt> instanceof</tt> test yields false, and in this case <tt>super.equals()</tt>
+is called, which is <tt>Point2.equals(Point2)</tt> . Method <tt>Point2.equals(Point2)</tt>
+is not shown in <a href="#Listing1">Listing 1</a> , but we can safely assume
+that its implementation follows the same line of logic that is used for
+the implementation of the <tt>equals()</tt> methods in class <font face="Lucida Console">Point3</font>.
+Method <tt>Point2.equals(Point2)</tt> compares objects of type <font face="Lucida Console">Point2</font>;
+in this case it compares the superclass object <tt>origin</tt> to the superclass
+part of the subclass object <tt>p1</tt>. The result is true. The same happens
+when <tt>origin</tt> is compared to <font face="Lucida Console">p2</font>.
+<p>Both comparisons are mixed-type comparisons, involving a superclass
+and a subclass object. The functionality of mixed-type comparison in this
+sample implementaion is comparison of the part that both objects have in
+common, namely the superclass part. We will refer to this kind of comparison
+as <i>slice comparison </i>in the remainder of the article.
+<p>Eventually method <tt>Point3.equals(Point3)</tt> is called to compare
+<tt>p1</tt>
+and <tt>p2</tt>. Following the rule of transitivity their comparison by
+means of<tt> equals()</tt> must yield true. Quite obviously <tt>p1</tt>
+and <tt>p2</tt> are not equal and indeed <tt>p1.equals(p2)</tt> yields
+false. So, what's going on here? The transitivity is violated because <tt>Point3.equals(Point3)</tt>
+performs a semantically different comparison. It does not compare superclass
+slices, in which case <tt>p1</tt> and <tt>p2</tt> would compare equal,
+because they both contain <tt>(0,0)</tt>. Instead it compares the entire
+subclass objects including their subclass-specific parts, and <tt>p1</tt>
+and <tt>p2</tt><font face="Lucida Console"> </font>happen to have a different
+<tt>z</tt>coordinate.
+For this reason the result is false.
+<p>The point is that <tt>equals()</tt> methods that perform semantically
+different comparisons in a class hierarchy and allow mixed-type comparison
+can never by transitive. The problem is not an implementation problem;
+it is a conceptual problem. Method <tt>equals()</tt>is required to be transitive,
+because of the <tt>equals()</tt> contract. At the same time it is required
+to perform a comparison for equality of objects; that's the natural and
+intended semantics of <tt>equals()</tt>. Objects of different types in
+a class hierarchy of value types can have a different structure: typically
+subclass objects have more fields than superclass objects. In this case
+the subclass must provide an overriding version of the <tt>equals()</tt>
+method that takes the subclass-specific fields into account. Inevitably
+the subclass version of <tt>equals()</tt> performs a comparison that is
+semantically different from its superclass version. If <tt>equals()</tt>
+permits mixed-type comparison in such a situation, then it can never be
+transitive. Either the <tt>equals()</tt> method is non-transitive (and
+incorrect) (like in the example in <a href="#Listing1">Listing 1</a> ),
+or it does not allow slice comparison of superclass and subclass objects
+(as will be demonstrated in <a href="#Listing4">Listing 4</a> ), or the
+<tt>equals()</tt>
+method is final in the superclass and not overridden in any of the subclasses
+(similar to <a href="#Listing3">Listing 3</a> ).
+<br>&nbsp;
+<p><font face="Arial"><a href="#Listing2">Listing 2</a> : A Common, Yet
+Debatable Implementation</font>
+<p>The next example in Listing 2 is taken from the Java platform libraries.
+It is the example of a non-final class that represents a value type, namely
+class <tt>Date</tt>. There is no problem with class <tt>Date</tt> itself
+or its implementation of the <tt>equals()</tt> method. Note, however, that
+neither class <tt>Date</tt> not its <tt>equals()</tt> method are final.
+Someone can derive a subclass of <tt>Date</tt> and override <tt>equals()</tt>.
+This subclass in conjunction with superclass <tt>Date</tt> will ask for
+trouble. Here is a conceivable implementation of a subclass and its <tt>equals()</tt>
+method:
+<dir><font face="Lucida Console"><font size=-2>public class NamedDate extends
+Date {</font></font>
+<dir><font face="Lucida Console"><font size=-2>private String name;</font></font>
+<br><font face="Lucida Console"><font size=-2>public boolean equals(Object
+other) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; if (other instanceof
+NamedDate &amp;&amp; !name.equals(((NamedDate)other).name))</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; return
+false;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return super.equals(other));</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+<font face="Lucida Console"><font size=-2>}</font></font></dir>
+Other implementations of class <tt>NamedDate</tt> are conceivable, but
+this would be a typical one. It follows the line of logic demonstrated
+by its superclass <tt>Date</tt>. To remind you, here is the implementation
+of the superclass version of <tt>equals()</tt>:
+<dir><font face="Lucida Console"><font size=-2>public class Date {</font></font>
+<dir><font face="Lucida Console"><font size=-2>...</font></font>
+<br><font face="Lucida Console"><font size=-2>public boolean equals(Object
+obj) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return obj instanceof
+Date &amp;&amp; getTime() == ((Date) obj).getTime();</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+<font face="Lucida Console"><font size=-2>}</font></font></dir>
+Both versions of <tt>equals()</tt> perform the necessary type check via
+the <tt>instanceof</tt> operator, which means that they both permit mixed-type
+comparison. Now consider the following situation:
+<dir><font face="Lucida Console"><font size=-2>NamedDate EndOfMillenium
+= new NamedDate(99,11,31,"end of 2<sup>nd</sup> millenium AC");</font></font>
+<br><font face="Lucida Console"><font size=-2>NamedDate TheEnd = new NamedDate(99,11,31,"end
+of the world");</font></font>
+<br><font face="Lucida Console"><font size=-2>Date NewYearsEve = new Date(99,11,31);</font></font>
+<center>
+<p><img SRC="Folie2.JPG" NOSAVE height=263 width=350></center>
+
+<p><font face="Lucida Console"><font size=-2>EndOfMillenium.equals(NewYearsEve)
+// slice comparison: true</font></font>
+<br><font face="Lucida Console"><font size=-2>NewYearsEve.equals(TheEnd)
+// slice comparison: true</font></font>
+<br><font face="Lucida Console"><font size=-2>EndOfMillenium.equals(TheEnd)
+// whole-object comparison: false</font></font></dir>
+Again we run into the same transitivity problem as in <a href="#Listing1">Listing
+1</a> . <tt>Date.equals()</tt> allows for slice comparison. Every overriding
+version of <tt>equals()</tt> in a subclass performs a semantically different
+comparison, namely a whole-object comparison that includes the subclass
+specific name field, and inevitably it exhibits the incorrect non-transitive
+behavior. The author of the class <tt>Date</tt> could have avoided this
+pitfall by declaring at least the <tt>equals()</tt> method final, if not
+the entire class.
+<br>&nbsp;
+<br>&nbsp;
+<p><font face="Arial"><a href="#Listing3">Listing 3</a> : A Correct Implementation</font>
+<p>Listing 3 shows the example of a final class <tt>PhoneNumber</tt>. Its
+implementation of <tt>equals()</tt> is similar to the solution in <a href="#Listing2">Listing
+2</a> in that is uses the <tt>instanceof</tt> test. Since the class is
+final no subclasses can ever exists and the transitivity problem discussed
+above can never come up. This solution is flawless, but restricted to final
+classes.
+<br>&nbsp;
+<br>&nbsp;
+<p><font face="Arial"><a href="#Listing4">Listing 4</a> : Another Correct
+Implementation</font>
+<p>Listing 4 shows yet another approach. Here we have the example of a
+superclass <tt>Golfball</tt> and its subclass <tt>MyGolfball</tt>, which
+overrides <tt>equals()</tt> because it has a subclass-specific field. The
+superclass performs the check for type match not using the <tt>instanceof</tt>
+operator as in the previous examples, but using the<tt>getClass() </tt>method
+instead.
+<p>Here are the implementations of the two <tt>equals()</tt> methods:
+<dir><font face="Lucida Console"><font size=-2>class Golfball {</font></font>
+<dir><font face="Lucida Console"><font size=-2>...</font></font>
+<br><font face="Lucida Console"><font size=-2>public boolean equals(object
+obj) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; if (this == obj)</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; return
+true;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; if (obj!=null &amp;&amp;
+getClass() == obj.getClass())</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; Golfball
+gb = (Golfball)obj; // Classes are equal, downcast.</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; if (brand.equals(gb.brand())
+&amp;&amp; // Compare atrributes.</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+make.equals(gb.make()) &amp;&amp;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+compression == gb.compression())</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return true;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+<font face="Lucida Console"><font size=-2>}</font></font>
+<br><font face="Lucida Console"><font size=-2>class MyGolfball extends
+Golfball {</font></font>
+<dir><font face="Lucida Console"><font size=-2>...</font></font>
+<br><font face="Lucida Console"><font size=-2>public boolean equals(Object
+obj) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; if (super.equals(obj))</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; MyGolfball
+bg = (MyGolfball)obj; // Classes equal, downcast.</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; if (ballConstruction
+== gb.construction())</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return true;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+<font face="Lucida Console"><font size=-2>}</font></font></dir>
+The fundamental difference in this class hierarchy is that slice comparison
+is not permitted. Or, to be more precise, the mixed-type comparison is
+allowed, but an object of type <tt>Golfball</tt> does never compare equal
+to an object of type <tt>MyGolfball</tt>. They are of different types and
+therefore their <tt>Class</tt> objects (obtained via <tt>getClass()</tt>)
+are different. The type check via <tt>getClass()</tt> yields false for
+all attempts of mixed-type comparison. Here is an example:
+<dir><font face="Lucida Console"><font size=-2>Golfball original = new
+Golfball("xyz", "abc",100);</font></font>
+<br><font face="Lucida Console"><font size=-2>MyGolfball gb1 = new MyGolfball("xyz",
+"abc", 100, MyGolfball.TwoPiece);</font></font>
+<br><font face="Lucida Console"><font size=-2>MyGolfball gb2 = new MyGolfball("xyz",
+"abc", 100, MyGolfball.ThreePiece);</font></font></dir>
+
+<center><img SRC="Folie3.JPG" NOSAVE height=263 width=350></center>
+
+<dir>&nbsp;
+<p><font face="Lucida Console"><font size=-2>gb1.equals(original) // mixed-type
+comparison: yields false</font></font>
+<br><font face="Lucida Console"><font size=-2>original.equals(gb2) // mixed-type
+comparison: yields false</font></font>
+<br><font face="Lucida Console"><font size=-2>gb1.equals(gb2) // same-type
+comparison: yields false</font></font></dir>
+This kind of implementation is correct and fully complies to the <tt>equals()</tt>
+contract. In class hierarchies of value types, where the <tt>equals()</tt>
+method must be overridden, it is the only correct approach.
+<br>&nbsp;
+<br>&nbsp;
+<p><font face="Arial">Revisiting <a href="#Listing2">Listing 2</a></font>
+<p>Can we use this approach (using <tt>getClass()</tt> instead of <tt>instanceof</tt>)
+to solve the problem with the subclass of class <tt>Date</tt> ?
+<p>Unfortunately not. The superclass <tt>Date</tt> permits mixed-type comparison.
+For sake of symmetry any subclass must also allow mixed-type comparison.
+Here is what an incorrect, asymmetric implementation of <tt>NamedDate.equals()</tt>
+using <tt>getClass()</tt> could look like:
+<dir><font face="Lucida Console"><font size=-2>public class Date { </font></font><font size=-1>//
+as before</font>
+<dir><font face="Lucida Console"><font size=-2>...</font></font>
+<br><font face="Lucida Console"><font size=-2>public boolean equals(Object
+obj) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return obj instanceof
+Date &amp;&amp; getTime() == ((Date) obj).getTime();</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+<font face="Lucida Console"><font size=-2>}</font></font>
+<br><font face="Lucida Console"><font size=-2>public class NamedDate extends
+Date {</font></font>
+<dir><font face="Lucida Console"><font size=-2>private String name;</font></font>
+<br><font face="Lucida Console"><font size=-2>public boolean equals(Object
+other) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; if (other!=null &amp;&amp;
+getClass() == other.getClass()) { </font></font><font size=-1>// getClass()
+instead of</font><font face="Lucida Console"><font size=-2> </font></font><font size=-1>instanceof</font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; if (!super.equals(other))
+return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; return
+name.equals(((NamedDate)other).name));</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font></dir>
+<font face="Lucida Console"><font size=-2>}</font></font></dir>
+
+<dir><font face="Lucida Console"><font size=-2>NamedDate EndOfMillenium
+= new NamedDate(99,11,31,"end of 2<sup>nd</sup> millenium AC");</font></font>
+<br><font face="Lucida Console"><font size=-2>Date NewYearsEve = new Date(99,11,31);</font></font>
+<br><font face="Lucida Console"><font size=-2>EndOfMillenium.equals(NewYearsEve)
+// slice comparison: false</font></font>
+<br><font face="Lucida Console"><font size=-2>NewYearsEve.equals(EndOfMillenium)
+// slice comparison: true</font></font></dir>
+In general, any subclass of a superclass that uses the <tt>instanceof</tt>
+test in its implementation of <tt>equals()</tt> cannot switch to the <tt>getClass()</tt>
+test without violating the symmetry requirement. The same is true for subclasses
+of superclasses that use the <tt>getClass()</tt> test: the subclass cannot
+allow mixed-type comparison via <tt>instanceof</tt> if the superclass disallows
+it via <tt>getClass()</tt>; otherwise the symmetry requirement would be
+violated. The fundamental realization is that the strategy chosen for a
+superclass's <tt>equals()</tt> method determines the implementation of
+<tt>equals()</tt>
+for the entire class hierarchy. All classes in the hierarchy either allow
+slice comparison and use <tt>instanceof</tt> or they disallow it and use
+<tt>getClass()</tt>.
+<br>&nbsp;
+<br>&nbsp;
+<p><font face="Arial">Conclusions</font>
+<p>Having dissected the four arbitrarily chosen examples of implementations
+of <tt>equals()</tt>, what do we conclude?
+<p>First of all: there are two substantially different ways of performing
+the check for type match in an implementation of <tt>equals()</tt>. A class
+can allow mixed-type comparison between super- and subclass objects by
+means of the <tt>instanceof</tt> operator, or a class can treat objects
+of different type as non-equal by means of the <tt>getClass()</tt> test.
+The examples above illustrated nicely that implementations of <tt>equals()</tt>
+using <tt>getClass()</tt><font face="Lucida Console"> </font>are generally
+more robust than those implementations using <tt>instanceof</tt>.
+<p>The <tt>instanceof</tt> test is correct only for final classes or if
+at least method <tt>equals()</tt> is final in a superclass. The latter
+essentially implies that no subclass must extend the superclass's state,
+but can only add functionality or fields that are irrelevant for the object's
+state and behavior, such as transient or static fields.
+<p>Implementations using the <tt>getClass()</tt> test on the other hand
+always comply to the <tt>equals()</tt> contract; they are correct and robust.
+They are, however, semantically very different from implementations that
+use the <tt>instanceof</tt> test. Implementations using <tt>getClass()</tt>
+do not allow comparison of sub- with superclass objects, not even when
+the subclass does not add any fields and would not even want to override
+<tt>equals()</tt>
+. Such a "trivial" class extension would for instance be the addition of
+a debug-print method in a subclass defined for exactly this "trivial" purpose.
+If the superclass prohibits mixed-type comparison via the <tt>getClass()</tt>
+check, then the trivial extension would not be comparable to its superclass.
+Whether or not this is a problem fully depends on the semantics of the
+class and the purpose of the extension.
+<br>&nbsp;
+<br>&nbsp;
+<p><font face="Arial">Guidelines For Practitioners</font>
+<p>Ultimately, what do we do when we design a class and/or use an existing
+class as a superclass?
+<p>Considering the different approaches and their respective up- and downsides
+it should by now be clear that none of the solutions is the silver bullet.
+There is not easy recipe for doing this. A designer of a new class must
+carefully evaluate the intended and required semantics of the class in
+order to come to a decision regarding the right implementation of <tt>equals()</tt>
+(and other pieces of basic infrastructure not discussed in this article).
+Here are some guidelines for class designers:
+<ul>
+<li>
+<b><i>Entity types</i>.</b> If the class represents a non-value type, then
+no implementation of <tt>equals()</tt> is needed for this class because
+the inherited <tt>Object.equals()</tt> does the right thing. Hence there
+is nothing to do and nothing to worry about regarding comparison for equality.</li>
+</ul>
+
+<ul>
+<li>
+<b><i>Final classes.</i></b> If the class represents a value type and is
+final, then it must override <tt>equals()</tt>, to provide equality comparison,
+but it basically does not matter how the type check in <tt>equals()</tt>
+is performed. All the problems discussed above only pop up in class hierarchies
+of value types. If the class is final then there will never be any subclasses
+and consequently there will be no problem. In general it is much easier
+to get a final class right than to design a robust superclass. It is unfortunate
+that in Java every class is a superclass by default.</li>
+</ul>
+
+<ul>
+<li>
+<b><i>Value type superclasses</i>. </b>The problematic cases are non-final
+classes that represent value types. They must implement <tt>equals()</tt>
+to reflect the value semantics and they are superclasses, because every
+non-final class by definition is a potential superclass.</li>
+
+<br>If the designer of such a non-final class decides in favor of implementing
+<tt>equals()</tt>
+using <tt>instanceof</tt>, then no subclass can ever add fields and override
+<tt>equals()</tt>
+without violating the transitivity requirement of the
+<tt>equals()</tt>
+contract.
+<br>If the designer decides in favor of implementing <tt>equals()</tt>
+using <tt>getClass()</tt>, then no subclass object will ever be comparable
+to a superclass object and trivial extensions may not make a lot of sense.</ul>
+Users of superclasses who wish to extend them should carefully study the
+superclass's implementation of <tt>equals()</tt> because it has an impact
+on the subclass and how it must be implemented and used.
+<ul>
+<li>
+<b><i>Mixed-type comparison permitted</i></b>. If the implementation uses
+the <tt>instanceof</tt> test, and thus permits slice comparison of sub-
+and superclass objects, then <tt>equals()</tt> must not be overridden in
+the subclass.</li>
+
+<br>The superclass designer should actually make sure that you can't step
+into this pitfall by qualifying the <tt>equals()</tt> method as a final
+method in the superclass.</ul>
+
+<ul>
+<li>
+<b><i>Same-type comparison only.</i></b> If the superclass's implementation
+of <tt>equals()</tt> uses the <tt>getClass()</tt> test then subclass objects
+and superclass objects will never compare equal. This means for instance
+that you cannot ask a <tt>HashSet</tt> of subclass objects whether it contains
+an equal superclass object; the answer would always be No.</li>
+</ul>
+<font face="Arial">Delegation as an Alternative to Inheritance</font>
+<p>Instead of worrying about how to correctly design a superclass or how
+to implement a subclass of a superclass that does this or that - why don't
+we simply avoid inheritance in the first place?
+<p>One way of making life easy is to habitually declare every new class
+a final class, unless you are sure that it is supposed to be a superclass.
+In case of defining a superclass the effort of providing a robust and correct
+implementation can be substantially higher. More often than not you'll
+find that you do not really want to or need to go all the trouble of defining
+a superclass. Keep it simple; try out a final class before you consider
+implementing a non-final class.
+<p>Another way of making life easy is to avoid subclassing. In many situations
+inheritance can be replaced by delegation. Instead of implementing a new
+class as a subclass of an existing class, the new class can be implemented
+as an unrelated class that holds a reference to an object of the existing
+class type and implements the same methods as the existing class by delegation
+to the existing class's method.
+<p>As an example let us re-implement class <tt>NamedDate</tt>:
+<dir><font face="Lucida Console"><font size=-2>public class NamedDate {
+</font></font><font size=-1>//
+does <i>not</i> extend Date</font>
+<dir><font face="Lucida Console"><font size=-2>private String name;</font></font>
+<br><font face="Lucida Console"><font size=-2>private Date date; </font></font><font size=-1>//
+Date as a field instead of a superclass</font>
+<br><font face="Lucida Console"><font size=-2>...</font></font>
+<br><font face="Lucida Console"><font size=-2>public boolean equals(Object
+other) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; if (other!=null &amp;&amp;
+getClass()==other.getClass()) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; if(date.equals(((NamedDate)other).date)
+&amp;&amp; name.equals(((NamedDate)other).name))</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp;&nbsp;&nbsp; return
+true;</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; }</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return false;</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font>
+<br><font face="Lucida Console"><font size=-2>...</font></font>
+<br><font face="Lucida Console"><font size=-2>public boolean before(Date
+when) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return date.before(when);</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font>
+<br><font face="Lucida Console"><font size=-2>public boolean after(Date
+when) {</font></font>
+<br><font face="Lucida Console"><font size=-2>&nbsp; return date.after(when);</font></font>
+<br><font face="Lucida Console"><font size=-2>}</font></font>
+<br><font face="Lucida Console"><font size=-2>...</font></font></dir>
+<font face="Lucida Console"><font size=-2>}</font></font></dir>
+This implementation technique often requires some tedious typing, because
+all the public interface of the existing class must be repeated (see methods
+<tt>before()</tt>
+and <tt>after()</tt><font face="Lucida Console"> </font>in the example).
+But it is a sensible and robust alternative to inheritance.
+<p>Note, how similar it is to the <tt>getClass()</tt> approach to <tt>equals()</tt>:
+in this case <tt>NamedDate</tt> would not be considered as compatible with
+<tt>Date</tt>
+and nobody would expect that objects of type <tt>Date</tt> and type <tt>NamedDate</tt>
+would be comparable for equality. If such a comparison were needed it would
+be provided in terms of methods such as
+<tt>NamedDate.isSameDateAs(Date)</tt>or
+<tt>Date.isSameDateAs(NamedDate)</tt>
+, both of which would be final methods that perform a slice comparison.
+But they would have nothing to do with
+<tt>equals()</tt>.
+<p>Useful as delegation is as an alternative to subclassing, there are
+situations in which delegation cannot replace inheritance. An example are
+cases in which protected parts of the superclass must be accessed by the
+subclass. An example are implementations of the Template Method pattern
+as described in the GOF book (see /<a href="#GOF">GOF</a> / for reference).
+In these cases inheritance cannot be avoided and the user must live with
+the resulting restrictions. Another example are frameworks in which subclassing
+cannot be avoided because the superclass serves as a marker interface at
+the same time. An example is the class hierarchy of standard exceptions,
+most notably class <tt>Throwable</tt>, class <tt>Error</tt>, class <tt>Exception</tt>,
+and class <tt>RuntimeException</tt>. If you need to define a user-defined
+domain-specific exception type, then you must derive of one of these classes
+or any subclass thereof. Delegation is not an option here; a class that
+contained an <tt>IndexOutOfBoundsException</tt>, instead of being derived
+of it, would not be an exception type. The morale of the story is: avoid
+subclassing if you can and try to live with it if you can't.
+<br>&nbsp;
+<br>&nbsp;
+<p><font face="Arial">Summary</font>
+<p>In this article we poked around in the implementations of <tt>equals()</tt>
+, studying various published implementations for illustration of the non-trivial
+nature of a method that compares objects for equality of content.
+<p>One case turned out to be problematic; it is the case of hierarchies
+of value types in which <tt>equals()</tt>is overridden on various levels
+of the hierarchy with naturally different semantics. In this case any mixed-type
+comparison between sub- and superclass objects fails to be transitive.
+But transitivity is one of the fundamental pieces of the <tt>equals()</tt>contract.
+<p>The implementation detail of relevance in this article is the check
+for type match that is performed in an implementation of <tt>equals()</tt>
+. There are two techniques: using the <tt>instanceof</tt> operator, which
+allows mixed-type comparison of subclass and superclass objects. The other
+choice is using <tt>getClass() </tt>to make sure that mixed-type comparisons
+always fail.
+<p>Implementations of <tt>equals()</tt> using <tt>getClass()</tt> are more
+robust, because they are always correct. Implementations of <tt>equals()</tt>
+using <tt>instanceof</tt> should be final methods; in practice they rarely
+are declared final, which opens up a notorious pitfall.
+<p>This was a snippet of what can and must be said about <tt>equals()</tt>
+and other basic infrastructure of types in Java. We haven't even touched
+on related issues such as:
+<ul>
+<li>
+What is the impact on implementations of <tt>hashCode()</tt>? "Equal" objects
+must produce equal hash codes; how do we achieve this?</li>
+
+<li>
+How does the technique chosen for <tt>equals()</tt> affect implementations
+of <tt>compareTo()</tt>? It is recommended that a comparison via <tt>compareTo()</tt>
+is consistent with equality via <tt>equals()</tt>. How do we achieve this?</li>
+
+<br>We haven't discussed the signature of <tt>equals()</tt>in subclasses.
+Should there be just one overriding version with the signature of <tt>Object.equals()</tt>
+? Or should there be overloaded versions, as suggested in Listing1? What
+are the tradeoffs?</ul>
+<font face="Arial">Acknowledgements</font>
+<p>The ideas in this article were in part inspired by a private email discussion
+led with Joshua Bloch in summer 2001; we thank Josh for his patience and
+thoughtful response. Another source of invaluable insight was Mark Weiss,
+a fellow instructor at DevelopMentor; he sat through our Java course in
+February 2001 and spotted the non-transitivity of our first naive attempts
+to get <tt>equals()</tt> right.
+<br><font face="Helvetica, Arial, sans-serif">Follow-UP Article</font>
+<p>In a second article (published later in the same magazine, see /<a href="#Kreft">
+KRE</a> /) we explain an algorithm for implementation of <tt>equals()</tt>
+that allows mixed-type comparison <i>and </i>is correct.
+<br>&nbsp;
+<p><font face="Arial">References</font>
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft"></a>/KRE/&nbsp;</td>
+
+<td VALIGN=TOP><b><font face="Times New Roman, Times, serif"><font size=+0>Implementing
+equals for Mixed-Type Comparison</font></font></b>
+<br>Angelika Langer &amp; Klaus Kreft
+<br>Java Solutions, August 2002
+<br>URL: <a href="Equals-2.html">http://www.langer.camelot.de/Articles/JavaSolutions/SecretsOfEquals/Equals-2.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Bloch"></a>/BLO/&nbsp;</td>
+
+<td><b>Effective Java Programming Language Guide</b>
+<br>Josh Bloch&nbsp;
+<br>Addison-Wesley, June 2001&nbsp;
+<br>ISBN: 0201310058</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Haggar"></a>/HAG/&nbsp;</td>
+
+<td><b>Practical Java: Programming Language Guide</b>
+<br>Peter Haggar&nbsp;
+<br>Addison-Wesley, March 2000&nbsp;
+<br>ISBN 0201616467</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Liskov"></a>/LIS/&nbsp;</td>
+
+<td><b>Program Development in Java: Abstraction, Specification, and Object-Oriented
+Design</b>
+<br>Barbara Liskov with John Guttag&nbsp;
+<br>Addison-Wesley, January 2000&nbsp;
+<br>ISBN: 0201657686</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="GOF"></a>/GOF/&nbsp;</td>
+
+<td><b>Design Patterns: Elements of Reusable Object-Oriented Software</b>
+<br>Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides&nbsp;
+<br>Addison-Wesley, January 1995&nbsp;
+<br>ISBN: 0201633612</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDK"></a>/JDK/&nbsp;</td>
+
+<td><b>Java 2 Platform, Standard Edition v1.3.1</b>
+<br>URL: <a href="http://java.sun.com/j2se/1.3/">http://java.sun.com/j2se/1.3/</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDOC"></a>/JDOC/&nbsp;</td>
+
+<td><b>Java 2 Platform, Standard Edition, v 1.3.1 - API Specification</b>
+<br>URL: <a href="http://java.sun.com/j2se/1.3/docs/api/index.html">http://java.sun.com/j2se/1.3/docs/api/index.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Davies"></a>/DAV/</td>
+
+<td><b>Durable Java: Libert&eacute;, &Eacute;galit&eacute;, Fraternit&eacute;</b>
+<br>Mark Davis&nbsp;
+<br>Java Report, January 2000&nbsp;
+<br>URL: <a href="http://www.macchiato.com/columns/Durable5.html">http://www.macchiato.com/columns/Durable5.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Bloch"></a>/BLO2/</td>
+
+<td>Joshua Bloch's comment on instanceof versus getClass in equals methods:
+<br><b>A Conversation with Josh Bloch</b>
+<br>by Bill Venners
+<br>URL: <a href="http://www.artima.com/intv/bloch17.html">http://www.artima.com/intv/bloch17.html</a></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<dir>
+<dir>&nbsp;</dir>
+</dir>
+
+</body>
+</html>

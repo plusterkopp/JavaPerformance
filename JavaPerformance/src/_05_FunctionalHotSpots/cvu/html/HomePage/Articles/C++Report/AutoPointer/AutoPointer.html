@@ -1,0 +1,687 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Article C++ Report Nov/Dec1998">
+   <title>The auto_ptr Class Template</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CppReportAutoptr"></a>
+<br><font color="#295AB5"><font size=+3>The auto_ptr Class Template</font></font>
+<p><font color="#295AB5"><font size=+2>C++ Report, November/December 1998</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<p>A small and innocently looking library component, namely the <font face="Courier,Courier New">auto_ptr</font>
+class template, kindled an amazing number of passionate discussions on
+the standards committee. It was designed, and redesigned, at one point
+almost dropped from the standard library, and until virtually the last
+minute of the standardization process it was subject to changes and refinements.
+Much ado about almost nothing? In this column let us see what the <font face="Courier,Courier New">auto_ptr</font>
+is.
+<p>The <font face="Courier,Courier New">auto_ptr</font> class template
+is an abstraction that eases the use of pointers referring to objects on
+the heap. Long before the <font face="Courier,Courier New">auto_ptr</font>
+was introduced into the standard, the C++ community had already used an
+idiomatic abstraction that supports the usage of pointers referring to
+heap objects: the <i>smart pointer</i>. Our experience from teaching standard
+library is that people who are not yet familiar with the <font face="Courier,Courier New">auto_ptr</font>
+class template conjecture that the <font face="Courier,Courier New">auto_ptr</font>
+is some kind of standard smart pointer implementation. That's not what
+it is; it has completely different semantics. To address this delusion,
+we do not only explain the <font face="Courier,Courier New">auto_ptr</font>
+in this article, but also discuss the differences and similarities of smart
+pointers and the <font face="Courier,Courier New">auto_ptr</font> class
+template. Hence, let us start with a recap of smart pointers.
+<p><b><i><font face="Arial">Smart pointers</font></i></b>
+<p>In the old days of C programming, passing a pointer to heap memory as
+an argument to a function often introduced some uncertainties. Consider
+the following example:
+<dir><tt>int *ip = malloc (sizeof(int));</tt>
+<br><tt>*ip = 1;</tt>
+<br><tt>foo(ip);</tt>
+<br><tt>...</tt></dir>
+Without comprehensive documentation of <font face="Courier,Courier New">foo()</font>
+you are neither sure whether you can still access <font face="Courier,Courier New">*ip</font>
+after invocation of <font face="Courier,Courier New">foo()</font> nor do
+you know whether it is your responsibility to free the memory afterwards
+or whether it has already been freed by <font face="Courier,Courier New">foo().</font>
+Passing such pointers to heap memory through several layers of functions
+makes things even more complicated. Also, when new features require changes
+of the old memory management policy the entire issue often turns into a
+maintenance nightmare.
+<p>In the early days of C++, when it was a new language used predominantly
+by former C programmers, traditional C-style implementation techniques
+were still popular. Naturally, these programmers faced the same problems
+as before with C. After some time the C++ community matured. Programmers
+began to understand the power and versatility of user-defined types and
+developed C++ idioms that helped to overcome some of the problems that
+stemmed from the C heritage. One of these idioms is the <i>smart pointer</i>.
+It eliminates memory management problems like the one described above.
+The principle of a smart pointer implementation is as follows:
+<ul>
+<li>
+A smart pointer has a built-in pointer as a data member. This pointer refers
+to the heap object. The built-in pointer is the smart pointer’s constructor
+argument. Typically the smart pointer is a class template with the base
+type of the built-in pointer as template parameter, e.g. if the built-in
+pointer is of type <font face="Courier,Courier New">X*</font><font face="Courier New">,</font>
+then <font face="Courier,Courier New">X</font> is the template argument.</li>
+
+<li>
+The dereferencing operators<font face="Courier,Courier New"> operator->()</font>
+and <font face="Courier,Courier New">operator*()</font> are defined and
+implemented by forwarding their operations to the respective operators
+<font face="Courier New">-></font>
+and * of the built-in pointer data member. This design allows the same
+access syntax for smart pointers as for built-in pointers.</li>
+
+<li>
+The smart pointer counts the number of references to the heap object by
+a smart implementation of the copy constructor, assignment operator, and
+destructor. If, and only if, the number of references drops to zero, the
+referenced heap object is freed. In a more abstract sense it means that
+the object on the heap can be shared by different parts of the program.
+The smart pointer keeps track of these "client" parts, so that it deletes
+the heap object when none of them is referring the heap object anymore.
+This aspect of the smart pointers semantics is essential, especially in
+comparison to the semantics of <font face="Courier,Courier New">auto_ptr</font>.</li>
+</ul>
+Detailed discussions of the design and implementation of smart pointers
+can be found in /<a href="#1">1</a>/ and /<a href="#2">2</a>/. By now,
+the smart pointer idiom has become a well known and often used idiom in
+the C++ community. It turned out to be also valuable in the presence of
+exceptions because it incorporates the ‘resource acquisition is initialization’-idiom
+(see /<a href="#3">3</a>/). Lets have a look at an example:
+<dir><tt>int *ip = new int(1);</tt>
+<br><tt>foo(ip);</tt>
+<br><tt>...</tt></dir>
+When<font face="Courier,Courier New"> foo()</font> throws an exception,
+we have to free the memory referenced by <font face="Courier,Courier New">ip</font>
+to prevent a memory leak. One way to do this is to wrap the call to<font face="Courier,Courier New">foo()</font>
+into a <font face="Courier New">try</font>-block and the deallocation of
+the memory into the corresponding <font face="Courier,Courier New">catch</font>-block.
+While this is a correct solution it is not overly elegant and can get complicated
+when the code gets more complex. Let’s see what happens when we use a smart
+pointer instead of a built-in pointer:
+<dir><tt>smart_ptr&lt;int *> sip = new int(1);</tt>
+<br><tt>foo(ip);</tt>
+<br><tt>...</tt></dir>
+Now, we do not have to use a <font face="Courier,Courier New">try</font>-block
+at all. The destructor of the smart pointer is called during stack unwinding,
+which is triggered by the exception, and the reference counter is decremented.
+As the heap object is referenced only once, the reference counter drops
+to zero and the memory is freed.
+<p><b><i><font face="Arial">The </font></i><font face="Courier,Courier New"><font size=+1>auto_ptr</font></font><i><font face="Arial">
+Class Template</font></i></b>
+<p>While the smart pointer significantly eases the use of objects allocated
+on the heap, it does not come for free: It introduces a performance penalty
+compared to a built-in pointer. Take for example the assignment. For a
+built-in pointer it is a simple assembler operations that results in a
+binary copy of the pointer value into some other memory location. The assignment
+operator for a smart pointer, in constrast, is a user-defined member function,
+which has to maintain the reference counter of the right hand and left
+hand argument, including the check if the left hand counter has dropped
+to zero and the referenced object has to be deleted.
+<p>Efficiency is one of the main design goals of the standard library.
+When the C++ committee looked for a helpful pointer abstraction that could
+be included in the standard , people were very much aware of the performance
+penalty introduced by a smart pointer. While they wanted to save some of
+the smart pointer’s advantages, in particular the ability to handle the
+memory management in case of exceptions, they wanted to minimize the performance
+penalty. The pointer abstraction that made it into the standard is the
+class template <font face="Courier,Courier New">auto_ptr.</font> As a smart
+pointer, it helps to ease the use of objects on the heap. To minimize the
+performance penalty, its design does not use reference counting. Instead,
+the <font face="Courier,Courier New">auto_ptr</font> is based on the idea
+of <i>strict ownership</i>. This leads to completely different semantics
+for the <font face="Courier,Courier New">auto_ptr</font> compared to a
+smart pointer.
+<p><font face="Arial">Strict Ownership</font>
+<p>The principle of strict ownership can be explained best by taking a
+detailed look at the design of the <font face="Courier,Courier New">auto_ptr</font>
+class template. Like the smart pointer, the <font face="Courier,Courier New">auto_ptr</font>
+has the original built-in pointer as data member and the <font face="Courier,Courier New">auto_ptr</font>,
+too, is a class template whose template parameter is the base type of the
+contained built-in pointer. The constructor receives this pointer referring
+to an object on the heap, and obtains ownership of the referred object.
+Figure 2 below shows a possible implementation of the <font face="Courier,Courier New">auto_ptr</font>’s
+assignment operator.
+<dir><tt>tempate&lt;classT></tt>
+<br><tt>auto_ptr&lt;T>&amp; auto_ptr&lt;T>::operator=(auto_ptr&lt;T>&amp;
+rhs)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; if (this != &amp;rhs)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; delete pointer;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; pointer = rhs.pointer;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; rhs.pointer = 0;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; return *this;</tt>
+<br><tt>}</tt></dir>
+The assignment operator deletes the left hand side’s <font face="Courier,Courier New">pointer</font>
+data member, passes the right hand side’s <font face="Courier,Courier New">pointer</font>
+data member to the left hand side, and sets the right hand side’s <font face="Courier,Courier New">pointer</font>
+data member to <font face="Courier,Courier New">0</font>. Thus the left
+hand side can now access the referenced object on the heap, while the right
+hand side cannot access it any longer: the ownership of the referred object
+has passed from the right hand side to the left hand side. The copy construction
+works in a similar way: the ownership is passed from the already existing
+object, which is passed in as the constructor argument, to the newly constructed
+object. The destructor simply <font face="Courier,Courier New">delete</font>s
+the <font face="Courier,Courier New">pointer</font> data member, i.e. when
+the owning object is destroyed also the owned object on the heap is destroyed
+and its memory is released.
+<p>Summing it up again, strict ownership as used with the <font face="Courier,Courier New">auto_ptr</font>
+means that
+<ul>
+<li>
+One and only one <font face="Courier,Courier New">auto_ptr</font> object
+owns the referred object on the heap.</li>
+
+<li>
+Copy construction and assignment pass the ownership from one<font face="Courier,Courier New">
+auto_ptr</font> object to the other.</li>
+
+<li>
+When an<font face="Courier,Courier New"> auto_ptr</font> is destroyed it
+does not only give up the ownership, but also destroys the owned object.</li>
+</ul>
+<font face="Arial">Correct Use of </font><font face="Courier New"><font size=+1>auto_ptr</font></font><font face="Arial">s</font>
+<p>Let’s discuss the usage of the <font face="Courier,Courier New">auto_ptr</font>
+by means of some examples. This also reveals the subtleties of the strict
+ownership principle.
+<dir><tt>auto_ptr&lt;string> aps1(new string("hello"));</tt>
+<br><tt>auto_ptr&lt;int> api1(new int(1));</tt>
+<br><tt>*aps1 = "world"; // line 1</tt>
+<br><tt>if (aps1->size() &lt; 16) // line 2</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; auto_ptr&lt;int> api2(api1); // line 3</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>} // line 4</tt>
+<br><tt>...</tt></dir>
+Line 1 and 2 show that the <font face="Courier,Courier New">operator*()</font>
+and <font face="Courier,Courier New">operator->()</font>can be applied
+to the <font face="Courier,Courier New">auto_ptr</font> in the same way
+and with the same semantics as they can be applied to a built-in pointer.
+The <font face="Courier,Courier New">auto_ptr</font> defines <font face="Courier,Courier New">operator*()</font>
+and <font face="Courier,Courier New">operator-></font>() by forwarding
+them to the respective operations for built-in pointers. In line 3 the
+ownership of the integer on the heap swaps from <font face="Courier,Courier New">api1</font>
+to <font face="Courier,Courier New">api2</font>. This means that, below
+line 3, <font face="Courier,Courier New">api1</font> cannot be used to
+access the integer on the heap any longer. The transfer of the ownership
+from <font face="Courier,Courier New">api1</font> to <font face="Courier,Courier New">api2</font>
+also effects the lifetime of the integer on the heap: it is destroyed at
+the end of the block that follows the <font face="Courier,Courier New">if</font>-statement,
+i.e. in line 4.
+<p><font face="Arial">False Use of </font><font face="Courier New"><font size=+1>auto_ptr</font></font><font face="Arial">s</font>
+<p>The following example shows two common newbie errors:
+<dir><tt>string *sp = new string("hello world");</tt>
+<br><tt>int i = 2;</tt>
+<br><tt>auto_ptr&lt;string> aps1(sp);</tt>
+<br><tt>auto_ptr&lt;string> aps2(sp); // line 5 - ERROR !!!</tt>
+<br><tt>auto_ptr&lt;int> api(&amp;i); // line 6 - ERROR !!!</tt></dir>
+As already mentioned, strict ownership means that exactly one <font face="Courier,Courier New">auto_ptr</font>
+is referring to the object on the heap. This implies that a programmer
+is allowed to initialize only one <font face="Courier,Courier New">auto_ptr</font>
+object with the same built-in pointer referring a certain heap object.
+Not obeying this rule (as demonstrated in line 5) can lead to severe errors
+at runtime. The reason is that the behavior of the <font face="Courier,Courier New">auto_ptr</font>’s
+destructor: It unconditionally deletes the object on the heap. Having multiple
+<font face="Courier,Courier New">auto_ptr</font>s
+referring to the same heap object results in premature or multiple deletions
+of the heap object, each deletion occurring when the respective <font face="Courier,Courier New">auto_ptr</font>
+goes out of scope.
+<p>Another programming error, that might lead to disastrous runtime behavior,
+is the construction of an <font face="Courier,Courier New">auto_ptr</font>
+with a pointer that is not referring to heap memory, as shown in line 6.
+Again, the reason is the <font face="Courier,Courier New">auto_ptr</font>
+destructor’s behavior: in this case it attempts to delete an object on
+the stack when <font face="Courier,Courier New">api</font> goes out of
+scope.
+<p><font face="Courier New"><font size=+1>auto_ptr</font></font><font face="Arial">s
+as Input Function Arguments</font>
+<p>In our next examples we examine situations where we want to pass an
+<font face="Courier,Courier New">auto_ptr</font>
+as a function argument. Say, we have the following function:
+<dir><tt>void foo(auto_ptr&lt;string> sp) { cout &lt;&lt; *sp; }</tt></dir>
+What will happen if we call <font face="Courier,Courier New">foo()</font>
+from another function:
+<dir><tt>...</tt>
+<br><tt>auto_ptr&lt;string> aps(new string("hello world"));</tt>
+<br><tt>foo(aps);</tt>
+<br><tt>...</tt></dir>
+Because the <font face="Courier,Courier New">auto_ptr&lt;string></font>
+is passed by value, its copy constructor is invoked, which passes the ownership
+of the string object on the heap to the local <font face="Courier,Courier New">auto_ptr&lt;string></font>
+object <font face="Courier,Courier New">sp</font>, that is passed to <font face="Courier New">foo()</font>
+as its argument. One of the consequences is that the calling function cannot
+access the string on the heap anymore after the the invocation of <font face="Courier,Courier New">foo().
+</font>The
+other consequence is that the string on the heap is destroyed when <font face="Courier,Courier New">foo()</font>
+returns to the calling function. There are situations where this is indeed
+the intended behavior: whenever the object on the heap is used solely as
+an <i>input</i> parameter to the called function. In other situations the
+effect of passing the ownership to a temporary function argument might
+not be desired, though.
+<p><font face="Courier New"><font size=+1>auto_ptr</font></font><font face="Arial">s
+as Output Function Arguments</font>
+<p>To boot, pointers are used in other situations, too. One typical way
+is to use them is as an output parameter: The function receives a pointer
+to an object and changes the object via the pointer. After the control
+flow returns to the calling function, the modifications are visible to
+the caller and the changed object continues to be used. If we can pass
+in built-in pointers as output arguments of functions, what would be more
+intuitive than passing in an <font face="Courier,Courier New">auto_ptr</font>
+in order to achieve the same "output argument" effect?
+<p>As we explained before, an <font face="Courier,Courier New">auto_ptr</font>
+passed by value cannot be used as an alternative to a built-in pointer
+in such a situation, because the heap object would be deleted on return
+from the invoked function. The equivalent to a built-in pointer is an <font face="Courier,Courier New">auto_ptr</font>
+object passed by reference in that case. Depending on the intended use
+even an auto_ptr passed by <font face="Courier,Courier New">const</font>
+reference might make sense. Let’s see an example for each case. This is
+the first one:
+<dir><tt>void foo(auto_ptr&lt;string>&amp; sp)</tt>
+<br><tt>{ sp = static_cast&lt;auto_ptr&lt;string> > (new string("my text"));
+}</tt>
+<br><tt>...</tt>
+<br><tt>auto_ptr&lt;string> aps(new string("hello world"));</tt>
+<br><tt>cout &lt;&lt; "before foo: " &lt;&lt; *aps;</tt>
+<br><tt>foo(aps);</tt>
+<br><tt>cout &lt;&lt; "after foo: " &lt;&lt; *aps;</tt>
+<br><tt>...</tt></dir>
+And here is the second one:
+<dir><tt>void foo(const auto_ptr&lt;string>&amp; sp)</tt>
+<br><tt>{ *sp = "my text"; }</tt>
+<br><tt>...</tt>
+<br><tt>auto_ptr&lt;string> aps(new string("hello world"));</tt>
+<br><tt>cout &lt;&lt; "before foo: " &lt;&lt; *aps;</tt>
+<br><tt>foo(aps);</tt>
+<br><tt>cout &lt;&lt; "after foo: " &lt;&lt; *aps;</tt>
+<br><tt>...</tt></dir>
+The text that is written to <font face="Courier,Courier New">cout</font>
+is the same in both cases: first "<font face="Courier,Courier New">hello
+world"</font><font face="Courier New"> </font>and then <font face="Courier,Courier New">"my
+text"</font>. The difference lies in the way<font face="Courier,Courier New">
+foo()</font> binds the new text <font face="Courier,Courier New">"my text"</font>to
+the output parameter <font face="Courier,Courier New">sp</font>. In the
+first case, <font face="Courier,Courier New">foo()</font> creates a new
+string on the heap. By assigning it to <font face="Courier,Courier New">sp</font>
+the heap object formerly referred to by <font face="Courier,Courier New">sp</font>
+is deleted. That’s why we pass a <i>non-</i><font face="Courier,Courier New">const</font>
+reference to an <font face="Courier,Courier New">auto_ptr</font> object
+to the function <font face="Courier,Courier New">foo():</font> we want
+to allow that it is altered. In the second case, where we pass a <font face="Courier,Courier New">const</font>
+reference to<font face="Courier,Courier New"> foo()</font>, the function
+does not change the <font face="Courier,Courier New">auto_ptr</font> object,
+but the string on the heap that is referred to by the <font face="Courier,Courier New">auto_ptr</font>.
+The standard committee used a clever design to make the <font face="Courier,Courier New">const</font>
+reference to an <font face="Courier,Courier New">auto_ptr</font> work in
+the way described above. We explain the trick later in this article. For
+now, we continue with the explanation of the <font face="Courier,Courier New">auto_ptr</font>’s
+usage and interface.
+<p><font face="Arial">Explicitly Changing Ownership</font>
+<p>So far, the examples might have given you a feeling for the rigid pattern
+that governs the usage of the <font face="Courier,Courier New">auto_ptr</font>:
+Construct an <font face="Courier,Courier New">auto_ptr</font> object with
+a pointer to a heap object to establish the ownership; optionally pass
+the ownership of the heap object to another <font face="Courier,Courier New">auto_ptr</font>,
+and eventually delete the heap object, which happens implicitly when the
+owning <font face="Courier,Courier New">auto_ptr</font> goes out of scope.
+There are three member functions that can be used to explicitly break this
+pattern:
+<ul>
+<li>
+<font face="Courier,Courier New">get()</font>, returns the built-in pointer
+that is contained in the <font face="Courier,Courier New">auto_ptr</font>,</li>
+
+<li>
+<font face="Courier,Courier New">release()</font>, returns the built-in
+that is contained in the <font face="Courier,Courier New">auto_ptr</font>
+and sets this data member to <font face="Courier,Courier New">0</font>,</li>
+
+<li>
+<font face="Courier,Courier New">reset()</font>, receives a pointer referring
+to a heap object as parameter and assigns this pointer to the data member
+after deletion of the previously contained built-in pointer.</li>
+</ul>
+While these member functions make the <font face="Courier,Courier New">auto_ptr</font>
+more flexible, they also make its usage more complicated. Our advice is:
+do not use them if you can live without them.
+<p><font face="Courier New"><font size=+1>auto_ptr</font></font><font face="Arial">s
+and Exceptions</font>
+<p>We already mentioned briefly that one design goal of the pointer abstraction
+for the standard library is to aid the deallocation of heap memory in case
+of exceptions. The <font face="Courier,Courier New">auto_ptr</font> meets
+this requirement thanks to the strict ownership concept: when an <font face="Courier,Courier New">auto_ptr</font>’s
+destructor is called during stack unwinding, it deletes the heap object
+it owns. Looking at the example below, we see that we neither need a <font face="Courier,Courier New">try</font>-block
+that surrounds the invocation of<font face="Courier,Courier New"> g()</font>
+nor a catch <font face="Courier,Courier New">catch</font>-block that frees
+the allocated string. Instead, when an exception is thrown by <font face="Courier,Courier New">g()</font>
+the destructor of <font face="Courier,Courier New">aps</font> will free
+the string.
+<dir><tt>void f()</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; auto_ptr&lt;string> aps(new string("hello world"));</tt>
+<br><tt>&nbsp; g(aps); // might throw an exception</tt>
+<br><tt>}</tt></dir>
+More examples of sensible uses of the<font face="Courier,Courier New">
+auto_ptr</font> class template in conjunction with exception handling can
+be found in /<a href="#4">4</a>/.
+<p><font face="Arial">auto_ptr Conversions</font>
+<p><font face="Courier,Courier New">auto_ptr</font>s pointing to different
+types of heap objects can be converted into each other as long as the underlying
+pointers types are convertible. For example, we can do the following:
+<dir><tt>class Base {};</tt>
+<br><tt>class Derived : public Base {};</tt>
+<br><tt>void foo(auto_ptr&lt;Base>);</tt>
+<br><tt>auto_ptr&lt;Derived> apd(new Derived);</tt>
+<br><tt>...</tt>
+<br><tt>foo(adp);</tt></dir>
+The function <font face="Courier,Courier New">foo()</font> requires an
+argument of type<font face="Courier,Courier New"> auto_ptr&lt;Base></font>;
+the argument provided is of type <font face="Courier,Courier New">auto_ptr&lt;Derived></font>.
+Normal derived class pointers can be converted to base class pointers.
+Similarly, an <font face="Courier,Courier New">auto_ptr</font> to a derived
+class object can be converted to an <font face="Courier,Courier New">auto_ptr</font>
+to a base class object. Such conversions are defined by a constructor template
+and a cast operator template.
+<p><font face="Courier New"><font size=+1>auto_ptr</font></font><font face="Arial">s
+and STL Containers</font>
+<p>Did you notice that in our code examples all instances of <font face="Courier,Courier New">auto_ptr</font>
+are automatic variables? They are never used as static variables, or as
+data members of classes, or created on the heap. This begs the question
+whether or not it makes sense to use <font face="Courier,Courier New">auto_ptr</font>s
+for anything else but local automatic variables on the stack of some function?
+There is no straight answer to this question. The<font face="Courier,Courier New">
+auto_ptr</font> is attractive in some situations due to its ability to
+aid proper memory management, especially in presence of exceptions. What
+makes the<font face="Courier,Courier New"> auto_ptr</font> unattractive
+in other situations is the ownership transfer of the pointed to heap object
+during copy construction and assignment. Lets see an example that demonstrates
+both aspects. Say, we want to use a vector of <font face="Courier,Courier New">int</font>
+pointers, i.e. <font face="Courier,Courier New">vector&lt;int*>.</font>
+As we aim to introduce a reliable policy for the memory management of the
+pointed to heap objects, we assume that it is a good idea to use a vector
+of <font face="Courier,Courier New">auto_ptr&lt;int></font>, i.e. <font face="Courier,Courier New">vector&lt;auto_ptr&lt;int>
+></font>, instead. Now we can do the following:
+<dir><tt>vector&lt;auto_ptr&lt;int> > v;</tt>
+<br><tt>v[0] = static_cast&lt;auto_ptr&lt;int> > (new int(32));</tt>
+<br><tt>...</tt>
+<br><tt>v[0] = static_cast&lt;auto_ptr&lt;int> > (new int(64));</tt></dir>
+We do not have to worry about the deletion of the <font face="Courier,Courier New">int</font>
+on the heap referred to by <font face="Courier,Courier New">v[0]</font>
+when we assign a new <font face="Courier,Courier New">int</font> to <font face="Courier,Courier New">v[0]</font>.
+This example does not only look good, it also compiles - but it is incorrect!
+In fact, the behavior of the code is undefined. The reason is simple: The
+standard library’s containers require that their element types must be
+<i>copy
+constructible.</i> Copy constructible basically means that an object and
+a copy of that object are equivalent. This is not true for <font face="Courier,Courier New">auto_ptr</font>
+objects because of the strict ownership principle. An <font face="Courier,Courier New">auto_ptr</font>
+and its copy differ in that one owns the heap object and the other does
+not. What would be needed in the example above were a smart pointer instead
+of an <font face="Courier,Courier New">auto_ptr</font>. A smart pointer
+is copy constructible: A smart pointer and its copy are equivalent because
+they share ownership of the same heap object.
+<p>The conclusion is that although the<font face="Courier,Courier New">
+auto_ptr</font> is the pointer abstraction in the standard library that
+aids the memory management of heap objects, there are situations where
+the <font face="Courier,Courier New">auto_ptr</font> is not the appropriate
+abstraction to use. When the <font face="Courier,Courier New">auto_ptr</font>
+is considered not suitable then it is usually because of the semantics
+of its copy construction or assignment. Whenever you are about to built
+a solution using the <font face="Courier,Courier New">auto_ptr</font>,
+keep the strict ownership principle in mind and check whether the <font face="Courier,Courier New">auto_ptr</font>'s
+copy and assignment semantics are what you need.
+<p><font face="Arial">Details of the </font><font face="Courier New"><font size=+1>auto_ptr</font></font><font face="Arial">
+Implementation</font>
+<p>It took the standard committee some last minute refinements to make
+the <font face="Courier,Courier New">auto_ptr</font> work correctly under
+all conditions. We mentioned earlier that correct copy construction of
+const and non-const <font face="Courier,Courier New">auto_ptr</font> objects
+is not trivial and involves some tricky design issues. So far, we have
+spared you the details. Let us now take a look at the implementation of
+the <font face="Courier,Courier New">autoptr</font>'s copy semantics.
+<p>We'll start our discussion with a canonically implemented copy constructor:
+<dir><tt>tempate&lt;classT></tt>
+<br><tt>auto_ptr&lt;T>:: auto_ptr&lt;T>(const auto_ptr&lt;T>&amp; rhs)
+// just a try !!!</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; pointer = rhs.pointer;</tt>
+<br><tt>&nbsp; rhs.pointer = 0;</tt>
+<br><tt>}</tt></dir>
+As expected, this implementation passes the ownership of the heap object
+to the newly constructed <font face="Courier,Courier New">auto_ptr</font>
+object. Surprisingly, this copy constructor has a subtle problem with <font face="Courier,Courier New">const</font>-correctness,
+which we can see by considering the following function template:
+<dir><tt>tempate&lt;classT></tt>
+<br><tt>void foo(const auto_ptr&lt;T>&amp; atp)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; auto_ptr&lt;T> newAtp(atp);</tt>
+<br><tt>}</tt>
+<br><tt>...</tt>
+<br><tt>auto_ptr&lt;int> api(new int(2));</tt>
+<br><tt>foo(api);</tt>
+<br><tt>...</tt></dir>
+The function <font face="Courier,Courier New">foo()</font> receives a <font face="Courier,Courier New">const</font>
+reference to an <font face="Courier,Courier New">auto_ptr</font> as parameter
+and does nothing except constructing a new <font face="Courier,Courier New">auto_ptr</font>
+as a copy of the received function argument. As the copy constructor passes
+the ownership of the heap object to the newly constructed <font face="Courier,Courier New">auto_ptr</font>,
+the original <font face="Courier,Courier New">auto_ptr</font> which <font face="Courier,Courier New">foo()</font>
+received as a <font face="Courier,Courier New">const</font> reference,
+loses the ownership. This means that after invocation of <font face="Courier,Courier New">foo()</font>,
+we cannot access the heap object any longer because the <font face="Courier,Courier New">auto_ptr</font>
+we provided to<font face="Courier,Courier New"> foo()</font> does not own
+it any more. In other words, the <font face="Courier,Courier New">auto_ptr</font>
+object, that we passed to the function<font face="Courier,Courier New">
+foo()</font> via a <font face="Courier,Courier New">const</font> reference,
+is modified, and this is not exactly what we expect when we pass a <font face="Courier,Courier New">const</font>
+reference as a parameter to a function.
+<p>Obviously, this implementation of the copy constructor is incorrect.
+How can we fix it? Let us make the copy constructor’s parameter a non-const
+reference. As a consequence, <font face="Courier,Courier New">foo()</font>
+also has to make its parameter a non-const reference when it wants to invoke
+the copy constructor. The signature of the function <font face="Courier,Courier New">foo()</font>
+would then clearly express that the function argument will be modified
+by the function and no silent changes of constant <font face="Courier,Courier New">auto_ptr</font>
+objects can happen anymore.
+<p>What are the consequences of providing a copy constructor that takes
+a non-<font face="Courier,Courier New">const</font> reference? The problem
+is that such a copy constructor is not sufficient for the implementation
+of the <font face="Courier,Courier New">auto_ptr</font>’s copy semantics,
+in particular is does not allow copies of rvalues. In order to copy an
+rvalue a copy constructor, that takes a <font face="Courier,Courier New">const</font>
+reference, is required. Consider the following situation:
+<dir><tt>auto_ptr&lt;int> f();</tt>
+<br><tt>...</tt>
+<br><tt>auto_ptr&lt;int> api( f() ); // line 7</tt>
+<br><tt>...</tt></dir>
+Line 7 does not compile because the return code of the function <font face="Courier,Courier New">f()</font>
+is a rvalue ,and rvalues cannot be bound to non-const references, but our
+copy constructor requires a non-const reference as an argument. It is certainly
+not trivial to figure out a solution for this problem. On the one hand,
+we try to avoid a copy constructor that takes a <font face="Courier,Courier New">const</font>
+reference, while on the other hand such a copy constructor is needed to
+copy-construct rvalues.
+<p>The solution, that works for the <font face="Courier,Courier New">auto_ptr</font>,
+is to allow the 'copy construction from rvalues' by means other than a
+copy constructor. Instead of providing a copy constructor that takes a
+<font face="Courier,Courier New">const</font>
+reference, a helper class is introduced along with conversions to and from
+this new type. The auxiliary class is a nested class called <font face="Courier,Courier New">auto_ptr_ref,</font>
+which holds a reference to an <font face="Courier,Courier New">auto_ptr</font>
+as data member. The conversion from an <font face="Courier,Courier New">auto_ptr</font>
+to an <font face="Courier,Courier New">auto_ptr_ref</font> is defined by
+means of a cast operator <font face="Courier,Courier New">auto_ptr::operator
+auto_ptr_ref()</font> and back from an <font face="Courier,Courier New">auto_ptr_ref</font>
+to an <font face="Courier,Courier New">auto_ptr</font> by means of a converting
+constructor <font face="Courier,Courier New">auto_ptr::auto_ptr(auto_ptr_ref)</font>.
+<p>The code sample below shows the declaration of the <font face="Courier,Courier New">auto_ptr</font>
+class template as specified in the standard; the portions that have to
+do with the helper class are high-lighted.
+<dir><tt>template&lt;class X> class auto_ptr {</tt>
+<br><tt>&nbsp; template &lt;class Y> struct auto_ptr_ref {};</tt>
+<br><tt>public:</tt>
+<br><tt>&nbsp; typedef X element_type;</tt>
+<br><tt>&nbsp; // <i>construct/copy/destroy:</i></tt>
+<br><tt>&nbsp; explicit auto_ptr(X* p =0) throw();</tt>
+<br><tt>&nbsp; auto_ptr(auto_ptr&amp;) throw();</tt>
+<br><tt>&nbsp; template&lt;class Y> auto_ptr(auto_ptr&lt;Y>&amp;) throw();</tt>
+<br><tt>&nbsp; auto_ptr&amp; operator=(auto_ptr&amp;) throw();</tt>
+<br><tt>&nbsp; template&lt;class Y> auto_ptr&amp; operator=(auto_ptr&lt;Y>&amp;)
+throw();</tt>
+<br><tt>&nbsp; ~auto_ptr() throw();</tt>
+<br><tt>&nbsp; // <i>members:</i></tt>
+<br><tt>&nbsp; X&amp; operator*() const throw();</tt>
+<br><tt>&nbsp; X* operator&shy;>() const throw();</tt>
+<br><tt>&nbsp; X* get() const throw();</tt>
+<br><tt>&nbsp; X* release() throw();</tt>
+<br><tt>&nbsp; void reset(X* p =0) throw();</tt>
+<br><tt>&nbsp; // <i>conversions:</i></tt>
+<br><tt>&nbsp; auto_ptr(auto_ptr_ref&lt;X>) throw();</tt>
+<br><tt>&nbsp; template&lt;class Y> operator auto_ptr_ref&lt;Y>() throw();</tt>
+<br><tt>&nbsp; template&lt;class Y> operator auto_ptr&lt;Y>() throw();</tt>
+<br><tt>};</tt></dir>
+
+<p><br><i>Now, when an </i><font face="Courier,Courier New">auto_ptr</font>
+object returned from a function shall be used to copy-construct another
+<font face="Courier,Courier New">auto_ptr</font>
+object, as in our example above, a conversions takes place instead of a
+copy construction, because the normal copy constructor is not available.
+Let's reconsider the example:
+<dir><tt>auto_ptr&lt;int> f();</tt>
+<br><tt>...</tt>
+<br><tt>auto_ptr&lt;int> api( f() ); // line 7</tt>
+<br><tt>...</tt></dir>
+In line 7 the compiler is asked to construct an <font face="Courier,Courier New">auto_ptr</font>
+object from an <font face="Courier,Courier New">auto_ptr</font> rvalue,
+namely the object returned from <font face="Courier,Courier New">f()</font>.
+The only viable constructor is<font face="Courier,Courier New"> auto_ptr::auto_ptr(auto_ptr_ref)</font>.
+Hence, the compiler looks for a conversion sequence that turns the<font face="Courier,Courier New">
+auto_ptr</font> rvalue into an <font face="Courier,Courier New">auto_ptr_ref</font>
+object. This conversion is achieved via the cast operator, which creates
+an <font face="Courier,Courier New">auto_ptr_ref</font> that holds a reference
+to the <font face="Courier,Courier New">auto_ptr</font> rvalue. This temporary
+<font face="Courier,Courier New">auto_ptr_ref</font>
+object is eventually used to construct the <font face="Courier,Courier New">auto_ptr</font>
+object <font face="Courier,Courier New">api</font>. (Note, that the latter
+construction, as usual for <font face="Courier,Courier New">auto_ptr</font>s,
+transfers the ownership of the heap object from the <font face="Courier,Courier New">auto_ptr</font>
+reference contained in <font face="Courier,Courier New">auto_ptr_ref</font>
+to the newly constructed <font face="Courier,Courier New">auto_ptr</font>
+object.)
+<p>To sum it up: Different from normal classes, the<font face="Courier,Courier New">
+auto_ptr</font> class template has a copy constructor that takes a non-<font face="Courier,Courier New">const</font>
+reference and does not have a "normal" copy constructor that takes a <font face="Courier,Courier New">const</font>
+reference. The normal copy constructor was eliminated to solve the <font face="Courier,Courier New">const</font>-correctness
+problem: Without the normal copy constructor, constant <font face="Courier,Courier New">auto_ptr</font>
+objects cannot be copied, which is desirable because the copy construction
+would modify the constant<font face="Courier,Courier New"> auto_ptr</font>,
+namely take away its ownership property. The compiler, however, needs a
+way to create copies of <font face="Courier,Courier New">auto_ptr</font>
+rvalues and this copy construction of rvalues is usually performed by means
+of a "normal" copy constructor. As there is not normal copy constructor,
+the compiler performs conversions to and from the helper class <font face="Courier,Courier New">auto_ptr_ref</font>,
+as described above.
+<br>&nbsp;
+<br>&nbsp;
+<p>What do we learn from this complex implementation of an almost trivial
+class? Well, the crux with <font face="Courier,Courier New">auto_ptr</font>
+is that it does not have normal copy semantics due to the strict ownership
+concept. This anomaly becomes apparent when you think of the fact that
+the <font face="Courier,Courier New">auto_ptr</font> does not meet the
+copy constructible requirements for element types of containers in the
+standard library. The special copy semantics are also visible in the signature
+of the <font face="Courier,Courier New">auto_ptr</font>'s copy constructor.
+<p><b><i><font face="Arial">Summary</font></i></b>
+<p>The <font face="Courier,Courier New">auto_ptr</font> is the standard
+library’s pointer abstraction that aids memory management of heap objects.
+While it is highly efficient, it has a special behavior based on strict
+ownership. This behavior makes it useful for automatic variables, function
+parameters, and return codes, that are pointers to heap objects. Using
+references and const references to an <font face="Courier,Courier New">auto_ptr</font>
+extends the <font face="Courier,Courier New">auto_ptr</font>’s usability.
+<p>Compared to a smart pointer the<font face="Courier,Courier New"> auto_ptr</font>
+is more efficient. Its special behavior, however, limits its applicability
+somewhat in comparison to a smart pointer.
+<p><b><i><font face="Arial">References</font></i></b>
+<p>/1/&nbsp;<a NAME="1"></a>
+<br>Scott Meyers
+<br>More Effective C++
+<br>Addison-Wesley, 1996
+<p>/2/&nbsp;<a NAME="2"></a>
+<br>John J. Barton and Lee R. Nackman
+<br>Scientific and Engineering C++
+<br>Addison-Wesley, 1994
+<p>/3/&nbsp;<a NAME="3"></a>
+<br>Bjarne Stroustrup
+<br>The C++ Programming Language
+<br>Addison-Wesley, 1997
+<p>/4/&nbsp;<a NAME="4"></a>
+<br>Jack W. Reeves
+<li>
+Coping with Exceptions, C++ Report, March 1996</li>
+
+<li>
+Exceptions and Standards, C++ Report, Mai 1996</li>
+
+<li>
+Ten Guidelines for Exception Specification, C++ Report, July 1996</li>
+
+<li>
+Exceptions and Debugging, C++ Report, November/December 1996</li>
+
+<br>&nbsp;
+<p>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+</body>
+</html>

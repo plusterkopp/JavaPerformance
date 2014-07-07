@@ -1,0 +1,248 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="KeyWords" content="Java J2SE 1.5 5.0 generics util.concurrent JSR166 JSR014 concurrency utilities">
+   <title>New Features in J2SE 5.0</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="J2SE15Course"></a>
+<br><b><font face="Arial"><font color="#295AB5">COURSE DESCRIPTION</font></font></b>
+<table BORDER=0 CELLSPACING=10 CELLPADDING=2 WIDTH="98%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%"><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p>The 5.0 release of the Java Standard Edition (J2SE) adds a number of
+major and minor new language features and library extensions.&nbsp; The
+most significant addition to the Java programming language are generic
+types and methods.&nbsp; The most substantial addition to the Java platform
+libraries are the new concurrency utilities.&nbsp;
+<br>&nbsp;
+<p><b><font size=+1>Java Generics</font></b>
+<br>A common misconception regarding generics is its comparison to C++
+templates.&nbsp; Many people believe that Java generics are similar to
+C++ templates, while in fact both features have barely anything in common:
+C++ templates is a Turing complete language – Java generics is syntactic
+sugar that elides some casting. Java generics are a pure compile-time feature
+that is translated to non-generic Java bytecode, for reasons of compatibility
+with previous versions of Java.
+<br>In this tutorial, we will take a look into the proposed language feature,
+how it will help us improve our programs, how it is supposed to be used
+and where its limitations are.&nbsp;
+<br>More specifically, we will discuss the additions made to the language
+itself (parameterized types and methods as well as covariant return types),
+changes to the platform libraries (generic collections and extended reflection)
+and various exciting details of generics such as the properties of type
+parameters (their bounds and their scope), generic methods and type parameters
+inference, and the translation of generics into bytecode.
+<br>&nbsp;
+<p><b><font size=+1>Concurrency Utilities</font></b>
+<br>The Java platform provides basic, low-level primitives for writing
+concurrent programs, but they are difficult to use properly. Many programs
+become clearer, shorter, faster, easier to write, and more reliable if
+higher-level synchronization constructs are used.&nbsp;
+<br>A comprehensive library of concurrency utilities has been developed
+for inclusion in the 5.0 release of J2SE. This library, known as the util.concurrent
+package, contains thread pools, queues, concurrent collections, special-purpose
+locks, barriers, and related utilities. The addition to the Java platform
+is substantial and will change the way we will implement concurrent Java
+applications. This tutorial gives an overview of the new library.
+<br>&nbsp;
+<p><b><font size=+1>Enums, Autoboxing, Annotations, etc.</font></b>
+<br>Some smaller additions to the programming language comprise syntax
+for enumeration types, an enhanced for-loop, static imports, autoboxing,
+and varargs. Another novelty in Java 5.0 is the meta-data facility that
+allows definition and use of program annotations.</td>
+
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 CELLPADDING=2 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="35%"><b><i><font color="#295AB5">Prerequisite Courses
+and Skills:</font></i></b></td>
+
+<td VALIGN=TOP WIDTH="65%">Working knowledge of Java; in-depth experience
+with Java not required.&nbsp;</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="50%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td WIDTH="50%">1 day</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="50%"><b><i><font color="#295AB5">Exercises:</font></i></b></td>
+
+<td WIDTH="50%">Workshops and hands-on labs</td>
+</tr>
+</table>
+
+<p>This is a course for Java programmers who want to explore new language
+features added to the Java programming language with release 5.0 of the
+J2SE. The courses are designed to build on existing expertise as Java programmers
+and take your skills one step further. Prerequisite for these seminars
+is at least 1 year of experience with Java or equivalent knowledge.&nbsp;
+<br>&nbsp;
+<p><b><font face="Arial"><font color="#295AB5"><font size=+0>PERFORMANCE
+OBJECTIVES</font></font></font></b>
+<table BORDER=0 CELLSPACING=4 CELLPADDING=0 >
+<caption>&nbsp;</caption>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Learn how to use generics effectively</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Know what to expect of Java generics</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Know how get the most out of the new concurrency utilities</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Understand best-practice Java idioms</td>
+</tr>
+</table>
+
+<p><b><font face="Arial"><font color="#295AB5"><font size=+0>BUSINESS OBJECTIVES</font></font></font></b>
+<table BORDER=0 CELLSPACING=4 CELLPADDING=0 >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Equip your software professionals with industrial-strength Java skills&nbsp;</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Make your Java software more reliable</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Get the most out of Java</td>
+</tr>
+</table>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p><font color="#295AB5">The course is designed by Klaus Kreft &amp; Angelika
+Langer and backed by years of experience in teaching&nbsp; Java and C++
+related topics and more than a decade of real-world experience in industrial
+software development both in C++ and Java.</font>
+<br><font color="#295AB5">Angelika Langer is a freelance trainer/mentor
+in the area of object-oriented software development in C++ and Java. She
+is a recognized author and speaker at OO conferences worldwide.&nbsp;</font>
+<br><font color="#295AB5">Klaus Kreft is a senior consultant for more than
+15 years and has served as the lead architect on several successful industry
+projects. He has been working in C++ for many year and works in Java since
+1995. He is a regular speaker at OO conferences in Germany.</font>
+<p><font color="#295AB5">Together they wrote columns for C+ Report and
+C/C++ Users Journal,&nbsp; are authors of the&nbsp; book "Standard C++
+IOStreams and Locales". They&nbsp; publish articles on C++ and Java topics
+in various computer magazines worldwide, including the column "Effective
+Java" in the German JavaSpektrum magazine.</font>
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p>&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial"><font color="#295AB5">COURSE CONTENT</font></font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLPADDING=2 WIDTH="98%" >
+<tr VALIGN=TOP>
+<td VALIGN=TOP WIDTH="33%"><b><i>Enums, Autoboxing, etc.</i></b>
+<ul>
+<li>
+Enums</li>
+
+<li>
+Autoboxing</li>
+
+<li>
+Enhanced for-Loop</li>
+
+<li>
+Varargs</li>
+
+<li>
+Static Import</li>
+
+<li>
+Program Annotations</li>
+</ul>
+</td>
+
+<td><b><i>Generics</i></b>
+<ul>
+<li>
+Generic Types and Methods</li>
+
+<li>
+Bounded Type Variables</li>
+
+<li>
+Wildcard Instantiations</li>
+
+<li>
+Translation by Type Erasure</li>
+
+<li>
+Use of Type Variables</li>
+
+<li>
+Use of Parameterized Types</li>
+
+<li>
+Automatic Type Inferences</li>
+
+<br>&nbsp;</ul>
+</td>
+
+<td VALIGN=BASELINE WIDTH="33%"><b><i>Concurrency Utilities</i></b>
+<ul>
+<li>
+Explicit Locks and Conditions</li>
+
+<li>
+Atomic Variables</li>
+
+<li>
+Runnable, Callable, Future</li>
+
+<li>
+Queue, Exchanger, Barrier, Latch</li>
+
+<li>
+Thread Pools</li>
+
+<li>
+Task Scheduling</li>
+
+<br>&nbsp;</ul>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

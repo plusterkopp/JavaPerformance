@@ -1,0 +1,115 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="KeyWords" content="J2SE 1.5, Garbage Collection, Java">
+   <meta name="Description" content="Tuning the Java Garbage Collector">
+   <title>Garbage Collection - Tutorial</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="AbstractGarbageCollection"></a>&nbsp;
+<div ALIGN=right><table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 COLS=1 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">ABSTRACT</font></b></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=0 COLS=1 WIDTH="95%" >
+<tr>
+<td>One of the compelling features of Java is its support for memory management
+by means of a garbage collector that automatically releases heap memory
+that is no longer used. Usually, Java programmers don’t care a lot about
+the garbage collector and treat it as a black box that simply does its
+job.&nbsp; However, garbage collection does not come for free; it takes
+time and consumes resources.&nbsp; Occasionally, it turns out that the
+garbage collector is a performance bottleneck, because the application
+spends too much time with garbage collection.&nbsp; In those cases, it
+is helpful to understand the garbage collector’s functionality and to know
+how to control its behavior.&nbsp; The Sun JVM offers a number of JVM switches
+that allow GC tuning.&nbsp;
+<p>In this tutorial we will explain the classic garbage collection algorithms
+(reference counting, mark &amp; sweep, mark &amp; compact, copying, generational,
+incremental, and concurrent GC) before we delve into the more practical
+issue of exploring the tuning options that the Sun JVM has to offer.
+<br>&nbsp;
+<p>&nbsp;</td>
+</tr>
+</table></div>
+&nbsp;</td>
+</tr>
+</table></div>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">PREREQUISITES</font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLPADDING=5 WIDTH="95%" >
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Level:</font></i></b></td>
+
+<td>intermediate / advanced</td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td WIDTH="50%">1.5 -3.0 hours</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><i><font color="#295AB5">Prerequisites:</font></i></b></td>
+
+<td WIDTH="50%">Attendants should be familiar with Java.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><b><i><font color="#295AB5">Presented at:</font></i></b></td>
+
+<td WIDTH="95%"><a href="PreviousEvents.html#OOP2004">OOP 2004</a>, Munich,
+Germany, January 19-23, 2004</td>
+</tr>
+</table></div>
+
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=2 WIDTH="88%" >
+<tr>
+<td COLSPAN="2"><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar or
+skim through some further reading:</font></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminars</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Courses/EffectiveJava.htm"><img SRC="../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><font color="#000000"><a href="../Courses/EffectiveJava.htm">Effective
+Java</a></font>
+<br><font color="#000000"><font size=-1>4 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+
+<td VALIGN=TOP></td>
+</tr>
+</table>
+
+</body>
+</html>

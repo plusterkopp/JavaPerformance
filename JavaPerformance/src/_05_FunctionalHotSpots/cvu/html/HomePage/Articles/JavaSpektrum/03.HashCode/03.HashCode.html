@@ -1,0 +1,816 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Pre-Copyedit Version of Article in JavaSpektrum, May 2002">
+   <title>Implementing the hashCode() Method</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="EffectiveJava03"></a>
+<br><font color="#295AB5"><font size=+3>Hash-Code-Berechnung</font></font>
+<br><font color="#295AB5"><font size=+2>Wie, wann und warum implementiert
+man die hashCode()-Methode?</font></font>
+<p><font color="#295AB5"><font size=+2>JavaSPEKTRUM, Mai 2002</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font><font color="#295AB5"><font size=+1></font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<p><b>In den letzten beiden Artikeln dieser Kolumne (/<a href="#Kreft1">KRE1</a>/
+und /<a href="#Kreft2">KRE2</a>/)haben wir uns mit der Methode equals()
+befasst. In dieser Ausgabe wollen wir und ansehen, wie und warum man die
+Methode hashCode() implementieren muss.&nbsp; equals() und hashCode() h&auml;ngen
+eng zusammen und m&uuml;ssen konsistent zueinander implementiert werden.&nbsp;
+Immer dann, wenn man&nbsp; equals() implementiert hat, muss man auch hashCode()
+implementieren. Worin besteht der Zusammenhang? Was genau ist die Konsistenzanforderung?&nbsp;
+Wie implementiert man hashCode()?</b>
+<br>&nbsp;
+<h2>
+<b>Hash-basierte Container in Java</b></h2>
+Die Methode hashCode() berechnet zu dem Objekt, auf dem sie gerufen wird,
+einen Hash-Code. Der Hash-Code ist ein integraler Wert, der verwendet wird,
+um Objekte in einem hash-basierten Container abzulegen oder sie in einem
+solchen Container zu finden.&nbsp; Die hash-basierten Container in Java
+sind java.util.Hashtable, java.util.HashMap, java.util.HashSet und deren
+Subklassen.
+<p>Hash-basierte Container geh&ouml;ren zu den Standard-Datenstrukturen
+in der Informatik und sind in der entsprechenden Standardliteratur &uuml;ber
+Datenstrukturen und Algorithmen beschrieben (siehe zum Beispiel /<a href="#Knuth">KNU</a>/
+oder /<a href="#Sedgewick">SED</a>/).&nbsp; Hier ein kurzer Abriss &uuml;ber
+die wesentlichen Elemente; siehe auch Abbildung 1, welche den logischen
+Aufbau eines hash-basierten Containers zeigt.
+<br><img SRC="image001.gif" NOSAVE height=335 width=446>
+<br><i>Abbildung 1: logischer Aufbau eines hash-basierten Containers</i>
+<p>Ein hash-basierter Container ist so organisiert, dass er verschiedene
+Sektionen anlegt (sogenannte "buckets"), in denen die zu speichernden Objekte
+sequentiell abgelegt werden. Bei den hash-basierten Containern in Java
+ist zu beachten, dass genau genommen nicht die Objekte, sondern lediglich
+Referenzen auf die Objekte gespeichert werden. Einen Bucket kann man sich
+daher als Array oder Liste von Object-Referenzen vorstellen. Der Zugriff
+auf die verschiedenen Buckets erfolgt &uuml;ber einen integralen Index
+und ist damit hochperformant; er erfolgt in konstanter Zeit, d.h. der Zugriff
+auf den Bucket dauert immer gleich lang unabh&auml;ngig von der Zahl der
+Elemente im Container.&nbsp; Innerhalb eines Buckets ist der Zugriff auf
+die Elemente allerdings langsam, weil er n&auml;mlich sequentiell erfolgt.
+Die Abh&auml;ngigkeit ist hier linear, d.h. es dauert um so l&auml;nger,
+je gr&ouml;&szlig;er der Bucket ist.&nbsp; Deshalb ist ein hash-basierter
+Container mit vielen kleinen Buckets g&uuml;nstiger als einer mit wenigen
+gro&szlig;en Buckets.
+<p>Der integrale Index, der f&uuml;r das Auffinden des Buckets verwendet
+wird, bestimmt sich &uuml;ber den Hash-Code, den die Methode hashCode()
+berechnet. Das bedeutet, dass alle Objekte mit demselben Hash-Code im selben
+Bucket abgelegt sind. Schauen wir uns das noch einmal im Detail an.&nbsp;
+Betrachten wir als Beispiel das Einf&uuml;gen eines Objekts in einen HashSet;
+das geht &uuml;ber die Methode add(Object o). Da&nbsp; wird zun&auml;chst
+der Hash-Code des Objekts o berechnet. Nehmen wir mal an, o.hashCode()
+liefert den Hash-Code 4711. Damit ist der Bucket identifiziert, in den
+das Objekt geh&ouml;rt.&nbsp; Dann wird im Bucket Nr. 4711 nachgesehen,
+ob es das Objekt o dort schon gibt; das ist n&ouml;tig, weil im HashSet
+keine Duplikate erlaubt sind. Wie das Vorhandensein eines Objekts im Bucket
+festgestellt wird, sehen wir uns gleich noch genauer an. Wenn das Objekt
+im Bucket noch nicht vorhanden ist, dann wird eine Referenz auf das Objekt
+o im Bucket Nr. 4711 am Ende hinzugef&uuml;gt.&nbsp; Andernfalls, wird
+ein Fehler gemeldet, indem der Returnwert false zur&uuml;ck gegeben wird.
+<p>Das Auffinden des m&ouml;glichen Duplikats erfolgt wie gesagt sequentiell;
+es werden alle Objekte im Bucket nacheinander &uuml;berpr&uuml;ft. Wie
+oben schon erw&auml;hnt, liegen in einem Bucket alle Objekte, deren Hash-Code
+gleich ist.&nbsp; Das hei&szlig;t aber nicht, dass deshalb alle Objekte
+im Bucket gleich sind.&nbsp; Es k&ouml;nnte beispielsweise sein, dass 2
+Objekte a und b voneinander verschieden sind, aber die hashCode()-Methode
+berechnet denselben Hash-Code f&uuml;r die beiden Objekte a und b.&nbsp;
+Dann landen zwar beide Objekte im gleichen Bucket, sind aber deshalb nicht
+gleich.&nbsp; Mit Gleichheit ist hier im &uuml;brigen die Gleichheit im
+Sinne von equals()&nbsp; gemeint. In der Tat ruft die Methode add(Object
+o) auf jedem Element im Bucket die Methode equals() auf.&nbsp; Die &uuml;brigen
+Operationen auf einem hash-basierten funktionieren ganz analog.&nbsp; Es
+wird immer diese zweistufige Kombination von hashCode() und equals() verwendet,
+um auf Elemente im Container zuzugreifen.
+<p>Aus dieser Implementierung der hash-basierten Container in Java ergibt
+sich eine enge Beziehung zwischen den beiden Methoden equals() und hashCode().&nbsp;
+Die beiden Methoden m&uuml;ssen zueinander konsistent sein.&nbsp; Wenn
+diese Konsistenz nicht gegeben ist, dann passieren seltsame Dinge, die
+man in erster N&auml;herung mit "Der Hash-Container funktioniert nicht."
+beschreiben k&ouml;nnte. Details sehen wir uns sp&auml;ter noch an.
+<p>Aus der geschilderten Organisation der hash-basierten Container ergeben
+sich zwei grunds&auml;tzliche Anforderung an den Algorithmus zur Hash-Code-Berechnung.
+<ul>
+<li>
+Performanz der Hash-Code-Berechnung. Die Berechnung des Hash-Codes sollte
+schnell gehen.&nbsp; Sinn und Zweck der Hash-Code-Berechnung ist der performante
+index-basierte Zugriff auf den Bucket, in dem das gesuchte Objekt liegt.&nbsp;
+Wenn die Hash-Code-Berechnung aufwendig ist und lange dauert, dann ist
+der "schnelle" Zugriff nicht mehr schnell und alle Operationen auf dem
+hash-basierten Container werden schlechte Zugriffszeiten aufweisen.</li>
+</ul>
+
+<ul>
+<li>
+Verteilung der berechneten Hash-Codes. Die Suche innerhalb eines Buckets
+erfolgt sequentiell und dauert damit umso l&auml;nger je gr&ouml;&szlig;er
+der Bucket ist.&nbsp; Dieser langsame sequentielle Zugriff wirkt sich negativ
+auf die Performance aller Operationen auf dem hash-basierten Container
+aus. Um diesen negativen Effekt zu vermeiden, muss man die Buckets so klein
+wir m&ouml;glich halten. Die Hash-Code-Berechnung sollte deshalb so sein,
+dass m&ouml;glichst wenige Objekte im selben Bucket abgelegt werden. Idealerweise
+k&ouml;nnte f&uuml;r jedes Objekt ein anderer Hash-Code berechnet werden;
+dann gibt es sehr viele winzige Buckets mit jeweils genau einem Element.
+Die schlechteste Performance ergibt sich, wenn f&uuml;r alle Objekte der
+gleiche Hash-Code berechnet wird; dann gibt es nur einen riesigen Bucket,
+in dem alle Elemente enthalten sind.</li>
+</ul>
+Ein guter Hash-Code-Algorithmus muss also versuchen, eine m&ouml;glichst
+gute Verteilung der Hash-Codes mit m&ouml;glichst geringem Aufwand zu erreichen.&nbsp;
+Neben diesen grunds&auml;tzlichen Anforderungen an eine Implementierung
+der hashCode()-Methode muss noch auf die schon erw&auml;hnte Konsistenz
+zur equals()-Methode geachtet werden. Was das bedeutet, sehen wir uns im
+Folgenden an.
+<br>&nbsp;
+<h2>
+Der sogenannte hashCode-Contract</h2>
+Was genau ist die Anforderung an eine Implementierung von hashCode(), die
+konsistent zu equals() ist? Die Anforderungen an hashCode() sind im sogenannten
+hashCode-Contract beschrieben.&nbsp; Den findet man in der JavaDoc der
+Java 2 Standard Edition (J2SE) unter dem Eintrag Object.hashCode.&nbsp;
+Hier ist der Originaltext:
+<ul><tt>public int hashCode()</tt>
+<p><font face="Arial,Helvetica"><font size=-1>Returns a hash code value
+for the object. This method is supported for the benefit of hashtables
+such as those provided by java.util.Hashtable.</font></font>
+<p><font face="Arial,Helvetica"><font size=-1>The general contract of hashCode
+is:</font></font>
+<ul>
+<li>
+<font face="Arial,Helvetica"><font size=-1>Whenever it is invoked on the
+same object more than once during an execution of a Java application, the
+hashCode method must consistently return the same integer, provided no
+information used in equals comparisons on the object is modified. This
+integer need not remain consistent from one execution of an application
+to another execution of the same application.</font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font size=-1>If two objects are equal according
+to the equals(Object) method, then calling the hashCode method on each
+of the two objects must produce the same integer result.</font></font></li>
+
+<li>
+<font face="Arial,Helvetica"><font size=-1>It is not required that if two
+objects are unequal according to the equals(java.lang.Object) method, then
+calling the hashCode method on each of the two objects must produce distinct
+integer results. However, the programmer should be aware that producing
+distinct integer results for unequal objects may improve the performance
+of hashtables.</font></font></li>
+</ul>
+</ul>
+Das bedeutet das Folgende:
+<ul>
+<li>
+Es ist egal, wie oft man hashCode() aufruft; es kommt immer der gleiche
+Wert heraus, es sei denn, der Inhalt des Objekts hat sich ge&auml;ndert.
+Das gilt aber nur f&uuml;r einen Programmlauf; beim n&auml;chsten Ablauf
+des Programms darf hashCode() einen anderen Wert produzieren.</li>
+
+<li>
+Wenn zwei Objekte gleich sind, dann m&uuml;ssen sie den gleichen Hash-Code
+haben.</li>
+
+<li>
+Wenn zwei Objekte verschieden sind, dann m&uuml;ssen sie deshalb keine
+unterschiedlichen Hash-Codes haben.&nbsp; Es w&auml;re aber besser f&uuml;r
+die Performance, wenn die Hash-Codes von ungleichen Objekten verschieden
+w&auml;ren.</li>
+</ul>
+Hier sieht man deutlich die enge Beziehung zwischen equals() und hashCode():
+<ul>
+<li>
+Die "Gleichheit zweier Objekte" im hashCode-Contract ist die Gleichheit,
+die durch equals() definiert ist. Das hei&szlig;t, aus x.equals(y) muss
+sich (x.hashCode() == y.hashCode()) ergeben.</li>
+
+<li>
+Mit "Inhalt des Objekts" ist im hashCode -Contract der Inhalt des Objekts
+gemeint, der f&uuml;r den Vergleich mittels equals() relevant ist.&nbsp;
+Was nicht zum Ergebnis von equals() beitr&auml;gt, kann auch f&uuml;r hashCode()ignoriert
+werden.</li>
+</ul>
+Daraus ergibt sich, dass man f&uuml;r eine Klasse hashCode() immer dann
+implementieren muss, wenn man auch equals() implementiert.&nbsp; Vieles
+von dem, was wir in den letzten beiden Artikeln f&uuml;r equals() besprochen
+haben, gilt ganz analog auch f&uuml;r hashCode().
+<br>&nbsp;
+<h2>
+Probleme mit inkorrekten Implementierungen von hashCode()</h2>
+Bevor wir uns in die Details einer Implementierung von hashCode() vertiefen,
+widmen wir uns zun&auml;chst erst einmal der Frage: was passiert eigentlich,
+wenn man hashCode() nicht implementiert, oder falsch implementiert?
+<p>Ebenso wie die equals()-Methode ist auch die hashCode()-Methode bereits
+in der Superklasse aller Klassen, n&auml;mlich Object, definiert. Wenn
+man hashCode() nicht implementiert, dann erbt die Klasse die Default-Implementierung
+aus der Superklasse Object. Das hat zur Folge, dass man f&uuml;r alle Java-Objekte
+einen Hash-Code berechnen kann. Das hei&szlig;t aber auch, dass man sich
+f&uuml;r jede Klasse &uuml;berlegen muss, ob die Implementierung von hashCode()
+f&uuml;r diese Klasse korrekt ist.&nbsp; Was tut die geerbte Default-Implementierung
+denn eigentlich?
+<p>Was Object.hashCode() macht, ist nicht so genau definiert. Die JavaDoc-Beschreibung
+sagt dazu:
+<blockquote><font face="Arial,Helvetica"><font size=-1>As much as is reasonably
+practical, the hashCode method defined by class Object does return distinct
+integers for distinct objects. (This is typically implemented by converting
+the internal address of the object into an integer, but this implementation
+technique is not required by the JavaTM programming language.)</font></font></blockquote>
+Das hei&szlig;t, typischerweise basiert die Default-Hash-Code-Berechnung
+auf der Adresse des Objekts. Das macht Sinn, weil es die Anforderungen
+des hashCode-Contracts erf&uuml;llt, solange auch die Default-Implementerung
+von equals() nicht &uuml;berschrieben&nbsp; wird.&nbsp; Zur Erinnerung:
+die Default-Implementierung von equals() in der Klasse Object vergleicht
+die Adressen der beiden Objekte.&nbsp; Die oben spezifizierte Implementierung
+von hashCode() ist dazu konsistent: es geht in beide Methoden lediglich
+die Adresse des Objekts ein.&nbsp; Damit ist gew&auml;hrleistet, dass gleiche
+Objekte (d.h. solche mit gleicher Adresse) gleiche Hash-Codes haben (n&auml;mlich
+solche, die sich aus der Adresse berechnen lassen).&nbsp; Sobald man sich
+entschlie&szlig;t, f&uuml;r eine Klasse die equals() -Methode zu &uuml;berschreiben,
+dann muss man auch die hashCode()-Methode &uuml;berschreiben, weil sonst
+mit gr&ouml;&szlig;ter Wahrscheinlichkeit der hashCode-Contract verletzt
+ist.&nbsp; Welche Auswirkungen haben solche Verletzungen des hashCode-Contracts?
+<p>Betrachten wir das Beispiel einer Klasse PhoneNumber, die zwar equals()
+&uuml;berschreibt, aber hashCode() nicht. Die equals()-Methode wird dann
+den Inhalt der PhoneNumber-Objekte vergleichen, also beispielsweise Vorwahl
+und Anschlussnummer. Die geerbte hashCode()-Methode berechnet aber den
+Hash-Code aus der Adresse des Objekts.&nbsp; Dann passiert das Folgende,
+wenn man beispielsweise die Telefonnummer als Schl&uuml;ssel in einer HashMap
+verwenden will: man kann zwar Key-Value-Paare in die HashMap eintragen,
+also beispielsweise den Namen zu einer bestimmten Telefonnummer, aber man
+wird sie u.U. nie mehr wiederfinden.
+<blockquote><tt>Map createPhoneDirectory()</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; Map m = new HashMap();</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; m.put(new PhoneNumber(501,4375493), new String(“Bodo Ballermann”));</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; return m;</tt>
+<br><tt>}</tt>
+<p><tt>void someSomething()</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; // find phone directory entry</tt>
+<br><tt>&nbsp; m.get(new PhoneNumber(501,4375493));&nbsp; // returns false
+!!!</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt></blockquote>
+In diesem Beispiel wird als Schl&uuml;ssel f&uuml;r das Eintragen und das
+Finden die gleiche Telefonnummer benutzt, n&auml;mlich (501) 437 5493.
+Der betreffende Eintrag zu dieser Nummer wird aber nicht gefunden, obwohl
+er in der HashMap vorhanden ist. Das liegt daran, dass "gleiche" PhoneNumber-Objekte
+nicht die gleichen Hash-Codes haben. In obigem Beispiel haben wir zwei
+PhoneNumber-Objekte mit gleichem Inhalt, aber mit unterschiedlichen Adressen
+verwendet. Die Methode HashMap.put() legt daher den Eintrag in einem Bucket
+ab, dessen Identifikation sich aus der Adresse des ersten PhoneNumber-Objekts
+ergibt, und die Methode hashMap.get() sucht den Eintrag in einem ganz anderen
+Bucket, dessen Identifikation sich aus der Adresse des zweiten PhoneNumber-Objekts
+ergibt.&nbsp; Dort ist der Eintrag aber nicht zu finden.&nbsp; Es w&auml;re
+Zufall, wenn unter diesen Umst&auml;nden &uuml;berhaupt noch Eintr&auml;ge
+gefunden w&uuml;rden.
+<p>Man sieht an diesem Beispiel, dass die Verletzung der Forderung "Gleiche
+Objekte m&uuml;ssen gleiche Hash-Codes haben" dazu f&uuml;hrt, dass die
+hash-basierten Container nicht funktionieren. Die Konsistenz zwischen hashCode()
+und equals() ist von fundamentaler Bedeutung f&uuml;r das Arbeiten mit
+hash-basierten Containern in Java. Wichtig f&uuml;r das Funktionieren der
+hash-basierten Container sind dabei die ersten beiden Anforderungen ("gleicher
+Hash-Code bei wiederholten Aufrufen" und "gleiche Hash-Codes f&uuml;r gleiche
+Objekte"). Die dritte Anforderung ist eigentlich keine Forderung, sondern
+lediglich ein Hinweis, dass die Performance besser ist, wenn die berechneten
+Hash-Codes f&uuml;r verschiedene Objekte nach M&ouml;glichkeit verschieden
+sind.
+<h3>
+Hash-Codes und Persistenz</h3>
+Die erste Anforderung des hashCode-Contracts enth&auml;lt den Zusatz, dass
+die Hash-Codes bei verschiedenen Programml&auml;ufen durchaus verschieden
+sein d&uuml;rfen.&nbsp; Diese Aussage erkl&auml;rt sich durch die Tatsache,
+dass die Default-Implementierung von hashCode() in Object typischerweise
+auf den Adressen der Objekte basiert.&nbsp; Die Adressen k&ouml;nnen nat&uuml;rlich
+bei jedem Programmlauf anders sein.&nbsp; Nebeneffekt dieser Tatsache ist,
+dass zumindest die Default-Implementierung von hashCode() nicht f&uuml;r
+Persistenz taugt.
+<p>Man k&ouml;nnte ja auf die Idee kommen, eine HashMap wie unser Telefonbuch
+aus dem obigen Beispiel persistent zu machen, indem man die Eintr&auml;ge
+in eine Datenbank schreibt oder sonstwie serialisiert und speichert.&nbsp;
+Dabei w&uuml;rden die Hash-Codes aus einem Programmlauf f&uuml;r die persistente&nbsp;
+Speicherung verwendet und beim n&auml;chsten Programmlauf wieder eingelesen.&nbsp;
+Die eingelesenen Hash-Codes sind aber unbrauchbar, weil f&uuml;r das gleiche
+Objekt diesmal ein ganz anderer Hash-Code berechnet wird.
+<p>Wenn man Hash-Codes persistent machen will, dann muss man die hashCode()-Methode
+entsprechend implementieren, n&auml;mlich so, dass tats&auml;chlich immer
+f&uuml;r gleiche Objekte der gleiche Hash-Code berechnet wird.&nbsp; Die
+Default-Implementierung leistet dies nicht, und es ist auch von anderen
+Implementierungen der hashCode()-Methode nicht verlangt.&nbsp; Das hei&szlig;t
+insbesondere, dass man das auch nicht von der hashCode()-Implementierung
+anderer Klassen erwarten darf.
+<br>&nbsp;
+<h2>
+Hash-Codes und Objekt-Referenzen</h2>
+Selbst wenn man alle oben geschilderten Probleme vermieden hat und hashCode()
+korrekt implementiert hat, gibt es immer noch &Uuml;berraschungen und Fehlerquellen,
+die mit der Referenz-Semantik in Java zu tun haben.&nbsp; In Java enthalten
+alle Container des JDK, inklusiver der hash-basierten Container, grunds&auml;tzlich
+Referenzen auf Objekte und niemals Kopien der "enthaltenen" Objekte. Infolgedessen
+erfolgt der Zugriff auf Elemente, die in einem hash-basierten Container
+abgelegt sind, immer &uuml;ber Referenzen.&nbsp; Wenn diese Referenzen
+verwendet werden, um das referenzierte Objekt zu modifizieren, dann ist
+es wahrscheinlich, dass der hash-basierte Container zerst&ouml;rt wird.&nbsp;
+Hier ist ein Beispiel:
+<blockquote><tt>&nbsp;AbstractSet mySet = new HashSet();</tt>
+<p><tt>&nbsp;... do something with the set ...</tt>
+<p><tt>&nbsp;if (!mySet.isEmpty()) {</tt>
+<br><tt>&nbsp;&nbsp; Iterator iter = mySet.iterator();</tt>
+<br><tt>&nbsp;&nbsp; while (iter.hasNext()) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; Point element = (Point)iter.next();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; element.setLocation(0,0);</tt>
+<br><tt>&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;}</tt></blockquote>
+In einem HashSet sind Point-Objekte abgelegt, oder genauer gesagt, Referenzen
+auf Point-Objekte.&nbsp; Die hasNext()-Methode des Iterators liefert sukzessive
+Referenzen auf alle enthaltenen Objekte. Diese Referenzen werden in dem
+Beispielcode verwendet, um die modifizierende Methode setLocation()&nbsp;
+der Klasse Point zu rufen, die den Inhalt des Point-Objekts ver&auml;ndert.&nbsp;
+Mit dem Inhalt des Objekts &auml;ndert sich aber auch der Hash-Code des
+Objekts und eigentlich m&uuml;sste das ver&auml;nderte Point-Objekt in
+einem anderen Bucket abgelegt sein. Das ist aber nicht der Fall; das betreffende
+Point-Objekt bleibt, wo es ist, und befindet sich nach der Modifikation
+im falschen Bucket. Damit ist der ganze Container zerst&ouml;rt.&nbsp;
+Das kann sich darin &auml;u&szlig;ern, dass das ver&auml;nderte Point-Objekt
+weder im Container gefunden noch aus dem Container entfernt werden kann.&nbsp;
+Es k&ouml;nnen sich aber auch andere unerw&uuml;nschte Effekte ergeben;
+das Verhalten von Operationen auf einem zerst&ouml;rten Container ist generell
+undefiniert.
+<p>Die Ursache des Problems liegt in der Referenz-Semantik von Java. Der
+Benutzer bekommt &uuml;ber die Referenzen Schreib-Zugriff auf die Objekte
+im Container und kann die dort abgelegten Objekte an Ort und Stelle ver&auml;ndern.&nbsp;
+Jede Ver&auml;nderung der Objekte, die das Ergebnis von hashCode()beeinflusst,
+zerst&ouml;rt aber den Container, weil das Objekt nach der Ver&auml;nderung
+eigentlich in einem anderen Bucket abgelegt sein m&uuml;sste.&nbsp; Das
+ist ein generelles Problem bei allen Containern, deren Organisation in
+irgendeiner Form auf dem Inhalt der gespeicherten Objekten beruht und bei
+denen Schreib-Zugriff auf die gespeicherten Objekte m&ouml;glich ist. In
+diese Kategorie fallen alle hash-basierten, aber auch alle baum-basierten
+Container in Java.&nbsp; Sch&uuml;tzen kann man sich vor dieser Falle nur
+durch Programmierdisziplin, indem man es unterl&auml;sst, enthaltene Objekte
+an Ort und Stelle im Container zu &auml;ndern.&nbsp; Man muss statt dessen
+das alte Objekte aus dem Container entfernen und das neue "modifizierte"
+Objekt in den Container einf&uuml;gen.
+<br>&nbsp;
+<h2>
+Implementierung von hashCode()</h2>
+Worauf muss man nun achten, wenn man hashCode() implementiert?&nbsp; Wichtig
+sind die beiden folgenden Aspekte:
+<ul>
+<li>
+Konsistenz zu equals(). Gleiche Objekte m&uuml;ssen gleiche Hash-Codes
+haben, sonst ist das Arbeiten mit hash-basierten Containern nicht m&ouml;glich,
+wie wir am Beispiel gesehen haben.</li>
+</ul>
+
+<ul>
+<li>
+Performanz. Die Hash-Code-Berechnung sollte so sein, dass die Zugriffe
+auf hash-basierte Container m&ouml;glichst effizient sind. Das hei&szlig;t
+zum einen, dass die Hash-Code-Berechnung selbst schnell und einfach sein
+muss. Zum anderen hei&szlig;t es aber auch, dass die berechneten Hash-Code
+gleichm&auml;&szlig;ig verteilt sein sollten, damit wir einen Container
+mit vielen kleinen Buckets (statt wenigen gro&szlig;en Buckets) bekommen.
+Es sollen also m&ouml;glichst viele verschiedene Hash-Codes auf m&ouml;glichst
+effizientem Wege bei der Berechnung herauskommen.</li>
+</ul>
+
+<h3>
+Konsistenz zwischen hashCode() und equals()</h3>
+Wie stellt man sicher, dass hashCode() und equals() konsistent zueinander
+sind? Man muss daf&uuml;r sorgen, dass in die Berechnung des Hash-Codes
+nur die Informationen eingehen, die auch f&uuml;r die Implementierung von
+equals() ber&uuml;cksichtigt werden.
+<p>In obigem Beispiel der Klasse PhoneNumber mit &uuml;berschriebenem equals()
+und geerbtem hashCode() ist dies verletzt. Die geerbte Default-.Implementierung
+von hashCode() basiert auf der Adresse des Objekts. Die Adresse spielt
+aber f&uuml;r die Implementierung des &uuml;berschriebenen equals() keine
+Rolle, da ein korrektes equals() die Felder des Objekts vergleicht und
+sich f&uuml;r die Adresse des Objekts &uuml;berhaupt nicht interessiert.
+Unter diesen Umst&auml;nden ist es nicht gew&auml;hrleistet, dass gleiche
+Objekte gleiche Hash-Codes haben.
+<p>Normalerweise wird man also all die Felder in die Hash-Code-Berechnung
+einbeziehen, die in equals() miteinander verglichen werden und man wird
+in hashCode() alles ignorieren, was in equals() nicht vorkommt.
+<p>Das hei&szlig;t zum Beispiel, dass man die Adresse nicht zur Hash-Code-Berechnung
+heranziehen darf, wenn die Adresse nicht zur Gleichheit beitr&auml;gt.&nbsp;
+Es hei&szlig;t aber auch, dass man transiente Felder nicht f&uuml;r die
+Hash-Code-Berechnung ber&uuml;cksichtigen darf.&nbsp; Transiente Felder
+tragen zum logischen Inhalt eines Objekts nichts bei und werden deshalb
+in Implementierungen von equals() ignoriert (siehe /KRE/).&nbsp; Aus diesem
+Grunde m&uuml;ssen sie auch f&uuml;r die Implementierung von hashCode()
+ignoriert werden.
+<p>Das bedeutet aber nicht, dass alle Informationen, die in equals() ber&uuml;cksichtigt
+werden, auch in hashCode() ber&uuml;cksichtigt werden m&uuml;ssen.&nbsp;
+Man kann einen Teil der Information, also beispielsweise einen Teil der
+Felder, f&uuml;r die Hash-Code-Berechnung ignorieren. Das f&uuml;hrt zwar
+dazu, dass ungleiche Objekte gleiche Hash-Codes haben, aber das ist nach
+der dritten Regel im hashCode-Contract ausdr&uuml;cklich erlaubt, und manchmal
+ist es auch durchaus sinnvoll in Hinblick auf die Performanz.
+<h3>
+Performanz von hashCode()</h3>
+Der Zugriff auf Elemente im einem hash-basierten Container geschieht &uuml;ber
+eine rasche Identifikation des Bucket mittels Index (= Hash-Code) gefolgt
+von der relativ langsamen sequentiellen Suche innerhalb des hoffentlich
+kleinen Bucket. Der Vorteil der hash-basierten Container ist daher der
+schnelle Zugriff auf den Bucket mittels Index (= Hash-Code).&nbsp; Wenn
+nun die Berechnung des Hash-Codes ausgesprochen lange dauert, dann ist
+der Performance-Gewinn durch den schnellen Zugriff per Hash-Code im Handumdrehen
+zunichte gemacht.&nbsp; Deshalb sollten HashCode-Berechnungen m&ouml;glichst
+effizient sein.
+<p>Die einfachste und schnellste L&ouml;sung w&auml;re es, gar keine Berechnungen
+anzustellen und f&uuml;r alle Objekte immer denselben Integer-Wert zur&uuml;ck
+zu liefern. Das ist durchaus erlaubt und f&uuml;hrt dazu, dass alle Objekte
+im selben Bucket landen. Dieser Bucket wird riesengro&szlig; sein und die
+sequentielle Suche darin wird reichlich lange dauern. Unter diesen Randbedingungen
+macht der hash-basierte Container keinen Sinn mehr; da kann man gleich
+eine verkettete Liste verwenden.
+<p>Die Hash-Code-Berechnung soll also nicht nur schnell sein, sondern auch
+zu einem Container mit vielen kleinen Buckets f&uuml;hren. Ziel ist eine
+m&ouml;glichst performante Implementierung, die eine m&ouml;glichst gleichm&auml;&szlig;ige
+Verteilung der berechneten Hash-Codes im Interval der m&ouml;glichen Integer-Werte
+von -2147483648 bis 2147483647 erreicht.
+<p>Nun haben wir oben gesagt, dass man wegen der Konsistenz mit equals()
+alle Felder in die Hash-Code-Berechnung einbeziehen soll, die in equals()
+miteinander verglichen werden.&nbsp; Das ist auch durchaus praktikabel,
+solange das Objekt nicht allzu viele Felder hat.
+<p>Wenn eine Klasse z. B. aber ein gr&ouml;&szlig;eres Array von Objekten
+enth&auml;lt, dann werden zwar alle Array-Elemente zur&nbsp; Bestimmung
+der Gleichheit mittels equals()&nbsp; beitragen, aber f&uuml;r eine Implementierung
+von hashCode() w&auml;re die Ber&uuml;cksichtigung s&auml;mtlicher Array-Elemente
+zu aufwendig.&nbsp; Daher w&uuml;rde man bei einem gro&szlig;en Array vielleicht
+nur jedes n-te Element in der Hash-Code-Berechnung ber&uuml;cksichtigen.
+<p>Analog kann man auch Felder weglassen, die sowieso bei den meisten Objekten
+den gleichen Werten haben werden.&nbsp; Solche Felder tragen nichts Relevantes
+zur Produktion unterschiedlicher Hash-Codes bei, erh&ouml;hen aber den
+Aufwand f&uuml;r die Hash-Code-Berechnung, wenn sie ber&uuml;cksichtigt
+werden.
+<p>Man muss auch nicht unbedingt in Klassenhierarchien auf jedem Level
+jeweils eine neue Version von hashCode() implementieren, um die Subklassen-.spezifischen
+Felder zu ber&uuml;cksichtigen. Wenn die Superklasse eine korrekte Implementierung
+von hashCode() zur Verf&uuml;gung stellt, dann kann man es u.U. dabei belassen.
+<p>Bevor man also zur eigentlichen Berechnung des Hash-Codes ansetzt, muss
+man zun&auml;chst (f&uuml;r die Konsistenz mit equals()) die Felder identifizieren,
+die potentiell in die Berechnung eingehen k&ouml;nnen; das sind genau die
+Felder, die in equals() miteinander verglichen werden. Aus diesen Feldern
+w&auml;hlt man dann diejenigen aus, die man ber&uuml;cksichtigen oder eben
+ignorieren will, damit eine L&ouml;sung entsteht, die einerseits eine vern&uuml;nftige
+Verteilung der Hash-Codes erreicht, aber anderseits auch hinreichend effizient
+ist.
+<h2>
+Anleitung zur Implementierung von hashCode()</h2>
+Wenn man alle Felder identifiziert hat, die zur Berechnung des Hash-Codes
+beitragen sollen, wie stellt man dann die Hash-Code-Berechnung an? Die
+nachfolgend vorgeschlagene L&ouml;sung ist keine optimale Implementierung.&nbsp;
+Zur Berechnung von Hash-Codes gibt es reichlich Information in Fachb&uuml;chern.&nbsp;
+Was wir hier vorstellen wollen, ist ein Rezept f&uuml;r den Hausgebrauch.
+Wenn man sich daran h&auml;lt, erzielt man voraussichtlich ein brauchbares,
+aber nicht notwendig optimales Ergebnis.
+<p>Die Idee besteht darin, dass man jedem Feld, dass ber&uuml;cksichtigt
+werden soll, einen Integer-Wert zuordnet und dann all diese Integer-Werte
+aufaddiert, wobei man noch einen geeigneten Multiplikator verwendet. Man
+berechnet also nach folgender Formel:
+<blockquote>&nbsp;
+<br><font face="Arial,Helvetica"><font size=-1>hashcode<sub>N</sub> = hashcode<sub>N-1</sub>
+* multiplikator + feldwert<sub>N</sub></font></font></blockquote>
+
+<h3>
+Anfangswert und Multiplikator</h3>
+Man beginnt mit einem Anfangswert f&uuml;r den Hash-Code (in der Formel:
+hashcode0). Der Anfangswert ist typischerweise von 0 verschieden ist. In
+unserem Beispiel (siehe unten) w&auml;hlen wir 17 als Anfangswert, das
+ist aber rein willk&uuml;rlich. Dazu w&auml;hlt man sich einen Multiplikator.&nbsp;
+Der Multiplikator ist typischerweise eine nicht zu gro&szlig;e Primzahl,
+in unserem Beispiel 59. Dann geht die Implementierung von hashCode() wie
+folgt los:
+<blockquote><tt>public int hashCode() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; int hc = 17;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; int hashMultiplier = 59;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return hc;</tt>
+<br><tt>}</tt></blockquote>
+
+<h3>
+Feldwert</h3>
+Jedem f&uuml;r die Berechnung relevanten Feld des Objekts muss ein Integer-Wert
+zugeordnet werden.&nbsp; Der zugeordnete Wert h&auml;ngt vom Typ des Objekts
+ab.&nbsp; Tabelle 1 zeigt eine &Uuml;bersicht.
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td>Typ</td>
+
+<td>zugeordnete Integer-Werte</td>
+</tr>
+
+<tr>
+<td><tt>Boolean</tt></td>
+
+<td><tt>(field ? 0 : 1)</tt></td>
+</tr>
+
+<tr>
+<td><tt>byte, char, short, int</tt></td>
+
+<td><tt>(int) field</tt></td>
+</tr>
+
+<tr>
+<td><tt>long</tt></td>
+
+<td><tt>(int)(field>>>32) und (int)(field &amp; 0xFFFFFFFF)</tt></td>
+</tr>
+
+<tr>
+<td><tt>float</tt></td>
+
+<td><tt>((x==0.0F)?0:Float.floatToIntBits(field))</tt></td>
+</tr>
+
+<tr>
+<td><tt>double</tt></td>
+
+<td><tt>((x==0.0)?0L:Double.doubleToLongBits(field))</tt> und anschliessende
+Behandlung wie bei <tt>long</tt></td>
+</tr>
+
+<tr>
+<td>Referenz</td>
+
+<td><tt>((field==null)?0:field.hashCode())</tt></td>
+</tr>
+</table>
+
+<p>Hier ein paar Erl&auml;uterungen zur Umrechnung in Integer-Werte.&sect;
+Felder vom Typ Boolean werden einfach auf 0 oder 1 umgewertet.
+<ul>
+<li>
+Kleinere integrale Typen (byte, char, short, int) werden so verwendet,
+wie sie sind.</li>
+
+<li>
+Gr&ouml;&szlig;ere integrale Typen, also long, werden in zwei Integers
+zerlegt.&nbsp; Man kann sie auch zu einem einzigen Integer vereinen, z.B.
+durch ein bitweises exclusive-OR: (int)(field^(field>>>32)).</li>
+
+<li>
+Gleitkomma-Typen werden in ihre jeweiligen Bitlayouts verwandelt. Im Fall
+von double kommt ein long heraus, den man dann wie f&uuml;r long beschrieben
+zerlegt. Die Abfrage auf 0.0 ist notwendig, weil 0.0 und -0.0 gleich sind,
+wenn man sie in equals() per ==-Operator vergleicht. Die korrespondierenden
+Bit-Layouts von 0.0 und -0.0 sind aber verschieden. Deshalb wird der Fall
+gesondert behandelt.</li>
+
+<li>
+F&uuml;r Felder, die Referenzen auf Objekte sind, ruft man die hashCode()-Methode
+des referenzierten Objekts. Die Abfrage auf null ist notwendig, damit hashCode()
+keine NullPointerException wirft.</li>
+</ul>
+
+<h3>
+Sonderf&auml;lle</h3>
+Bei der Implementierung von equals() haben wir Klassen mit inkorrekter
+Implementierung von equals() gesondert behandeln m&uuml;ssen.&nbsp; Unser
+Beispiel war die Klasse StringBuffer, die die equals()-Methode nicht &uuml;berschreibt.&nbsp;
+Immer wenn Felder vom Typ StringBuffer miteinander verglichen werden m&uuml;ssen,
+haben wir die StringBuffer in String-Objekte umgewandelt und dann die String-Objekte
+per String.equals() miteinander verglichen.
+<br>F&uuml;r die Implementierung von hashCode() m&uuml;ssen wir analog
+vorgehen, damit die Konsistenz zwischen hashCode() und equals()&nbsp; gew&auml;hrleistet
+ist.&nbsp; Einem StringBuffer-Feld wird daher nicht field.hashCode() zugeordnet,
+sondern&nbsp; field.toString().hashCode().
+<br>Derartige Sonderbehandlungen f&uuml;r all diejenige Felder notwendig,
+wo sie auch in equals() n&ouml;tig waren.
+<h3>
+Arrays</h3>
+Arrays werden gesondert behandelt. Bei gr&ouml;&szlig;eren Arrays wird
+man wahrscheinlich nur eine Auswahl der Array-Elemente ber&uuml;cksichtigen
+wollen.&nbsp; Die einzelnen Array-Elemente behandelt man dann ihrem jeweiligen
+Type entsprechend wie oben beschrieben.&nbsp; Hier ist ein Beispiel, in
+dem nur die Array-Elemente ber&uuml;cksichtigt werden, deren Index eine
+Zweierpotenz ist:
+<blockquote><tt>class MyClass {</tt>
+<br><tt>&nbsp; private Object arrayField[];</tt>
+<p><tt>&nbsp; public int hashCode() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; int hc = 17;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; int hashMultiplier = 59;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; hc = hc * hashMultiplier + arrayField.length();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; for (int i=0; i&lt;arrayField.length(); i&lt;&lt;=1)
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; hc = hc * hashMultiplier +
+arrayField.hashCode();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return hc;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+
+<h3>
+Superklassenanteile</h3>
+Die Ber&uuml;cksichtigung von geerbten Feldern delegiert man an die Superklasse.&nbsp;
+Das hei&szlig;t, man ruft super.hashCode().
+<blockquote><tt>public int hashCode() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; hc = hc * hashMultiplier + super.hashCode();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return hc;</tt>
+<br><tt>}</tt></blockquote>
+Das darf man allerdings nur tun, wenn die Superklasse nicht Object ist,
+weil ja sonst die Adresse des Objekts ber&uuml;cksichtigt w&uuml;rde, und
+das f&uuml;hrt dann zu den schon geschilderten Problemen.&nbsp; So &auml;hnlich
+wie bei equals(), wird man zwischen direkten und indirekten Subklassen
+von Object unterscheiden.&nbsp; In den indirekten Subklassen wird man super.hashCode()rufen,
+w&auml;hrend man es in den direkten Subklassen nicht tun wird.
+<br>&nbsp;
+<h2>
+hashCode() in Klassenhierarchien</h2>
+Im letzten Artikel haben wir ausf&uuml;hrlich diskutiert, ob man in Klassenhierarchien
+den Vergleich zwischen Super- und Subklassen-Objekten zulassen sollte.&nbsp;
+Das Ergebnis war im wesentlichen die Erkenntnis, dass man ihn i.a. nicht
+zulassen wird;&nbsp; dann ist man auf der sicheren Seite.&nbsp; Und wenn
+man den ihn doch zulassen will, dann sollte er als final-Methode in der
+Superklasse definiert sein.
+<p>Die Entscheidung, die man diesbez&uuml;glich f&uuml;r equals() getroffen
+hat, hat Auswirkungen auf die Implementierung von hashCode(). Wenn die
+equals()-Methode final ist, dann sollte auch die hashCode()-Methode final
+sein.&nbsp; Denn sonst k&ouml;nnte hashCode()&uuml;berschrieben werden.
+Wenn die &uuml;berschreibende Version von hashCode() Subklassen-spezifische
+Felder ber&uuml;cksichtigt, dann ist die Konsistenz zu equals() verletzt:
+zwei Subklassenobjekte k&ouml;nnten dann gleich sein, weil nur Ihre Superklassenanteile
+miteinander verglichen werden, aber sie h&auml;tten verschiedene Hash-Codes,
+da Subklassen-spezifische Information in die Hash-Code-Berechnung eingeht
+<p>&Auml;hnliche Gefahren lauern, wenn der Super-Subklassen-Vergleich erlaubt
+ist, ohne dass equals() als final deklariert ist. (Davon haben wir abgeraten,
+aber man findet es in der Praxis.) Dann sollte hashCode() nur in der Superklasse
+(und dort am besten als final) definiert sein und in der Subklasse auf
+keinen Fall &uuml;berschrieben werden. Wenn man hashCode() in der Subklasse
+&uuml;berschreibt, dann ist wieder die Konsistenz zwischen equals() und
+hashCode()verloren: zwei Objekte, ein Super- und ein Subklassen-Objekt,
+k&ouml;nnten dann gleich sein, weil nur ihr Superklassenanteil verglichen
+wird. Wenn hashCode()aber in Super- und Subklasse in verschiedenen Versionen
+existiert, dann werden die Hash-Codes dieser beiden gleichen Objekte nicht
+unbedingt gleich sein.
+<br>&nbsp;
+<h2>
+Zusammenfassung</h2>
+Wir haben uns in dieser Ausgabe mit der Methode hashCode() befasst, die
+man auf allen Objekte in Java aufrufen kann.&nbsp; Wir haben gesehen, wann
+man die Default-Implementierung von hashCode() &uuml;berschreiben muss,
+n&auml;mlich immer dann wenn man dasselbe f&uuml;r equals() tut.&nbsp;
+Wir haben den sogenannten hashCode-Contract angesehen, der die Anforderungen
+an eine Implementierung von hashCode() spezifiziert.&nbsp; Wir haben die
+Konsequenzen bei Verletzung des hashCode-Contracts gesehen; die hash-basierten
+Container funktionieren dann nicht. Und schlie&szlig;lich haben wir die
+Prinzipien einer Implementierung betrachtet; wichtig f&uuml;r eine korrekte
+Implementierung ist die Konsistenz zu equals() und die Performanz der Hash-Code-Berechnung
+sowie die G&uuml;te der Hash-Code-Verteilung.
+<p>Wegen der engen Beziehung zwischen equals() und hashCode() an dieser
+Stelle nochmals die Empfehlung, equals() sorgf&auml;ltig und wohl &uuml;berlegt
+zu implementieren. equals() hat Auswirkungen auf andere Versionen von equals()
+in derselben Klassenhierarchie und auf die Hash-Code-Berechnung.&nbsp;
+Und das ist noch nicht alles; in der n&auml;chsten Ausgabe dieser Kolumne
+werden wir unsere Betrachtungen &uuml;ber die Objekt-Infrastruktur fortsetzen
+und uns die compareTo()-Methode ansehen, die f&uuml;r die Benutzung der
+baum-basierten Container von Bedeutung ist. Auch f&uuml;r compareTo() gibt
+es eine Konsistenzanforderung in Bezug auf equals(). Dazu mehr beim n&auml;chsten
+Mal.
+<br>&nbsp;
+<br>&nbsp;
+<h2>
+Literaturverweise</h2>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft1"></a>/KRE1/&nbsp;</td>
+
+<td VALIGN=TOP><b>Wie, wann und warum implementiert man die equals()-Methode?&nbsp;</b>
+<br><b>Teil 1: Die Prinzipien der Implementierung von equals()</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>Java Spektrum, Januar 2002
+<br>URL: <a href="http://www.langer.camelot.de/Articles/JavaSpektrum/01.Equals-Part1/01.Equals1.html">http://www.langer.camelot.de/Articles/JavaSpektrum/01.Equals-Part1/01.Equals1.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft2"></a>/KRE2/</td>
+
+<td><b>Wie, wann und warum implementiert man die equals()-Methode?&nbsp;</b>
+<br><b>Teil 2: Der Vergleichbarkeitstest&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>Java Spektrum, M&auml;rz 2002
+<br>URL: <a href="http://www.langer.camelot.de/Articles/JavaSpektrum/02.Equals-Part2/02.Equals2.html">http://www.langer.camelot.de/Articles/JavaSpektrum/02.Equals-Part2/02.Equals2.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft3"></a>/KRE3/</td>
+
+<td><b><font face="Times New Roman, Times, serif"><font size=+0>Secrets
+of equals()</font></font></b>
+<br><b><font face="Times New Roman, Times, serif"><font size=+0>Part 1:
+Not all implementations of equals() are equal</font></font></b>
+<br>Angelika Langer &amp; Klaus Kreft
+<br>Java Solutions, April 2002
+<br>URL: <a href="http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals.html">http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft4"></a>/KRE4/</td>
+
+<td><b><font face="Times New Roman, Times, serif"><font size=+0>Secrets
+of equals()</font></font></b>
+<br><b><font face="Times New Roman, Times, serif"><font size=+0>Part 2:
+How to implement a correct slice comparison in Java</font></font></b>
+<br>Angelika Langer &amp; Klaus Kreft
+<br>Java Solutions, August 2002
+<br>URL: <a href="http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals-2.html">http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals-2.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Davies"></a>/DAV/</td>
+
+<td><b>Durable Java: Hashing and Cloning</b>
+<br>Mark Davis&nbsp;
+<br>Java Report, April 2000&nbsp;
+<br>URL: <a href="http://www.macchiato.com/columns/Durable6.html">http://www.macchiato.com/columns/Durable6.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Bloch"></a>/BLO/&nbsp;</td>
+
+<td><b>Effective Java Programming Language Guide</b>
+<br>Josh Bloch&nbsp;
+<br>Addison-Wesley, June 2001&nbsp;
+<br>ISBN: 0201310058</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Knuth"></a>/KNU/&nbsp;</td>
+
+<td><b>The Art of Computer Programming, vol.3: Sorting and Searching.&nbsp;
+ed.2.&nbsp;</b>
+<br>Donald E. Knuth
+<br>Addison Wesley, 1998
+<br>ISBN 0-201-89685-0</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Sedgewick"></a>/SED/&nbsp;</td>
+
+<td><b>Algorithms.&nbsp; Second edition.&nbsp;</b>
+<br>Robert Sedgewick
+<br>Addison-Wesley, 1983, 1988,&nbsp; 1989 reprint with authors corrections
+<br>ISBN 0-201-06673-4</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDK"></a>/JDK/&nbsp;</td>
+
+<td><b>Java 2 Platform, Standard Edition v1.3.1</b>
+<br>URL: <a href="http://java.sun.com/j2se/1.3/">http://java.sun.com/j2se/1.3/</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDOC"></a>/JDOC/&nbsp;</td>
+
+<td><b>Java 2 Platform, Standard Edition, v 1.3.1 - API Specification</b>
+<br>URL: <a href="http://java.sun.com/j2se/1.3/docs/api/index.html">http://java.sun.com/j2se/1.3/docs/api/index.html</a></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+<font size=-1></font>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <title>Book Review  -  Effective STL</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="BookReviewEffectiveSTL"></a>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="489" >
+<tr>
+<td>&nbsp;</td>
+
+<td>&nbsp;</td>
+
+<td VALIGN=BOTTOM WIDTH="122"><img SRC="../../../Images/cpluszonesm.gif" NOSAVE BORDER=0 height=36 width=178></td>
+
+<td WIDTH="50%">
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="387" >
+<tr>
+<td VALIGN=BOTTOM WIDTH="300"><b><sub><font face="Verdana"><font color="#FF0037"><font size=+3>&nbsp;
+Book Review</font></font></font></sub></b> <b><i><sub><font face="Verdana"><font color="#996666"><font size=+1>of
+the week</font></font></font></sub></i></b></td>
+
+<td ROWSPAN="2"><b><font face="Verdana"><font size=-2>&nbsp;</font></font></b></td>
+</tr>
+
+<tr>
+<td VALIGN=BOTTOM WIDTH="387"><img SRC="../../../Images/czonesubrule.gif" VSPACE=4 NOSAVE height=2 width=380></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td></td>
+
+<td></td>
+
+<td></td>
+</tr>
+</table>
+
+<table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="10%">
+<center><table BORDER=0 WIDTH="100%" >
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><img SRC="0201749629.jpg" NOSAVE height=140 width=111></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><b><font face="Verdana"><font size=-2>Effective
+STL</font></font></b></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><i><font face="Verdana"><font size=-2>By Scott
+Meyers</font></font></i></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><font face="Verdana"><font size=-2>Reading,MA:Addison-Wesley</font></font></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><font face="Verdana"><font size=-2>ISBN 0201749629</font></font></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><font face="Verdana"><font size=-2>260 pages&nbsp;</font></font></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="65"><font face="Verdana"><font size=-2>Price: $39.99&nbsp;</font></font></td>
+</tr>
+
+<tr>
+<td></td>
+
+<td><i><font face="Verdana"><font size=-2>(Reviewed 7/31/01)&nbsp;</font></font></i></td>
+</tr>
+</table></center>
+&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="100%">
+<center><table BORDER=0 WIDTH="90%" >
+<tr>
+<td VALIGN=TOP WIDTH="60%"><b><font face="Verdana"><font color="#232990"><font size=+2>A
+Collection of Proven STL Wisdom</font></font></font></b></td>
+</tr>
+
+<tr>
+<td WIDTH="60%"><i><font face="Verdana"><font size=-1>Entertaining, enlightening
+reading for the inquisitive STL user</font></font></i></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><font face="Verdana, Helvetica, Arial, sans-serif"><font color="#333399"><font size=+2>T</font></font><font size=-1>his
+is the third book by Scott Meyers about effective use of the C++ programming
+language and it can easily keep up with the high standards of its reputable
+predecessors, <i><a href="http://www.cplus-zone.com/free/bookrevview.asp?content_id=290">Effective
+C++</a></i> and <i>More Effective C++</i>. This time the focus is not on
+the language itself but on a part of the standard C++ library known as
+the STL. Like its predecessors, <i>Effective STL: 50 Specific Ways to Improve
+Your Use of the Standard Template Library</i> discusses each potential
+pitfall and gives (sometimes entertaining) guidelines for avoiding the
+trap.&nbsp;</font></font>
+<p><font face="Verdana, Helvetica, Arial, sans-serif"><font size=-1>Meyers
+covers all corners of the STL: containers, iterators, algorithms, and functors.
+Even allocators are mentioned as well as common extensions to the STL,
+such as hash-based containers and smart pointers. To give you an idea of
+the topics discussed in <i>Effective STL</i>, let's look at some of its
+guidelines:&nbsp;</font></font>
+<ul>
+<li>
+<font face="Verdana, Helvetica, Arial, sans-serif"><font size=-1><b>Item
+30: Make sure destination ranges are big enough.</b> This is commonsensical,
+yet every STL novice makes exactly this mistake at least once by creating
+an empty vector and passing its begin iterator as an output iterator to
+an algorithm. The result is a program crash. From then on novices usually
+know that they must use insert iterators instead.</font></font></li>
+
+<br>&nbsp;
+<li>
+<font face="Verdana, Helvetica, Arial, sans-serif"><font size=-1><b>Item
+32: Follow "remove"-like algorithms by "erase" if you really want to remove
+something.</b> The "remove"-like algorithms are notorious misnomers in
+the STL because "remove" does not remove anything; it just copies all valid
+elements to the beginning of the sequence and returns an iterator to the
+garbage at the end. Anybody who has ever used a "remove" algorithm has
+noticed it; it's described in every good STL book.&nbsp;</font></font></li>
+</ul>
+<font face="Verdana, Helvetica, Arial, sans-serif"><font size=-1>As you
+can see, some of <i>Effective STL</i>'s guidelines are common sense, while
+others are well-known to practitioners who have been using the STL. There
+are also some items that cover rare and exotic situations.&nbsp;</font></font>
+<p><font face="Verdana, Helvetica, Arial, sans-serif"><font size=-1>The
+most amusing item is Item 6, which explains "C++'s most vexing parse."
+This has actually nothing to do with the STL itself; it is a C++ language
+feature. However, it's mentioned in this book because most people encounter
+this problem for the first time in their life when they start using the
+STL. The problem is that under certain circumstances the C++ compiler interprets
+an object declaration as a function declaration. It's a problem similar
+to the following: when a programmer says <i>T t();</i> then he usually
+intends to default-construct an object <i>t</i> of type <i>T</i>. This
+would be true in Java, but in C++ it means that the programmer declares
+a function <i>t</i> that takes no arguments and returns an object of type
+<i>T</i>.
+Item 6 explains a similar, yet more complex case that comes up when you
+pass unnamed temporaries as arguments to constructors, which is absolutely
+common in conjunction with the STL. The resulting compiler diagnostics
+are devastating. If you want to know more, read the book.&nbsp;</font></font>
+<p><font face="Verdana, Helvetica, Arial, sans-serif"><font size=-1>By
+and large <i>Effective STL: 50 Specific Ways to Improve Your Use of the
+Standard Template Library</i> is a very sound and readable book; at times
+it is downright entertaining. It is worth reading after some exposition
+to the STL and is certainly not meant as an introduction to the STL. Much
+of its content might be rather obvious if you're an expert user of the
+STL. But then, who is? For the inquisitive STL user, this book will definitely
+be enlightening and fun to read.&nbsp;</font></font>
+<p><i><font face="Verdana, Helvetica, Arial, sans-serif"><font size=-1><b>Angelika
+Langer</b> develops and teaches classes on Java, C++, multithreading, and
+internationalization. She is an internationally recognized speaker and
+served on the ANSI/ISO C++ Committee from 1993 to 1998. <b>Klaus Kreft</b>
+is a software architect and senior consultant with 15+ years of experience
+in industrial software development. He currently works for Siemens Business
+Services in Germany. Langer and Kreft are authors of "Standard C++ IOStreams
+and Locales" (Addison-Wesley, 2000) and are columnists for the C/C++ Users
+Journal.&nbsp;</font></font></i></td>
+</tr>
+</table></center>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

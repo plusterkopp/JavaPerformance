@@ -1,0 +1,1355 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <meta name="KeyWords" content="Java Generics parameterized type parameterized method wildcardwildcard capture FAQ tutorial Java type erasure Training course seminar">
+   <title>Java Generics FAQs - Frequently Asked Questions</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+
+<h1>
+<a NAME="Top"></a><a NAME="FAQ"></a><a NAME="About This FAQ"></a>About
+This FAQ</h1>
+<font size=-2>&copy; Copyright&nbsp; 2004-2005 by Angelika Langer.&nbsp;
+All Rights Reserved.</font>
+<table CELLPADDING=10 WIDTH="100%" >
+<tr>
+<td COLSPAN="2"><font size=+0><a href="#How is this FAQ organized at large?">How
+is this FAQ organized at large?</a></font>
+<br><font size=+0><a href="#How are the individual answered questions organized?">How
+are the individual answered questions organized?</a></font>
+<br><font size=+0><a href="#Whom is the FAQ for?">Whom is the FAQ for?</a></font>
+<br><font size=+0><a href="#How do I best read the FAQ - top-to-bottom or zig-zag?">How
+do I best read the FAQ - top-to-bottom or zig-zag?</a></font>
+<br><font size=+0><a href="#Whom do I contact when I have questions, comments or suggestions related to this FAQ?">Whom
+do I contact when I have questions, comments or suggestions related to
+this FAQ?</a></font>
+<p><font size=+0><a href="#Table Of Contents">Table Of Contents</a></font>
+<br><font size=+0><a href="#Acknowledgements">Acknowledgements</a></font>
+<br><font size=+0><a href="#Change Log">Change Log</a></font>
+<br><font size=+0><a href="#CopyrightNotice">Copyright Notice</a></font></td>
+</tr>
+</table>
+
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600><a NAME="FAQ001"></a>
+<h2>
+<a NAME="How is this FAQ organized at large?"></a><font face="Arial,Helvetica"><font size=+0>How
+is this FAQ organized at large?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%">The FAQ has 4 major sections:
+<ul>
+<li>
+<font size=+0><a href="#Fundamentals of Java Generics">Fundamentals of
+Java Generics</a></font></li>
+
+<li>
+<font size=+0><a href="#Language Features of Java Generics">Language Features
+of Java Generics</a></font></li>
+
+<li>
+<a href="#Practicalities - Programming With Java Generics">Practicalities
+- Programming With Java Generics</a></li>
+
+<li>
+<a href="#Technicalities">Technicalities - Under the Hood of the Compiler</a></li>
+</ul>
+"Fundamentals of Java Generics"&nbsp; explains the very basics of Java
+generics, what generics are and what their purpose and benefit it.
+<p>"Language Features of Java Generics" is a huge section that explains
+all language features of Java Generics:
+<ul>
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html">Generic Types</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedMethods.html">Generic Methods</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html">Type Parameters</a></font></li>
+
+<li>
+<a href="FAQSections/TypeArguments.html">Type Arguments</a></li>
+</ul>
+This section can be seen as the theoretical foundation and lays the ground
+for understanding more practical and more advanced issues.
+<p>"Practicalities - Programming With Java Generics" aims to address issues
+that arise when you use Java Generics in practice.&nbsp; It discusses topics
+such as "How do I design a generics API?" , "Should my class be generic
+or not?", "What happens when I mix generic and non-generic Java?", "Why
+is class <tt>Class</tt> generic and what is good for?".&nbsp; The focus
+is on programming techniques on the one hand and pitfalls and surprises
+on the other hand.&nbsp; It is likely that this section will grow over
+time as programming idioms and techniques using Java Generics will be discovered.
+<p>"Technicalities - Under the Hood of the Compiler" addresses more advanced
+and more esoteric aspects of Java Generics, that will become the more interesting
+the more you learn about about Java Generics&nbsp; Some of these topics
+are typically of little interest when you begin using generics. For instance,
+the section explains what the notorious "unchecked" warnings are, what
+translation by type erasure is, what wildcard capture and type inference
+are, what the type system looks like now that it includes generic types,
+and how overload resolution work in presence of generic methods.
+<p>In addition to these 4 main section the FAQ has a <a href="#Table Of Contents">Table
+Of Contents</a>, a reference to <font size=+0><a href="FAQSections/MoreInformation.html">More
+Information on Java Generics</a> such as tutorials, books, articles, and
+websites, and an alphabetic <a href="FAQSections/Index.html#Top">Index</a>.</font></td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ001">#FAQ001</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td></td>
+</tr>
+</table>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ002"></a>
+<h2>
+<a NAME="How are the individual answered questions organized?"></a><font face="Arial,Helvetica"><font size=+0>How
+are the individual answered questions organized?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%">There is a question, a short answer and a sometimes
+fairly long answer, plus a cross reference section.&nbsp;
+<p>I've found that many readers underestimate the reference section - to
+their own detriment.&nbsp; The cross references refer to related items
+and point in particular to entries that explain terms or facts mentioned
+in the text, but not explained there.&nbsp; In other words, if there is
+something in the explanation that has not been explained yet, go to the
+reference section and see whether you can find a reference to a corresponding
+entry that explains it.&nbsp; If not, let me know.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ002">#FAQ002</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td></td>
+</tr>
+</table>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ003"></a>
+<h2>
+<a NAME="Whom is the FAQ for?"></a><font face="Arial,Helvetica"><font size=+0>Whom
+is the FAQ for?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>For practicing Java programmer who have
+to do with Java Generics.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">First a disclaimer: the FAQ does not aim to be mainly a
+tutorial.&nbsp; Tutorials can be found elsewhere.&nbsp; It has tutorial
+style answers, but it goes beyond what a casual or first time generics
+users might want to know about Java Generics.&nbsp; On the other hand,
+it is still written for humans, as opposed to compiler builders or computer
+science theorists whose pet issue is type theory.&nbsp; While type theory
+is an interesting topic, the main target audience is programmers who use
+or want to use generics in practice.
+<p>The FAQ is supposed to grow and mature over time.&nbsp; In particular
+the section on programming techniques using generics will hopefully gain
+weight as the body of experience with Java generics grows.&nbsp; If you
+have a technique or observation made in practive that you want to share
+with other programmers, feel free to send email and suggest it for inclusion
+to the FAQ.&nbsp;</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ003">#FAQ003</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="FAQSections/MoreInformation.html#Where can I find a generics tutorial?">Where
+can I find a generics tutorial?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Whom do I contact when I have questions, comments or suggestions related to this FAQ?">Whom
+do I contact when I have questions, comments or suggestions related to
+this FAQ?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ004"></a>
+<h2>
+<a NAME="How do I best read the FAQ - top-to-bottom or zig-zag?"></a><font face="Arial,Helvetica"><font size=+0>How
+do I best read the FAQ - top-to-bottom or zig-zag?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Both should be possible.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">The FAQ is kind of organized in a way that you can read
+it sequentially, starting with the first question until the bitter end.&nbsp;
+However, you will find that occasional jumps back and forth will be inevitable.
+<p>For instance, when the language features are explained the term <i>type
+erasure</i> will be mentioned.&nbsp; Type erasure is part of what the compiler
+does during compilation and it is discussed in detail in the Technicalities
+section.&nbsp; So you will probably jump forward to the explanation of
+type erasure to see what it is in principle, spare yourself the details,
+and return to the language feature from which you started your excursion
+to the Technicalities section.
+<p>Beyond that, the FAQ is mainly intended as a reference and can be consulted
+any order you feel like.&nbsp; Related topics are grouped together so that
+it might be convenient to read certain sections that are of immediate interest
+and ignore the rest for the time being.&nbsp;
+<p>You might find that the same fact is explained repeatedly in different
+entries.&nbsp; This is intended. A certain amount of redundency is inevitable
+in order to make it possible to use the FAQ as a reference.&nbsp; If you
+feel you already know this, skip it and move on.
+<p>Also, if you use the FAQ as a reference, the table of contents and the
+index should help finding what you are looking for.&nbsp; If not. let me
+know.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ004">#FAQ004</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#Table Of Contents">Table
+Of Contents</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Index">Index</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Whom do I contact when I have questions, comments or suggestions related to this FAQ?">Whom
+do I contact when I have questions, comments or suggestions related to
+this FAQ?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ005"></a>
+<h2>
+<a NAME="Whom do I contact when I have questions, comments or suggestions related to this FAQ?"></a><font face="Arial,Helvetica"><font size=+0>Whom
+do I contact when I have questions, comments or suggestions related to
+this FAQ?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%">If you want to provide feedback or have questions
+regarding Java generics, to which you cannot find an answer in this document,
+feel free to send me <font face="Arial,Helvetica"><font size=-2><a href="http://www.langer.camelot.de/AboutMe/Impressum.html">EMAIL</a></font></font>
+or use the <font face="Arial,Helvetica"><font size=-2><a href="http://home.arcor.de/apfelsafttrinker/Forms/JavaGenericsFAQ.html">GENERICS
+FAQ</a></font></font> form.&nbsp; I might not be capable of answering in
+a timely manner or perhaps not at all, but I will try.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ005">#FAQ005</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td></td>
+</tr>
+</table>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>&nbsp;
+<p>
+<hr WIDTH="100%">
+<br><a NAME="TOC"></a>
+<h1>
+<a NAME="Table Of Contents"></a><a NAME="Content"></a><b>Table Of Contents</b></h1>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td WIDTH="68%"><b><font size=+0><a href="#About This FAQ">About This FAQ</a></font></b>
+<p><b><font size=+0><a href="#Fundamentals of Java Generics">Fundamentals
+of Java Generics</a></font></b>
+<p><b><font size=+0><a href="#Language Features of Java Generics">Language
+Features of Java Generics</a></font></b>
+<blockquote><font size=+0><a href="#Parameterized Types">Generic Types</a></font>
+<blockquote><font size=+0><a href="#Parameterized Types Fundamentals">Fundamentals</a></font>
+<br><font size=+0><a href="#Concrete Instantiations">Concrete Instantiations</a></font>
+<br><font size=+0><a href="#Raw Types">Raw Types</a></font>
+<br><font size=+0><a href="#Wildcard Instantiations">Wildcard Instantiations</a></font></blockquote>
+<font size=+0><a href="#Parameterized Methods">Generic Methods</a></font>
+<blockquote><font size=+0><a href="#Parameterized Methods Fundamentals">Fundamentals</a></font></blockquote>
+<font size=+0><a href="#Type Parameters">Type Parameters</a></font>
+<ul><font size=+0><a href="#Type Parameter Fundamentals">Fundamentals</a></font>
+<br><font size=+0><a href="#Type Parameter Bounds">Type Parameter Bounds</a></font>
+<br><font size=+0><a href="#Type Parameter Usage">Usage</a></font>
+<br><font size=+0><a href="#Scope">Scope</a></font>
+<br><font size=+0><a href="#Static Context">Static Context</a></font></ul>
+<font size=+0><a href="#Type Arguments">Type Arguments</a></font>
+<blockquote><font size=+0><a href="#Type Arguments Fundamentals">Fundamentals</a></font>
+<br><font size=+0><a href="#Wildcards">Wildcards</a></font>
+<br><font size=+0><a href="#Wildcard Bounds">Wildcard Bounds</a></font></blockquote>
+</blockquote>
+
+<p><br><b><a href="#Practicalities - Programming With Java Generics">Practicalities
+- Programming With Java Generics</a></b>
+<blockquote><font size=+0><a href="#Using Parameterized Types and Methods">Using
+Generic Types and Methods</a></font>
+<br><font size=+0><a href="#Coping With Legacy">Coping With Legacy</a></font>
+<br><font size=+0><a href="#Defining Parameterized Types and Methods">Defining
+Generic Types and Methods</a></font>
+<br><font size=+0><a href="#Designing Generic Methods">Designing Generic
+Methods</a></font>
+<br><font size=+0><a href="#Working With Parameterized Interfaces">Working
+With Generic Interfaces</a></font>
+<br><font size=+0><a href="#Implementing Infrastructure">Implementing Infrastructure
+Methods</a></font>
+<br><a href="#Using Runtime Type">Using Runtime Type Information</a>
+<br><font size=+0>Reflection</font></blockquote>
+
+<p><br><b><a href="#Technicalities">Technicalities - Under the Hood of
+the Compiler</a></b>
+<ul><font size=+0><a href="#Compiler Messages">Compiler Messages</a></font>
+<br><a href="#Type Erasure">Type Erasure</a>
+<br><font size=+0><a href="#Type System">Type System</a></font>
+<br><font size=+0><a href="#Exception Handling">Exception Handling</a></font>
+<br><font size=+0><a href="#Static Members">Static Context</a></font>
+<br><font size=+0><a href="#Type Argument Inference">Type Argument Inference</a></font>
+<br><font size=+0><a href="#Wilcard Capture">Wilcard Capture</a></font>
+<br><font size=+0><a href="#Wildcard Instantiations">Wildcard Instantiations</a></font>
+<br><font size=+0><a href="#Cast and instanceof">Cast and instanceof</a></font>
+<br><font size=+0>Overload Resolution&nbsp;</font></ul>
+
+<p><br><b><font size=+0><a href="#More Information on Java">More Information
+on Java Generics</a></font></b>
+<p><b><font size=+0><a href="FAQSections/Index.html#Top">Index</a></font></b>
+<blockquote><a href="FAQSections/Index.html#A">A<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#B">B<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#C">C<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#D">D<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#E">E<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#F">F<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#G">G<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#H">H<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#I">I<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#J">J<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#K">K<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#L">L<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#M">M<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#N">N<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#O">O<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#P">P<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#Q">Q<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#R">R<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#S">S<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#T">T<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#U">U<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#V">V<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#W">W<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#X">X<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#Y">Y<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#Z">Z</a></blockquote>
+</td>
+</tr>
+</table>
+
+<hr WIDTH="100%">
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td WIDTH="68%"><a NAME="About This FAQ"></a><b><font size=+0><a href="#About This FAQ">About
+This FAQ</a></font></b>
+<blockquote><font size=+0><a href="#How is this FAQ organized at large?">How
+is this FAQ organized at large?</a></font>
+<br><font size=+0><a href="#How are the individual answered questions organized?">How
+are the individual answered questions organized?</a></font>
+<br><font size=+0><a href="#Whom is the FAQ for?">Whom is the FAQ for?</a></font>
+<br><font size=+0><a href="#How do I best read the FAQ - top-to-bottom or zig-zag?">How
+do I best read the FAQ - top-to-bottom or zig-zag?</a></font>
+<br><font size=+0><a href="#Whom do I contact when I have questions, comments or suggestions related to this FAQ?">Whom
+do I contact when I have questions, comments or suggestions related to
+this FAQ?</a></font></blockquote>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350></td>
+</tr>
+
+<tr>
+<td><a NAME="Fundamentals of Java Generics"></a><b><font size=+0><a href="FAQSections/Fundamentals.html">Fundamentals
+of Java Generics</a></font></b>
+<blockquote><font size=+0><a href="FAQSections/Fundamentals.html#What are Java generics?">What
+are Java generics?</a></font>
+<br><font size=+0><a href="FAQSections/Fundamentals.html#What is the pirmary purpose of Java generics?">What
+is the primary purpose of Java generics?</a></font>
+<br><font size=+0><a href="FAQSections/Fundamentals.html#What is the benefit of using Java generics?">What
+is the benefit of using Java generics?</a></font>
+<br><font size=+0><a href="FAQSections/Fundamentals.html#What does type-safety mean?">What
+does type-safety mean?</a></font></blockquote>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350></td>
+</tr>
+
+<tr>
+<td><a NAME="Language Features of Java Generics"></a><b><font size=+0><a href="FAQSections/Features.html">Language
+Features of Java Generics</a></font></b>
+<ul><font size=+0><a href="FAQSections/Features.html#Which language features are related to Java generics?">Which
+language features are related to Java generics?</a></font>
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p><a NAME="Parameterized Types"></a><font size=+0><a href="FAQSections/ParameterizedTypes.html">Generic
+Types</a></font>
+<blockquote><a NAME="Parameterized Types Fundamentals"></a><font size=+0><a href="FAQSections/ParameterizedTypes.html#Fundamentals of Parameterized Types">Fundamentals</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#What is a parameterized (or generic) type?">What
+is a generic or parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#How is a parameterized type defined?">How
+do I define a generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#Are there any types that cannot have type parameters?">Are
+there any types that cannot have type parameters?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#How is a parameterized type instantiated?">How
+is a generic type instantiated (to form a parameterized type)?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#Why do instantiations of a parameterized type share the same runtime type?">Why
+do instantiations of a generic type share the same runtime type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#Can I cast to a parameterized type?">Can
+I cast to a parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#Can I use parameterized types in exception handling?">Can
+I use parameterized types in exception handling?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#Can parameterized types have static members?">Can
+generic types have static members?</a></font></li>
+</ul>
+<a NAME="Concrete Instantiations"></a><font size=+0><a href="FAQSections/ParameterizedTypes.html#Concrete Instantiations">Concrete
+Instantiations</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#What is a concrete instantiation?">What
+is a concrete instantiation of a generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#Are different concrete instantiations of the same parameterized type compatible?">Are
+different concrete instantiations of the same generic type compatible?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#Can I use a concrete instantiation of a parameterized type like any other type?">Can
+I use a concrete parmeterized type like any other type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#Can I create an array whose component type is a concrete instantiation of a parameterized type?">Can
+I create an array whose component type is a concrete parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#Can I declare a reference variable of an array type whose component type is a concrete instantiation">Can
+I declare a reference variable of an array type whose component type is
+a concrete parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#How can I work around the restriction that there are no arrays whose component type is a concrete instantiation of a">How
+can I work around the restriction that there are no arrays whose component
+type is a concrete parameterized type?</a></font></li>
+
+<li>
+<a href="FAQSections/ParameterizedTypes.html#Why is there no class literal for the concrete instantiation of a parameterized type?">Why
+is there no class literal for the concrete parameterized type?</a></li>
+</ul>
+<a NAME="Raw Types"></a><font size=+0><a href="FAQSections/ParameterizedTypes.html#Raw Types">Raw
+Types</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#What is the raw type?">What
+is the raw type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#Can I use a raw type like any other type?">Can
+I use a raw type like any other type?</a></font></li>
+</ul>
+
+<p><br><a NAME="Wildcard Instantiations"></a><font size=+0><a href="FAQSections/ParameterizedTypes.html#WIldcard Instantiations">Wildcard
+Instantiations</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#What is a wildcard instantiation?">What
+is a wildcard instantiation of a generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#What is an unbounded wildcard instantiation?">What
+is an unbounded wildcard instantiation of a generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#Which methods and fields are accessible/inaccessible through a reference variable of a wildcard type?">Which
+methods and fields are accessible/inaccessible through a reference variable
+of a wildcard parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#What is the difference between the unbounded wildcard instantiation and the raw type?">What
+is the difference between the unbounded wildcard parameterized type and
+the raw type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#Can I use a wildcard instantiation like any other type?">Can
+I use a wildcard </a><a href="FAQSections/ParameterizedTypes.html#What is the difference between the unbounded wildcard instantiation and the raw type?">parameterized
+type</a><a href="FAQSections/ParameterizedTypes.html#Can I use a wildcard instantiation like any other type?">
+like any other type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#Can I create an object whose type is a wildcard instantiation of a parameterized type?">Can
+I create an object whose type is a wildcard parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#Can I create an array whose component type is a wildcard instantiation of a parameterized type?">Can
+I create an array whose component type is a wildcard parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#Can I declare a reference variable of an array type whose component type is a bounded wildcard instantiation of a">Can
+I declare a reference variable of an array type whose component type is
+a bounded wildcard parameterized type?</a></font></li>
+
+<li>
+<a href="FAQSections/ParameterizedTypes.html#Why is it allowed to create an array whose component type is an unbounded wildcard instantiation?">Why
+is it allowed to create an array whose component type is an unbounded wildcard
+</a><font size=+0><a href="FAQSections/ParameterizedTypes.html#What is the difference between the unbounded wildcard instantiation and the raw type?">parameterized
+type</a></font><a href="FAQSections/ParameterizedTypes.html#Why is it allowed to create an array whose component type is an unbounded wildcard instantiation?">?</a></li>
+
+<li>
+<a href="FAQSections/ParameterizedTypes.html#Can I declare a reference variable of an array type whose component type is an unbounded wildcard instantiation of a">Can
+I declare a reference variable of an array type whose component type is
+an unbounded wildcard parameterized type?</a></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedTypes.html#Can I derive from a wildcard instantiation of a parameterized type?">Can
+I derive from a wildcard instantiation of a parameterized type?</a></font></li>
+
+<li>
+<a href="FAQSections/ParameterizedTypes.html#Why is there no class literal for wildcard instantiations of a parameterized type?">Why
+is there no class literal for wildcard </a><font size=+0><a href="FAQSections/ParameterizedTypes.html#What is the difference between the unbounded wildcard instantiation and the raw type?">parameterized
+types</a></font><a href="FAQSections/ParameterizedTypes.html#Why is there no class literal for wildcard instantiations of a parameterized type?">?</a></li>
+</ul>
+</blockquote>
+
+<p><br><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p><a NAME="Parameterized Methods"></a><font size=+0><a href="FAQSections/ParameterizedMethods.html">Generic
+Methods</a></font>
+<ul><a NAME="Parameterized Methods Fundamentals"></a><font size=+0><a href="FAQSections/ParameterizedMethods.html#Fundamentals">Fundamentals</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/ParameterizedMethods.html#What is a parameterized (or generic) method?">What
+is a generic method?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ParameterizedMethods.html#How do I invoke a parameterized method?">How
+do I invoke a generic method?</a></font></li>
+</ul>
+</ul>
+</ul>
+
+<ul>&nbsp;
+<br><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p><a NAME="Type Parameters"></a><font size=+0><a href="FAQSections/TypeParameters.html">Type
+Parameters</a></font>
+<ul><a NAME="Type Parameter Fundamentals"></a><font size=+0><a href="FAQSections/TypeParameters.html#Fundamentals">Fundamentals</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html#What is a type parameter?">What
+is a type parameter?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html#Where is a type parameter visible (or invisible)?">Where
+is a type parameter visible (or invisible)?</a></font></li>
+</ul>
+<a NAME="Type Parameter Bounds"></a><font size=+0><a href="FAQSections/TypeParameters.html#Bounds">Type
+Parameter Bounds</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html#What is a bounded type parameter?">What
+is a bounded type parameter?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html#Which types are permitted as type parameter  bounds?">Which
+types are permitted as type parameter&nbsp; bounds?</a></font></li>
+
+<li>
+<a href="FAQSections/TypeParameters.html#Can I use a type parameter as a type parameter bound?">Can
+I use a type parameter as a type parameter bound?</a></li>
+
+<li>
+<a href="FAQSections/TypeParameters.html#Can I use different instantiations of a same parameterized type as bounds of a type parameter?">Can
+I use different instantiations of a same generic type as bounds of a type
+parameter?</a></li>
+
+<li>
+<a href="FAQSections/TypeParameters.html#How can work around the restriction that a type parameter cannot have different instantiations of a same">How
+can work around the restriction that a type parameter cannot have different
+instantiations of a same generic type as its bounds?</a></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html#Does a bound that is a class type give access to all its public members?">Does
+a bound that is a class type give access to all its public members?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html#How do I decrypt Enum?">How
+do I decrypt "<tt>Enum&lt;E extends Enum&lt;E>></tt>"?</a></font></li>
+</ul>
+<a NAME="Type Parameter Usage"></a><font size=+0><a href="FAQSections/TypeParameters.html#Usage">Usage</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html#Can I use a type parameter like a type?">Can
+I use a type parameter like a type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html#Can I create an object whose type is a type parameter?">Can
+I create an object whose type is a type parameter?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html#Can I create an array whose component type is a type parameter?">Can
+I create an array whose component type is a type parameter?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html#Can I cast to the type that the type parameter stands for?">Can
+I cast to the type that the type parameter stands for?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html#Can I use a type parameter in exception handling?">Can
+I use a type parameter in exception handling?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html#Can I derive from a type parameter?">Can
+I derive from a type parameter?</a></font></li>
+
+<li>
+<a href="FAQSections/TypeParameters.html#Why is there no class literal for a type parameter?">Why
+is there no class literal for a type parameter?</a></li>
+</ul>
+<a NAME="Scope"></a><a href="FAQSections/TypeParameters.html#Scope">Scope</a>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html#Where is a type parameter visible (or invisible)?">Where
+is a type parameter visible (or invisible)?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html#Can I use a type parameter as part of its own bounds or in the declaration of other type parameters?">Can
+I use a type parameter as part of its own bounds or in the declaration
+of other type parameters?</a></font></li>
+</ul>
+<a NAME="Static Context"></a><font size=+0><a href="FAQSections/TypeParameters.html#Static Context">Static
+Context</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html#Is there one instances of a static field per instantiation of a parameterized type?">Is
+there one instances of a static field per instantiation of a generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeParameters.html#Why can't I use a type parameter in any static context of the parameterized class?">Why
+can't I use a type parameter in any static context of the generic class?</a></font></li>
+</ul>
+</ul>
+
+<p><br><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p><a NAME="Type Arguments"></a><a href="FAQSections/TypeArguments.html">Type
+Arguments</a>
+<ul><a NAME="Type Arguments Fundamentals"></a><font size=+0><a href="FAQSections/TypeArguments.html#Fundamentals">Fundamentals</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/TypeArguments.html#What is a type argument?">What
+is a type argument?</a></font></li>
+
+<li>
+<a href="FAQSections/TypeArguments.html#Which types are permitted as type arguments?">Which
+types are permitted as type arguments?</a></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeArguments.html#Are primitive types permitted as type arguments?">Are
+primitive types permitted as type arguments?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeArguments.html#Are wildcards are permitted as type arguments?">Are
+wildcards permitted as type arguments?</a></font></li>
+
+<li>
+<a href="FAQSections/TypeArguments.html#Are type parameters permitted as type arguments?">Are
+type parameters permitted as type arguments?</a></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeArguments.html#Do I have to specify a type argument when I want to use a parameterized type?">Do
+I have to specify a type argument when I want to use a generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeArguments.html#Do I have to specify a type argument when I want to invoke a parameterized method?">Do
+I have to specify a type argument when I want to invoke a generic method?</a></font></li>
+</ul>
+<a NAME="Wildcards"></a><font size=+0><a href="FAQSections/TypeArguments.html#Wildcards">Wildcards</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/TypeArguments.html#What is a wildcard?">What
+is a wildcard?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeArguments.html#What is an unbounded wildcard?">What
+is an unbounded wildcard?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeArguments.html#What is a bounded wildcard?">What
+is a bounded wildcard?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeArguments.html#What do multilevel wildcards mean?">What
+do multi-level wildcards mean?</a></font></li>
+
+<li>
+<a href="FAQSections/TypeArguments.html#If a wildcard appears repeatedly in a type argument section, does it stand for the same type">If
+a wildcard appears repeatedly in a type argument section, does it stand
+for the same type?</a></li>
+</ul>
+<a NAME="Wildcard Bounds"></a><font size=+0><a href="FAQSections/TypeArguments.html#Wildcard Bounds">Wildcard
+Bounds</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/TypeArguments.html#What is a wildcard bound?">What
+is a wildcard bound?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeArguments.html#Which types are permitted as wildcard bounds?">Which
+types are permitted as wildcard bounds?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TypeArguments.html#What is the difference between a wildcard bound and a type parameter bound?">What
+is the difference between a wildcard bound and a type parameter bound?</a></font></li>
+</ul>
+</ul>
+</ul>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350></td>
+</tr>
+
+<tr>
+<td><a NAME="Practicalities - Programming With Java Generics"></a><b><a href="FAQSections/ProgrammingIdioms.html">Practicalities
+- Programming With Java Generics</a></b>
+<ul><a NAME="Using Parameterized Types and Methods"></a><font size=+0><a href="FAQSections/ProgrammingIdioms.html#Using Parameterized Types and Methods">Using
+Generic Types and Methods</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#Should I prefer instantiations of a parameterized type over raw types?">Should
+I prefer parameterized types over raw types?</a></font></li>
+
+<li>
+<a href="FAQSections/ProgrammingIdioms.html#Why shouldn't I mix instantiations and raw types?">Why
+shouldn't I mix </a><font size=+0><a href="FAQSections/ProgrammingIdioms.html#Should I prefer instantiations of a parameterized type over raw types?">parameterized</a></font><a href="FAQSections/ProgrammingIdioms.html#Why shouldn't I mix instantiations and raw types?">
+and raw types, if I feel like it?</a></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#Should I use the parameterized collections or better stick to the old non-generic collections?">Should
+I use the generic collections or better stick to the old non-generic collections?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#What is a checked collection?">What
+is a checked collection?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#What is the difference">What
+is the difference between a Collection&lt;?> and a Collection&lt;Object>?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#How do I express a mixed sequence of instantiations of a given parameterized type?">How
+do I express that a collection is a mix of objects of different types?</a></font></li>
+
+<li>
+<a href="FAQSections/ProgrammingIdioms.html#How can I make sure that the same wildcard stand for the same type?">How
+can I make sure that the same wildcard stand for the same type?</a></li>
+</ul>
+<a NAME="Coping With Legacy"></a><font size=+0><a href="FAQSections/ProgrammingIdioms.html#Coping With Legacy">Coping
+With Legacy</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#What happens when I mix generic and non-generic code?">What
+happens when I mix generic and non-generic code?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#Should I re-engineer all my existing classes and generify them?">Should
+I re-engineer all my existing classes and generify them?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#How do I generify an existing non-generic class?">How
+do I generify an existing non-generic type or method?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#How do I avoid breaking binary compatibility when I generify an existing type or method?">How
+do I avoid breaking binary compatibility when I generify an existing type
+or method?</a></font></li>
+</ul>
+</ul>
+
+<ul><a NAME="Defining Parameterized Types and Methods"></a><font size=+0><a href="FAQSections/ProgrammingIdioms.html#Defining Parameterized Types and Methods">Defining
+Generic Types and Methods</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#When would I implement a parameterized class (or method) instead of a regular one?">When
+would I implement a generic class (or method) instead of a regular one?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#When would I use an unbounded wildcard instantiation instead of a bounded or concrete instantiation?">When
+would I use an unbounded wildcard instantiation instead of a bounded or
+concrete instantiation?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#When would I use a wildcard instantiation instead of a concrete instantiation?">When
+would I use a wildcard instantiation instead of a concrete instantiation?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#When would I use a wildcard instantiation with a lower bound?">When
+would I use a wildcard instantiation with an lower bound?</a></font></li>
+</ul>
+<a NAME="Designing Generic Methods"></a><font size=+0><a href="FAQSections/ProgrammingIdioms.html#Designing Generic Methods">Designing
+Generic Methods</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#Which role do wildcards play in method signatures?">Which
+role do wildcards play in method signatures?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#Is it better to parameterize a method rather than using wildcards?">Is
+it better to generify a method rather than using wildcards?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#Should I use wildcards in the return type of a method?">Should
+I use wildcards in the return type of a method?</a></font></li>
+
+<li>
+<a href="FAQSections/ProgrammingIdioms.html#How do I implement a method that takes a wildcard argument?">How
+do I implement a method that takes a wildcard argument?</a></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#How do I implement a method that takes a multi-level wildcard argument?">How
+do I implement a method that takes a multi-level wildcard argument?</a></font></li>
+
+<li>
+<a href="FAQSections/ProgrammingIdioms.html#I want to pass a U and a X to a method.  How do I correctly declare that method?">I
+want to pass a U and a X&lt;U> to a method.&nbsp; How do I correctly declare
+that method?</a></li>
+</ul>
+<a NAME="Working With Parameterized Interfaces"></a><font size=+0><a href="#Working With Parameterized Interfaces">Working
+With Generic Interfaces</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#Can a class implement different instantiations of the same parameterized interface?">Can
+a class implement different instantiations of the same generic interface?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#Can a class implement different instantiations of the same parameterized interface?">Can
+a subclass implement another parameterized interface than any of its superclasses
+does?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#What happens if a class implements two parameterized interfaces that define the same method?">What
+happens if a class implements two generic interfaces that define the same
+method?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#Can an interface type nested into a parameterized type use the enclosing type's type parameters?">Can
+an interface type nested into a generic type use the enclosing type's type
+parameters?</a></font></li>
+</ul>
+<a NAME="Implementing Infrastructure"></a><font size=+0><a href="FAQSections/ProgrammingIdioms.html#Implementing Infrastructure Methods">Implementing
+Infrastructure Methods</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#How do I best implement the equals method of a parameterized type?">How
+do I best implement the <tt>equals</tt> method of a generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#How do I best implement the clone method of a parameterized type">How
+do I best implement the <tt>clone</tt> method of a generic type?</a></font></li>
+</ul>
+<a NAME="Using Runtime Type"></a><a href="FAQSections/ProgrammingIdioms.html#Using Runtime Type Information">Using
+Runtime Type Information</a>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#What does the type parameter of class java.lang.Class mean?">What
+does the type parameter of class <tt>java.lang.Class</tt> mean?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#How do I pass type information to a method?">How
+do I pass type information to a method so that it can be used at runtime?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#How do I generically create objects and arrays?">How
+do I generically create objects and arrays?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/ProgrammingIdioms.html#How do I perform a runtime type check whose target type is a type parameter?">How
+do I perform a runtime type check whose target type is a type parameter?</a></font></li>
+</ul>
+<a NAME="Reflection"></a><font size=+0>Reflection</font>
+<ul><font size=+0>Can I access information related to generics via reflection?</font></ul>
+</ul>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350></td>
+</tr>
+
+<tr>
+<td>
+<br><a NAME="Technicalities"></a><b><a href="FAQSections/TechnicalDetails.html">Technicalities
+- Under the Hood of the Compiler</a></b>
+<ul><a NAME="Compiler Messages"></a><font size=+0><a href="FAQSections/TechnicalDetails.html#Compiler Messages">Compiler
+Messages</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#What is an unchecked warning?">What
+is an "unchecked" warning?</a></font></li>
+
+<li>
+<a href="FAQSections/TechnicalDetails.html#How can I disable or enable unchecked warnings?">How
+can I disable or enable unchecked warnings?</a></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#What is the -Xlint:unchecked compiler option?">What
+is the -Xlint:unchecked compiler option?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#What is the SuppressWarnings annotation?">What
+is the <tt>SuppressWarnings</tt> annotation?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#How can I avoid unchecked cast warnings?">How
+can I avoid "unchecked cast" warnings?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Is it possible to eliminate all unchecked warnings?">Is
+it possible to eliminate all "unchecked" warnings?</a></font></li>
+</ul>
+<a NAME="Type Erasure"></a><a href="FAQSections/TechnicalDetails.html#Type Erasure">Type
+Erasure</a>
+<ul>
+<li>
+<a href="FAQSections/TechnicalDetails.html#How does the compiler translate Java generics?">How
+does the compiler translate Java generics?</a></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#What is type erasure?">What
+is type erasure?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#What is a bridge method?">What
+is a bridge method?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Under which circumstances is a bridge method generated?">Under
+which circumstances is a bridge method generated?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Why does the compiler add casts when it translates generics?">Why
+does the compiler add casts when it translates generics?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#How does type erasure work when a type parameter has several bounds?">How
+does type erasure work when a type parameter has several bounds?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#What is a reifiable type?">What
+is a reifiable type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#What is the type erasure of a parameterized type?">What
+is the type erasure of a parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#What is the type erasure of a parameterized type?">What
+is the type erasure of a type parameter?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#What is the type erasure of a parameterized method?">What
+is the type erasure of a generic method?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Is generic code faster or slower than non-generic code?">Is
+generic code faster or slower than non-generic code?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#How do I compile generics for use with JDK <= 1.4?">How
+do I compile generics for use with JDK &lt;= 1.4?</a></font></li>
+</ul>
+<a NAME="Type System"></a><font size=+0><a href="FAQSections/TechnicalDetails.html#Type System">Type
+System</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#How do parameterized types fit into the Java type system?">How
+do parameterized types fit into the Java type system?</a></font></li>
+
+<li>
+<a href="FAQSections/TechnicalDetails.html#How does the raw type relate to instantiations of the corresponding parameterized type?">How
+does the raw type relate to instantiations of the corresponding generic
+type?</a></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#How do instantiations of a parameterized type relate to  instantiations of other parameterized types?">How
+do instantiations of a generic type relate to instantiations of other generic
+types that have the same type argument?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#How do unbounded wildcard instantiations of a parameterized type relate to other instantiations of the same type?">How
+do unbounded wildcard instantiations of a generic type relate to other
+instantiations of the same type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#How do wildcard instantiations with an upper bound relate to other instantiations of the same type?How do wildcard instantiations with an upper bound relate to other instantiations of the same type?">How
+do wildcard instantiations with an upper bound relate to other instantiations
+of the same type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#How do wildcard instantiations with a lower bound relate to other instantiations of the same type?">How
+do wildcard instantiations with a lower bound relate to other instantiations
+of the same type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Which super-subtype relationships exist among instantiations of parameterized types?">Which
+super-subtype relationships exist among instantiations of generic types?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Which super-subset relationships exist among wildcards?">Which
+super-subset relationships exist among wildcards?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Does extends always mean inheritance?">Does
+"extends" always mean "inheritance"?</a></font></li>
+</ul>
+<a NAME="Exception Handling"></a><font size=+0><a href="FAQSections/TechnicalDetails.html#Exception Handling">Exception
+Handling</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Can I use parameterized types in exception handling?">Can
+I use parameterized types in exception handling?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Why are parameterized exception and error types illegal?">Why
+are generic exception and error types illegal?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Can I use a type parameter in exception handling?">Can
+I use a type parameter in exception handling?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Can I use a type parameter in a catch clause?">Can
+I use a type parameter in a catch clause?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Can I use a type parameter in in a throws clause?">Can
+I use a type parameter in in a throws clause?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Can I throw an object whose type is a type parameter?">Can
+I throw an object whose type is a type parameter?</a></font></li>
+</ul>
+<a NAME="Static Members"></a><font size=+0><a href="FAQSections/TechnicalDetails.html#Static Context">Static
+Context</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#How do I refer to static members of a parameterized type?">How
+do I refer to static members of a parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#How do I refer to a (non-static) inner class of a parameterized type?">How
+do I refer to a (non-static) inner class of a parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#How do I refer to an interface type nested into a parameterized type?">How
+do I refer to an interface type nested into a parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#How do I refer to an enum type nested into a parameterized type?">How
+do I refer to an enum type nested into a parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Can I import a particular instantiation of parameterized type?">Can
+I import a particular instantiation of generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Why are parameterized enum types illegal?">Why
+are generic enum types illegal?</a></font></li>
+</ul>
+<a NAME="Type Argument Inference"></a><font size=+0><a href="FAQSections/TechnicalDetails.html#Type Argument Inference">Type
+Argument Inference</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#What is type argument inference?">What
+is type argument inference?</a></font></li>
+
+<li>
+<font size=+0>What are the exact rules for type argument inference?</font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#What explicit type argument specification?">What
+explicit type argument specification?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#What happens if a type parameter does appear in the method parameter list?">What
+happens if a type parameter does not appear in the method parameter list?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Why doesn't type argument inference fail when I provide inconsistent method">Why
+doesn't type argument inference fail when I provide inconsistent method
+arguments?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Why do temporary variables matter in case of invocation of parameterized methods?">Why
+do temporary variables matter in case of invocation of generic methods?</a></font></li>
+</ul>
+<a NAME="Wilcard Capture"></a><font size=+0><a href="FAQSections/TechnicalDetails.html#Wildcard Capture">Wilcard
+Capture</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#What is the capture of a wildcard?">What
+is the capture of a wildcard?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#What is a wildcard capture assignment-compatible to?">What
+is a wildcard capture assignment-compatible to?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Is the capture of a bounded wildcard compatible to the bound?">Is
+the capture of a bounded wildcard compatible to the bound?</a></font></li>
+</ul>
+<a NAME="Wildcard Instantiations"></a><font size=+0><a href="FAQSections/TechnicalDetails.html#Wildcard Instantiations">Wildcard
+Instantiations</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Which methods and fields are accessible/inaccessible through a reference variable of a wildcard type?">Which
+methods and fields are accessible/inaccessible through a reference variable
+of a wildcard type?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Which methods that use the type parameter in the argument or return type are accessible in an unbounded wildcard instantiation?">Which
+methods that use the type parameter in the argument or return type are
+accessible in an unbounded wildcard instantiation?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Which methods that use the type parameter in the argument or return type are accessible in an upper bound wildcard instantiation?">Which
+methods that use the type parameter in the argument or return type are
+accessible in an upper bound wildcard instantiation?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Which methods that use the type parameter in the argument or return type are accessible in a lower bound wildcard instantiation?">Which
+methods that use the type parameter in the argument or return type are
+accessible in a lower bound wildcard instantiation?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Which methods that use the type parameter in the argument or return type are accessible in a lower bound wildcard instantiation?">Which
+methods that use the type parameter as type argument of a parameterized
+argument or return type are accessible in a wildcard instantiation?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Which methods that use the type parameter as upper wildcard bound in a parameterized argument or return type are accessible in a wildcard instantiation?">Which
+methods that use the type parameter as upper wildcard bound in a parameterized
+argument or return type are accessible in a wildcard instantiation?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Which methods that use the type parameter as lower wildcard bound in a parameterized argument or return type are accessible in a wildcard instantiation?">Which
+methods that use the type parameter as lower wildcard bound in a parameterized
+argument or return type are accessible in a wildcard instantiation?</a></font></li>
+
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#In a wildcard instantiation, can I read and write fields whose type is the type parameter?">In
+a wildcard instantiation, can I read and write fields whose type is the
+type parameter?</a></font></li>
+</ul>
+<a NAME="Cast and instanceof"></a><font size=+0><a href="FAQSections/TechnicalDetails.html#Cast and instanceof">Cast
+and instanceof</a></font>
+<ul>
+<li>
+<font size=+0><a href="FAQSections/TechnicalDetails.html#Which types can or must not appear as target type in an instanceof expression?">Which
+types can or must not appear as target type in an instanceof expression?</a></font></li>
+</ul>
+<a NAME="Overload Resolution"></a><font size=+0>Overload Resolution</font>
+<ul><font size=+0>Can a parameterized method override a non-parameterized
+method, or vice versa?</font></ul>
+</ul>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350></td>
+</tr>
+
+<tr>
+<td><a NAME="More Information on Java"></a><b><font size=+0><a href="FAQSections/MoreInformation.html">More
+Information on Java Generics</a></font></b>
+<blockquote><font size=+0><a href="FAQSections/MoreInformation.html#From where can I donwload a generics compiler?">From
+where can I download a generics compiler?</a></font>
+<br><font size=+0><a href="FAQSections/MoreInformation.html#Where can I find a generics tutorial?">Where
+can I find a generics tutorial?</a></font>
+<br><font size=+0><a href="FAQSections/MoreInformation.html#Where can I find a specification of the Java generics language features?">Where
+can I find a specification of the Java generics language features?</a></font>
+<br><font size=+0><a href="FAQSections/MoreInformation.html#Which books cover Java generics?">Which
+books cover Java generics?</a></font>
+<br><font size=+0><a href="FAQSections/MoreInformation.html#What webpages are devoted to Java generics?">What
+webpages are devoted to Java generics?</a></font></blockquote>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350></td>
+</tr>
+
+<tr>
+<td><a NAME="Index"></a><b><font size=+0><a href="FAQSections/Index.html#Top">Index</a></font></b>
+<blockquote><a href="FAQSections/Index.html#A">A<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#B">B<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#C">C<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#D">D<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#E">E<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#F">F<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#G">G<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#H">H<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#I">I<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#J">J<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#K">K<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#L">L<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#M">M<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#N">N<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#O">O<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#P">P<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#Q">Q<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#R">R<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#S">S<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#T">T<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#U">U<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#V">V<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#W">W<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#X">X<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#Y">Y<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#Z">Z</a></blockquote>
+</td>
+</tr>
+</table>
+<img SRC="../Images/bar.gif" NOSAVE height=5 width=600>
+<h2>
+<a NAME="Acknowledgements"></a>Acknowledgements</h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%">The FAQ is written and maintained by <a href="../AboutMe.html">Angelika
+Langer</a>.&nbsp;
+<p>Klaus Kreft, Bruce Eckel and Cay Horstmann reviewed this FAQ and provided
+invaluable feedback.
+<p>A number of individuals at Sun Microsystems patiently answered countless
+question I posed regarding Java generics.&nbsp; My thanks to Gilad Bracha,
+Neil Gafter, and Peter von der Ah&eacute;.&nbsp;
+<p>Suggestions and corrections, that inspired changes in this FAQ, have
+been provided by the following people (in alphabetic order): Richart Grin,
+Markus Keller, Keith Lea, Joe Soroka, Frank Tip.</td>
+</tr>
+</table>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>&nbsp;
+<h2>
+<a NAME="Change Log"></a>Change Log</h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%">Below is a list of minor and major modifications
+of the FAQ.
+<br>&nbsp;
+<table CELLSPACING=4 CELLPADDING=2 >
+<tr VALIGN=TOP>
+<td><nobr>October 2004</nobr>
+<br><img SRC="../Images/bar-small.gif" NOSAVE height=1 width=116></td>
+
+<td>First release.</td>
+</tr>
+
+<tr VALIGN=TOP>
+<td>January 2005
+<br><img SRC="../Images/bar-small.gif" NOSAVE height=1 width=116></td>
+
+<td>Terminology change.
+<p>A reader pointed out that the <a href="http://java.sun.com/docs/books/jls/jls-proposed-changes.html">draft
+of JLS 3</a> uses terms different from what I use in this FAQ document.&nbsp;
+This is because I started writing the FAQ before even a draft of JLS 3
+was available. There still is no final specification of the language features
+of Java Generics.&nbsp; Nonetheless I decided to reduce the mismatch somewhat
+by changing some of the terms used throughout this document.&nbsp;
+<p>The most significant deviation from the JLS 3 terminology is the use
+of the term "parameterized type".&nbsp; The JLS uses the term "parameterized
+type" to refer to types with a type argument list, such as <tt>List&lt;String>
+</tt>or
+<tt>List&lt;?></tt>. I used the term "parameterized type" to distinguish
+between types with type parameters, such as <tt>List</tt>, which is a type
+that declares a type parameter <tt>E</tt> that stands for the type of the
+elements in the list, and plain old types without type parameters, such
+as <tt>String</tt>, <tt>Date</tt>, <tt>Point</tt>, etc.&nbsp; Hence I made
+the following change:
+<br>&nbsp;
+<table>
+<tr>
+<td><i>formerly used in this FAQ</i></td>
+
+<td>=></td>
+
+<td><i>now used in this FAQ (and in JLS 3)</i></td>
+</tr>
+
+<tr>
+<td><font color="#000066">parameterized</font> type/method</td>
+
+<td>=></td>
+
+<td><font color="#000066">generic</font> type/method</td>
+</tr>
+
+<tr>
+<td><font color="#000066">instantiation</font> of a parameterized type&nbsp;</td>
+
+<td>=></td>
+
+<td><font color="#000066">parameterized</font> type</td>
+</tr>
+</table>
+
+<p>There remains an issue regarding use of the term "instantiation".&nbsp;
+The term "instantiation" is used in the JLS in conjunction with object
+creation:&nbsp; a type is instantiated to form an instance of the type,
+that is, an object of that type.&nbsp; I reuse the term "instantiation"
+to refer to the "creation" of a parameterized type from a generic type,
+that is, for the manifestation of a generic type such as <tt>List</tt>
+with its formal type parameter <tt>E</tt> as a parameterized type with
+an actual type argument as in <tt>List&lt;String></tt> or <tt>List&lt;?></tt>.&nbsp;
+This can be regarded as misleading, because nothing is created, not even
+a new type, different from what happens in C++ for instance when a template
+is instantiated. Yet I could not think of a more precise or adequate term
+that would denote the fact that formal type parameters are replaced by
+actual type arguments in a generic type or method.&nbsp; In other words,
+I "instantiate" generic types to form parameterized types, and I talk of
+"instantiations" of a generic type, which are the parameterized type, as
+opposed to "instances" of a type, which would be objects, like in the JLS.</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td></td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>&nbsp;
+<h2>
+<a NAME="CopyrightNotice"></a>Copyright Notice</h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%">All text and content found at URLs starting
+with http://www.langer.camelot.de/GenericsFAQ/ (collectively, "the Java
+Generics FAQ") are the sole property of&nbsp; Angelika Langer. Copyright
+@ 2004-2005 by <a href="../AboutMe.html">Angelika Langer</a>.&nbsp; All
+rights reserved.&nbsp;
+<p>Except as specifically granted below, you may not modify, copy, publish,
+sell, display, transmit (in any form, or by any means, electronic, mechanical,
+photocopying, recording, or otherwise), adapt, distribute, store in a retrieval
+system, create derivative works, or in any other way use or exploit the
+contents of the Java Generics FAQ, without the prior consent of the author.&nbsp;
+<p>All rights, titles and interest, including copyrights and other applicable
+intellectual property rights, in any of the material belongs to the provider
+of the material. You do not acquire proprietary interest in such materials
+by accessing them on my web site. You must abide by all copyright notices
+and restrictions on use of the material accessed.
+<p>In particular, I do NOT grant permission to copy the Java Generics FAQ
+or any part of it to a public Web server. Link to the original pages instead.
+(The problem with you putting a page on your server is that the search
+engines will find it and send my readers to your server instead. Thus they
+will be deprived of the most up-to-date version of the document.)
+<p><b>Non-commercial Use</b>
+<br>As a reader of the Java Generics FAQ, you are granted a nonexclusive,
+nontransferable, limited license to access and use for non-commercial (research
+and information) purposes the materials that are made available to you
+as the Java Generics FAQ. This license includes the right to download and
+print out one copy of the Java Generics FAQ so long as you neither change
+nor delete any author attribution, legend or copyright notice.&nbsp; I
+request that you do not break up the document and attribute the source
+in such a way that someone can find the most up-to-date version on the
+Web, e.g. by including a link to http://www.langer.camelot.de/GenericsFAQ/JavaGenericsFAQ.html.
+If you redistribute the hardcopy of the Java Generics FAQ, please send
+me <a href="../AboutMe.html">email</a> informing me of the usage.&nbsp;
+<p>Other forms of non-commercial use may be allowed with prior written
+permission.&nbsp; If permission is granted for non-commercial use, credit
+to the copyright owner must be displayed as prescribed by copyright owner
+in every exposure of text. To request non-commercial use of copyrighted
+materials, please <a href="../AboutMe.html">email</a> your request and
+provide the following information:&nbsp; your name, organization, and title,
+your request (the text or texts you wish to quote) and the non-commercial
+purpose of the use.
+<p><b>Commercial Use</b>
+<p>Commercial use on paper, electronic storage devices of all types, online
+via the Internet or any part of the World Wide Web or via any other electronic
+distribution is strictly prohibited without prior payment to the copyright
+owner, as well as attribution of ownership of copyright and URL in every
+exposure of text. To negotiate legal use of text owned and copyrighted
+by Angelika Langer, please send me <a href="../AboutMe.html">email</a>.
+<p><b>Disclaimers</b>
+<p>The author has taken care in the preparation of this material, but makes
+no expressed or implied warranty of any kind and assumes no responsibility
+for errors or omissions. No liability is assumed for incidental or consequential
+damages in connection with or arising out of the information or programs
+contained herein.
+<br>&nbsp;</td>
+</tr>
+</table>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p>
+<hr WIDTH="100%">
+<br><font face="Arial,Helvetica"><font size=-2><a href="#TOC">CONTENT<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Fundamentals.html">NEXT<a href="#TOC"><img SRC="../Images/bluebullet.gif" NOSAVE BORDER=0 height=6 width=4></a></a><a href="FAQSections/Index.html#IDX">INDEX</a></font></font>
+<br>&nbsp;
+</body>
+</html>

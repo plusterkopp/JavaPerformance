@@ -1,0 +1,250 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <title>Compile Time Computations in C++</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="PaperTemplates"></a>
+<br><font color="#295AB5"><font size=+3>Compile-Time Computations in C++</font></font>
+<br><font color="#295AB5"><font size=+2>Novel Template Programming Techniques</font></font>
+<p><font color="#295AB5"><font size=+2>Whitepaper, 2000</font></font>
+<br><font color="#295AB5"><font size=+1>Angelika Langer</font></font><font color="#295AB5"><font size=+1></font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<p><b><i><font face="Arial">Using compile time computations in C++</font></i></b>
+<p><font size=-1>Templates are known as a means to express parameterized
+types. True and useful, but C++ templates allow more than just that. Today,
+template programming has become a paradigm of its own. Compile-time polymorphism,
+generic programming, template meta-programming are only some of the buzz
+words in the field. Today, only few programmers exploit the full power
+of template features in C++.</font>
+<p><font size=-1>Let us explore a couple of advanced template programming
+techniques that can replace corresponding object oriented idioms.</font>
+<p><b>Parameterized Types</b>
+<p><font size=-1>Traditionally, the template language feature is used for
+implementation of container classes such a stack for example. Typically,
+such a class template has the type of the contained elements as a template
+parameter. However, templates can not only be parameterized by types. Standard
+C++ also allows non-type template parameters and template template parameters.
+Below is sketch of the respective syntax for each of these argument categories:</font>
+<dir>
+<dir><i><font size=-1>type template parameter</font></i>
+<br><font face="Courier New"><font size=-1><font color="#3366FF">template</font>
+&lt;<font color="#3366FF">class</font> PlaceHolderForType></font></font>
+<br><font face="Courier New"><font size=-1><font color="#3366FF">template</font>
+&lt;<font color="#3366FF">typename</font> PlaceHolderForType></font></font>
+<p><i><font size=-1>non-type template parameter</font></i>
+<br><font face="Courier New"><font size=-1><font color="#3366FF">template</font>
+&lt;NameOfType PlaceHolderForValue></font></font>
+<p><i><font size=-1>template template parameter</font></i>
+<br><font face="Courier New"><font size=-1><font color="#3366FF">template</font>
+&lt;<font color="#3366FF">template</font> &lt;<i>template_argument_list</i>>
+<font color="#3366FF">class</font>
+PlaceHolderForTemplate></font></font></dir>
+</dir>
+<font size=-1>While template template parameters is a more exotic language
+feature, that few, if any, compilers support, non-type template parameters
+turned out to be quite useful in practice. Here is a classical example
+that demonstrates the use of type and non-type template parameters for
+definition of a fixed-sized buffer class:</font>
+<dir><font face="Courier"><font size=-2>template &lt;class T, int s></font></font>
+<br><font face="Courier"><font size=-2>class Buffer {</font></font>
+<br><font face="Courier"><font size=-2>public:</font></font>
+<br><font face="Courier"><font size=-2>&nbsp; Buffer() : sz(s) {}</font></font>
+<br><font face="Courier"><font size=-2>private:</font></font>
+<br><font face="Courier"><font size=-2>&nbsp; T v[s];</font></font>
+<br><font face="Courier"><font size=-2>&nbsp; int sz;</font></font>
+<br><font face="Courier"><font size=-2>};</font></font>
+<p><font face="Courier"><font size=-2>Buffer&lt;char,127> cbuf;</font></font>
+<br><font face="Courier"><font size=-2>Buffer&lt;Record,8> rbuf;</font></font></dir>
+<font size=-1>The notion that a class can be parameterized by values, such
+as the buffer size in the example above, opens interesting design options.
+In principle, when a property shall be added to a given type of objects,
+then there are two options:</font>
+<ul>
+<li>
+<font size=-1>The property can be added to the state of each object, that
+is, the existing type is extended by adding another data member that represents
+the new property. As a result, objects with and without the new property
+are exchangeable because they are of the same type.</font></li>
+
+<li>
+<font size=-1>Alternatively, new types can be defined in addition to the
+existing type, so that the new property would be reflected by the type
+of the object, not by its state. The effect is that objects with and without
+the new property are not exchangeable because they are of the distinct
+type.</font></li>
+</ul>
+<font size=-1>The first approach typically leads to so-called "fat" classes
+which can become a true maintenance nightmare, especially if more and more
+properties are added and the combination of property values explodes. The
+second approach leads to cleaner abstractions, where every type represents
+exactly one precisely defined concept.</font>
+<p><font size=-1>If the latter approach is the design option of choice
+then non-type template arguments often help to express the design. The
+new types, that must be defined, can be generated from a class template
+that has the new property as a non-type template argument.</font>
+<p><font size=-1>Let's explore a trivial example for illustration. Imagine
+we had a class </font><font face="Courier"><font size=-2>time</font></font><font size=-1>
+that represents time values, say, internally stored as seconds since 1.1.1970.
+These can be points in time like "now", expressed in seconds since 1.1.1970,
+but also periods of time like "5 seconds". Part of the time package is
+a function </font><font face="Courier"><font size=-2>diff() </font></font><font size=-1>that
+calculates the difference between two time values.</font>
+<p><font size=-1>Next, we are instructed to extend the </font><font face="Courier"><font size=-2>time</font></font><font size=-1>
+type by adding a precision: time values shall be measured not only in seconds,
+but also in minutes, days, years, etc. The goal is that we can also express
+values like "today" or "Xmas" or "half an hour". How do we design this
+extension?</font>
+<p><font size=-1>One design option is to add a precision data member to
+the </font><font face="Courier"><font size=-2>time</font></font><font size=-1>
+class. If we take that approach, we must also figure out what the </font><font face="Courier"><font size=-2>diff()</font></font><font size=-1>
+function should do in case that it is provided with two time values of
+different precision. What is the difference between "Xmas" and "5 minutes"?
+Sure, we can find a way to give "Xmas minus 5 minutes" a halfway reasonable
+meaning. We could also argue that this is not a reasonable thing to do
+and alternatively decide that the attempt to calculate the difference between
+to time values of different precision is always an error. In that case,
+the </font><font face="Courier"><font size=-2>diff()</font></font><font size=-1>
+function would have to examine the precision data member each time it is
+invoked and would raise an exception if necessary.</font>
+<p><font size=-1>The time class is an admittedly trivial class, but this
+contrived example already shows that we create run-time overhead by adding
+a property, such as the precision, to the state of each object. In our
+example, the overhead is the check for identical precision and the resulting
+error handling.</font>
+<p><font size=-1>Another design option is to add the precision to the type
+of the time value, that is, we would define new types for time values measured
+in minutes, days, years, etc.</font>
+<center><img SRC="image.gif" NOSAVE height=93 width=369></center>
+
+<p><font size=-1>With this design, the issue of "Xmas minus 5 minutes"
+can be solved easily by turning the</font><font face="Courier"><font size=-2>
+diff()</font></font><font size=-1> function into a function template. For
+each type of time value another </font><font face="Courier"><font size=-2>diff()</font></font><font size=-1>
+function would be generated and each such function would take two arguments
+of identical type. As a result, only time values with the same precision
+can be used for calculating time differences. Here is the sketch of a suggested
+implementation:</font>
+<dir><font face="Courier"><font size=-2>template&lt;long p></font></font>
+<br><font face="Courier"><font size=-2>class PTime {</font></font>
+<br><font face="Courier"><font size=-2>public:</font></font>
+<br><font face="Courier"><font size=-2>&nbsp; PTime&lt;p>();</font></font>
+<br><font face="Courier"><font size=-2>&nbsp; PTime&lt;p>(long sec) : Time(sec);</font></font>
+<br><font face="Courier"><font size=-2>&nbsp; TUnit diff(const PTime&lt;p>&amp;
+rhs)</font></font>
+<br><font face="Courier"><font size=-2>&nbsp; { return ((_t/p) - (rhs._t/p));
+}</font></font>
+<br><font face="Courier"><font size=-2>private:</font></font>
+<br><font face="Courier"><font size=-2>&nbsp; long _t;</font></font>
+<br><font face="Courier"><font size=-2>};</font></font>
+<p><font face="Courier"><font size=-2>const long second = 1;</font></font>
+<br><font face="Courier"><font size=-2>const long minute = 60 * second;</font></font>
+<br><font face="Courier"><font size=-2>// ... and so on ...</font></font>
+<p><font face="Courier"><font size=-2>void main()</font></font>
+<br><font face="Courier"><font size=-2>{</font></font>
+<br><font face="Courier"><font size=-2>&nbsp; PTime&lt;minute> pt1;</font></font>
+<br><font face="Courier"><font size=-2>&nbsp; PTime&lt;minute> pt2(time(NULL)
+- 2*hour);</font></font>
+<p><font face="Courier"><font size=-2>&nbsp; cout &lt;&lt; "diff is: "
+&lt;&lt; pt1.diff(pt2) &lt;&lt; endl;</font></font>
+<br><font face="Courier"><font size=-2>}</font></font></dir>
+<font size=-1>The attempt to calculate "Xmas minus 5 minutes" would result
+in a compile time error message, because "Xmas" would be of type</font><font face="Courier"><font size=-2>
+Ptime&lt;day></font></font><font size=-1>, while "5 minutes" would be of
+type </font><font face="Courier"><font size=-2>Ptime&lt;minute></font></font><font size=-1>,
+and neither class has a </font><font face="Courier"><font size=-2>diff()</font></font><font size=-1>
+member function that accepts the other type of time value.</font>
+<p><font size=-1>Note, that this solution does not create any run-time
+overhead. The check for identical precision is performed at compile-time,
+because we expressed the new property, the precision, in terms of types
+rather than in terms of object state. Type information can be used at compile-time,
+object state must always be processed at run-time. Moreover, the </font><font face="Courier"><font size=-2>diff()</font></font><font size=-1>
+function is relatively trivial and has a good chance to be inlined, whereas
+under the alternative design the </font><font face="Courier"><font size=-2>diff()</font></font><font size=-1>
+function inevitably has a higher complexity, which impairs its performance.</font>
+<p><font size=-1>This trivial case study illustrates two things:</font>
+<ul>
+<li>
+<font size=-1>Often we have the choice between expressing a property in
+terms of type information or in form of object state. More often than necessary
+the second option is chosen, although properly designed types often result
+in clearer abstractions.</font></li>
+
+<li>
+<font size=-1>When information is contained in the type already, rather
+than in the object state, compile-time computations can be performed, such
+as the error detection in our example. In general, properly designed "lean"
+types have a great potential for better run time characteristics.</font></li>
+</ul>
+<font size=-1>Let's spend a few final thoughts on performance. The more
+computations can be performed at compile time already, the better will
+the run time behaviour be. With templates it is easy to have the compiler
+do much of the work. Just to give you some ideas:</font>
+<p><font size=-1><b>Compile time polymorphism</b>. Template programming
+in C++ facilitates function dispatch at compile time using function templates.
+In object-oriented theory, polymorphic behaviour is implemented by means
+of virtual member functions, which are dispatched at run time using the
+virtual function table mechanism. The exact same thing can be achieved
+using function templates in which case the compiler performs the function
+dispatch at run time.</font>
+<p><font size=-1><b>Compile time policy mix-ins</b>. Template programming
+in C++ allows specification of policies (or strategies) at compile time.
+In classic C++ policies are often provided as function pointers; different
+comparison functions might be supplied to a sort function as an argument,
+for instance. The same effect can be achieved using templates where the
+policy can be specified at compile time, thus eliminating run time overhead
+entirely.</font>
+<p><font size=-1><b>Compile time computations</b>. The template instantiator
+evaluates templates recursively. This behaviour can be used to compute
+values or to evaluate expressions at compile time. Practical examples include
+evaluation of vector dot product or matrix operations, or calculation of
+the square root at compile time.</font>
+<p><font size=-1>In sum, template programming in C++ has a lot more to
+offer than just parameterized types. In the process of standardisation
+the template language feature was enhanced and refined, numerous features
+were added such as template specialisation, explicit function template
+argument specification, function template overloading, etc. As a result,
+we nowadays can often choose between compile-time and run-time computations.
+We are not limited to object oriented programming and its bias towards
+run-time computations any longer. A whole new programming paradigm - generic
+programming - emerged and has already found its way into the software shops.
+The STL, which is a major part of the standard C++ library, is an exemplary
+implementation of generic programming. Multi-paradigm programming in C++
+has become reality.</font>
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/Templates.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/Templates.htm">Template
+Programming</a> </font></b>- All you ever wanted to know about templates
+<br><font color="#000000"><font size=-1>3 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+<font size=-1></font>
+</body>
+</html>

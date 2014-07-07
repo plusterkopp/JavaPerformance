@@ -1,0 +1,851 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Pre-Copyedit Version of Article in JavaSpektrum, September 2002">
+   <meta name="KeyWords" content="Java clone copy Effective Java">
+   <title>Implementing the clone() Method  - Part 1</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="EffectiveJava05"></a>
+<br><font color="#295AB5"><font size=+3>Das Kopieren von Objekten in Java</font></font>
+<br><font color="#295AB5"><font size=+2>Teil 1: Was ist clone()?&nbsp;
+Wof&uuml;r braucht man es? Warum sollte man es implementieren?</font></font>
+<p><font color="#295AB5"><font size=+2>JavaSPEKTRUM, September 2002</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p><b>Mit diesem Artikel wollen wir die Serie &uuml;ber die Infrastruktur&nbsp;
+von Objekten in Java fortsetzen. Nachdem wir uns in den vergangenen Artikel
+ausf&uuml;hrlich mit der Thematik "Objekt-Vergleich" befasst haben, wollen
+wir uns nun einem anderen Grundlagenthema zuwenden - dem Kopieren von Objekten.
+Wann und warum braucht man &uuml;berhaupt Kopien von Objekten? Wie erzeugt
+man eine Kopie?&nbsp; Welche Infrastruktur muss f&uuml;r das Kopieren zur
+Verf&uuml;gung gestellt werden? In diesem Kontext spielen das Cloneable-Interface
+und die clone()-Methode eine Rolle.&nbsp;&nbsp; Wie spielen sie zusammen?&nbsp;
+In welcher Beziehung stehen Object.clone(), das Cloneable-Interface und
+die clone()-Methode der eigenen Klasse? Braucht man clone() &uuml;berhaupt
+oder gibt es Alternativen?&nbsp; Wie kopiert man Objekte mit und ohne clone()?&nbsp;
+Was sind die Vor-und Nachteile der verschiedenen Techniken?&nbsp; Diese
+Fragen diskutieren wir in der vorliegenden Ausgabe unserer Kolumne. In
+der n&auml;chsten Ausgabe werden wir dann die Implementierung von clone()diskutieren</b>
+<br>&nbsp;
+<h2>
+Wof&uuml;r braucht man clone() ?</h2>
+In Java unterscheidet man zwischen Variablen vom primitivem Typ (wie char,
+short, int, double, etc.) und Referenzvariablen (von einem class oder interface-Typ).&nbsp;
+Variablen von primitivem Typ enthalten einen Wert des entsprechenden Typ
+und sowohl beim Zuweisen und Vergleichen als auch bei der &Uuml;bergabe
+an und R&uuml;ckgabe von Methoden wird immer der enthaltene Wert &uuml;bergeben
+bzw. verglichen.&nbsp; Das ist bei Referenzvariablen anders.&nbsp; Das
+Objekt, auf das eine Referenzvariable verweist, wird per Referenz verwaltet
+und herumgereicht.&nbsp; Beim Zuweisen und Vergleichen per Zuweisungs-
+und Vergleichsoperator werden lediglich die Adressen der referenzierten
+Objekte zugewiesen bzw. verglichen; die referenzierten Objekte spielen
+gar keine Rolle. Ebenso wird bei der &Uuml;bergabe an oder R&uuml;ckgabe
+von Methoden nur die Adresse von Objekten &uuml;bergeben, nicht jedoch
+das referenzierte Objekt selbst.
+<p>Die Referenzsemantik in Java spart Overhead, den das Kopieren der Objekte
+verursachen w&uuml;rde, f&uuml;hrt aber andererseits zu manchmal unerw&uuml;nschten
+Beziehungsverflechtungen.&nbsp; Bisweilen ist es in Java schwer, den &Uuml;berblick
+dar&uuml;ber zu behalten, wer wann zu welchem Zweck eine Referenz auf ein
+bestimmtes Objekt h&auml;lt und was der Betreffende mit der Referenz anstellt.&nbsp;
+Da es in der Sprache auch kein Konzept und Sprachmittel zum Schutz der
+referenzierten Objekte vor Modifikationen gibt, kann im Prinzip jeder,
+der eine Referenz auf ein Objekt h&auml;lt, das referenzierte Objekt &auml;ndern.&nbsp;
+Das kann zu &uuml;berraschenden Effekten f&uuml;hren.
+<p>Sehen wir uns ein typisches Beispiel f&uuml;r die Schwierigkeiten mit
+der Referenzsemantik an:
+<p><tt>class ColoredPoint {</tt>
+<br><tt>&nbsp; private Point p;</tt>
+<br><tt>&nbsp; private int color;</tt>
+<br><tt>&nbsp; public ColoredPoint (Point newP, int newColor)</tt>
+<br><tt>&nbsp; { p = newP; color = newColor; }&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// (1)</tt>
+<br><tt>}</tt>
+<br><tt>...</tt>
+<br><tt>Point[] createLine(int len, int m, int c) {</tt>
+<br><tt>&nbsp; Point nextPoint = new Point(0,c);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// (2)</tt>
+<br><tt>&nbsp; Point [] line = new Point[len];</tt>
+<br><tt>&nbsp; for (int i=0; i&lt;len; i++) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; line[i] = new ColoredPoint(nextPoint , 0xFF00FF);&nbsp;&nbsp;
+// (3)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; nextPoint.x += 1;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; nextPoint.y += m; }</tt>
+<br><tt>&nbsp; return line;</tt>
+<br><tt>}</tt>
+<p>Wir haben eine Klasse ColoredPoint, die einen Punkt mit zwei Koordinaten
+und eine Farbe enth&auml;lt. Der Konstruktor der Klasse ColoredPoint bekommt
+Initialwerte f&uuml;r diese beiden Daten und merkt sie sich in entsprechenden
+privaten Feldern. Die Methode createLine() erzeugt ein Array von Points,
+das eine Linie beschreibt.&nbsp; Wie sieht die Linie aus, die von createLine()
+erzeugt wird? Nicht ganz so, wie sich der Autor das gedacht hat.&nbsp;
+Wo ist das Problem?
+<p>Das Problem liegt in der Referenz-Semantik der Variablen in Java. Die
+Methode createLine() berechnet f&uuml;r jeden Punkt in dem Array, das die
+Linie beschreiben soll, die jeweiligen Koordinaten. Diese Koordinaten werden
+in dem Point-Objekt nextPoint abgelegt (siehe Codezeile (2)). Dieses Point-Objekt
+wird benutzt, um jeweils einen neuen ColoredPoint zu erzeugen, dessen Referenz
+schlie&szlig;lich im Array abgelegt wird (siehe Codezeile (3)).
+<p>Das Missverst&auml;ndnis besteht darin, dass createLine() offensichtlich
+davon ausgeht, dass der Konstruktor von ColoredPoint sich den Point, der
+als Konstruktor-Argument &uuml;bergeben wird, merkt, indem er sich eine
+Kopie davon anlegt.&nbsp; Tats&auml;chlich merkt sich der ColoredPoint-Konstruktor
+aber nur die Adresse des &uuml;bergebenen Point-Objekts; die Zuweisung
+p = newP; (siehe Code-Zeile (1)) ist eine Zuweisung von Referenzvariablen
+und das ist in Java lediglich die Zuweisung der Objekt-Adresse, nicht des
+Objekt-Inhalts.&nbsp; Die Linie wird also aus len-vielen Punkten bestehen,
+die alle die zuletzt berechneten Koordinaten&nbsp; enthalten, weil sie
+alle auf das eine Point-Objekt nextPoint verweisen, das am Anfang der Methode
+createLine() erzeugt wurde.
+<br>&nbsp;
+<h2>
+Object Sharing</h2>
+Das Beispiel demonstriert eine in Java typische Situation, die h&auml;ufig
+dann auftritt, wenn Argumente an Konstruktoren &uuml;bergeben werden, die
+der Konstruktor sich dann in Feldern der Klasse merken will.&nbsp; In solchen
+F&auml;llen will die Klasse oft keine Referenz auf das &uuml;bergebene
+Objekt halten, sondern will ihre eigene Kopie davon haben. Die Kopie hat
+den Vorteil, dass sie nicht mit anderen Objekten geteilt werden muss. In
+obigem Beispiel ist genau das Gegenteil eingetreten: mehrere ColoredPoint-Konstruktoren
+haben sich Referenzen auf ein einziges Point-Objekt gemerkt und damit dieses
+Point-Objekt zum Gemeinschaftsgut gemacht. Eine solche Situation bezeichnet
+mal als Object Sharing und sie kann zu Problemen f&uuml;hren, wie in obigem
+Beispiel: das Object Sharing hat sich sp&auml;ter in der createLine()-Methode
+negativ bemerkbar gemacht, weil das gemeinsam verwendete Point-Objekt ver&auml;ndert
+wurde.&nbsp; In unserem Beispiel w&auml;re es sicher besser gewesen, wenn
+der Konstruktor eine Kopie angelegt h&auml;tte und sich eine Referenz auf
+seine eigene Kopie des Point-Objekts gemerkt h&auml;tte. Wie man sieht,
+f&uuml;hrt das Object-Sharing leicht zu Problemen und kann durch das Anlegen
+von Kopien vermieden werden.
+<p>Unerw&uuml;nschtes Object-Sharing tritt nicht nur im Zusammenhang mit
+Konstruktoren auf.&nbsp; Eine &auml;hnliche Situation liegt beispielsweise
+vor, wenn Objekte von Methoden zur&uuml;ck gegeben werden.&nbsp; Wenn etwa
+die Methode einer Klasse eine Referenz auf ein Feld der Klasse zur&uuml;ckliefert,
+dann bekommen alle Empf&auml;nger des Returnwerts eine Referenz auf ein
+gemeinsam verwendetes Objekt.&nbsp; Auch das ist oft unerw&uuml;nscht und
+der Empf&auml;nger will eigentlich seine eigene Kopie des zur&uuml;ck gelieferten
+Objekts haben. Um das zu erreichen, k&ouml;nnte die betreffende Methode
+jedes Mal eine Kopie anlegen und eine Referenz auf die jeweilige Kopie
+zur&uuml;ck geben.
+<p>Woher wei&szlig; man eigentlich, ob bei der &Uuml;bergabe von Referenzen
+an und von Methoden die Gefahr eines unerw&uuml;nschten Object-Sharings
+besteht? Woran kann man erkennen, ob eine Referenz, die von einer Methode
+zur&uuml;ckgegeben wird, auf das Original verweist oder auf eine Kopie?&nbsp;
+Oder, betrachten wir unser Beispiel: woran h&auml;tte der Autor der createLine()-Methode
+erkennen k&ouml;nnen, wie der ColoredPoint-Konstruktor mit der &uuml;bergebenen
+Point-Referenz umgeht? Ansehen kann man das einer Methode in Java nicht.
+Solche Details m&uuml;ssen in der JavaDoc-Beschreibung der Methode dokumentiert
+sein.&nbsp; Deshalb sollten generell alle Methoden, die Referenzen bekommen
+oder zur&uuml;ckgeben, in der JavaDoc klare Aussagen &uuml;ber die Benutzung
+der Referenz machen.&nbsp; Bei der R&uuml;ckgabe von Referenzen muss klar
+sein, ob die gelieferte Referenz aufs Original-Objekt verweist und zu Objekt-Sharing
+f&uuml;hrt, oder ob die Methode bereits von sich aus eine Kopie angelegt
+hat und eine Referenz auf diese Kopie zur&uuml;ckliefert.&nbsp; Bei der
+&Uuml;bergabe von Referenzen an eine Methode muss ebenfalls gekl&auml;rt
+sein, ob die Methode intern eine Kopie des referenzierten Objekts anlegt
+und verwendet, oder ob die Methode mit dem referenzierten Original-Objekt
+arbeitet. Im letzteren Fall muss ggf. der Aufrufer vor dem Aufruf der Methode
+bereits eine Kopie anlegen, wenn ein Objekt-Sharing verhindert werden soll.
+Der Aufrufer kann zur Sicherheit immer eine Kopie anlegen, ganz egal was
+die gerufene Methode macht, aber das ist nat&uuml;rlich nicht die effizienteste
+L&ouml;sung, weil unter Umst&auml;nden unn&ouml;tig oft kopiert wird. In
+jedem Fall muss die Arbeitsteilung zwischen Aufrufer und Methode gekl&auml;rt
+und in der JavaDoc dokumentiert sein. Ohne klare Beschreibung in der JavaDoc
+kann kein Benutzer einer Methode wissen, ob er zur Vermeidung von Objekt-Sharing
+vor oder nach dem Aufruf der Methode Kopien angelegen muss oder nicht.
+<p>Im Zusammenhang mit der &Uuml;bergabe von Referenzen an und von Methoden
+kommt es nicht automatisch immer zu Object-Sharing-Situationen.&nbsp; Solche
+Situationen treten nur auf, wenn beide (Aufrufer und gerufene Methode bzw.
+Klasse) das referenzierte Objekt nach dem Aufruf noch weiter verwenden
+wollen, wie etwa in unserem Beispiel mit createLine(): wenn createLine()
+darauf verzichtet h&auml;tte, das Point-Objekt, das an den ColoredPoint-Konstruktor
+&uuml;bergeben wurde, weiter zu verwenden, dann w&auml;re &uuml;berhaupt
+kein problematisches Object Sharing entstanden.&nbsp; Analog bei der R&uuml;ckgabe
+von Referenzen:&nbsp; wenn eine Methode eine Referenz auf ein Objekt zur&uuml;ck
+gibt, dass sie gerade eben mit new angelegt hat, dann kann auch nichts
+passieren.&nbsp; Das Problem tritt nur auf, wenn die Methode eine Referenz
+zur&uuml;ck gibt, die auch sp&auml;ter noch der Methode (oder anderen Methoden
+der Klasse) zug&auml;nglich ist, etwa weil die Referenz auf das zur&uuml;ck
+gegebene Objekt in einem Feld der Klasse abgelegt ist. Dann hat sowohl
+der Aufrufer &uuml;ber die zur&uuml;ckgegebene Referenz Zugriff auf das
+Objekt als auch die Klasse mit all ihren Methoden.&nbsp; Wenn aber die
+zur&uuml;ckgegebene Referenz nirgendwo hinterlegt wurde, dann hat nur der
+Aufrufer Zugriff aufs Objekt und ein problematisches Object-Sharing kommt
+&uuml;berhaupt nicht zustande.
+<p>Das Anlegen von Kopien ist im &uuml;brigen nicht die einzige Antwort
+auf unerw&uuml;nschtes Object-Sharing.&nbsp; Die oben geschilderten Probleme
+lassen sich unter Umst&auml;nden auch ohne Kopien l&ouml;sen, zum Beispiel
+mit Immutability-Adaptoren. Wenn das gemeinsam verwendete Objekt n&auml;mlich
+unver&auml;nderlich (immutable) ist, dann st&ouml;rt das Object Sharing
+nicht, und dann ist auch nicht n&ouml;tig, Kopien anzulegen.&nbsp; Immutability
+wollen wir aber in dieser Ausgabe der Kolumne nicht besprechen.&nbsp; Wir
+wollen uns statt dessen ansehen, wie man Kopien von Objekten erzeugt, wenn
+man solche Kopien braucht.
+<br>&nbsp;
+<h2>
+Das Kopieren von Objekten</h2>
+F&uuml;r das Erzeugen von Kopien von Objekten gibt es in Java mehrere M&ouml;glichkeiten.
+Eine Klasse, die es erm&ouml;glichen will, dass Kopien von ihren Objekten
+erzeugt werden, kann eine clone()-Methode implementieren und/oder einen
+sogenannten Copy-Konstruktor zur Verf&uuml;gung stellen. Es gibt auch noch
+andere Beispiele f&uuml;r Kopierfunktionalit&auml;t, die aber ebenfalls
+auf Konstruktoren beruhen.
+<h3>
+Klonen per clone()-Methode</h3>
+Wenn eine Klasse eine clone()-Methode hat, dann k&ouml;nnen Kopie mit Hilfe
+dieser Methode erzeugt werden. clone() erzeugt ein neues Objekt vom gleichen
+Typ mit gleichem Inhalt und gibt eine Referenz auf das neue Objekt als
+Ergebnis zur&uuml;ck. Klassen, die eine clone()-Methode implementieren,
+m&uuml;ssen zus&auml;tzlich das Cloneable-Interface implementieren.&nbsp;
+Das Cloneable-Interface ist ein reines Marker-Interface, d.h. es ist leer,
+und definiert nicht etwa die clone()-Methode, wie man erwarten k&ouml;nnte.&nbsp;
+Es wird lediglich verwendet, um klonbare (cloneable) Klassen von nicht-klonbaren
+Klassen zu unterscheiden. Wof&uuml;r das gebraucht wird, sehen wir uns
+sp&auml;ter noch im Detail an.&nbsp; Schauen wir erst einmal ein Beispiel
+f&uuml;r eine cloneable Klasse an. Die JDK-Klasse java.util.Date ist ein
+Beispiel:
+<p><tt>public class Date implements Cloneable {</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp; public Object clone() { ...&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; ...</tt>
+<br><tt>}</tt>
+<br>&nbsp;
+<h3>
+Kopieren per Copy-Konstruktor</h3>
+Wenn eine Klasse einen Copy-Konstruktor hat, dann kann man diesen Konstruktor
+verwenden, um Kopien zu erzeugen.&nbsp; Das ist eine Alternative zur clone()-Methode.&nbsp;
+Der Begriff "Copy-Konstruktor" stammt aus C++. Man bezeichnet damit einen
+Konstruktor, der ein Objekt vom eigenen Typ als Argument akzeptiert und
+ein neues Objekt vom gleichen Typ mit gleichem Inhalt - n&auml;mlich die
+Kopie - erzeugt. Die JDK-Klasse java.lang.String ist ein Beispiel f&uuml;r
+eine solche Klasse:
+<p><tt>public final class String {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; public String(String original) { ... }</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt>
+<br>&nbsp;
+<h3>
+Andere Formen des Kopierens</h3>
+Daneben gibt es Klassen, die werden copy-konstruierbar noch cloneable sind.
+Die JKD-Klasse java.lang.StringBuffer ist ein solches Beispiel:
+<p><tt>public final class StringBuffer {</tt>
+<br><tt>&nbsp;&nbsp; public StringBuffer(String str) { ...&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp; public String toString() { ...&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Man kann eine Kopie eines StringBuffer&nbsp; erzeugen, indem man das
+Original in einen String konvertiert und aus diesem String einen neuen
+StringBuffer konstruiert:
+<p><tt>StringBuffer copy = new StringBuffer(original.toString());</tt>
+<p>Auf die Vor- und Nachteile der verschiedenen Techniken gehen wir n&auml;chsten
+Artikel genauer ein.&nbsp; Es wird sich herausstellen, dass clone() die
+f&uuml;r das Kopieren zu empfehlende Technik ist. Hier wollen wir uns zun&auml;chst
+ansehen, was von einer Implementierung der clone()-Methode genau erwartet
+wird.
+<br>&nbsp;
+<h2>
+Der clone()-Contract</h2>
+Die Anforderungen an die clone()-Methode einer Klasse sind im sogenannte
+clone()-Contract beschrieben, den man in der JavaDoc unter Object.clone()
+findet.&nbsp; Hier ist der Original-Wortlaut:
+<br>&nbsp;
+<blockquote>Creates and returns a copy of this object. The precise meaning
+of "copy" may depend on the class of the object.
+<br>The general intent is that, for any object x, the expression:
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x.clone() != x
+<br>will be true, and that the expression:
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x.clone().getClass()
+== x.getClass()
+<br>will be true, but these are not absolute requirements. While it is
+typically the case that:
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x.clone().equals(x)
+<br>will be true, this is not an absolute requirement.
+<br>Copying an object will typically entail creating a new instance of
+its class, but it also may require copying of internal data structures
+as well. No constructors are called.</blockquote>
+
+<p><br>Das bedeutet das Folgende:
+<ul>
+<li>
+Klon und Original sind verschiedene Objekte, d.h. sie sind an verschiedenen
+Stellen im Speicher angelegt.</li>
+
+<li>
+Klon und Original sind vom selben Typ.</li>
+
+<li>
+Klon und Original sollten gleich sein im Sinne von equals(), d.h. sie sollten
+den gleichen Inhalt haben.</li>
+</ul>
+
+<h2>
+Die Methode Object.clone()</h2>
+Wenn man eine Klasse cloneable machen will, dann muss die Klasse das Cloneable-Interface
+implementieren und eine clone()-Methode, typischerweise mit der Signatur
+public Object clone(), definieren.&nbsp; Im einfachsten Fall implementiert
+man die clone()-Methode, indem man super.clone() aufruft.
+<p><tt>class MyClass implements Cloneable {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; public Object clone() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; try { return super.clone(); } catch (CloneNotSupportedException
+e) {}</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt>
+<p>In diesem einfachen Fall hat man einfach nur die geerbte Methode Object.clone()
+als public-Methode zug&auml;nglich gemacht. Die Superklasse Object hat
+n&auml;mlich eine clone()-Methode, aber die ist protected und steht damit
+im public Interface ihrer Subklassen nicht automatisch zur Verf&uuml;gung.
+Deshalb sind Java-Klassen zun&auml;chst einmal nicht cloneable;&nbsp; man
+muss die clone()-Methode erst einmal zug&auml;nglich machen.
+<p>Dazu gen&uuml;gt es nicht, eine public clone()-Methode zur Verf&uuml;gung
+zu stellen, sondern die Klasse muss zus&auml;tzlich das Cloneable-Interface
+implementieren, sonst gibt es eine CloneNotSupportedException. Das Implementieren
+des Cloneable-Interface ist n&ouml;tig, weil Object.clone() pr&uuml;ft,
+ob das this-Object von einem Typ ist, der das Cloneable-Interface implementiert.&nbsp;
+Falls man clone() auf einem Objekt aufruft, das nicht cloneable ist, dann
+wirft Object.clone() eine CloneNotSupportedException. Das Zug&auml;nglich-Machen
+der clone()-Methode reicht also noch nicht; die Klasse muss au&szlig;erdem
+immer auch das Cloneable-Interface implementieren.
+<p>Bei dieser Pr&uuml;fung wird deutlich, dass das Cloneable-Interface
+als Marker-Interface dient: die Methode Object.clone() verwendet es zur
+Unterscheidung zwischen klonbaren und nicht-klonbaren Objekten.
+<ul>
+<li>
+Die nicht-klonbaren Objekte d&uuml;rfen nicht geklont werden; deshalb wird
+eine CloneNotSupportedException geworfen.</li>
+
+<li>
+F&uuml;r die klonbaren Objekte erzeugt Object.clone() einen Klon. Dazu
+alloziert Object.clone() den ben&ouml;tigten Speicher und kopiert alle
+Felder des Objekts "as if by assignment", wie es in der Spezifikation hei&szlig;t.&nbsp;
+Das bedeutet, dass Object.clone()alle Felder von this an die korrespondierenden
+Felder des neu erzeugten Objekts zuweist, was bei Referenzen hei&szlig;t,
+dass nur die Referenz, nicht aber das referenzierte Objekt kopiert wird.&nbsp;
+Solche Kopien bezeichnet man als "flache Kopie" (shallow copy), im Gegensatz
+zur "tiefen Kopie" (deep copy), bei der alle Referenzen rekursiv verfolgt
+und auch die referenzierten Objekte kopiert werden.</li>
+</ul>
+Arrays werden im &uuml;brigen implizit als cloneable angesehen und haben
+eine clone()-Methode, die eine "shallow copy" des Arrays anlegt: es werden
+alle Felder des Arrays kopiert; wenn die Felder Referenzen sind, werden
+nur die Referenzen, nicht aber die referenzierten Objekte kopiert.
+<p>Object.clone() ist als native Methode implementiert, d.h. sie ist nicht
+in Java, sondern in einer anderen Programmiersprache implementiert. Im
+Prinzip kann man sich die Implementierung der Methode Object.clone() so
+vorstellen, dass sie erst pr&uuml;ft, ob das this-Objekt cloneable ist.
+Wenn ja, dann wird Speicher in ausreichender Menge besorgt und der Inhalt
+von this wird bitweise kopiert.&nbsp; Das ergibt dann genau den Effekt
+einer "shallow copy".
+<br>&nbsp;
+<h2>
+Shallow Copy vs. Deep Copy</h2>
+In unserem Beispiel einer ersten einfachen Implementierung von MyClass.clone()
+(siehe oben) haben wir eine clone()-Methode implementiert, die eine flache
+Kopie des Originals erzeugt.&nbsp; Nun ist die Frage: ist diese Implementierung
+korrekt? Oder anders gesagt, wann sind flache Kopien ausreichend bzw. unzureichend?
+Sehen wir uns das einmal am Beispiel der clone()-Methode von Arrays an,
+die ja ebenfalls eine flache Kopie des Arrays erzeugt.
+<p><tt>Point[] pa1 = { new Point(1,1), new Point(2,2) };</tt>
+<br><tt>Point[] pa2 = null;</tt>
+<p><tt>try {</tt>
+<br><tt>&nbsp;pa2 = (Point[]) pa1.clone();</tt>
+<br><tt>} catch (CloneNotSupportedException e) { ... }</tt>
+<p>Hier wird ein Point-Array geklont per Aufruf der clone()-Methode f&uuml;r
+Arrays. Danach sieht die Situation wie folgt aus:
+<p><img SRC="image4OB.JPG" height=124 width=164>
+<p>Was passiert, wenn man eines der beiden Point-Arrays manipuliert?&nbsp;
+Hier ist ein Beispiel mit ein paar Modifikationen des Klons pa2:
+<p><tt>pa2[0] = new Point(-2,-2);</tt>
+<br><tt>pa2[0].x =&nbsp; 2;</tt>
+<br><tt>pa2[1].y = -2;</tt>
+<p>Auf den ersten Blick w&uuml;rde man annehmen, dass nur der Klon pa2
+sich &auml;ndert, weil alle Zuweisungen im gezeigten Code sich auf pa2
+beziehen.&nbsp;&nbsp; Aber so einfach ist das nicht. Da der Klon eine flache
+Kopie des Originals ist, wirken sich einige der Modifikationen auch auf
+das Original pa1 aus:
+<p><img SRC="imageCG8.JPG" height=114 width=152>
+<p>Das ist nicht ganz das, was man sich unter einem Klon vorstellt.&nbsp;
+Die Idee des Klonens oder Kopierens ist, dass Original und Kopie voneinander
+unabh&auml;ngig sind, d.h. Ver&auml;nderungen des einen Objekts sollen
+keine Auswirkungen auf das andere Objekt haben. Das ist hier ganz offensichtlich
+nicht erreicht worden; das geklonte Array erf&uuml;llt die Unabh&auml;ngigkeitsanforderung
+nicht . Um eine Unabh&auml;ngigkeit von Original und Klon zu erreichen,
+m&uuml;ssten wir hier eine tiefe Kopie machen.&nbsp; Das k&ouml;nnte man
+wie folgt implementieren:
+<p><tt>Point[] pa1 = { new Point(1,1), new Point(2,2) };</tt>
+<br><tt>Point[] pa2 = null;</tt>
+<p><tt>try {</tt>
+<br><tt>&nbsp; pa2 = pa1.clone();</tt>
+<br><tt>&nbsp; pa2[0] = (Point) pa2[0].clone();</tt>
+<br><tt>&nbsp; pa2[1] = (Point) pa2[1].clone();</tt>
+<br><tt>} catch (CloneNotSupportedException e){ ... }</tt>
+<p>Hier wird nicht nur das Array, sondern es werden auch alle Array-Elemente
+kopiert.&nbsp; Jetzt haben Original und Klon wirklich nichts mehr miteinander
+zu tun und Ver&auml;nderungen des einen betreffen den anderen nicht.
+<p><img SRC="imageQ1G.JPG" height=138 width=164>
+<br>&nbsp;
+<h2>
+Wann ist eine Kopie "tief genug"?</h2>
+
+<p><br>Wie das Beispiel zeigt, erreicht man mit einer tiefen Kopie das
+angestrebte Ziel, n&auml;mlich dass Original und Klon voneinander unabh&auml;ngig
+sind.&nbsp; Der Aufwand f&uuml;r die tiefe Kopie ist aber nicht in allen
+F&auml;llen erforderlich.&nbsp; Man unterscheidet 3 F&auml;lle:
+<ul>
+<li>
+Arrays von primitivem Typ</li>
+
+<li>
+Arrays von Referenzen auf unver&auml;nderliche Objekte</li>
+
+<li>
+Arrays von Referenzen auf ver&auml;nderliche Objekte</li>
+</ul>
+<i>Arrays von primitivem Typ.</i> Nehmen wir als Bespiel ein Array von
+int-Werten, das wir klonen wollen. Die flache Kopie, die von clone() f&uuml;r
+Arrays erzeugt wird, ist bereits tief genug. Das liegt daran, dass Variablen
+von primitivem Typ ihre Werte enthalten und nicht auf sie verweisen. Deshalb
+ist die bitweise Kopie des Array-Elements, die von clone() erzeugt wird,
+tats&auml;chlich eine Kopie des int-Werts selbst und es ist &uuml;ber den
+Aufruf von clone() f&uuml;r das Arrray hinaus nichts weiter zu tun, um
+einen echten Klon eines int-Arrays zu erzeugen.
+<center><table BORDER=0 CELLSPACING=0 >
+<tr>
+<td ALIGN=LEFT><tt>int[] ia1 = { 1, 2 };</tt>
+<br><tt>int[] ia2 = null;</tt>
+<p><tt>try {</tt>
+<br><tt>&nbsp;&nbsp; ia2 = (int[]) ia1.clone();&nbsp;</tt>
+<center><tt>} catch (CloneNotSupportedException e) { ... }</tt></center>
+</td>
+
+<td>
+<center><img SRC="imageVRR.JPG" height=101 width=135></center>
+</td>
+</tr>
+</table></center>
+
+<center><i>Abbildung 1: Klonen eines Arrays von primitivem Typ</i></center>
+
+<p><i>Arrays von Referenzen auf unver&auml;nderliche Objekte. </i>F&uuml;r
+ein Array von Referenzen auf unver&auml;nderliche Objekte ist die flache
+Kopie, die von clone() f&uuml;r Arrays erzeugt wird, bereits tief genug.
+Das Ergebnis der flachen Kopie sind zwei Arrays, die die gleichen Adressen
+enthalten und damit auf dieselben Objekte verweisen.&nbsp; Da die referenzierten
+Objekte aber nicht ver&auml;ndert werden k&ouml;nnen, ist das Object-Sharing
+unproblematisch.&nbsp;&nbsp; Betrachten wir als Beispiel ein Array von
+Strings:
+<center><table BORDER=0 CELLSPACING=0 >
+<tr>
+<td ALIGN=LEFT><tt>String[] sa1 = { "one", "two" };</tt>
+<br><tt>String[] sa2 = null;</tt>
+<p><tt>try {</tt>
+<br><tt>&nbsp;sa2 = (String[]) sa1.clone();&nbsp;</tt>
+<br><tt>} catch (CloneNotSupportedException e) { ... }</tt></td>
+
+<td>
+<center><img SRC="imageH0M.JPG" height=103 width=136></center>
+</td>
+</tr>
+</table></center>
+
+<center><i>Abbildung 2: Klonen eines Arrays von Referenzen auf unver&auml;nderliche
+Objekte</i></center>
+
+<p>Warum sind Original und Kopie in diesem Beispiel voneinander unabh&auml;ngig,
+obwohl sie alle Array-Elemente gemeinsam referenzieren?&nbsp; Sehen wir
+uns an, welche Modifikation &uuml;berhaupt auftreten k&ouml;nnen. Ver&auml;nderungen
+des Originals und der Kopie betreffen jeweils nur die Arrays selbst, aber
+niemals die gemeinsam verwendeten String-Objekte. Die beiden gemeinsam
+referenzierten Strings "one" und "two" k&ouml;nnen nicht modifiziert werden,
+weil die Klasse String keine modifizierenden Methoden zur Verf&uuml;gung
+stellt.&nbsp; Ein Aufruf wie sa1[1].concat(" steps") zum Beispiel sieht
+zwar so aus, als ver&auml;ndere er den String "two", aber in Wirklichkeit
+erzeugt dieser Aufruf einen neuen String mit Inhalt "two steps". Dieser
+neue String kann dann den alten ersetzen, z.B. durch sa1[1] = sa1[1].concat("
+steps"), aber davon ist das andere Array sa2 nicht betroffen.
+<p><i>Arrays von Referenzen auf ver&auml;nderliche Objekte.</i> Das ist
+der Fall, den wir am Beispiel des Point-Arrays bereits ausf&uuml;hrlich
+diskutiert haben. Hier reicht die flache Kopie nicht und es m&uuml;ssen
+neben dem Array auch alle referenzierten ver&auml;nderlichen Array-Elemente
+kopiert werden, damit Original und Klon voneinander unabh&auml;ngig sind.
+<center><table BORDER=0 CELLSPACING=0 >
+<tr>
+<td ALIGN=LEFT><tt>Point[] pa1 = { new Point(1,1), new Point(2,2) };</tt>
+<br><tt>Point[] pa2 = null;</tt>
+<p><tt>try {</tt>
+<br><tt>&nbsp; pa2 = pa1.clone();</tt>
+<br><tt>&nbsp; pa2[0] = (Point) pa2[0].clone();&nbsp;</tt>
+<br><tt>&nbsp; pa2[1] = (Point) pa2[1].clone();</tt>
+<br><tt>} catch (CloneNotSupportedException e){ ... }</tt></td>
+
+<td>
+<center><img SRC="imageKLL.JPG" height=113 width=134></center>
+</td>
+</tr>
+</table></center>
+
+<center><i>Abbildung 3: Klonen eines Arrays von Referenzen auf ver&auml;nderliche
+Objekte</i></center>
+
+<p><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<p>Was wir hier am Beispiel von Arrays beschrieben haben, gilt ganz analog
+auch f&uuml;r Klassen.
+<p><i>Arrays</i> haben <i>Elemente</i>, die entweder von primitivem Typ
+sind oder aber Referenzen auf ver&auml;nderliche oder unver&auml;nderliche
+Objekte.&nbsp; Die clone()-Methode f&uuml;r Arrays kopiert s&auml;mtliche
+Elemente bitweise. Je nach Art der Elemente gen&uuml;gt das oder es muss
+eine tiefe Kopie gemacht werden, wie oben beschrieben.
+<p><i>Objekte</i>, d.h. Instanzen von Klassen, haben <i>Felder</i>, die
+entweder von primitivem Typ sind oder aber Referenzen auf ver&auml;nderliche
+oder unver&auml;nderliche Objekte.&nbsp; Wenn man die clone()-Methode f&uuml;r
+eine solche Klasse implementieren will, dann wird man alle nicht-statischen
+Felder kopieren, so wie das Array-clone() s&auml;mtliche Array-Elemente
+kopiert.
+<p>Ganz analog zum Array stellt sich auch hier die Frage: gen&uuml;gt eine
+bitweise Kopie der Felder oder m&uuml;ssen Referenzen verfolgt werden und
+tiefe Kopien angelegt werden? Die Antwort ist dieselbe wie f&uuml;r Arrays:&nbsp;
+wenn die Felder von primitiven Typ sind oder Referenzen auf unver&auml;nderliche
+Objekte, dann gen&uuml;gt normalerweise die bitweise Kopie (die &uuml;brigens
+von Object.clone() bereits erzeugt wird).&nbsp; Wenn die Felder Referenzen
+auf ver&auml;nderliche Objekte sind, dann muss eine tiefe Kopie angelegt
+werden.
+<p>Allgemein kann man die Regel f&uuml;r die Tiefe der beim Klonen zu erzeugenden
+Kopie wie folgt formulieren: das Original-Objekt (oder -Array) und sein
+Klon m&uuml;ssen so unabh&auml;ngig voneinander sein, dass keine Operation
+auf dem Original den Klon betrifft und umgekehrt. Alle Implementierungen
+von clone() sollten dieser Anforderung gen&uuml;gen. In der Praxis findet
+man manchmal clone()-Methoden, die keine ausreichend tiefe Kopie liefern;
+clone() f&uuml;r Arrays ist ein Beispiel, wie wir oben gesehen haben.&nbsp;
+Solche Implementierungen sollte man bei eigenen Klassen vermeiden.&nbsp;
+Es kann zwar vorkommen, dass man keine hinreichend tiefe Kopie erzeugen
+kann (wir werden im n&auml;chsten Artikel sehen warum), aber in solchen
+F&auml;llen sollte man dann lieber gar kein clone() als ein inkorrektes
+clone() zur Verf&uuml;gung stellen.
+<p>Und noch ein Hinweis:&nbsp; Wenn eine Klasse keine clone()-Methode definiert,
+dann sollte sie auch nicht das Cloneable-Interface implementieren.&nbsp;
+Dann klingt zwar fast wie ein Witz, kann aber vorkommen, weil das Cloneable
+-Interface leer ist.&nbsp; Man kann in der Tat (absichtlich oder versehentlich)
+eine Klasse definieren, die das Cloneable-Interface implementiert, aber
+keine clone()-Methode hat.&nbsp; Das ist zwar von der&nbsp; Logik her widersinnig,
+aber syntaktisch v&ouml;llig in Ordnung.&nbsp; Der Compiler l&auml;sst
+das durchgehen, weil das Cloneable -Interface keine einzige Methode vorschreibt,
+auch keine clone()-Methode.
+<h2>
+clone() und Generische Collections</h2>
+Das leere Cloneable-Interface macht auch sonst noch Schwierigkeiten, beispielsweise
+beim Kopieren von generischen Collections.&nbsp;&nbsp; Unter generischen
+Collections versteht man heterogene Container, die Elemente verschiedenen
+Typs enthalten.&nbsp; Das einfachste Beispiel ist ein Array von Objects.&nbsp;
+Jedes Array-Element ist eine Referenz auf ein Objekt eines beliebigen Klassen-
+oder Interface-Typs in Java.&nbsp; Wie kann man so ein Object-Array klonen
+oder kopieren?
+<p><tt>public class MyClass implements Cloneable {</tt>
+<br><tt>&nbsp; private Object oa[];</tt>
+<p><tt>&nbsp; public Object clone() {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Object[] tmp = oa.clone();</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; for (int i=0; i&lt;oa.length; i++)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ... clone each array element
+...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return tmp;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>F&uuml;r solche Situationen gibt es die clone()-Methode.&nbsp; Im Prinzip
+ist es so gedacht, dass man f&uuml;r jedes Array-Element die clone()-Methode
+aufruft, vorausgesetzt das Array-Element ist &uuml;berhaupt cloneable.&nbsp;
+clone() ist eine non-final Methode und so w&uuml;rde dann f&uuml;r jedes
+Element, egal welchen Typs es zur Laufzeit ist, die clone()-Methode dieses
+Typs angesto&szlig;en. Das w&uuml;rde dann so aussehen:
+<p><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; for (int i=0; i&lt;oa.length; i++)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (oa[i] instanceof Cloneable)
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tmp[i] = ((Cloneable)
+oa[i]).clone();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<p>Leider beschwert sich aber der Compiler &uuml;ber diesen wohlgemeinten
+Versuch, die clone()-Methode aufzurufen - und zu recht.&nbsp; Wir haben
+zwar ordnungsgem&auml;&szlig; von Object nach Cloneable gecastet, um clone()
+nur dann aufzurufen, wenn das Objekt cloneable ist, und um die CloneNotSupportedException
+zu vermeiden.&nbsp; Aber da das Cloneable-Interface leer ist, gibt uns
+der Cast keinen Zugriff auf die clone()-Methode.&nbsp; So geht's also nicht;
+per Cast haben wir keine Chance clone() aufzurufen, solange wir den echten
+Typ des Objekts nicht kennen. Da bleibt dann nur eine L&ouml;sung: man
+muss sich zur Laufzeit Information dar&uuml;ber beschaffen, ob das Objekt
+von einem Typ ist, der die clone()-Methode implementiert und wenn ja, dann
+muss man diese clone()-Methode aufrufen.&nbsp; F&uuml;r solche Aufgaben
+gibt es Reflection in Java.
+<br>&nbsp;
+<h3>
+Aufruf von clone() &uuml;ber Reflection</h3>
+Im Package java.lang.reflect (zum Teil auch im Package java.lang) liefert
+der JDK Funktionalit&auml;t, mit der man zur Laufzeit Meta-Information
+&uuml;ber Java-Typen beschaffen und benutzen kann. Man kann sich mit Hilfe
+der Methode getClass(), die bereits in Object definiert ist, ein Objekt
+vom Typ Class geben lassen, welches den Typ des Objekts repr&auml;sentiert,
+auf dem die getClass()-Methode aufgerufen wurde.&nbsp; Mit diesem Class-Objekt
+kann u.a. Information &uuml;ber Felder und Methoden der Klasse besorgt
+werden.&nbsp; In unserem Fall interessieren wir uns f&uuml;r eine bestimmte
+Methode, n&auml;mlich die clone()-Methode, die wir aufrufen wollen.&nbsp;
+Das sieht wie folgt aus:
+<p><tt>...</tt>
+<br><tt>for (int i=0; i&lt;oa.length; i++)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (oa[i] instanceof Cloneable) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; try {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tmp[i] = oa[i].getClass()</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+.getMethod("clone", null)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+.invoke(oa[i], null);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } catch (Exception e) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; throw new CloneNotSupportedException();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;...</tt>
+<p>Auf die Details von Reflection wollen wir an dieser Stelle nicht weiter
+eingehen.&nbsp; Es sei aber angemerkt, dass Methoden-Aufrufe &uuml;ber
+Reflection nicht nur umst&auml;ndlicher und wesentlich unleserlicher sind
+als normale Aufrufe, sie sind auch deutlich aufwendiger und langsamer.&nbsp;
+Laufzeit-Unterschiede in der Gr&ouml;&szlig;enordnung von 1:100 (je nach
+Virtueller Maschine und System-Kontext) sind nicht unrealistisch.&nbsp;
+Au&szlig;erdem k&ouml;nnen bei Benutzung von Reflection zur Laufzeit wesentlich
+mehr Fehler auftreten als beim normalen statischen Aufruf. Beispiel: wenn
+man sich beim Methoden-Namen vertippt hat, dann merkt das normalerweise
+der Compiler; beim Aufruf der Methode &uuml;ber Reflection wird dieser
+Fehler erst beim Programmablauf bemerkt und f&uuml;hrt zu einer Exception,
+auf die das Programm sinnvoll reagieren muss. Die Nachteile des Methoden-Aufrufs
+&uuml;ber Reflection sind verglichen mit dem statischen Methodenaufruf
+gravierend. Man wird deshalb normalerweise immer den statischen Aufruf
+vorziehen. Beim Klonen von generischen Collections kann man die Nachteile
+durch die Reflection-Nutzung aber leider nicht vermeiden, weil wegen dem
+leeren Cloneable-Interface der statische Aufruf &uuml;berhaupt nicht m&ouml;glich
+ist.
+<br>&nbsp;
+<h3>
+Non-Cloneable Objekte in Generischen Collections</h3>
+Beim Kopieren von generischen Collections hat man nicht nur Probleme mit
+dem leeren Cloneable-Interface, sondern der Container k&ouml;nnte auch
+Referenzen auf Objekte enthalten, die tats&auml;chlich gar nicht cloneable
+sind.&nbsp; Da hilft dann auch Reflection nichts mehr und man muss zu anderen
+Kopier-Techniken greifen.&nbsp; Dazu muss man aber s&auml;mtliche non-cloneable
+Typen per Fallunterscheidung identifizieren und die f&uuml;r den jeweiligen
+Typ passende Kopiertechnik kennen.&nbsp; Hier sind ein paar Beispiele:
+<p><tt>for (int i=0; i&lt;oa.length; i++)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (oa[i] instanceof Cloneable) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ... call clone via reflection ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; else if (oa[i] instanceof StringBuffer)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tmp[i] = new StringBuffer (oa[i].toString());</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; else if (oa[i] instanceof String)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tmp[i] = oa[i];</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; // all other types</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; else throw new CloneNotSupportedException();</tt>
+<p>Diese Fallunterscheidung ist nat&uuml;rlich ein Albtraum was Erweiterbarkeit
+und Pflege der Software angeht.&nbsp; Deshalb ist anzuraten, dass alle
+Klassen, die Value-Typen (siehe unten) repr&auml;sentieren, clone() unterst&uuml;tzen
+sollten, auch wenn sie alternative Kopiertechniken, z.B. per Copy-Konstruktor,
+anbieten.&nbsp; Diese Erkenntnis hat sich in der Java-Community erst langsam
+durchgesetzt, wie man an der Geschichte des JDK sehen kann.&nbsp; In fr&uuml;hen
+Versionen des JDK (1.0 und 1.1) waren viele Klasse nicht cloneable, die
+man sp&auml;ter cloneable gemacht hat; ein Beispiel ist die Klasse java.util.Date.&nbsp;
+Offenbar hat es sich als reales Problem herausgestellt, wenn jede Klasse
+ihre eigene Technik f&uuml;r das Erzeugen von Kopien entwickelt.
+<p>Die Unterscheidung zwischen Value- und Entity-Typen hatten wir bereits
+in einem der vorangegangenen Artikel erl&auml;utert (siehe /<a href="#Kreft1">KRE</a>/),
+als wir &uuml;berlegt haben, welche Klassen equals() implementieren m&uuml;ssen
+(Value-Typen) und f&uuml;r welche Typen das nicht n&ouml;tig ist (Entity-Typen).&nbsp;
+equals(), hashCode(), compareTo() und auch clone() sind Methoden, die nur
+f&uuml;r Value-Typen von Bedeutung sind, weil sich die Semantik dieser
+Methoden um den Inhalt des Objekts dreht.&nbsp; Bei Entity-Typen ist der
+Inhalt des Objekt nicht von so herausragender Bedeutung, so dass Entity-Typen
+meistens keine dieser Methoden implementieren (oder nur eine sehr simple
+auf der Adresse des Objekts basierende Implementierung haben).
+<p>Wenn man sich den clone()-Contract ansieht, kann man auch sehen, warum
+Entity-Typen keine clone()-Methode haben.&nbsp; Der clone()-Contract verlangt,
+dass x.clone() != x ist und dass x.clone().equals(x) ist, d.h. Klon und
+Original m&uuml;ssen verschiedene Objekte mit gleichem Inhalt sein.&nbsp;
+Nun ist es aber f&uuml;r Entity-Typen so, dass der ==-Operator und die
+equals()-Methode dieselbe Semantik haben: beide pr&uuml;fen auf Identit&auml;t
+der zu vergleichenden Objekte.&nbsp; Das liegt daran, dass f&uuml;r Entity-Typen
+die equals()-Methode nicht implementiert wird; dann gibt es nur die von
+Object geerbte equals()-Methode und die vergleicht die Adressen der Objekte,
+genau wie das der ==-Operator macht.&nbsp; Unter diesen Umst&auml;nden
+kann ein Entity-Typ keine clone()-Methode haben, die dem clone()-Contract
+gen&uuml;gt: wenn Klon und Original verschiedene Objekte sind (d..h. x.clone()
+!= x), dann liefert x.clone().equals(x) das Ergebnis false und der equals()-Contract
+w&auml;re verletzt.
+<br>&nbsp;
+<h3>
+Das Klonen von unver&auml;nderlichen Objekten</h3>
+Grunds&auml;tzlich sollte man clone() implementieren f&uuml;r alle Klassen
+mit Value-Semantik, es sei denn,&nbsp; es gibt gute Gr&uuml;nde, es nicht
+zu tun.&nbsp; Ein guter Grund liegt vor, wenn die Klasse unver&auml;nderliche
+(immutable) Objekte beschreibt, also keine modifizierenden Methoden anbietet.&nbsp;
+Objekte eines solchen Typs k&ouml;nnen niemals ver&auml;ndert werden. Man
+kann argumentieren, dass unver&auml;nderliche Objekte niemals kopiert werden
+m&uuml;ssen, weil man problemlos Referenzen darauf halten kann und das
+resultierende Object-Sharing bei unver&auml;nderlichen Objekten einfach
+kein Problem ist.
+<p>Dieser Logik folgend m&uuml;ssten dann alle ver&auml;nderlichen Value-Typen
+cloneable sein und alle unver&auml;nderlichen non-cloneable. Leider ist
+das in der Praxis nicht so. Man kann sich keineswegs darauf verlassen,
+dass eine non-cloneable Klasse genau deshalb kein clone() hat, weil man
+keine Kopien braucht und die Objekte problemlos gemeinsam referenzieren
+kann.&nbsp; Die Klasse java.lang.String beispielsweise folgt dieser Regel;
+sie ist unver&auml;nderlich und non-cloneable. Aber bei der Klasse java.lang.StringBuffer
+stimmt es schon nicht mehr; sie ist non-cloneable, aber trotzdem ver&auml;nderlich
+und keineswegs problemlos beim Object-Sharing. Aus der Tatsache, dass eine
+Klasse nicht cloneable ist, kann man daher nicht ableiten, dass keine Kopien
+von Instanzen dieser Klasse gebraucht werden.&nbsp; Der umgekehrte Schluss
+ist auch nicht m&ouml;glich: aus der Tatsache, dass eine Klasse cloneable
+ist, kann man nicht ableiten, dass Kopien gebraucht werden.
+<p>F&uuml;r eigene Klassen ist es empfehlenswert, sich eine klare Strategie
+zu &uuml;berlegen, n&auml;mlich die 1:1-Beziehung zwischen "F&uuml;r Instanzen
+dieser Klasse ist das Object-Sharing problematisch." und "Die Klasse ist
+cloneable."&nbsp; Dann kommt man automatisch dazu, dass alle ver&auml;nderlichen
+Value-Typen cloneable sind und alle unver&auml;nderlichen Value-Typen&nbsp;
+non-cloneable sind und alle Entity-Typen ebenfalls non-cloneable sind.
+<h2>
+Zusammenfassung und Ausblick</h2>
+In diesem Artikel haben wir uns angesehen, warum das Kopieren in Java &uuml;berhaupt
+eine Rolle spielt. Wir haben verschiedene Techniken daf&uuml;r gesehen
+(im wesentlichen Klonen und Copy-Konstruktion) und festgestellt, dass es
+empfehlenswert ist, zumindest f&uuml;r ver&auml;nderliche Value-Typen die
+clone()-Methode zu implementieren.&nbsp; Wir haben die Anforderung an clone()
+(den sogenannten clone()-Contract) gesehen und uns &uuml;berlegt, wie tief
+eine Kopie sinnvollerweise sein sollte. Und schlie&szlig;lich haben wir
+uns mit einigen Eigenarten des leeren Cloneable-Interface befasst.
+<p>Worauf man achten muss, wenn man clone()implementiert, werden wir in
+der n&auml;chsten Ausgabe der Kolumne untersuchen (siehe /<a href="#Clone">CLON</a>/).
+Dabei wird u.a. die besondere Rolle von Object.clone() deutlich werden,
+die wir bislang kaum erw&auml;hnt haben. Wir werden sehen, wo die Copy-Konstruktion
+als Alternative zum Klonen ihre Grenzen hat. Im &uuml;bern&auml;chsten
+Artikel werden wir dann noch die CloneNotSupportedException diskutieren.
+<h2>
+Literaturverweise</h2>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft1"></a>/KRE/</td>
+
+<td VALIGN=TOP><b>Objekt-Vergleich per equals(), Teil 1 und 2&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>Java Spektrum, Januar 2002 und M&auml;rz 2002
+<br>URL: <a href="../01.Equals-Part1/01.Equals1.html">http://www.langer.camelot.de/Articles/JavaSpektrum/01.Equals-Part1/01.Equals1.html</a>
+<br>URL: <a href="../02.Equals-Part2/02.Equals2.html">http://www.langer.camelot.de/Articles/JavaSpektrum/02.Equals-Part2/02.Equals2.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft2"></a>/KRE2/</td>
+
+<td><b><font face="Times New Roman, Times, serif"><font size=+0>Secrets
+of equals()</font></font></b>
+<br><b><font face="Times New Roman, Times, serif"><font size=+0>Part 1:
+Not all implementations of equals() are equal</font></font></b>
+<br><b><font face="Times New Roman, Times, serif"><font size=+0>Part 2:
+How to implement a correct slice comparison in Java</font></font></b>
+<br>Angelika Langer &amp; Klaus Kreft
+<br>Java Solutions, April 2002 and August 2002
+<br>URL: <a href="http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals.html">http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals.html</a>
+<br>URL: <a href="http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals-2.html">http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals-2.html</a></td>
+</tr>
+
+<tr>
+<td><a NAME="Clone"></a>/CLON/</td>
+
+<td><b>Das Kopieren von Objekten in Java (Teil 2 + 3)&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>JavaSpektrum, November 2002 + Januar 2003
+<br>URL: <a href="../06.Clone-Part2/06.Clone-Part2.html">http://www.langer.camelot.de/Articles/JavaSpektrum/06.Clone-Part2/06.Clone-Part2.html</a>
+<br>URL: <a href="../07.Clone-Part3/07.Clone-Part3.html">http://www.langer.camelot.de/Articles/JavaSpektrum/07.Clone-Part3/07.Clone-Part3.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Haggar"></a>/HAG/</td>
+
+<td><b>Practical Java - Programming Language Guide, Praxis 64</b>
+<br>Peter Haggar
+<br>Addison-Wesley, 2000
+<br>ISBN: 0201616467</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Bloch"></a>/BLO/&nbsp;</td>
+
+<td><b>Effective Java Programming Language Guide</b>
+<br>Josh Bloch&nbsp;
+<br>Addison-Wesley, June 2001&nbsp;
+<br>ISBN: 0201310058</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Davies"></a>/DAV/&nbsp;</td>
+
+<td><b>Durable Java: Hashing and Cloning</b>
+<br>Mark Davies&nbsp;
+<br>Java Report, April 2000
+<br>URL: <a href="http://www.macchiato.com/columns/Durable6.html">http://www.macchiato.com/columns/Durable6.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDK"></a>/JDK/&nbsp;</td>
+
+<td><b>Java 2 Platform, Standard Edition v1.3.1</b>
+<br>URL: <a href="http://java.sun.com/j2se/1.3/">http://java.sun.com/j2se/1.3/</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDOC"></a>/JDOC/&nbsp;</td>
+
+<td><b>Java 2 Platform, Standard Edition, v 1.3.1 - API Specification</b>
+<br>URL: <a href="http://java.sun.com/j2se/1.3/docs/api/index.html">http://java.sun.com/j2se/1.3/docs/api/index.html</a></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

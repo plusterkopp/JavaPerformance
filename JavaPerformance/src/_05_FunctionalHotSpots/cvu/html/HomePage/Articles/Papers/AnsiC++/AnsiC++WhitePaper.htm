@@ -1,0 +1,570 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer">
+   <title>ANSI C++ - White Paper</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="PaperAnsiCpp"></a>
+<br><font color="#295AB5"><font size=+3>New Features in ANSI&nbsp; C++</font></font>
+<br><font color="#295AB5"><font size=+1>How can we get the most out of
+them?</font></font>
+<br>&nbsp;
+<p><font color="#295AB5"><font size=+2>DevelopMentor Whitepaper, Vol.3,&nbsp;
+1998</font></font>
+<br><font color="#295AB5"><font size=+1>Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=0 COLS=2 WIDTH="100%" >
+<tr>
+<td WIDTH="90%">
+<table BORDER=0 COLS=1 WIDTH="11%" BGCOLOR="#C6CCDD" >
+<tr>
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF"><font size=+2>Abstract</font></font></font></b></td>
+</tr>
+</table>
+&nbsp;</td>
+
+<td ALIGN=RIGHT WIDTH="2%">
+<table BORDER=0 CELLSPACING=0 COLS=1 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER WIDTH="1%" BGCOLOR="#C6CCDD"><b><font face="Verdana"><font color="#FFFFFF"><font size=-2>Download</font></font></font></b></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="AnsiC++WhitePaper.pdf"><img SRC="../../../Images/download.gif" VSPACE=5 NOSAVE BORDER=0 height=34 width=35></a></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table></div>
+This paper motivates why every C++ programmer would greatly benefit from
+having a good command of the new ANSI C++ language features. During the
+past couple of years, the C++ programming language underwent a long winding
+standardization process, the result of which were not only refinements
+and clarifications, but also a substantial number of new language features.
+Each of the new features was added to the language because a real-world
+problem had been identified that otherwise couldn't be solved elegantly
+and reliably. Using the new features software engineers can improve the
+quality of their source code in the sense that programs written in ANSI
+C++ can be more predictable, more readable, and more robust. Integral part
+of ANSI C++ is the standard library with a rich set of prefabricated abstractions.
+Using the library a programmer can solve problems easily with a few C++
+statements that in pre-standard C++ required deep thought and significantly
+more lines of code. The result is a visible reduction of complexity of
+ANSI C++ programs, which in turn makes programmers more productive and
+effective. In short, ANSI C++ increases productivity and quality, in addition
+to the classic benefit of a standardized language such as portability and
+prevalence.
+<br>&nbsp;
+<table BORDER=0 COLS=1 WIDTH="11%" BGCOLOR="#C6CCDD" >
+<tr>
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF"><font size=+2>Motivation</font></font></font></b></td>
+</tr>
+</table>
+Nowadays, hardly any C++ programmer can ignore ANSI C++. Modern compilers
+gradually manage to implement a growing portion of the standardized language.
+The standard library is widely available and in numerous workplaces it
+has already replaced proprietary foundation libraries. These days, engineers
+all over the world explore the new possibilities they have available. As
+a result, new programming techniques emerge, are published and discussed,
+become common knowledge and find their way into production code. Not too
+far from today, a thorough knowledge of the ANSI C++ features will be required
+of every C++ programmer.
+<p>To give you an idea of what is awaiting you, here is a list of the major
+new features:
+<ul>
+<li>
+<b><i>The standard library</i></b> provides a rich set of efficient building
+blocks such as strings, containers, algorithms, complex numbers, streams,
+locales, and many more. There is neither a justification for reinventing
+the wheel again and implementing yet another string or linked list class,
+nor is there any need to resort to vender-specific foundation classes any
+longer.</li>
+
+<li>
+<b><i>Templates</i></b>. Class and function templates add another dimension
+of programming power to the C++ language. Computation of constants, evaluation
+of expressions, polymorphic dispatch of functions are examples of tasks
+that - using templates - can be solved at compile time rather than at run
+time. I will never forget the committee meeting where a colleague of mine
+stepped into the plenary session with a program that did not even compile,
+but computed the prime numbers and emitted them in successive error messages.
+The program was stupid, but demonstrated impressively the power of compile
+time computations. Even if you do not want to unleash this power, templates
+make life a lot easier. Whenever you find yourself tempted to solve a problem
+by "copy and paste" pause for a second and consider using a template instead.
+Let the compiler do the work instead of doing the tedious job yourself.</li>
+
+<li>
+<b><i>Exception handling</i></b>. In pre-standard C++, it was cumbersome
+to indicate failure of constructors. The common technique of error indication
+via return codes does not work for functions such as constructors, destructors,
+or cast operators that do not have a return code or for yet another category
+of functions whose return code is used for purposes other than error indication.
+First, it was kind of tedious to report errors from such functions and
+secondly it was inevitable to put the burden of recognizing the error onto
+the user's shoulders. By and large, error handling in pre-standard C++
+was unreliable and error-prone. The language feature of exceptions solves
+this problem and provides a uniform means for error indication and error
+handling.</li>
+
+<li>
+<b><i>Namespaces</i></b>. Name collisions happen more often than many engineers
+believe. Overloaded binary operators, for instance, must be implemented
+as global friend functions in order to make them behave symmetrically.
+The stream inserters and extractors are classical examples of such friend
+functions. If programmer A implements an inserter for objects of type X
+and programmer B implements yet another version of the same inserter, then
+we have name clash that cannot be avoided, because operators have a name
+that we cannot change without losing the convenience of the operator notation.
+ANSI C++ introduced the concept of namespace to address this (and other)
+problems.</li>
+
+<li>
+<b><i>The new-style casts</i></b>. The classic C-style cast had a multitude
+of meanings and purposes. The new-style casts replace it completely and
+document more clearly the intent of a cast. Additionally, they enable the
+compiler to perform certain checks. For instance, in ANSI C++ we have a
+safe downcast that checks type information at run time.</li>
+
+<li>
+<b><i>The <tt><font face="Courier New">explicit</font></tt> keyword</i>.
+</b>Unsolicited
+type conversions can happen if we provide one-argument constructors. These
+"converting constructors" are used by the compiler whenever it must set
+up a sequence of implicit type conversions. Often, the results are surprising.
+To prevent the compiler from silently using one-argument constructors from
+implicit conversions, the <tt>explicit</tt> keyword was introduced.</li>
+
+<li>
+<i><b>The </b><tt><font face="Courier New">mutable</font></tt><b> keyword</b></i>.
+Sometimes you have to cast away the constness of an object. In ANSI C++,
+some of these cases can be eliminated by using the <tt>mutable</tt> keyword,
+which is for qualification of data members of a class, so that they can
+be modified from within a const member function without having to cast
+away the constness of the <tt>this</tt> pointer.</li>
+</ul>
+Each of these features has a potential to increase your productivity and
+the quality of your programs. That being said, we should still not forget
+that each of the new means adds to the complexity and power of an already
+complex and powerful programming language. Some of them, in particular
+templates, exceptions, and the library, have a learning curve of their
+own. There are gotchas and pitfalls and new challenges to master. For illustration,
+let us explore an example that uses the standard library.
+<br>&nbsp;
+<table BORDER=0 COLS=1 WIDTH="48%" BGCOLOR="#C6CCDD" >
+<tr>
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF"><font size=+2>Pre-Standard
+C++ vs. ANSI C++</font></font></font></b></td>
+</tr>
+</table>
+In the following, we will discuss a simple program that reads lines from
+a file, sorts the lines, and writes the resulting sorted list to an output
+file. Before the advent of ANSI C++, we had to do quite a bit of work to
+make that happen. Below is a sample implementation of a read-sort-write
+program in classic C++. Don't attempt to understand the source code; just
+make a note of its size and complexity. In a minute, we will compare is
+to an ANSI C++ solution that is much more fun to look at. So, here is a
+pre-standard C++ solution:
+<pre>#include &lt;iostream.h>
+#include &lt;fstream.h>
+#include &lt;stdlib.h>
+#include &lt;string.h>
+
+void doIt(const char* in,const char* out)
+{
+&nbsp;&nbsp; /* allocate buffer with initial capacity */
+&nbsp;&nbsp; size_t bufSiz =1024;
+&nbsp;&nbsp; char** buf = (char**) malloc(sizeof(char*)*bufSiz);
+&nbsp;&nbsp; if (buf == 0) quit();
+&nbsp;&nbsp; size_t linCnt = 0;
+&nbsp;&nbsp; buf[linCnt] = 0;
+
+&nbsp;&nbsp; /* allocate line buffer as destination for read */
+&nbsp;&nbsp; size_t linBufSiz = 256;&nbsp;
+&nbsp;&nbsp; char* linBuf = (char*) malloc(sizeof(char)*linBufSiz);
+&nbsp;&nbsp; if (linBuf == 0) quit();
+&nbsp;&nbsp; linBuf[0] ='\0';&nbsp;
+&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; /* open input file */
+&nbsp;&nbsp; ifstream inFile(in);
+
+&nbsp;&nbsp; /********************************************************/
+&nbsp;&nbsp; /*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; read input&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; */
+&nbsp;&nbsp; while (!(inFile.getline(linBuf,linBufSiz)).eof() &amp;&amp; !inFile.bad())
+&nbsp;&nbsp; {/* while there is still input */
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; expandLinBuf(linBuf,linBufSiz,inFile);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; storeTok(buf,linCnt,bufSiz,linBuf);
+&nbsp;&nbsp; }
+
+&nbsp;&nbsp; /* sort strings */
+&nbsp;&nbsp; qsort(buf, linCnt ,sizeof(char*), (int(*)(const void*,const void*))strcmp);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; /* open output file and write sorted strings to output file */
+&nbsp;&nbsp; ofstream outFile(out);
+&nbsp;&nbsp; for (size_t i = 0; i&lt;linCnt;i++)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; outFile&lt;&lt;buf[i]&lt;&lt;endl;
+}</pre>
+It needs a couple of helper functions, which are shown below:
+<pre>static void quit()
+{ cerr &lt;&lt; "memory exhausted" &lt;&lt; endl;
+&nbsp; exit(1);
+}
+
+static void expandLinBuf(char*&amp; linBuf, size_t&amp; linBufSiz,ifstream&amp; inFile )
+{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; while (!inFile.eof()&amp;&amp;!inFile.bad()&amp;&amp;strlen(linBuf)==linBufSiz-1)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; { /* while line does not fit into string buffer */
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* reallocate line buffer */
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; linBufSiz += linBufSiz;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; linBuf = (char*) realloc(linBuf,sizeof(char)*linBufSiz);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (linBuf == 0) quit();
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* read more into buffer */
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; inFile.getline(linBuf+linBufSiz/2-1,linBufSiz/2+1);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
+}
+
+static void storeTok(char**&amp; buf, size_t&amp; linCnt, size_t&amp; bufSiz, const char* token)
+{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* allocate memory for a copy of the token */
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; size_t tokLen =strlen(token);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; buf[linCnt] = (char*) malloc(sizeof(char)*tokLen+1);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (buf[linCnt] == 0) quit();
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* copy the token */
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; strncpy(buf[linCnt++],token,tokLen+1);
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* expand the buffer, if full */
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (linCnt == bufSiz)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {&nbsp; bufSiz +=bufSiz;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; buf = (char**) realloc(buf,sizeof(char*)*bufSiz);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (buf == 0) quit();
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
+}</pre>
+Quite a bit of code, isn't it? Basically, the program must provide and
+manage the memory for a line buffer into which the characters extracted
+from the file are stored. Plus it manages the memory for an array that
+holds all lines for subsequent invocation of the <tt>qsort()</tt> function.
+Both buffers must be of dynamic size, because neither the length nor the
+number of lines are known in advance. Reallocations might be necessary,
+which complicates matters even further.
+<p>In ANSI C++ the read-sort-write program boils down to something as concise
+and elegant as this:
+<pre>#include &lt;fstream>
+#include &lt;string>
+#include &lt;set>
+#include &lt;algorithm>
+using namespace ::std;</pre>
+
+<pre>void doIt(const char* in,const char* out)</pre>
+
+<pre>{</pre>
+
+<pre>&nbsp;&nbsp; set&lt;string> buf;</pre>
+
+<pre>&nbsp;&nbsp; string linBuf;</pre>
+
+<pre>&nbsp;&nbsp; ifstream inFile(in);</pre>
+
+<pre>&nbsp;&nbsp; while(getline(inFile,linBuf))</pre>
+
+<pre>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; buf.insert(linBuf);</pre>
+
+<pre>&nbsp;&nbsp; ofstream outFile(out);</pre>
+
+<pre>&nbsp;&nbsp; copy(buf.begin(),buf.end(),ostream_iterator&lt;string>(outFile,"\n"));</pre>
+
+<pre>}</pre>
+Why is it such a piece of cake in ANSI C++ compared to the effort that
+it takes in classic C++? The answer lies in the use of abstractions such
+as <tt>string</tt> and <tt>set</tt>. They take over all the memory management
+chores that we had to do manually in the pre-standard version of the program.
+All the allocation and reallocation stuff is handled by <tt>string</tt>
+and <tt>set</tt>; they manage their memory themselves and we don't have
+to care any longer. Plus, the <tt>set</tt> is an ordered collection of
+elements and we do not even have to sort it explicitly. Error indication
+is also much simpler. Situations such as memory exhaustion need not be
+indicated explicitly; instead the operator <tt>new</tt>, which is called
+somewhere in the innards of <tt>string</tt> and <tt>set</tt>, will raise
+a <tt>bad_alloc</tt> exception that is automatically propagated to the
+caller of our <tt>doIt()</tt> function. We need not do anything for error
+indication.
+<br>&nbsp;
+<table BORDER=0 COLS=1 WIDTH="68%" BGCOLOR="#C6CCDD" >
+<tr>
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF"><font size=+2>Exploring
+a Bit More of the Standard Library</font></font></font></b></td>
+</tr>
+</table>
+If life in ANSI C++ is so easy, let's go and explore it a bit further.
+We often have to care about efficiency of our programs. Is the ANSI C++
+solution above really as efficient as the classic C++ solution? Well, not
+really. In the ANSI solution we used a <tt>set</tt> container for storing
+the lines read from the input file whereas we used a plain C++ array of
+character C-style strings in the classic C++ solution. The <tt>set</tt>
+container is organized as a binary tree, and for that reason additional
+data must be maintained for linking the nodes together. Can we eliminate
+the resulting space overhead? Yes, we can. The standard library has a dynamic
+array container, called <tt>vector</tt>, that is less space consuming than
+the binary tree based <tt>set</tt> abstraction. Let us optimize the solution
+shown above and use <tt>vector&lt;string></tt> instead of <tt>set&lt;string></tt>.
+The <tt>vector</tt>'s insert member function has a different signature.
+A <tt>set</tt> container is always ordered and therefore there is a "right"
+place for a new element that is inserted. This is different in a <tt>vector</tt>,
+and the <tt>insert()</tt> function asks for location where it shall insert
+the new element. Initially, the <tt>vector</tt> is empty and there are
+not many choices for a location where new elements shall be inserted: we
+can either insert at the beginning or at the end, both being identical
+anyway. Say, we insert at the end. Then the re-implemented <tt>doIt()</tt>
+function looks like this:
+<pre>void doIt(const char* in,const char* out)
+{
+&nbsp;&nbsp; vector&lt;string> buf;
+&nbsp;&nbsp; vector&lt;string>::iterator insAt = buf.end();
+&nbsp;&nbsp; string linBuf;
+&nbsp;&nbsp; ifstream inFile(in);
+
+&nbsp;&nbsp; while(getline(inFile,linBuf))
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; buf.insert(insAt,linBuf);&nbsp;
+
+&nbsp;&nbsp; sort(buf.begin(),buf.end());
+
+&nbsp;&nbsp; ofstream outFile(out);
+&nbsp;&nbsp; copy(buf.begin(),buf.end(),ostream_iterator&lt;string>(outFile,"\n"));
+}</pre>
+Looks good, doesn't it? It compiles, but - too bad - at run time it crashes.
+Why? What is wrong here?
+<p>We need to look under the hood of the <tt>vector</tt> container if we
+want to understand what is happening here. How is <tt>vector</tt> organized
+and what precisely does the <tt>insert()</tt> function do? A <tt>vector</tt>
+internally is a contiguous memory space. Insertion into a <tt>vector</tt>means
+that all elements after the point of insertion are moved to the back, in
+order make room for the new element, and then the new element is added
+to the collection. A side effect is that all references to elements after
+the point of insertion become invalid. Now, the <tt>insert()</tt> function
+inserts the new element before the specified location. The point of insertion
+itself, in our example designated by the iterator <tt>insAt</tt>, becomes
+invalid as a side effect of the insertion. Any subsequent access to the
+element referred to by <tt>insAt</tt> might lead to a crash. This explains
+why our innocent program crashes after the first insertion of a line into
+the vector container.
+<p>There are several solutions to this problem. The <tt>insert()</tt> function
+returns an iterator to the newly inserted element and we can use this new,
+valid position as the point of insertion for subsequent additions to the
+vector. It would look like this:
+<pre>void d(Itconst char* in,const char* out)
+{
+&nbsp;&nbsp; vector&lt;string> buf;
+&nbsp;&nbsp; vector&lt;string>::iterator insAt = buf.end();
+&nbsp;&nbsp; string linBuf;
+&nbsp;&nbsp; ifstream inFile(in);
+
+&nbsp;&nbsp; while(getline(inFile,linBuf))
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; insAt = buf.insert(insAt,linBuf);&nbsp;
+
+&nbsp;&nbsp; sort(buf.begin(),buf.end());
+
+&nbsp;&nbsp; ofstream outFile(out);
+&nbsp;&nbsp; copy(buf.begin(),buf.end(),ostream_iterator&lt;string>(outFile,"\n"));</pre>
+}
+<p>More elegant and easier to comprehend is the use of the <tt>push_back()</tt>
+function instead of the <tt>insert()</tt> function. It inserts elements
+at the end of a <tt>vector</tt>. Our example then looks like this:
+<pre>void doIt(const char* in,const char* out)
+{
+&nbsp;&nbsp; vector&lt;string> buf;
+&nbsp;&nbsp; string linBuf;
+&nbsp;&nbsp; ifstream inFile(in);
+
+&nbsp;&nbsp; while(getline(inFile,linBuf))
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; buf.push_back(linBuf);&nbsp;
+
+&nbsp;&nbsp; sort(buf.begin(),buf.end());
+
+&nbsp;&nbsp; ofstream outFile(out);
+&nbsp;&nbsp; copy(buf.begin(),buf.end(),ostream_iterator&lt;string>(outFile,"\n"));</pre>
+}
+<p>What do we conclude from the program crash that we inadvertently caused?
+To effectively use the standard library, and all the other new language
+features, we need to thoroughly understand them. They come with subtle
+pitfalls that we need to know, so that we can avoid them.
+<p>Before you get scared and think: "Well, the new stuff looks cool and
+will most likely save me lot of work, but it also lures me into lots of
+booby traps - is it really worth it?", let me tell you that we have barely
+touched on the possibilities that open up for you by using the standard
+library. Just as an example: How are the lines ordered in the code snippet
+above? We didn't care, so what happens? Basically, what happens is a <tt>strcmp()</tt>
+style comparison: the strings are ordered by comparing the ASCII codes
+of the contained characters. Where did we say so? Well, we did not. It
+is the default behavior of the <tt>sort()</tt> algorithm. If no compare
+function, in ANSI C++ more generally called a <i>comparitor</i>, is provided
+to the <tt>sort()</tt> function, then it uses the <tt>operator&lt;()</tt>
+of the element type, which in our example is <tt>string</tt>. The ANSI
+<tt>string</tt>
+class has an <tt>operator&lt;()</tt> defined and this operator performs
+an ASCII compare. The <tt>sort()</tt> algorithm implicitly uses it as the
+sorting criteria in the example above.
+<p>Equipped with this knowledge, we can consider other sorting orders.
+Ordering by ASCII codes does not meet the requirements of dictionary like
+sorting, where upper case letters appear next to their lower case equivalents.
+In ASCII the capital letters precede all the lower case letters, so that
+capital <tt>'Z' </tt>precedes lower case <tt>'a'</tt>. Can we provide a
+dictionary type ordering instead of the ASCII default? How about a case-sensitive
+ordering? How about culture dependent sorting? Foreign alphabets include
+interesting special characters. How do they affect the sorting order? Lots
+of questions ....
+<p>As an example, let us consider a culture sensitive sorting order. The
+standard library includes predefined abstractions for internationalization
+of programs. Among them is class <tt>locale</tt>, which provides culture
+dependent string collation via its overloaded function call operator. An
+object of a class type that has the function call operator overloaded is
+called a <i>functor</i> in ANSI C++ and can be invoked like a function.
+In particular, we can pass it to the <tt>sort()</tt> algorithm as the sorting
+criteria. Here is the respective code:
+<pre>#include &lt;fstream>
+#include &lt;string>
+#include &lt;vector>
+#include &lt;algorithm>
+#include &lt;locale>
+using namespace ::std;
+
+void doIt(const char* in,const char* out)
+{
+&nbsp;&nbsp; vector&lt;string> buf;
+&nbsp;&nbsp; string linBuf;
+&nbsp;&nbsp; ifstream inFile(in);
+
+&nbsp;&nbsp; while(getline(inFile,linBuf))
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; buf.push_back(linBuf); // works
+
+&nbsp;&nbsp; sort(buf.begin(),buf.end(),locale("German"));
+
+&nbsp;&nbsp; ofstream outFile(out);
+&nbsp;&nbsp; copy(buf.begin(),buf.end(),ostream_iterator&lt;string>(outFile,"\n"));
+}</pre>
+The culture dependent sorting order just serves as an example here. We
+can define any other sorting criteria, as a function or as a functor, and
+plug it in with comparable ease. It works so nicely because the <tt>sort()</tt>
+algorithm is a function template that has the type of the comparitor as
+a template argument. This way you can use any type of comparitor for sorting.
+As you can see, the standard library makes your programs significantly
+more flexible and easy to extend.
+<br>&nbsp;
+<table BORDER=0 COLS=1 WIDTH="20%" BGCOLOR="#C6CCDD" >
+<tr>
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF"><font size=+2>Conclusions</font></font></font></b></td>
+</tr>
+</table>
+In all but the stodgiest of work environments software engineers currently
+make the transition from pre-standard C++ dialects and old-fashioned proprietary
+foundation libraries to ANSI C++, for two important reasons: portability
+and productivity. Every engineer knows from own painful experience how
+hard it is to write software that runs correctly and efficiently. So once
+a program works in one environment, we don't want to repeat the effort
+if we move to another (version of ) compiler or processor or operating
+system. Portability is what standards are for, and ANSI C++ supports it
+in two&nbsp; ways: by eliminating language dialects and by providing a
+foundation library. In addition it defines new language features that are
+designed to help us pulling off our daily programming tasks more efficiently
+and with greater ease.&nbsp; If we intend to stay competitive we cannot
+afford to ignore the new language standard.&nbsp; Nevertheless, while ANSI
+C++ has the potential to increase productivity, software quality&nbsp;
+and portability it also needs to be understood thoroughly if we want to
+get the most out of it.
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 >
+<tr>
+<td><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminars:</font>
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../../../Courses/ReliableC++.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=24 width=35></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/ReliableC++.htm">Reliable
+C++</a> </font></b>- Avoiding commpn traps and pitfalls in C++ programming
+<br><font color="#000000"><font size=-1>3-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=24 width=35></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=24 width=35></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/Templates.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=24 width=35></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/Templates.htm">Template
+Programming</a> </font></b>- All you ever wanted to know about templates
+<br><font color="#000000"><font size=-1>3-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/ExceptionHandling.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=24 width=35></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/ExceptionHandling.htm">C++
+Exception Handling</a> </font></b>- Language features and programming idioms
+for error handling
+<br><font color="#000000"><font size=-1>1-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+
+<td></td>
+</tr>
+
+<tr>
+<td COLSPAN="2"><font color="#000000">This document was&nbsp; published
+as vol. 3 of Develop Mentor's series of white papers and is available in
+PDF format:</font></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="AnsiC++WhitePaper.pdf"><img SRC="../../../Images/download.gif" NOSAVE BORDER=0 height=32 width=33></a></td>
+
+<td><b><font color="#000000"><a href="AnsiC++WhitePaper.pdf">New Features
+in ANSI C++&nbsp; - White Paper</a></font></b>
+<br><font color="#000000"><font size=-1>PDF (229k)</font></font></td>
+</tr>
+</table>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

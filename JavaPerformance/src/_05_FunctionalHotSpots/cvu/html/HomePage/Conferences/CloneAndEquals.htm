@@ -1,0 +1,197 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Angelika Langer">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <title>Java Idioms: Copying and Comparing Objects</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="AbstractCloneAndEquals"></a>&nbsp;
+<div ALIGN=right><table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 COLS=1 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">ABSTRACT</font></b></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=0 COLS=1 WIDTH="95%" >
+<tr>
+<td>The programming language Java was introduced to the IT community as
+an “easy-to-learn” and “easy-to-use” language (typically referring to C++
+for comparison). While this is certainly true, it turns out that even this
+supposedly easy language offers a lot of choices and comes with many programming
+idioms that must be understood thoroughly in order to produce high-quality
+software implemented in Java.&nbsp;
+<p>In this tutorial we focus on the implications of reference semantics
+on object copying and comparison.&nbsp; By default Java uses reference
+semantics; value semantics are optional and can be provided for each new
+class in form of implementations of clone(), equals(), and hashCode().&nbsp;
+These functions are particularly important in case of superclasses, since
+no correct implementation of a subclass can be provided if the superclass
+already lacks support for value semantics.&nbsp;
+<br>Correct and symmetric implementation of clone(), equals(), and hashCode()
+is a non-trivial task. Questionable implementations of these functions
+can be found galore (in the JDK, in popular textbooks, even in commercial
+applications). In this tutorial we go into the details of correct and complete
+implementations.</td>
+</tr>
+</table></div>
+&nbsp;</td>
+</tr>
+</table></div>
+&nbsp;
+<div ALIGN=right><table BORDER=0 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 COLS=1 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">OUTLINE</font></b></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLSPACING=0 COLS=1 WIDTH="95%" >
+<tr>
+<td>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><i>Introduction</i></b>
+<ul>
+<li>
+Recap of reference semantics vs. value semantics</li>
+</ul>
+<b><i>Implementing equals()</i></b>
+<ul>
+<li>
+The semantic meaning of equals()&nbsp;</li>
+
+<li>
+The problem of asymmetric implementations in class hierarchies</li>
+
+<li>
+Discussion of conceivable solutions</li>
+
+<li>
+Implementing equals() using reflection</li>
+</ul>
+</td>
+
+<td VALIGN=TOP><b><i>Implementing hashCode()</i></b>
+<ul>A corresponding implementation of hashCode()</ul>
+<b><i>Implementing clone()</i></b>
+<ul>
+<li>
+The semantic meaning of clone()</li>
+
+<li>
+Shallow vs. deep copying&nbsp;</li>
+
+<li>
+Cloning objects in generic collections</li>
+
+<li>
+Problems with base classes that do not support clone()</li>
+
+<li>
+final fields and clone()</li>
+
+<li>
+Inner classes and clone()&nbsp;</li>
+
+<ul>&nbsp;</ul>
+</ul>
+</td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table></div>
+&nbsp;</td>
+</tr>
+</table></div>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial">PREREQUISITES</font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+&nbsp;
+<div ALIGN=right><table BORDER=0 CELLPADDING=5 WIDTH="95%" >
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Level:</font></i></b></td>
+
+<td>intermediate</td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td WIDTH="50%">3 hours</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><i><font color="#295AB5">Prerequisites:</font></i></b></td>
+
+<td WIDTH="50%">Attendants should be familiar with the basic concepts of
+Java.</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><b><i><font color="#295AB5">Presented at:</font></i></b></td>
+
+<td WIDTH="95%"><a href="PreviousEvents.html#DevWeek2001">DevWeek 2001</a>,
+London, UK, February 2001</td>
+</tr>
+</table></div>
+
+<br>&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=2 WIDTH="88%" >
+<tr>
+<td COLSPAN="2"><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar or
+skim through some further reading:</font></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminars</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Courses/EffectiveJava.htm"><img SRC="../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><font color="#000000"><a href="../Courses/EffectiveJava.htm">Effective
+Java</a></font>
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+
+<td VALIGN=TOP><b><i><font color="#295AB5">Paper</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="50"><a href="../Articles/Papers/JavaGotchas/JavaProceedings.htm"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=27 width=31></a></td>
+
+<td><a href="../Articles/Papers/JavaGotchas/JavaProceedings.htm">Really
+Understanding Java -</a>
+<br><a href="../Articles/Papers/JavaGotchas/JavaProceedings.htm">Myths
+and Truths Comparing C++ and Java</a>
+<br><font color="#000000"><font size=-1>short white paper (providing first
+insights)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+</body>
+</html>

@@ -1,0 +1,963 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer and Klaus Kreft">
+   <title>Table of Contents</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="IOStreamsContent"></a>
+<h5>
+Preface xv</h5>
+
+<h5>
+Foreword xix</h5>
+
+<h5>
+Guide to Readers xxi</h5>
+
+<h3>
+PART I: STREAM INPUT AND OUTPUT</h3>
+
+<h4>
+1. IOStreams Basics 3</h4>
+
+<dt>
+1.1 Input and Output 3</dt>
+
+<dt>
+1.2 Formatted Input/Output 12</dt>
+
+<dd>
+1.2.1 The Predefined Global Streams 12</dd>
+
+<dd>
+1.2.2 The Input and Output Operators 13</dd>
+
+<dd>
+1.2.3 The Format Parameters of a Stream 16</dd>
+
+<dd>
+1.2.4 Manipulators 22</dd>
+
+<dd>
+1.2.5 The Locale of a Stream 27</dd>
+
+<dd>
+1.2.6 Comparison Between Formatted Input and Output 28</dd>
+
+<dd>
+1.2.7 Peculiarities of Formatted Input 29</dd>
+
+<dt>
+1.3 The Stream State 31</dt>
+
+<dd>
+1.3.1 The Stream State Flags 31</dd>
+
+<dd>
+1.3.2 Checking the Stream State 34</dd>
+
+<dd>
+1.3.3 Catching Stream Exceptions 36</dd>
+
+<dd>
+1.3.4 Resetting the Stream State 38</dd>
+
+<dt>
+1.4 File Input/Output 39</dt>
+
+<dd>
+1.4.1 Creating, Opening, Closing and Destroying File Streams 39</dd>
+
+<dd>
+1.4.2 The Open Modes 41</dd>
+
+<dd>
+1.4.3 Bidirectional File Streams 45</dd>
+
+<dt>
+1.5 In-Memory Input/Output 47</dt>
+
+<dt>
+1.6 Unformatted Input/Output 48</dt>
+
+<dt>
+1.7 Stream Positioning 51</dt>
+
+<dt>
+1.8 Synchronization of Streams 54</dt>
+
+<dd>
+1.8.1 Means of Synchronization 54</dd>
+
+<dd>
+<i>1.8.1.1 Synchronization via flush() and sync() 54</i></dd>
+
+<dd>
+<i>1.8.1.2 Synchronization using the unitbuf Format Flag 55</i></dd>
+
+<dd>
+<i>1.8.1.3 Synchronization by Tying Streams 55</i></dd>
+
+<dd>
+1.8.2 Synchronizing the Predefined Standard Streams 56</dd>
+
+<dd>
+<i>1.8.2.1 Synchronization Among the Predefined Standard Streams 57</i></dd>
+
+<dd>
+<i>1.8.2.2 Synchronization with the C Standard I/O 57</i></dd>
+
+<dd>
+<i>1.8.2.3 Synchronization with the External Device 58</i></dd>
+
+<dd>
+<i>1.8.2.4 Synchronization Between Predefined Standard for Narrow and Wide
+Characters 58</i></dd>
+
+<h4>
+2. The Architecture of IOStreams 61</h4>
+
+<dt>
+2.1 The Stream Class 63</dt>
+
+<dd>
+2.1.1 Class Heirarchy 63</dd>
+
+<dd>
+<i>2.1.1.1 The Stream Base Classes 63</i></dd>
+
+<dd>
+<i>2.1.1.2 The General Stream Classes 66</i></dd>
+
+<dd>
+<i>2.1.1.3 The Concrete Stream Classes 68</i></dd>
+
+<dd>
+2.1.2 How Streams Maintain their Stream Buffer 69</dd>
+
+<dd>
+2.1.3 Copying and Assignment of Streams 72</dd>
+
+<dd>
+2.1.4 How Streams Maintain Their Locale 76</dd>
+
+<dd>
+2.1.5 Collaboration Among Streams, Stream Buffers, and Locales 79</dd>
+
+<dt>
+2.2 The Stream Buffer Classes 84</dt>
+
+<dd>
+2.2.1 Class Heirarchy 85</dd>
+
+<dd>
+2.2.2 The Stream Buffer Abstraction 86</dd>
+
+<dd>
+2.2.3 String Stream Buffers 91</dd>
+
+<dd>
+2.2.4 File Stream Buffers 97</dd>
+
+<dt>
+2.3 Character Types and Character Traits 109</dt>
+
+<dd>
+2.3.1 Character Representations 109</dd>
+
+<dd>
+2.3.2 Character Traits 114</dd>
+
+<dd>
+<i>2.3.2.1 Requirements of a Character Traits Type 114</i></dd>
+
+<dd>
+<i>2.3.2.1.1 The End-of-File Character 114</i></dd>
+
+<dd>
+<i>2.3.2.1.2 Copying, Finding, and Comparing Characters 116</i></dd>
+
+<dd>
+<i>2.3.2.1.3 Conversion State 116</i></dd>
+
+<dd>
+<i>2.3.2.1.4 Stream Positions 116</i></dd>
+
+<dd>
+<i>2.3.2.2 The Predefined Standard Character Traits 118</i></dd>
+
+<dd>
+2.3.3 Character Types 119</dd>
+
+<dd>
+<i>2.3.3.1 Requirements for Character Types 120</i></dd>
+
+<dt>
+2.4 Stream Iterators and Stream Buffer Iterators 123</dt>
+
+<dd>
+2.4.1 The Concepts of Iterators in the Standard Library 123</dd>
+
+<dd>
+2.4.2 Stream Iterators 126</dd>
+
+<dd>
+<i>2.4.2.1 Output Stream Iterator 127</i></dd>
+
+<dd>
+<i>2.4.2.2 Input Stream Iterator 129</i></dd>
+
+<dd>
+<i>2.4.2.3 Stream Iterators are One-Pass Iterators 132</i></dd>
+
+<dd>
+2.4.3 Stream Buffer Iterators 134</dd>
+
+<dd>
+2.4.3.1 Output Stream Buffer Iterator 134</dd>
+
+<dd>
+<i>2.4.3.2 Input Stream Buffer Iterator 136</i></dd>
+
+<dt>
+2.5 Additional Stream Storage and Stream Callbacks 140</dt>
+
+<dd>
+2.5.1 Additional Stream Storage 140</dd>
+
+<dd>
+2.5.2 Stream Callbacks 142</dd>
+
+<h4>
+3. Advanced IOStreams Usage 145</h4>
+
+<dt>
+3.1 Input and Output of User-Defined Types 145</dt>
+
+<dd>
+3.1.1 The Signature of Inserters and Extractors 146</dd>
+
+<dd>
+3.1.2 First Inserters and Extractors 146</dd>
+
+<dd>
+3.1.3 Refinements 150</dd>
+
+<dd>
+<i>3.1.3.1 Format control 150</i></dd>
+
+<dd>
+<i>3.1.3.2 Prefix and Suffix Operations 151</i></dd>
+
+<dd>
+<i>3.1.3.3 Error Indication 152</i></dd>
+
+<dd>
+<i>3.1.3.4 Internationalization 154</i></dd>
+
+<dd>
+<i>3.1.3.5 I/O Operations 155</i></dd>
+
+<dd>
+3.1.4 Refined Inserters and Extractors 156</dd>
+
+<dd>
+3.1.4.1 Internationalization 156</dd>
+
+<dd>
+<i>3.1.4.2 Prefix and Suffix Operations 158</i></dd>
+
+<dd>
+<i>3.1.4.3 Format Control 159</i></dd>
+
+<dd>
+<i>3.1.4.4. Error Indication 161</i></dd>
+
+<dd>
+<i>3.1.4.5 Using the Refined Inserter and Extractor 168</i></dd>
+
+<dd>
+3.1.5 Generic Inserters and Extractors 169</dd>
+
+<dd>
+3.1.6 Simple Versus Refined Approach 174</dd>
+
+<dt>
+3.2 User-Defined Manipulators 176</dt>
+
+<dd>
+3.2.1 Manipulators Without Parameters 177</dd>
+
+<dd>
+3.2.2 Manipulators with Parameters 179</dd>
+
+<dd>
+<i>3.2.1.1 Straightforward Manipulator Implementations 179</i></dd>
+
+<dd>
+<i>3.2.2.2 Generalized Technique: Using a Manipulator Base Template 180</i></dd>
+
+<dd>
+<i>3.2.2.3 Variants of a Manipulator Implementation 184</i></dd>
+
+<dd>
+<i>3.2.2.4 Refinements 186</i></dd>
+
+<dd>
+<i>3.2.2.4.1 Manipulator Base Template with Error Handling 186</i></dd>
+
+<dd>
+<i>3.2.2.4.2 Manipulators with State 189</i></dd>
+
+<dd>
+<i>3.2.2.5 The Standard Manipulator Base Type smanip 191</i></dd>
+
+<dt>
+3.3 Extending Stream Functionality 191</dt>
+
+<dd>
+3.3.1 Using Stream Storage for Private Use: iword, pword, and xalloc 192</dd>
+
+<dd>
+<i>3.3.1.1 Initializing and Maintaining the iword/pword Index 195</i></dd>
+
+<dd>
+<i>3.3.1.2 Implementing the Date Inserter 195</i></dd>
+
+<dd>
+<i>3.3.1.3 Implementing the Maniuplator 197</i></dd>
+
+<dd>
+<i>3.3.1.4 Using Stream Callbacks for Memory Management 200</i></dd>
+
+<dd>
+<i>3.3.1.5 Error Indication of Stream Callback Functions 204</i></dd>
+
+<dd>
+<i>3.3.1.5.1 Extending the Example 205</i></dd>
+
+<dd>
+<i>3.3.1.6 Using the New Functionality 207</i></dd>
+
+<dd>
+<i>3.3.1.7 Evaluation of the iword/pword Approach 207</i></dd>
+
+<dd>
+3.3.2 Creating New Stream Classes by Derivation 209</dd>
+
+<dd>
+<i>3.3.2.1 Deriving the New Stream Classes by Derivation 210</i></dd>
+
+<dd>
+<i>3.3.2.2 Implementing the Date Inserter and the Manipulator 218</i></dd>
+
+<dd>
+<i>3.3.2.2.1 Implementing the Date Inserter 218</i></dd>
+
+<dd>
+<i>3.3.2.2.2 Implementing the Manipulator 221</i></dd>
+
+<dd>
+<i>3.3.2.2.3 Using the New Functionality 221</i></dd>
+
+<dd>
+<i>3.3.2.3 Summary 222</i></dd>
+
+<dd>
+3.3.3 Comparing Both Solutions--iword/pword Versus Derivation 223</dd>
+
+<dt>
+3.4 Adding Stream Buffer Functionality 225</dt>
+
+<dd>
+3.4.1 Deriving from the Stream Buffer Base Class 225</dd>
+
+<dd>
+<i>3.4.1.1 Core Functionality of Stream Buffers Character Transportation
+226</i></dd>
+
+<dd>
+<i>3.4.1.1.1 Stream Buffer for Unbuffered Character Transport 229</i></dd>
+
+<dd>
+<i>3.4.1.1.2 Stream Buffer for Buffered Character Transport 235</i></dd>
+
+<dd>
+<i>3.4.1.2 Optional Functionality of Stream Buffers 244</i></dd>
+
+<dd>
+<i>3.4.1.3 Providing New Stream Classes Along with New Stream Buffer Classes
+245</i></dd>
+
+<dd>
+3.4.2 Deriving from Concrete Stream Buffer Classes 246</dd>
+
+<h3>
+PART I I: INTERNATIONALIZATION</h3>
+
+<h4>
+4. Introduction to Internationalization and Localization 251</h4>
+
+<dt>
+4.1 Internationalization and Localization 252</dt>
+
+<dt>
+4.2 Cultural Conventions 253</dt>
+
+<dd>
+4.2.1 Language 253</dd>
+
+<dd>
+4.2.2 Numerical Values 253</dd>
+
+<dd>
+4.2.3 Monetary Values 254</dd>
+
+<dd>
+4.2.4 Time and Date 254</dd>
+
+<dd>
+4.2.5 Sorting Words 255</dd>
+
+<dd>
+4.2.6 Messages 256</dd>
+
+<dd>
+4.2.7 Character Encodings 257</dd>
+
+<dd>
+<i>4.2.7.1 Terms and Definitions 257</i></dd>
+
+<dd>
+<i>4.2.7.2 Character Codesets 258</i></dd>
+
+<dd>
+<i>4.2.7.3 Character Encoding Schemes 259</i></dd>
+
+<dd>
+<i>4.2.7.3.1 Japanese Multibyte Encoding Schemes 260</i></dd>
+
+<dd>
+<i>4.2.7.4 Uses of Multibyte Encodings and Wide Characters 262</i></dd>
+
+<dd>
+<i>4.2.7.5 Code Conversions 263</i></dd>
+
+<h4>
+5. Locales 265</h4>
+
+<dt>
+5.1 Creating Locale Objects 267</dt>
+
+<dd>
+5.1.1 Named Locales 267</dd>
+
+<dd>
+5.1.2 Combined Locales 268</dd>
+
+<dd>
+5.1.3 The Global Locale 270</dd>
+
+<h6>
+Retrieving Facets from a Locale 271</h6>
+
+<dd>
+5.2.1 has_facet 272</dd>
+
+<dd>
+5.2.2 use_facet 272</dd>
+
+<h4>
+6. Standard Facets 275</h4>
+
+<dt>
+6.1 Alphabet- and Language-Related Facets 276</dt>
+
+<dd>
+6.1.1 Character Classification 276</dd>
+
+<dd>
+<i>6.1.1.1 Character Classification 276</i></dd>
+
+<dd>
+<i>6.1.1.2 Character Conversion to Upper- and Lowercase 278</i></dd>
+
+<dd>
+<i>6.1.1.3 Character Conversion Between charT and char 279</i></dd>
+
+<dd>
+<i>6.1.1.4 Special Properties of ctype<char> 279</char></i></dd>
+
+<dd>
+6.1.2 String Collation 280</dd>
+
+<dd>
+6.1.3 Code Conversion 282</dd>
+
+<dd>
+6.1.4 Message Catalogs 285</dd>
+
+<dt>
+6.2 Formatting and Parsing Facets 286</dt>
+
+<dd>
+6.2.1 Numerical and Boolean Values 286</dd>
+
+<dd>
+<i>6.2.1.1 The numpunct Facet 287</i></dd>
+
+<dd>
+<i>6.2.1.2 The num_put Facet 287</i></dd>
+
+<dd>
+<i>6.2.1.3 The num_get Facet 289</i></dd>
+
+<dd>
+6.2.2 Monetary Values 290</dd>
+
+<dd>
+<i>6.2.2.1 The moneypunct Facet 291</i></dd>
+
+<dd>
+<i>6.2.2.2 The money_put Facet 292</i></dd>
+
+<dd>
+<i>6.2.2.3 The money_get Facet 294</i></dd>
+
+<dd>
+6.2.3 Date and Time Values 295</dd>
+
+<dd>
+<i>6.2.3.1 The time_put Facet 295</i></dd>
+
+<dd>
+<i>6.2.3.2 The time_get Facet 297</i></dd>
+
+<dt>
+6.3 Grouping of Standard Facets in a Locale 299</dt>
+
+<dd>
+6.3.1 The Standard Facet Families 299</dd>
+
+<dd>
+<i>6.3.1.1 The Standard Facet Base Class Templates 299</i></dd>
+
+<dd>
+<i>6.3.1.2 The Derived by name Facets 300</i></dd>
+
+<dd>
+<i>6.3.1.3 Behavior of the Base Class Facets 300</i></dd>
+
+<dd>
+<i>6.3.1.4 Mandatory Facet Types 302</i></dd>
+
+<dd>
+6.3.2 Locale Categories 304</dd>
+
+<dd>
+6.3.3 Diagram: Facets and Categories 305</dd>
+
+<dt>
+6.4 Advanced Usage of the Standard Facets 306</dt>
+
+<dd>
+6.4.1 Indirect Use of a Facet Through a Stream 306</dd>
+
+<dd>
+6.4.2 Use of a Facet Through a Locale 307</dd>
+
+<dd>
+6.4.3 Direct Use of the Facet Independent of a Locale 309</dd>
+
+<h4>
+7. The Archtecture of the Locale Framework 311</h4>
+
+<dt>
+7.1 Class Hierarchy 311</dt>
+
+<dt>
+7.2 Identification and Lookup of Facets in a Locale 311</dt>
+
+<dd>
+7.2.1 Facet Identification 312</dd>
+
+<dd>
+7.2.2 Facet Lookup 315</dd>
+
+<dd>
+<i>7.2.2.1 Retrieval of Facets from a Locale 315</i></dd>
+
+<dd>
+<i>7.2.2.2 Storing Facets in a Locale 319</i></dd>
+
+<dd>
+<i>7.2.2.3 The Rationale Behind the Use of the Two-Phase Polymorphism 320</i></dd>
+
+<dt>
+7.3 Memory Management of Facets in Locale 320</dt>
+
+<dd>
+7.3.1 The Facet Reference Counter 321</dd>
+
+<dd>
+7.3.2 Immutability of Facets in a Locale 326</dd>
+
+<h4>
+8. User-Defined Facets 327</h4>
+
+<dt>
+8.1 Adding a User-Defined Facet to an Existing Facet Family 327</dt>
+
+<dt>
+8.2 Defining a New Facet Family 331</dt>
+
+<h5>
+Reference Guide 343</h5>
+
+<h5>
+Introduction 343</h5>
+
+<dt>
+1. Locale 346</dt>
+
+<dl>
+<dt>
+header file 346</dt>
+
+<dt>
+global functions 349</dt>
+
+<dt>
+codecvt 352</dt>
+
+<dt>
+codecvt_base 358</dt>
+
+<dt>
+codecvt_byname 360</dt>
+
+<dt>
+collate 362</dt>
+
+<dt>
+collate_byname 365</dt>
+
+<dt>
+ctype 367</dt>
+
+<dt>
+ctype 373</dt>
+
+<dt>
+cytpe_base 377</dt>
+
+<dt>
+ctype_byname 379</dt>
+
+<dt>
+locale 381</dt>
+
+<dt>
+messages 387</dt>
+
+<dt>
+messages_base 390</dt>
+
+<dt>
+messages_byname 391</dt>
+
+<dt>
+money_base 393</dt>
+
+<dt>
+money_get 395</dt>
+
+<dt>
+moneypunct 398</dt>
+
+<dt>
+moneypunct_byname 403</dt>
+
+<dt>
+money_put 405</dt>
+
+<dt>
+num_get 408</dt>
+
+<dt>
+numpunct 414</dt>
+
+<dt>
+numpunct_byname 417</dt>
+
+<dt>
+num_put 419</dt>
+
+<dt>
+time_base 423</dt>
+
+<dt>
+time_get 425</dt>
+
+<dt>
+time_get_byname 430</dt>
+
+<dt>
+time_put 431</dt>
+
+<dt>
+time_put_byname 434</dt>
+
+<dt>
+time_base 436</dt>
+
+<dt>
+tm 438</dt>
+</dl>
+
+<dt>
+2. Character Traits 440</dt>
+
+<dl>
+<dt>
+header file<string> 440</dt>
+
+<dt>
+char_traits<chart> 442</dt>
+
+<dt>
+char_traits<char> 443</dt>
+
+<dt>
+char_traits<wchar_t> 447&nbsp;</wchar_t></dt>
+
+<br></char></chart></string></dl>
+
+<dt>
+3 IOStreams 451</dt>
+
+<dl>
+<dt>
+header file<iosfwd> 451</dt>
+
+<dt>
+global type definitions 464</dt>
+
+<dt>
+global objects 465</dt>
+
+<dt>
+basic_filebuf<chart ,traits=""> 467</dt>
+
+<dt>
+basic_fstream<chart ,traits=""> 471</dt>
+
+<dt>
+basic_ifstream<chart ,traits=""> 473</dt>
+
+<dt>
+basic_ios<chart ,traits=""> 475</dt>
+
+<dt>
+basic_iostream<chart ,traits=""> 480</dt>
+
+<dt>
+basic_istream<charttraits> 481</dt>
+
+<dt>
+basic_istringstream<chart ,traits,allocator=""> 492</dt>
+
+<dt>
+basic_ofstream<chart ,traits=""> 494</dt>
+
+<dt>
+basic_ostream<chart ,traits=""> 496</dt>
+
+<dt>
+basic_ostringstream<chart ,traits,allocator=""> 506</dt>
+
+<dt>
+basic_streambuf<chart ,traits=""> 508</dt>
+
+<dt>
+basic_stringbuf<chart ,traits,allocator=""> 517</dt>
+
+<dt>
+basic_stringstream<chart ,traits,allocator=""> 521</dt>
+
+<dt>
+fpos<statet> 523</dt>
+
+<dt>
+ios_base 524</dt>
+
+<dt>
+manipulators 538</dt>
+
+<br></statet></chart></chart></chart></chart></chart></chart></chart></charttraits></chart></chart></chart></chart></chart></iosfwd></dl>
+
+<dt>
+4. Stream Iterators 540</dt>
+
+<dl>
+<dt>
+header file<iterator> 540</dt>
+
+<dt>
+istreambuf_iterator<chart ,traits=""> 542</dt>
+
+<dt>
+istream_iterator<t ,chart,traits,distance=""> 546</dt>
+
+<dt>
+iterator<category ,t,distance,pointer,reference=""> 549</dt>
+
+<dt>
+iterator category tags 550</dt>
+
+<dt>
+ostreambuf_iterator<chart ,traits=""> 551</dt>
+
+<dt>
+ostream_iterator<t ,chart,traits,distance=""> 55&nbsp;</t></dt>
+
+<br></chart></category></t></chart></iterator></dl>
+
+<dt>
+5. Other I/O Operations 555</dt>
+
+<dl>
+<dt>
+bitset<n> 555</dt>
+
+<dt>
+complex<t> 557</dt>
+
+<dt>
+basic_string<chart ,traits,allocator=""> 558&nbsp;</chart></dt>
+
+<br></t></n></dl>
+
+<h5>
+Appendix A: Parsing and Extraction of Numerical and bool Values 563</h5>
+
+<dt>
+A.1 Parsing Numerical Values 564</dt>
+
+<dt>
+A.2 Parsing bool Values 566</dt>
+
+<dt>
+A.3 Conversion Specifier and Length Modifier 566</dt>
+
+<h5>
+Appendix B: Formatting of Numerical and bool Values 569</h5>
+
+<dt>
+B.1 Formatting Numerical Values 570</dt>
+
+<dt>
+B.2 Formatting bool Values 572</dt>
+
+<dt>
+B.3 Conversion Specifiers, Qualifiers, and Length Modifiers 573</dt>
+
+<h5>
+Appendix C: strftime() Conversion Specifiers 575</h5>
+
+<h5>
+Appendix D: Correspondences Between C and C++IOStreams 579</h5>
+
+<dt>
+D.1 File Open Modes 579</dt>
+
+<dt>
+D.2 Stream Positions 580</dt>
+
+<h5>
+Appendix E: Differences Between Classic and Standard IOStreams 581</h5>
+
+<dt>
+E.1 Templatizing the IOStreams Classes 582</dt>
+
+<dt>
+E.2 Splitting Base Class ios 583</dt>
+
+<dt>
+E.3 Indicating Errors 584</dt>
+
+<dt>
+E.4 Internationalizing IOStreams 585</dt>
+
+<dt>
+E.5 Removing_withassign Classes 585</dt>
+
+<dt>
+E.6 Removing File Descriptors 586</dt>
+
+<dt>
+E.7 String Streams: Replacing strstream by stringstream 587</dt>
+
+<dt>
+E.8 Changes to the Stream Buffer Classes 588</dt>
+
+<dt>
+E.9 Minor changes 590</dt>
+
+<h5>
+Appendix F: Relationship Between C and C++ Locales 591</h5>
+
+<dt>
+F.1 Locale Categories in C and C++ 591</dt>
+
+<dt>
+F.2 The Global Locale in C and C++ 592</dt>
+
+<h5>
+Appendix G: New C++ Features and Idoms 595</h5>
+
+<dt>
+G.1 Bitmask Types 595</dt>
+
+<dt>
+G.2 POD--Plain Old Data 596</dt>
+
+<dt>
+G.3 Explicit Constructors 596</dt>
+
+<dt>
+G.4 Template Specialization 599</dt>
+
+<dt>
+G.5 Default Template Arguments 604</dt>
+
+<dt>
+G.6 Explicit Template Argument Specification 607</dt>
+
+<dt>
+G.7 The Typename Keyword 609</dt>
+
+<dt>
+G.8 Dynamic Cast 612</dt>
+
+<dt>
+G.9 Function try Blocks 616</dt>
+
+<dt>
+G.10 Standard Exceptions 619</dt>
+
+<dt>
+G.11 Numeric Limits 620</dt>
+
+<dt>
+G.12 C++ Strings 620</dt>
+
+<h5>
+Bibliography 623</h5>
+Index 635
+<br><font size=-1></font>&nbsp;
+</body>
+</html>

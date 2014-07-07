@@ -1,0 +1,354 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="KeyWords" content="Java generics parameterized type J2SE 1.5 5.0 generics util.concurrent JSR166 JSR014 concurrency utilities">
+   <title>Java Generics In-Depth</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="JavaGenericsCourse"></a>
+<br><b><font face="Arial"><font color="#295AB5">COURSE DESCRIPTION</font></font></b>
+<table BORDER=0 CELLSPACING=10 CELLPADDING=2 WIDTH="98%" >
+<tr>
+<td VALIGN=TOP WIDTH="50%"><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p>The 5.0 release of the Java Standard Edition (J2SE) adds a number of
+major and minor new language features and library extensions.&nbsp; The
+most significant addition to the Java programming language are parameterized
+types and methods, collectively known as "Java Generics".&nbsp; Generics
+are without doubt the most complex language extension that has ever been
+added to Java in the past. While the key ideas of parameterized types and
+methods are easily understood, the devil lies in the detail.
+<p>Programmers with a background from another programming language that
+has parameterized types (C#, C++, Ada) will immediately recognize parameterized
+types in Java as a familiar concept.&nbsp; On the surface, the parameterized
+types in Java look similar to generic types in other language, but their
+translation into bytecode is dramatically different.&nbsp; Java generics
+are translated by "type erasure", which is a process that eliminates all
+type parameters and arguments and represents a parameterized type as though
+it were a regular, non-parameterized type in the bytecode.&nbsp; This has
+various consequences, some of which are counter-intuitive at first sight.
+<p>Using pre-defined parameterized types and methods, like the collection
+classes in the JDK, is fairly easy and straight-forward.&nbsp; Challenges
+arise, when programmers aim to define parameterized types or methods themselves.&nbsp;
+In this case they need a thorough understanding of all generics-related
+language features, including wildcards, wildcard capture, type argument
+inference, and many more.&nbsp; These advanced features of Java generics
+are far from trivial.
+<p>This seminar aims to provide a in-depth and complete overview of Java
+generics, including all related language featueres.&nbsp; All concepts
+explained in the lectures are practiced in hands-on labs.&nbsp; Students
+will design and implement APIs using generics, review them, test them,
+and refine them, in order to get a feeling for programming and program
+design using Java generics.
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<p>&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="50%">
+<table BORDER=0 CELLPADDING=2 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP WIDTH="35%"><b><i><font color="#295AB5">Prerequisite Courses
+and Skills:</font></i></b></td>
+
+<td VALIGN=TOP WIDTH="65%">Working knowledge of Java; in-depth experience
+with Java not required.&nbsp;</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="50%"><b><i><font color="#295AB5">Duration:</font></i></b></td>
+
+<td WIDTH="50%">1 day</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="50%"><b><i><font color="#295AB5">Exercises:</font></i></b></td>
+
+<td WIDTH="50%">Workshops and hands-on labs</td>
+</tr>
+</table>
+
+<p>This is a course for Java programmers who want to explore use Java generics
+in practice and need a thorough understanding of this novel language feature
+in Java. The courses are designed to build on existing expertise as Java
+programmers and take the attendants' skills one step further. Prerequisite
+for these seminars is at least 1 year of experience with Java or equivalent
+knowledge. Experience with generics are not required.
+<br>&nbsp;
+<p><b><font face="Arial"><font color="#295AB5"><font size=+0>PERFORMANCE
+OBJECTIVES</font></font></font></b>
+<table BORDER=0 CELLSPACING=4 CELLPADDING=0 >
+<caption>&nbsp;</caption>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Learn how to use generics effectively</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Know what to expect of Java generics</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Know how to avoid pitfalls related to generics</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Understand best-practice Java idioms related to generics</td>
+</tr>
+</table>
+
+<p><b><font face="Arial"><font color="#295AB5"><font size=+0>BUSINESS OBJECTIVES</font></font></font></b>
+<table BORDER=0 CELLSPACING=4 CELLPADDING=0 >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Equip your software professionals with industrial-strength Java skills&nbsp;</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Make your Java software more reliable</td>
+</tr>
+
+<tr>
+<td><img SRC="../Images/bluebullet.gif" NOSAVE height=10 width=7></td>
+
+<td>Get the most out of Java</td>
+</tr>
+</table>
+<img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p><font color="#295AB5">The course is designed by Klaus Kreft &amp; Angelika
+Langer and backed by years of experience in teaching&nbsp; Java and C++
+related topics and more than a decade of real-world experience in industrial
+software development both in C++ and Java.</font>
+<br><font color="#295AB5">Angelika Langer is a freelance trainer/mentor
+in the area of object-oriented software development in C++ and Java. She
+is a recognized author and speaker at IT conferences worldwide and author
+of the <a href="../GenericsFAQ/JavaGenericsFAQ.html">Java Generics FAQ</a>.&nbsp;</font>
+<br><font color="#295AB5">Klaus Kreft is a senior consultant for more than
+20 years and has served as the lead architect on several successful industry
+projects. He has been working in Java since 1995. He is a regular speaker
+at IT conferences in Germany.</font>
+<p><font color="#295AB5">Together they are authors of the&nbsp; book "Standard
+C++ IOStreams and Locales" and the online <a href="../GenericsFAQ/JavaGenericsFAQ.html">Java
+Generics FAQ</a>. They&nbsp; publish articles on C++ and Java topics in
+various computer magazines worldwide, including the column "Effective Java"
+in the German JavaSpektrum magazine.</font>
+<p><img SRC="../Images/bar-small.gif" NOSAVE height=3 width=350>
+<p>&nbsp;</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<tr>
+<td><b><font face="Arial"><font color="#295AB5">COURSE CONTENT</font></font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLPADDING=2 COLS=2 >
+<tr VALIGN=TOP>
+<td VALIGN=TOP WIDTH="33%"><b><i><font size=+0>Fundamentals of Java Generics</font></i></b>
+<ul>
+<li>
+<font size=+0>What are Java generics?</font></li>
+
+<li>
+<font size=+0>What is the primary purpose of Java generics?</font></li>
+
+<li>
+<font size=+0>What is the benefit of using Java generics?</font></li>
+
+<li>
+<font size=+0>What does type-safety mean?</font></li>
+</ul>
+
+<p><br><b><i><font size=+0>Language Features of Java Generics</font></i></b>
+<ul>
+<li>
+<font size=+0>Parameterized Types</font></li>
+
+<ul>
+<li>
+<font size=+0>Concrete Instantiations</font></li>
+
+<li>
+<font size=+0>Raw Types</font></li>
+
+<li>
+<font size=+0>Wildcard Instantiations</font></li>
+</ul>
+
+<li>
+<font size=+0>Parameterized Methods</font></li>
+
+<li>
+<font size=+0>Type Parameters</font></li>
+
+<ul>
+<li>
+<font size=+0>Type Parameter Bounds</font></li>
+
+<li>
+<font size=+0>Usage</font></li>
+
+<li>
+<font size=+0>Scope</font></li>
+
+<li>
+<font size=+0>Static Context</font></li>
+</ul>
+
+<li>
+Type Arguments</li>
+
+<ul>
+<li>
+<font size=+0>Wildcards</font></li>
+
+<li>
+<font size=+0>Wildcard Bounds</font></li>
+</ul>
+</ul>
+</td>
+
+<td><b><i>Practicalities - Programming With Java Generics</i></b>
+<ul>
+<li>
+<font size=+0>Using Parameterized Types and Methods</font></li>
+
+<li>
+<font size=+0>Coping With Legacy</font></li>
+
+<li>
+<font size=+0>Defining Parameterized Types and Methods</font></li>
+
+<li>
+<font size=+0>Designing Generic Methods</font></li>
+
+<li>
+<font size=+0>Working With Parameterized Interfaces</font></li>
+
+<li>
+<font size=+0>Implementing Infrastructure Methods</font></li>
+
+<li>
+Using Runtime Type Information</li>
+</ul>
+<b><i>Technicalities - Under the Hood of the Compiler</i></b>
+<ul>
+<li>
+<font size=+0>Compiler Messages</font></li>
+
+<li>
+Type Erasure</li>
+
+<li>
+<font size=+0>Type System</font></li>
+
+<li>
+<font size=+0>Exception Handling</font></li>
+
+<li>
+<font size=+0>Static Context</font></li>
+
+<li>
+<font size=+0>Type Argument Inference</font></li>
+
+<li>
+<font size=+0>Wilcard Capture</font></li>
+
+<li>
+<font size=+0>Wildcard Instantiations</font></li>
+
+<li>
+<font size=+0>Cast and instanceof</font></li>
+
+<br><font size=+0>Overload Resolution</font></ul>
+
+<ul>&nbsp;</ul>
+</td>
+</tr>
+</table>
+
+<table BORDER=0 COLS=2 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td><b><font face="Arial"><font color="#295AB5">FURTHER READING</font></font></b>
+<p><img SRC="../Images/bar.gif" NOSAVE height=5 width=600></td>
+
+<td ALIGN=RIGHT></td>
+</tr>
+</table>
+
+<table BORDER=0 CELLSPACING=10 CELLPADDING=2 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP WIDTH="60%"><a NAME="ReadingEffectiveJava"></a><font color="#000000">To
+get an impression of some topics covered in this course check out the sample
+reading:&nbsp;</font>
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=TOP WIDTH="50"><a href="../Articles/JavaPro.html"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=26 width=30></a></td>
+
+<td NOWRAP><a href="../Articles/JavaPro/01.JavaGenericsIntroduction/JavaGenerics.html">Language
+Features of Java Generics</a>
+<br><a href="../Articles/JavaPro/02.JavaGenericsWildcards/Wildcards.html">Wildcard
+Instantiations of Parameterized Types</a>
+<br><font color="#000000"><font size=-1>Articles published in Java Pro
+Online</font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>
+<center><a href="../Articles/JavaMagazin.html"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=26 width=31></a></center>
+</td>
+
+<td VALIGN=TOP><a href="../Articles/Papers/JavaGotchas/EffectiveJavaProceedings.htm">Effective
+Java Programming</a>
+<br><a href="../Articles/JavaMagazin/Generics/GenericsPart2.html">Type
+Erasure und das Java Typsystem</a>
+<br><font color="#000000"><font size=-1>Articles published in JavaMagazin</font></font>
+<br><font size=-1>(only available in German)</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>
+<center><a href="../GenericsFAQ/JavaGenericsFAQ.html"><img SRC="../Images/whitepaper.gif" NOSAVE BORDER=0 height=25 width=30></a></center>
+</td>
+
+<td><font color="#000000"><a href="../GenericsFAQ/JavaGenericsFAQ.html">Java
+Generics FAQ</a></font>
+<br><font color="#000000"><font size=-1>Freuquently Asked Questions related
+to Java Generics</font></font></td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+<br>&nbsp;
+</body>
+</html>

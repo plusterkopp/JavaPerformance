@@ -1,0 +1,2587 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="KeyWords" content="Java Genericsparameterized type parameterized methodwildcard bound">
+   <title>Java Generics FAQs - Generic And Parameterized Types</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+
+<h1>
+<a NAME="Top"></a><a NAME="FAQParameterizedTypes"></a><a NAME="Paramterized Types"></a>Generic
+And Parameterized Types</h1>
+<font size=-2>&copy; Copyright 2004-2005 by Angelika Langer.&nbsp; All
+Rights Reserved.</font>
+<table CELLPADDING=10 WIDTH="100%" >
+<tr>
+<td COLSPAN="2"><font size=+0><a href="#Fundamentals of Parameterized Types">Fundamentals</a></font>
+<ul>
+<li>
+<font size=+0><a href="#What is a parameterized (or generic) type?">What
+is a parameterized or generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="#How is a parameterized type defined?">How do I
+define a generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="#Are there any types that cannot have type parameters?">Are
+there any types that cannot have type parameters?</a></font></li>
+
+<li>
+<font size=+0><a href="#How is a parameterized type instantiated?">How
+is a generic type instantiated?</a></font></li>
+
+<li>
+<font size=+0><a href="#Why do instantiations of a parameterized type share the same runtime type?">Why
+do instantiations of a generic type share the same runtime type?</a></font></li>
+
+<li>
+<font size=+0><a href="#Can I cast to a parameterized type?">Can I cast
+to a parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="#Can I use parameterized types in exception handling?">Can
+I use parameterized types in exception handling?</a></font></li>
+
+<li>
+<font size=+0><a href="#Can parameterized types have static members?">Can
+generic types have static members?</a></font></li>
+</ul>
+<font size=+0><a href="#Concrete Instantiations">Concrete Instantiations</a></font>
+<ul>
+<li>
+<font size=+0><a href="#What is a concrete instantiation?">What is a concrete
+instantiation of a generic type?</a></font></li>
+
+<li>
+<font size=+0><a href="#Are different concrete instantiations of the same parameterized type compatible?">Are
+different concrete instantiations of the same generic type compatible?</a></font></li>
+
+<li>
+<font size=+0><a href="#Can I use a concrete instantiation of a parameterized type like any other type?">Can
+I use a concrete parameterized type like any other type?</a></font></li>
+
+<li>
+<font size=+0><a href="#Can I create an array whose component type is a concrete instantiation of a parameterized type?">Can
+I create an array whose component type is a concrete parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="#Can I declare a reference variable of an array type whose component type is a concrete instantiation">Can
+I declare a reference variable of an array type whose component type is
+a concrete parameterized type?</a></font></li>
+
+<li>
+<font size=+0><a href="#How can I work around the restriction that there are no arrays whose component type is a concrete instantiation of a">How
+can I work around the restriction that there are no arrays whose component
+type is a concrete parameterized type?</a></font></li>
+
+<li>
+<a href="#Why is there no class literal for the concrete instantiation of a parameterized type?">Why
+is there no class literal for the concrete parameterized type?</a></li>
+</ul>
+<font size=+0><a href="#Raw Types">Raw Types</a></font>
+<ul>
+<li>
+<font size=+0><a href="#What is the raw type?">What is the raw type?</a></font></li>
+
+<li>
+<a href="#Why are raw types permitted?">Why are raw types permitted?</a></li>
+
+<li>
+<font size=+0><a href="#Can I use a raw type like any other type?">Can
+I use a raw type like any other type?</a></font></li>
+</ul>
+
+<p><br><font size=+0><a href="#WIldcard Instantiations">Wildcard Instantiations</a></font>
+<ul>
+<li>
+<font size=+0><a href="#What is a wildcard instantiation?">What is a wildcard
+instantiation?</a></font></li>
+
+<li>
+<font size=+0><a href="#What is an unbounded wildcard instantiation?">What
+is the unbounded wildcard instantiation?</a></font></li>
+
+<li>
+<font size=+0><a href="#What is the difference between the unbounded wildcard instantiation and the raw type?">What
+is the difference between the unbounded wildcard parameterized type and
+the raw type?</a></font></li>
+
+<li>
+<font size=+0><a href="#Which methods and fields are accessible/inaccessible through a reference variable of a wildcard type?">Which
+methods and fields are accessible/inaccessible through a reference variable
+of a wildcard type?</a></font></li>
+
+<li>
+<font size=+0><a href="#Can I use a wildcard instantiation like any other type?">Can
+I use a wildcard instantiation like any other type?</a></font></li>
+
+<li>
+<font size=+0><a href="#Can I create an object whose type is a wildcard instantiation of a parameterized type?">Can
+I create an object whose type is a wildcard parameterized type?</a></font></li>
+
+<li>
+<a href="#Can I create an array whose component type is a wildcard instantiation of a parameterized type?">Can
+I create an array whose component type is a wildcard parameterized type?</a></li>
+
+<li>
+<a href="#Can I declare a reference variable of an array type whose component type is a bounded wildcard instantiation of a">Can
+I declare a reference variable of an array type whose component type is
+a bounded wildcard parameterized type?</a></li>
+
+<li>
+<a href="#Why is it allowed to create an array whose component type is an unbounded wildcard instantiation?">Why
+is it allowed to create an array whose component type is an unbounded wildcard
+parmeterized type?</a></li>
+
+<li>
+<a href="#Can I declare a reference variable of an array type whose component type is an unbounded wildcard instantiation of a">Can
+I declare a reference variable of an array type whose component type is
+an unbounded wildcard parameterized type?</a></li>
+
+<li>
+<font size=+0><a href="#Can I derive from a wildcard instantiation of a parameterized type?">Can
+I derive from a wildcard parameterized type?</a></font></li>
+
+<li>
+<a href="#Why is there no class literal for wildcard instantiations of a parameterized type?">Why
+is there no class literal for wildcard parameterized type?</a></li>
+</ul>
+</td>
+</tr>
+
+<tr>
+<td></td>
+</tr>
+</table>
+
+<h1>
+<img SRC="../../Images/bar.gif" NOSAVE height=5 width=600></h1>
+
+<h2>
+Generic And Parameterized Types</h2>
+<img SRC="../../Images/bar.gif" NOSAVE height=5 width=600>
+<br>&nbsp;
+<h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450></h3>
+
+<h3>
+<a NAME="Fundamentals of Parameterized Types"></a>Fundamentals</h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450><a NAME="FAQ001"></a>
+<p><a NAME="What is a parameterized (or generic) type?"></a><b><font face="Arial,Helvetica"><font size=+0>What
+is a parameterized or generic type?</font></font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>A generic type is a type with formal
+type parameters. A parameterized type is an instantiation of a generic
+type with actual type arguments.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">A <i>generic type</i> is a reference type that has one
+or more type parameters. These type parameters are later replaced by type
+arguments when the generic type is instantiated (or <i>declared</i>).
+<p>Example (of a generic type):
+<blockquote><tt>interface Collection&lt;E>&nbsp; {&nbsp;</tt>
+<br><tt>&nbsp; public void add (E x);&nbsp;</tt>
+<br><tt>&nbsp; public Iterator&lt;E> iterator();</tt>
+<br><tt>}</tt></blockquote>
+The interface <tt>Collection</tt> has one type parameter <tt>E</tt>.&nbsp;
+The type parameter <tt>E </tt>is a place holder that will later be replaced
+by a type argument when the generic type is instantiated and used. The
+instantiation of a generic type with actual type arguments is called a
+<i>parameterized
+type</i>.
+<p>Example (of a parameterized type):
+<blockquote><tt>Collection&lt;String> coll = new LinkedList&lt;String>();</tt></blockquote>
+The declaration <tt>Collection&lt;String></tt> denotes a parameterized
+type, which is an instantiation of the generic type <tt>Collection</tt>,&nbsp;
+where the place holder
+<tt>E</tt> has been replaced by the concrete type
+<tt>String</tt>.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ001">#FAQ001</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TypeParameters.html#What is a type parameter?">What
+is a type parameter?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ002"></a>
+<p><a NAME="How is a parameterized type defined?"></a><b><font face="Arial,Helvetica"><font size=+0>How
+do I define a generic type?</font></font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Like a regular type, but with a type
+parameter declaration attached.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">A generic type is a reference type that has one or more
+type parameters. In the definition of the generic type, the type parameter
+section follows the type name. It is a comma separated list of identifiers
+and is delimited by angle brackets.&nbsp;
+<p>Example (of a generic type):
+<blockquote><tt>class Pair&lt;X,Y>&nbsp; {&nbsp;</tt>
+<br><tt>&nbsp; private X first;</tt>
+<br><tt>&nbsp; private Y second;</tt>
+<p><tt>&nbsp; public Pair(X a1, Y a2) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; first&nbsp; = a1;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; second = a2;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public X getFirst()&nbsp; { return first; }</tt>
+<br><tt>&nbsp; public Y getSecond() { return second; }</tt>
+<br><tt>&nbsp; public void setFirst(X arg)&nbsp; { first = arg; }</tt>
+<br><tt>&nbsp; public void setSecond(Y arg) { second = arg; }</tt>
+<br><tt>}</tt></blockquote>
+The class <tt>Pair</tt> has two type parameters <tt>X </tt>and <tt>Y</tt>.&nbsp;
+They are replaced by type arguments when the generic type <tt>Pair</tt>
+is instantiated. For instance, in the declaration <tt>Pair&lt;String, Date></tt>
+the type parameter <tt>X</tt> is replaced by the type argument <tt>String</tt>
+and <tt>Y</tt> is replaced by&nbsp; <tt>Date</tt>.
+<br>The scope of the identifiers <tt>X </tt>and <tt>Y</tt> is<b><i> </i></b>the
+entire definition of the class.&nbsp; In this scope the two type parameters
+<tt>X
+</tt>and
+<tt>Y</tt>
+are used like they were types (with some restrictions). In the example
+above, the type parameters are used as the argument and return type of
+instance methods and the types of instance fields.&nbsp;
+<br>Type parameter can be declared with bounds. Bounds give access to methods
+of the unknown type that the type parameter stands for. In our example,
+we do not invoke any methods of the unknown types <tt>X </tt>and <tt>Y</tt>.
+For this reason, the two type parameters are unbounded.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ002">#FAQ002</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TypeParameters.html#What is a type parameter?">What
+is a type parameter?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeParameters.html#What is a bounded type parameter?">What
+is a bounded type parameter?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeParameters.html#What is a type parameter bound?">What
+is a type parameter bound?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ003"></a>
+<h2>
+<a NAME="Are there any types that cannot have type parameters?"></a><font face="Arial,Helvetica"><font size=+0>Are
+there any types that cannot have type parameters?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>All types, except enum types, anonymous
+inner classes and exception classes, can be generic..</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Almost all reference types can be generic.&nbsp; This includes
+classes, interfaces, nested (static) classes, nested interfaces, inner
+(non-static) classes, and local classes.
+<p>The following types cannot be generic:
+<p><i>Anonymous inner classes</i>. They can implement a parameterized interface
+or extend a parameterized class, but they cannot themselves be generic
+classes.&nbsp; A generic anonymous class would be nonsensical.&nbsp; Anonymous
+classes do not have a name, but the name of a generic class is needed for
+declaring an instantiation of the class and providing the type arguments.&nbsp;
+Hence, generic anonymous classes would be pointless.
+<p><i>Exception types</i>.&nbsp; A generic class must not directly or indirectly
+be derived from class <tt>Throwable</tt>.&nbsp; Generic exception or error
+types are disallowed because the exception handling mechanism is a runtime
+mechanism and the Java virtual machine does not know anything about Java
+generics.&nbsp; The JVM would not be capable of distinguishing between
+different instantiations of a generic exception type. Hence, generic exception
+types would be pointless.
+<p><i>Enum types</i>. Enum types cannot have type parameters.&nbsp; Conceptually,
+an enum type and its enum values are static.&nbsp; Since type parameters
+cannot be used in any static context, the parameterization of an enum type
+would be pointless.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ003">#FAQ003</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#Can I use parameterized types in exception handling?">Can
+I use generic / parameterized types in exception handling?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Why are parameterized exception and error types illegal?">Why
+are generic exception and error types illegal?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Why are parameterized enum types illegal?">Why
+are generic enum types illegal?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ004"></a>
+<h2>
+<a NAME="How is a parameterized type instantiated?"></a><font face="Arial,Helvetica"><font size=+0>How
+is a generic type instantiated?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>By providing a type argument per type
+parameter.&nbsp;</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">In order to use a generic type we must provide one type
+argument per type parameter that was declared for the generic type. The
+type argument list is a comma separated list that is delimited by angle
+brackets and follows the type name. The result is a so-called parameterized
+type.
+<p>Example (of a generic type):
+<ul><tt>class Pair&lt;X,Y>&nbsp; {&nbsp;</tt>
+<br><tt>&nbsp; private X first;</tt>
+<br><tt>&nbsp; private Y second;</tt>
+<p><tt>&nbsp; public Pair(X a1, Y a2) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; first&nbsp; = a1;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; second = a2;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public X getFirst()&nbsp; { return first; }</tt>
+<br><tt>&nbsp; public Y getSecond() { return second; }</tt>
+<br><tt>&nbsp; public void setFirst(X arg)&nbsp; { first = arg; }</tt>
+<br><tt>&nbsp; public void setSecond(Y arg) { second = arg; }</tt>
+<br><tt>}</tt></ul>
+If we want to use the generic type <tt>Pair</tt> we must specify the type
+arguments that shall replace the place holders <tt>X</tt> and
+<tt>Y</tt>.&nbsp;
+A type argument can be a concrete reference type, such as <tt>String</tt>,
+<tt>Long</tt>,
+<tt>Date</tt>,
+etc.
+<p>Example (of a concrete parameterized type):
+<blockquote><tt>public void printPair(<b><font color="#000099">Pair&lt;String,Long></font></b>
+pair) {</tt>
+<br><tt>&nbsp; System.out.println("("+pair.getFirst()+","+pair.getSecond()+")");</tt>
+<br><tt>}</tt>
+<p><tt><b><font color="#000099">Pair&lt;String,Long></font></b> limit =
+new <b><font color="#000099">Pair&lt;String,Long></font></b>("maximum",1024L);</tt>
+<br><tt>printPair(limit);</tt></blockquote>
+The instantiation <tt>Pair&lt;String,Long></tt> is a concrete parameterized
+type and it can be used like a regular reference type (with a couple of
+restrictions that are discussed later).&nbsp; In the example, we have been
+using the concrete parameterized type as argument type of a method, as
+type of a reference variable, and in a <tt>new</tt> expression for creation
+of an object.
+<p>In addition to concrete instantiation there so-called <i>wildcard instantiations</i>.&nbsp;
+They do not have concrete types as type arguments, but so-called <i>wildcards</i>.
+A wildcard is a syntactic construct with a "<tt>?</tt>" that denotes not
+just one type, but a family of types.&nbsp; In its simplest form a wildcard
+is just a question mark and stands for "all types".
+<p>Example (of a wildcard parameterized type):
+<blockquote><tt>public void printPair(<b><font color="#000099">Pair&lt;?,?></font></b>
+pair) {</tt>
+<br><tt>&nbsp; System.out.println("("+pair.getFirst()+","+pair.getSecond()+")");</tt>
+<br><tt>}</tt>
+<p><tt><b><font color="#000099">Pair&lt;?,?></font></b> limit = new <b><font color="#000099">Pair&lt;String,Long></font></b>("maximum",1024L);</tt>
+<br><tt>printPair(limit);</tt></blockquote>
+The declaration <tt>Pair&lt;?,?></tt> is an example of a wildcard parameterized
+type, where both type arguments are wildcards. Each question mark stands
+for a <i>separate </i>representative from the family of "all types".&nbsp;
+The resulting family of instantiations comprises <i>all</i> instantiations
+of the generic type <tt>Pair</tt>.&nbsp; (Note: the concrete type arguments
+of the family members need <i>not</i> be identical; each "<tt>?</tt>" stands
+for a separate type.) A reference variable or method parameter whose type
+is a wildcard parameterized type, such as <tt>limit </tt>and <tt>pair</tt>
+in the example, can refer to any member of the family of types that the
+wildcard denotes.&nbsp;
+<p>It is permitted to leave out the type arguments altogether and not specify
+type arguments at all. A generictype without type arguments is called
+<i>raw
+type</i> and is only allowed for reasons of compatibility with non-generic
+Java code.&nbsp; Use of raw types is discouraged.&nbsp; The Java Language
+Specification even states that it is possible that future versions of the
+Java programming language will disallow the use of raw types.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ004">#FAQ004</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="5%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TypeArguments.html#What is a type argument?">What
+is a type argument?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeArguments.html#Which types are permitted as type arguments?">Which
+types are permitted as type arguments?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeArguments.html#What is a wildcard?">What
+is a wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is a concrete instantiation?">What
+is a concrete parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard instantiation?">What
+is a wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I use a concrete instantiation of a parameterized type like any other type?">Can
+I use a concrete parameterized type like any other type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I use a wildcard instantiation like any other type?">Can
+I use a wildcard parameterized like any other type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is the raw type?">What
+is the raw type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ005"></a>
+<h2>
+<a NAME="Why do instantiations of a parameterized type share the same runtime type?"></a><font face="Arial,Helvetica"><font size=+0>Why
+do instantiations of a generic type share the same runtime type?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Because of type erasure.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">The compiler translates generic and parameterized types
+by a technique called <i>type erasure</i>.&nbsp; Basically, it elides all
+information related to type parameters and type arguments. For instance,
+the parameterized type
+<tt>List&lt;String></tt> is translated to type <tt>List</tt>,
+which is the so-called <i>raw type</i>.&nbsp; The same happens for the
+parameterized type
+<tt>List&lt;Long></tt>; it also appears as <tt>List</tt>
+in the bytecode.&nbsp;
+<p>After translation by type erasure, all information regarding type parameters
+and type arguments has disappeared. As a result, all instantiations of
+the same generic type share the same runtime type, namely the raw type.&nbsp;
+<p>Example (printing the runtime type of two parameterized types):
+<blockquote><tt>System.out.println("runtime type of ArrayList&lt;String>:
+"+ne<font color="#000000">w ArrayList&lt;String>().getClass());</font></tt>
+<br><tt><font color="#000000">System.out.println("runtime type of ArrayList&lt;Long>&nbsp;
+: "+new ArrayList&lt;Long>().g</font>etClass());</tt>
+<p>
+<hr WIDTH="100%">
+<br>prints:&nbsp;&nbsp; <tt>runtime type of <b><font color="#000099">ArrayList&lt;String></font></b>:
+class java.util.<b><font color="#000099">ArrayList</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; runtime type of <b><font color="#000099">ArrayList&lt;Long></font></b>&nbsp;
+: class java.util.<b><font color="#000099">ArrayList</font></b></tt></blockquote>
+The example illustrates that <tt>ArrayList&lt;String></tt> and <tt>ArrayList&lt;Long></tt>
+share the runtime type <tt>ArrayList</tt>.&nbsp;</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ005">#FAQ005</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How does the compiler translate Java generics?">How
+does the compiler translate Java generics?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is type erasure?">What
+is type erasure?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is the raw type?">What
+is the raw type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ006"></a>
+<h2>
+<a NAME="Can I cast to a parameterized type?"></a><font face="Arial,Helvetica"><font size=+0>Can
+I cast to a parameterized type?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Yes, you can, but under certain circumstances
+it is not type-safe and the compiler issues an "unchecked" warning.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">All instantiations of a generic type share the same runtime
+type representation, namely the representation of the raw type. For instance,
+the instantiations of a generic type <tt>List</tt>,&nbsp; such as <tt>List&lt;Date></tt>,
+<tt>List&lt;String></tt>,
+<tt>List&lt;Long></tt>, etc. have different static types at compile time,
+but the same dynamic type <tt>List </tt>at runtime.
+<p>A cast consists of two parts:&nbsp;
+<ul>
+<li>
+a static type check performed by the compiler at compile time and&nbsp;</li>
+
+<li>
+a dynamic type check performed by the virtual machine at runtime.&nbsp;</li>
+</ul>
+The static part sorts out nonsensical casts, that cannot succeed, such
+as the cast from <tt>String</tt> to <tt>Date</tt> or from
+<tt>List&lt;String></tt>
+to <tt>List&lt;Date></tt>.&nbsp;
+<p>The dynamic part uses the runtime type information and performs a type
+check at runtime.&nbsp; It raises a <tt>ClassCastException</tt> if the
+dynamic type of the object is not the target type (or a subtype of the
+target type) of the cast. Examples of casts with a dynamic part are the
+cast from
+<tt>Object</tt> to <tt>String</tt> or from <tt>Object</tt> to
+<tt>List&lt;String></tt>.&nbsp;
+These are the so-called downcasts, from a supertype down to a subtype.
+<p>Not all casts have a dynamic part. Some casts are just static casts
+and require no type check at runtime.&nbsp; Examples are the casts between
+primitive types, such as the cast from <tt>long</tt> to <tt>int </tt>or
+<tt>byte</tt>
+to <tt>char</tt>.&nbsp; Another example of static casts are the so-called
+upcasts, from a subtype up to a supertype, such as the casts from <tt>String</tt>
+to <tt>Object</tt> or from <tt>LinkedList&lt;String></tt> to <tt>List&lt;String></tt>.
+Upcasts are casts that are permitted, but not required.&nbsp; They are
+automatic conversions that the compiler performs implicitly, even without
+an explicit cast expression in the source code, which means, the cast is
+not required and usually omitted.&nbsp; However, if an upcast appears somewhere
+in the source code then it is a purely static cast that does not have a
+dynamic part.
+<p>Type casts with a dynamic part are potentially unsafe, when the target
+type of the cast is a parameterized type.&nbsp; The runtime type information
+of a parameterized type is non-exact, because all instantiations of the
+same generic type share the same runtime type representation. The virtual
+machine cannot distinguish between different instantiations of the same
+generic type.&nbsp; Under these circumstances the dynamic part of a cast
+can succeed although it should not.
+<p>Example (of unchecked cast):
+<blockquote><tt>void m1() {</tt>
+<br><tt>&nbsp; List&lt;Date> list = new ArrayList&lt;Date>();</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; m2(list);</tt>
+<br><tt>}</tt>
+<br><tt>void m2(Object arg) {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; List&lt;String> list = <b><font color="#000099">(List&lt;String>)</font></b>
+arg;&nbsp;&nbsp;&nbsp; <b><font color="#660000">// unchecked warning</font></b></tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; m3(list);</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt>
+<br><tt>void m3(List&lt;String> list) {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; String s = list.get(0);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#660000">//
+ClassCastException</font></b></tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt></blockquote>
+The cast from <tt>Object</tt> to <tt>List&lt;String> </tt>in method <tt>m2</tt>
+looks like a cast to <tt>List&lt;String></tt>, but actually is a cast from
+<tt>Object</tt>
+to the raw type <tt>List</tt>. It would succeed even if the object referred
+to were a <tt>List&lt;Date></tt>&nbsp; instead of a
+<tt>List&lt;String></tt>.&nbsp;
+<p>After this successful cast we have a reference variable of type <tt>List&lt;String></tt>
+which refers to an object of type <tt>List&lt;Date></tt>. When we retrieve
+elements from that list we would expect <tt>String</tt>s, but in fact we
+receive <tt>Date</tt>s - and a <tt>ClassCastException </tt>will occur in
+a place where nobody had expected it.&nbsp;
+<p>We are prepared to cope with <tt>ClassCastException</tt>s when there
+is a cast expression in the source code, but we do not expect <tt>ClassCastException</tt>s
+when we extract an element from a list of strings.&nbsp; This sort of unexpected
+<tt>ClassCastException
+</tt>is
+considered a violation of the type-safety principle.&nbsp; In order to
+draw attention to the potentially unsafe cast the compiler issues an "unchecked"
+warning when it translates the dubious cast expression.
+<p>As a result, the compiler emits "unchecked" warnings for every dynamic
+cast whose target type is a parameterized type.&nbsp; Note that an upcast
+whose target type is a parameterized type does <i>not</i> lead to an "unchecked"
+warning, because the upcast has no dynamic part.&nbsp;</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ006">#FAQ006</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#Why do instantiations of a parameterized type share the same runtime type?">Why
+do instantiations of the same generic type share the same runtime type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="Fundamentals.html#What does type-safety mean?">What
+does type-safety mean?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is the type erasure of a parameterized type?">What
+is the type erasure of a parameterized type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ007"></a>
+<h2>
+<a NAME="Can I use parameterized types in exception handling?"></a><font face="Arial,Helvetica"><font size=+0>Can
+I use parameterized types in exception handling?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No.&nbsp; Exception and error types must
+not be generic.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">It is illegal to define generic type that are directly
+or indirectly derived from class <tt>Throwable</tt>. Consequently, no parameterized
+types appear anywhere in exception handling.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ007">#FAQ007</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Why are parameterized exception and error types illegal?">Why
+are generic exception and error types illegal?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ008"></a>
+<h2>
+<a NAME="Can parameterized types have static members?"></a><font face="Arial,Helvetica"><font size=+0>Can
+generic types have static members?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Yes.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Generic types can have static members, including static
+fields, static methods and static nested types. Each of these static members
+exists once per enclosing type, that is, independently of the number of
+objects of the enclosing type and regardless of the number of instantiations
+of the generic type&nbsp; that may be used somewhere in the program. The
+name of the static member consists - as is usual for static members - of
+the scope (packages and enclosing type) and the member's name. If the enclosing
+type is generic, then the type in the scope qualification must be the raw
+type, not a parameterized type.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ008">#FAQ008</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do I refer to static members of a parameterized type?">How
+do I refer to static members of a generic or parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do I refer to a (non-static) inner class of a parameterized type?">How
+do I refer to a (non-static) inner class of a generic or parameterized
+type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do I refer to an interface type nested into a parameterized type?">How
+do I refer to an interface type nested into a generic or parameterized
+type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do I refer to an enum type nested into a parameterized type?">How
+do I refer to an enum type nested into a generic or parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Can I import a particular instantiation of parameterized type?">Can
+I import a particular parameterized type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450></h3>
+
+<h3>
+<a NAME="Concrete Instantiations"></a>Concrete Instantiations</h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450><a NAME="FAQ101"></a>
+<h2>
+<a NAME="What is a concrete instantiation?"></a><font face="Arial,Helvetica"><font size=+0>What
+is a concrete parameterized type?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>An instantiation of a generic type where
+all type arguments are concrete types rather than wildcards.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Examples of concrete parameterized types are <tt>List&lt;String></tt>,
+<tt>Map&lt;String,Date></tt>,
+but not <tt>List&lt;? extends Number></tt> or <tt>Map&lt;String,?></tt>.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ101">#FAQ101</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TypeArguments.html#What is a wildcard?">What
+is a wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard instantiation?">What
+is a wildcard parameterized type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ102"></a>
+<h2>
+<a NAME="Are different concrete instantiations of the same parameterized type compatible?"></a><font face="Arial,Helvetica"><font size=+0>Is
+List&lt;Object> a supertype of List&lt;String>?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No, different instantiations of the same
+generic type for different concrete type arguments have no type relationship.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">It is sometimes expected that a <tt>List&lt;Object></tt>
+would be a supertype of a <tt>List&lt;String></tt>, because <tt>Object</tt>
+is a supertype of <tt>String</tt>.&nbsp; This expectation stems from the
+fact that such a type relationship exists for arrays:&nbsp; <tt>Object[]</tt>is
+a supertype of <tt>String[]</tt>, because <tt>Object</tt> is a supertype
+of <tt>String</tt>. (This type relationship is known as <i>covariance</i>.)&nbsp;
+The super-subtype-relationship of the component types extends into the
+corresponding array types. No such a type relationship exists for instantiations
+of generic types. (Parameterized types are <i>not</i> covariant.)
+<p>The lack of a super-subtype-relationship among instantiations of the
+same generic type has various consequences.&nbsp; Here is an example.
+<p>Example:
+<blockquote><tt>void printAll(ArrayList&lt;Object> c) {</tt>
+<br><tt>&nbsp; for (Object o : c)&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; System.out.println(o);</tt>
+<br><tt>}</tt>
+<p><tt>ArrayList&lt;String> list = new ArrayList&lt;String>();</tt>
+<br><tt>... fill list ...</tt>
+<br><tt>printall(list);&nbsp;&nbsp; // error</tt></blockquote>
+A <tt>ArrayList&lt;String></tt> object cannot be passed as argument to
+a method that asks for a <tt>ArrayList&lt;Object></tt> because the two
+types are instantiations of the same generic type, but for <i>different</i>
+type arguments, and for this reason they are not compatible with each other.
+<p>On the other hand, instantiations of different generic types for
+<i>the
+same</i> type argument can be compatible.
+<p>Example:
+<blockquote><tt>void printAll(Collection&lt;Object> c) {</tt>
+<br><tt>&nbsp; for (Object o : c)&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; System.out.println(o);</tt>
+<br><tt>}</tt>
+<p><tt>List&lt;Object> list = new ArrayList&lt;Object>();</tt>
+<br><tt>... fill list ...</tt>
+<br><tt>printall(list);&nbsp;&nbsp; // fine</tt></blockquote>
+A <tt>List&lt;Object></tt> is compatible to a <tt>Collection&lt;Object></tt>
+because the two types are instantiations of a generic supertype and its
+generic subtype and the instantiations are for the same type argument <tt>Object</tt>.
+<p>Compatibility between instantiations of the same generic type exist
+only among wildcard instantiations and concrete instantiations that belong
+to the family of instantiations that the wildcard instantiation denotes.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ102">#FAQ102</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is a concrete instantiation?">What
+is a concrete parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard instantiation?">What
+is a wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do parameterized types fit into the Java type system?">How
+do parameterized types fit into the Java type system?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How does the raw type relate to instantiations of the corresponding parameterized type?">How
+does the raw type relate to instantiations of the corresponding generic
+type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do instantiations of a parameterized type relate to  instantiations of other parameterized types?">How
+do instantiations of a generic type relate to&nbsp; instantiations of other
+generic types?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do unbounded wildcard instantiations of a parameterized type relate to other instantiations of the same type?">How
+do unbounded wildcard instantiations of a generic type relate to other
+instantiations of the same generic type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do wildcard instantiations with an upper bound relate to other instantiations of the same type?How do wildcard instantiations with an upper bound relate to other instantiations of the same type?">How
+do wildcard instantiations with an upper bound relate to other instantiations
+of the same generic type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do wildcard instantiations with a lower bound relate to other instantiations of the same type?">How
+do wildcard instantiations with a lower bound relate to other instantiations
+of the same generic type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ103"></a>
+<h2>
+<a NAME="Can I use a concrete instantiation of a parameterized type like any other type?"></a><font face="Arial,Helvetica"><font size=+0>Can
+I use a concrete parameterized type like any other type?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Almost.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Concrete parameterized types are are concrete instantiations
+of a generic type.&nbsp; They are almost like types; there are only a few
+restrictions.&nbsp; They can NOT be used for the following purposes:
+<ul>
+<li>
+for creation of arrays</li>
+
+<li>
+in exception handling</li>
+
+<li>
+in a class literal</li>
+
+<li>
+in an <tt>instanceof</tt> expression</li>
+</ul>
+</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ103">#FAQ103</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#Can I create an array whose component type is a concrete instantiation of a parameterized type?">Can
+I create an array whose component type is a concrete parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Can I use parameterized types in exception handling?">Can
+I use parameterized types in exception handling?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Why is there no class literal for the concrete instantiation of a parameterized type?">Why
+is there no class literal for the concrete parameterized type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ104"></a>
+<p><a NAME="Can I create an array whose component type is a concrete instantiation of a parameterized type?"></a><b><font face="Arial,Helvetica"><font size=+0>Can
+I create an array whose component type is a concrete parameterized type?</font></font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No, because it is not type-safe.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Arrays are covariant, which means that an array of supertype
+references is a supertype of an array of subtype references.&nbsp; That
+is, <tt>Object[]</tt> is a supertype of <tt>String[]</tt> and a string
+array can be accessed through a reference variable of type <tt>Object[]</tt>.&nbsp;
+<p>Example (of covariant arrays):
+<blockquote><tt>Object[] objArr = new String[10];&nbsp; // fine</tt>
+<br><tt>objArr[0] = new String();</tt></blockquote>
+In addition, arrays carry runtime type information about their component
+type, that is, about the type of the elements contained.&nbsp; The runtime
+type information regarding the component type is used when elements are
+stored in an array in order to ensure that no "alien" elements can be inserted.&nbsp;
+<p>Example (of array store check):
+<blockquote><tt>Object[] objArr = new String[10];</tt>
+<br><tt>objArr[0] = new Long(); // compiles; fails at runtime with ArrayStoreException</tt></blockquote>
+The reference variable of type <tt>Object[] </tt>refers to a <tt>String[]</tt>,
+which means that only strings are permitted as elements of the array.&nbsp;
+When an element is inserted into the array, the information about the array's
+component type is used to perform a type check - the so-called <i>array
+store check. </i>In our example the array store check will fail because
+we are trying to add a <tt>Long</tt> to an array of <tt>String</tt>s.&nbsp;
+Failure of the array store check is reported by means of a<i> </i><tt>ArrayStoreException</tt>.
+<p>Problems arise when an array holds elements whose type is a concrete
+parameterized type. Because of type erasure, parameteriezed types do not
+have exact runtime type information.&nbsp; As a consequence, the array
+store check does not work because it uses the dynamic type information
+regarding the array's (non-exact) component type for the array store check.&nbsp;
+<p>Example (of array store check in case of parameterized component type):
+<blockquote><tt>Pair&lt;Integer,Integer>[] intPairArr = new Pair&lt;Integer,Integer>[10];
+// illegal</tt>
+<br><tt>Object[] objArr = intPairArr;&nbsp;</tt>
+<br><tt>objArr[0] = new Pair&lt;String,String>("",""); // should fail,
+but would succeed</tt></blockquote>
+If arrays of concrete parameterized types were allowed, then a reference
+variable of type <tt>Object[] </tt>could refer to a <tt>Pair&lt;Integer,Integer>[]</tt>,
+as shown in the example. At runtime an array store check must be performed
+when an array element is added to the array. Since we are trying to add
+a <tt>Pair&lt;String,String> </tt>to a <tt>Pair&lt;Integer,Integer>[] </tt>we
+would expect that the type check fails. However, the JVM cannot detect
+any type mismatch here: at runtime, after type erasure, <tt>objArr</tt>
+would have the dynamic type <tt>Pair[] </tt>and the element to be stored
+has the matching dynamic type <tt>Pair</tt>. Hence the store check succeeds,
+although it should not.
+<p>If it were permitted to declare arrays that holds elements whose type
+is a concrete parameterized type we would end up in an unacceptable situation.&nbsp;
+The array in our example would contain different types of pairs instead
+of pairs of the same type.&nbsp; This is in contradiction to the expectation
+that arrays hold elements of the same type (or subtypes thereof).&nbsp;
+This undesired situation would most likely&nbsp; lead to program failure
+some time later, perhaps when a method is invoked on the array elements.&nbsp;
+<p>Example (of subsequent failure):
+<blockquote><tt>Pair&lt;Integer,Integer>[] intPairArr = new Pair&lt;Integer,Integer>[10];
+// illegal</tt>
+<br><tt>Object[] objArr = intPairArr;&nbsp;</tt>
+<br><tt>objArr[0] = new Pair&lt;String,String>("",""); // should fail,
+but would succeed</tt>
+<p><tt>Integer i = intPairArr[0].getFirst(); // fails at runtime with ClassCastException</tt></blockquote>
+The method <tt>getFirst</tt> is applied to the first element of the array
+and it returns a <tt>String</tt> instead of an <tt>Integer</tt> because
+the first element in the array <tt>intPairArr</tt> is a pair of strings,
+and not a pair of integers as one would expect. The innocently looking
+assignment to the <tt>Integer</tt> variable<tt> i</tt> will fail with a
+<tt>ClassCastException</tt>,
+although no cast expression is present in the source code.&nbsp; Such an
+unexpected <tt>ClassCastException</tt> is considered a violation of type-safety.
+<p>In order to prevent programs that are not type-safe all arrays holding
+elements whose type is a concrete parameterized type are illegal. For the
+same reason, arrays holding elements whose type is a wildcard parameterized
+type are banned, too.&nbsp; Only arrays with an unbounded wildcard parameterized
+type as the component type are permitted.&nbsp; More generally, reifiable
+types are permitted as component type of arrays, while arrays with a non-reifiable
+component type are illegal.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ104">#FAQ104</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="Fundamentals.html#What does type-safety mean?">What
+does type-safety mean?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I declare a reference variable of an array type whose component type is a concrete instantiation">Can
+I declare a reference variable of an array type whose component type is
+a concrete parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I create an array whose component type is a wildcard instantiation of a parameterized type?">Can
+I create an array whose component type is a wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Why is it allowed to create an array whose component type is an unbounded wildcard instantiation?">Why
+is it allowed to create an array whose component type is an unbounded wildcard
+parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is a reifiable type?">What
+is a reifiable type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ104A"></a>
+<p><a NAME="Can I declare a reference variable of an array type whose component type is a concrete instantiation"></a><b><font face="Arial,Helvetica"><font size=+0>Can
+I declare a reference variable of an array type whose component type is
+a concrete parameterized type?</font></font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Yes, you can, but you should not, because
+it is neither helpful nor type-safe.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">You can declare a reference variable of an array type whose
+component type is a concrete parameterized type. Arrays of such a type
+must not be created.&nbsp; Hence, this reference variable cannot refer
+to an array of its type.&nbsp; All that it can refer to is
+<tt>null</tt>,
+an array whose component type is a non-parameterized subtype of the concrete
+parameterized type, or an array whose component type is the corresponding
+raw type. Neither of these cases is overly useful, yet they are permitted.
+<p>Example (of an array reference variable with parameterized component
+type):
+<blockquote><tt><b>Pair&lt;String,String>[]</b> arr = null;&nbsp; <b><font color="#006600">//
+fine</font></b></tt>
+<br><tt>arr = <b><font color="#000066">new Pair&lt;String,String>[2]</font></b>;
+<b><font color="#660000">//
+error: generic array creation</font></b></tt></blockquote>
+The code snippet shows that a reference variable of type <tt>Pair&lt;String,String>[]</tt>
+can be declared, but the creation of such an array is rejected.&nbsp; But
+we can have the reference variable of type <tt>Pair&lt;String,String>[]</tt>
+refer to an array of a non-parameterized subtype.
+<p>Example (of another array reference variable with parameterized component
+type):
+<blockquote><tt>class Name extends Pair&lt;String,String> { ... }</tt>
+<p><tt><b>Pair&lt;String,String>[]</b> arr = <b><font color="#000066">new
+Name[2]</font></b>;&nbsp;&nbsp;&nbsp; <b><font color="#006600">// fine</font></b></tt></blockquote>
+Which raises the question: how useful is such an array variable if it never
+refers to an array of its type?&nbsp; Let us consider an example.
+<p>Example (of an array reference variable refering to array of subtypes;
+not recommended):
+<blockquote><tt>void printArrayOfStringPairs(<b>Pair&lt;String,String>[]</b>
+pa) {</tt>
+<br><tt>&nbsp; for (Pair&lt;String,String> p : pa)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (p != null)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; System.out.println(p.getFirst()+"
+"+p.getSecond());&nbsp;</tt>
+<br><tt>}</tt>
+<br><tt><b>Pair&lt;String,String>[]</b> createArrayOfStringPairs() {</tt>
+<br><tt>&nbsp; Pair&lt;String,String>[] arr<font color="#000000"> = </font><b><font color="#000066">new
+Name[2];</font></b></tt>
+<br><tt>&nbsp; arr[0] = new Name("Angelika","Langer");&nbsp;&nbsp; <b><font color="#006600">//
+fine</font></b></tt>
+<br><tt>&nbsp; arr[1] = new Pair&lt;String,String>("a","b");&nbsp; <b><font color="#006600">//
+fine</font><font color="#000000"> (causes ArrayStoreException)</font></b></tt>
+<br><tt>&nbsp; return arr;</tt>
+<br><tt>}</tt>
+<br><tt>void extractStringPairsFromArray(<b>Pair&lt;String,String>[]</b>
+arr) {</tt>
+<br><tt>&nbsp; Name name = <b><font color="#000066">(Name)</font></b>arr[0];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<b><font color="#006600">// fine</font></b></tt>
+<br><tt>&nbsp; Pair&lt;String,String> p1 = arr[1];&nbsp;&nbsp;&nbsp; <b><font color="#006600">//
+fine</font></b></tt>
+<br><tt>}</tt>
+<br><tt>void test() {</tt>
+<br><b><tt><font color="#666600">&nbsp; </font>Pair&lt;String,String>[]</tt></b><tt><font color="#000000">
+arr = </font>createArrayOfStringPairs<font color="#000000">();</font></tt>
+<br><tt><font color="#000000">&nbsp; </font>printArrayOfStringPairs<font color="#000000">(arr);&nbsp;</font></tt>
+<br><tt>&nbsp; extractStringPairsFromArray(arr);</tt>
+<br><tt><font color="#000000">}</font></tt></blockquote>
+The example shows that a reference variable of type <tt>Pair&lt;String,String>[]</tt>
+can refer to an array of type <tt>Name[]</tt>, where <tt>Name</tt> is a
+non-parameterized subtype of <tt>Pair&lt;String,String>[]</tt>.&nbsp; However,
+using a reference variable of type <tt>Pair&lt;String,String>[] </tt>offers
+no advantage over using a variable of the actual type <tt>Name[]</tt>.&nbsp;
+Quite the converse; it is an invitation for making mistakes.&nbsp;
+<p>For instance, in the <tt>createArrayOfStringPairs</tt> method the compiler
+would permit code for insertion of elements of type <tt>Pair&lt;String,String></tt>
+into the array though the reference variable of type <tt>Pair&lt;String,String>[]</tt>.
+Yet, at runtime, this insertion will always fail with an <tt>ArrayStoreException
+</tt>because
+we are trying to insert a <tt>Pair</tt> into a <tt>Name[]</tt>.&nbsp; The
+same would happen if we tried to insert a raw type Pair into the array;
+it would compile with an "unchecked" warning and would fail at runtime
+with an <tt>ArrayStoreException</tt>.&nbsp; If we used <tt>Name[]</tt>
+instead of <tt>Pair&lt;String,String>[] </tt>the debatable insertions would
+not compile in the first place.&nbsp;
+<p>Also, remember that a variable of type <tt>Pair&lt;String,String>[]
+</tt>can
+never refer to an array that contains elements of type <tt>Pair&lt;String,String></tt>.&nbsp;
+When we want to recover the actual type of the array elements, which is
+the subtype <tt>Name</tt> in our example, we must cast down from <tt>Pair&lt;String,String>
+</tt>to
+<tt>Name</tt>,
+as is demonstrated in the <tt>extractStringPairsFromArray
+</tt>method.&nbsp;
+Here again, using a variable of type <tt>Name[] </tt>would be much clearer.
+<p>Example (improved):
+<blockquote><tt>void printArrayOfStringPairs(<b>Pair&lt;String,String>[]</b>
+pa) {</tt>
+<br><tt>&nbsp; for (Pair&lt;String,String> p : pa)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (p != null)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; System.out.println(p.getFirst()+"
+"+p.getSecond());&nbsp;</tt>
+<br><tt>}</tt>
+<br><tt><b><font color="#000066">Name[]</font></b> createArrayOfStringPairs()
+{</tt>
+<br><tt><b>&nbsp; </b>Pair&lt;String,String>[] arr = <b><font color="#000066">new
+Name[2]</font></b>;</tt>
+<br><tt>&nbsp; arr[0] = new Name("Angelika","Langer");&nbsp;&nbsp; <b><font color="#006600">//
+fine</font></b></tt>
+<br><tt>&nbsp; arr[1] = new Pair&lt;String,String>("a","b");&nbsp; <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp; return arr;</tt>
+<br><tt>}</tt>
+<br><tt>void extractStringPairsFromArray(<b><font color="#000066">Name[]</font></b>
+arr) {</tt>
+<br><tt>&nbsp; Name name = arr[0];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+<b><font color="#006600">// fine</font></b><font color="#000000"> (needs
+no cast)</font></tt>
+<br><tt>&nbsp; Pair&lt;String,String> p1 = arr[1];&nbsp;&nbsp;&nbsp; <b><font color="#006600">//
+fine</font></b></tt>
+<br><tt>}</tt>
+<br><tt>void test() {</tt>
+<br><tt><b><font color="#666600">&nbsp; </font><font color="#000066">Name[]</font></b><font color="#000000">
+arr = </font>createArrayOfStringPairs<font color="#000000">();</font></tt>
+<br><tt><font color="#000000">&nbsp; </font>printArrayOfStringPairs<font color="#000000">(arr);&nbsp;</font></tt>
+<br><tt>&nbsp; extractStringPairsFromArray(arr);</tt>
+<br><tt><font color="#000000">}</font></tt></blockquote>
+Since an array reference variable whose component type is a concrete parameterized
+type can never refer to an array of its type, such a reference variable
+does not really make sense.&nbsp; Matters are even worse than in the example
+discussed above, when we try to have the variable refer to an array of
+the raw type instead of a subtype. First, it leads to numerous "unchecked"
+warnings because we are mixing use of raw and parameterized type.&nbsp;
+Secondly, and more importantly, this approach is not type-safe and suffers
+from all the deficiencies that lead to the ban of arrays of concrete instantiation
+in the first place.
+<p>No matter how you put it, you should better refrain from using array
+reference variable whose component type is a concrete parameterized type.&nbsp;
+Note, that the same holds for array reference variable whose component
+type is a <u>wildcard</u> parameterized type. Only array reference variable
+whose component type is an <u>unbounded wildcard</u> parameterized type
+make sense. This is because an unbounded wildcard parameterized type is
+a reifiable type and arrays with a reifiable component type can be created;&nbsp;
+the array reference variable can refer to an array of its type and the
+deficiencies discussed above simply do not exist for unbounded wildcard
+arrays.
+<br>&nbsp;</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ104A">#FAQ104A</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="Fundamentals.html#What does type-safety mean?">What
+does type-safety mean?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I create an array whose component type is a concrete instantiation of a parameterized type?">Can
+I create an array whose component type is a concrete parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I declare a reference variable of an array type whose component type is a bounded wildcard instantiation of a">Can
+I declare a reference variable of an array type whose component type is
+a bounded wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I create an array whose component type is a wildcard instantiation of a parameterized type?">Can
+I create an array whose component type is a wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I declare a reference variable of an array type whose component type is an unbounded wildcard instantiation of a">Can
+I declare a reference variable of an array type whose component type is
+an unbounded wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Why is it allowed to create an array whose component type is an unbounded wildcard instantiation?">Why
+is it allowed to create an array whose component type is an unbounded wildcard
+parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is a reifiable type?">What
+is a reifiable type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ105"></a>
+<h2>
+<a NAME="How can I work around the restriction that there are no arrays whose component type is a concrete instantiation of a"></a><font face="Arial,Helvetica"><font size=+0>How
+can I work around the restriction that there are no arrays whose component
+type is a concrete parameterized type?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>You can use arrays of raw types, arrays
+of unbounded wildcard parameteriezd types, or collections of concrete parameteriezd
+types as a workaround.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Arrays holding elements whose type is a concrete parameterized
+type are illegal.&nbsp;
+<p>Example (of illegal array type):
+<blockquote><tt>static void test() {</tt>
+<br><tt>&nbsp; <b><font color="#660000">Pair&lt;Integer,Integer>[]</font></b>
+intPairArr = new <b><font color="#660000">Pair&lt;Integer,Integer>[10]</font></b>;
+<b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp; addElements(intPairArr);&nbsp;</tt>
+<br><tt>&nbsp; Pair&lt;Integer,Integer> pair = intPairArr[1];</tt>
+<br><tt>&nbsp; Integer i = pair.getFirst();</tt>
+<br><tt>&nbsp; pair.setSecond(i);</tt>
+<br><tt>}</tt>
+<br><tt>static void addElements(<b>Object[]</b> objArr) {</tt>
+<br><tt>&nbsp; objArr[0] = new Pair&lt;Integer,Integer>(0,0);</tt>
+<br><tt>&nbsp; objArr[1] = new Pair&lt;String,String>("","");&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// should fail with ArrayStoreException</tt>
+<br><tt>}</tt></blockquote>
+The compiler prohibits creation of arrays whose component type is a concrete
+parameterized type, like <tt>Pair&lt;Integer,Integer></tt> in our example.&nbsp;
+We discussed in the preceding entry why is it reasonable that the compiler
+qualifies a<font color="#000000"> <tt>Pair&lt;Integer,Integer>[]</tt></font>
+as illegal.&nbsp; The key problem is that compiler and runtime system must
+ensure that an array is a <i>homogenous</i> sequence of elements of the
+same type.&nbsp; One of the type checks, namely the array-store-check performed
+by the virtual machine at runtime, fails to detect the offending insertion
+of an alien element. In the example the second insertion in the <tt>addElements</tt>
+method should fail, because were are adding a pair of strings to an array
+of integral values, but it does not fail as expected&nbsp; The reasons
+were discussed in the preceding entry.
+<p>If we cannot use arrays holding elements whose type is a concrete parameterized
+type, what do we use as a workaround?
+<p>Let us consider 3 conceivable workarounds:
+<ul>
+<li>
+array of raw type</li>
+
+<li>
+array of unbounded wildcard parameterized type</li>
+
+<li>
+collection instead of array</li>
+</ul>
+
+<hr WIDTH="100%">
+<p>Raw types and unbounded wildcard parameterized type are permitted as
+component type of arrays.&nbsp; Hence they would be alternatives.
+<p>Example (of array of raw type):
+<blockquote><tt>static void test() {</tt>
+<br><tt>&nbsp; <b><font color="#000099">Pair[]</font></b> intPairArr =
+new <b><font color="#000099">Pair[10]</font></b>;&nbsp;</tt>
+<br><tt>&nbsp; addElements(intPairArr);&nbsp;</tt>
+<br><tt>&nbsp; Pair&lt;Integer,Integer> pair = intPairArr[1];&nbsp;&nbsp;
+
+<font color="#666600">//
+<b>unchecked warning</b></font></tt>
+<br><tt>&nbsp; Integer i = pair.getFirst();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// fails with ClassClassException</tt>
+<br><tt>&nbsp; pair.setSecond(i);</tt>
+<br><tt>}</tt>
+<br><tt>static void addElements(Object[] objArr) {</tt>
+<br><tt>&nbsp; objArr[0] = new Pair&lt;Integer,Integer>(0,0);</tt>
+<br><tt>&nbsp; objArr[1] = new Pair&lt;String,String>("","");&nbsp;&nbsp;&nbsp;
+// should fail, but succeeds</tt>
+<br><tt>}</tt></blockquote>
+Use of the raw type, instead of a parameterized type, as the component
+type of an array, is permitted.&nbsp; The downside is that we can stuff
+any type of pair into the raw type array.&nbsp; There is no guarantee that
+a <tt>Pair[]</tt> is homogenous in the sense that it contains only pairs
+of the same type.&nbsp; Instead the <tt>Pair[]</tt> can contain a mix of
+arbitrary pair types.&nbsp;
+<p>This has numerous side effects.&nbsp; When elements are fetched from
+the
+<tt>Pair[]</tt> only raw type <tt>Pair</tt> references are received.&nbsp;
+Using raw type <tt>Pair</tt>s leads to unchecked warnings invarious situations,
+for instance, when we try to access the pair member or, like in the example,
+when we assign the <tt>Pair</tt> to the more specific <tt>Pair&lt;Integer,Integer></tt>,
+that we really wanted to use.
+<p>Let us see whether an array of an unbounded wildcard parameterized type
+would be a better choice.
+<p>Example (of array of unbounded wildcard parameterized type):
+<blockquote><tt>static void test() {</tt>
+<br><tt>&nbsp; <b><font color="#000099">Pair&lt;?,?>[]</font></b> intPairArr
+= new <b><font color="#000099">Pair&lt;?,?>[10]</font></b>;&nbsp;</tt>
+<br><tt>&nbsp; addElements(intPairArr);&nbsp;</tt>
+<br><tt>&nbsp; Pair&lt;Integer,Integer> pair = intPairArr[1];&nbsp; <font color="#660000">//
+<b>error</b></font></tt>
+<br><tt>&nbsp; Integer i = pair.getFirst();&nbsp;</tt>
+<br><tt>&nbsp; pair.setSecond(i);</tt>
+<br><tt>}</tt>
+<br><tt>static void addElements(Object[] objArr) {</tt>
+<br><tt>&nbsp; objArr[0] = new Pair&lt;Integer,Integer>(0,0);</tt>
+<br><tt>&nbsp; objArr[1] = new Pair&lt;String,String>("","");&nbsp;&nbsp;&nbsp;
+// should fail, but succeeds</tt>
+<br><tt>}</tt>
+<br>
+<hr WIDTH="100%">
+<br><tt>error: incompatible types</tt>
+<br><tt>found&nbsp;&nbsp; : Pair&lt;?,?></tt>
+<br><tt>required: Pair&lt;java.lang.Integer,java.lang.Integer></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Pair&lt;Integer,Integer>
+pair = intPairArr[1];&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+^</tt></blockquote>
+A <tt>Pair&lt;?,?>[] </tt>contains a mix of arbitrary pair types; it is
+not homogenous and semantically similar to the raw type array <tt>Pair[]</tt>.&nbsp;
+When we retrieve elements from the array we receive references of type
+<tt>Pair&lt;?,?></tt>,
+instead of type <tt>Pair</tt> in the raw type case.&nbsp; The key difference
+is that the compiler issues an error for the wildcard pair where it issues
+"unchecked" warnings for the raw type pair.&nbsp; In our example, we cannot
+assign the the <tt>Pair&lt;?,?></tt> to the more specific
+<tt>Pair&lt;Integer,Integer></tt>,
+that we really wanted to use.&nbsp; Also, various operations on the<tt>
+Pair&lt;?,?></tt> would be rejected as errors.
+<p>As we can see, arrays of raw types and unbounded wildcard parameterized
+types are very different from the illegal arrays of a concrete parameterized
+type. An array of a concrete wildcard parameterized type would be a <i>homogenous</i>
+sequence of elements of the exact same type. In constrast, arrays of raw
+types and unbounded wildcard parameterized type are <i>heterogenous</i>
+sequences of elements of different types. The compiler cannot prevent that
+they contain different instantiations of the generic type.&nbsp;
+<p>By using arrays of raw types or unbounded wildcard parameterized types
+we give away the static type checks that a homogenous sequence would come
+with.&nbsp; As a result we must use explicit casts or we risk unexpected
+<tt>ClassCastException</tt>s.&nbsp;
+In the case of the unbounded wildcard parameterized type we are additionally
+restricted in how we can use the array elements, because the compiler prevents
+certain operations on the unbounded wildcard parameterized type.&nbsp;
+In essence, arrays of raw types and unbounded wildcard parameterized types
+are semantically very different from what we would express with an array
+of a concrete wildcard parameterized type.&nbsp; For this reason they are
+not a good workaround and only acceptable when the superior efficiency
+of arrays (as compared to collections) is of paramount importance.
+<p>
+<hr WIDTH="100%">
+<p>While arrays of concrete parameterized types are illegal, collections
+of concrete parameterized types are permitted.
+<p>Example (using collections):
+<blockquote><tt>static void test() {</tt>
+<br><tt>&nbsp; <b><font color="#000099">ArrayList&lt;Pair&lt;Integer,Integer>></font></b>
+intPairArr = new <b><font color="#000099">ArrayList&lt;Pair&lt;Integer,Integer>>(10)</font></b>;</tt>
+<br><tt>&nbsp; addElements(intPairArr);&nbsp;</tt>
+<br><tt>&nbsp; Pair&lt;Integer,Integer> pair = intPairArr.<b>get</b>(1);</tt>
+<br><tt>&nbsp; Integer i = pair.getFirst();</tt>
+<br><tt>&nbsp; pair.setSecond(i);</tt>
+<br><tt>}</tt>
+<br><tt>static void addElements(<b>List&lt;?></b> objArr) {</tt>
+<br><tt>&nbsp; objArr.<b>add</b>(0,new Pair&lt;Integer,Integer>(0,0));
+<font color="#660000">//
+<b>error</b></font></tt>
+<br><tt>&nbsp; objArr.<b>add</b>(1,new Pair&lt;String,String>("",""));
+<font color="#660000">//
+<b>error</b></font></tt>
+<br><tt><font color="#000000">}</font></tt>
+<br>
+<hr WIDTH="100%">
+<br><tt>error: cannot find symbol</tt>
+<br><tt>symbol&nbsp; : method add(int,Pair&lt;java.lang.Integer,java.lang.Integer>)</tt>
+<br><tt>location: interface java.util.List&lt;capture of ?></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; objArr.add(0,new Pair&lt;Integer,Integer>(0,0));&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+^</tt>
+<br><tt>error: cannot find symbol</tt>
+<br><tt>symbol&nbsp; : method add(int,Pair&lt;java.lang.String,java.lang.String>)</tt>
+<br><tt>location: interface java.util.List&lt;capture of ?></tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; objArr.add(1,new Pair&lt;String,String>("",""));&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+^</tt></blockquote>
+A collection of a concrete parameterized type is a <i>homogenous</i> sequence
+of elements and the compiler prevents any attempt to add alien elements
+by means of static type checks.&nbsp; To this regard it is semantically
+similar to the illegal array, but otherwise collections are very different
+from arrays. They have different operations; no index operator, but <tt>get</tt>
+and <tt>add</tt> methods.&nbsp; They have different type relationships;
+arrays are covariant, while collections are not. They are not as efficient
+as arrays; they add overhead in terms of memory footprint and performance.
+By using collections of concrete parameterized types as a workaround for
+the illegal array type many things change in your implementation.
+<p>The different type relationships, for instance, can be observed in the
+example above and it renders method <tt>addElements</tt> pointless.&nbsp;
+Using arrays we declared the argument type of the <tt>addElements</tt>
+method as type <tt>Object[]</tt> so that the method would accept all types
+of arrays.&nbsp; For the collections there is no such supertype as an <tt>Object[]</tt>.&nbsp;
+Type <tt>Collection&lt;?></tt>, or type <tt>List&lt;?></tt> in our example,
+comes closest to what the <tt>Object[]</tt> is for arrays.&nbsp; But wildcard
+instantiations of the collection types give only limited access to the
+collections' operations.&nbsp; In our example, we cannot insert any elements
+into the collection of integer pairs through a reference of type
+<tt>List&lt;?></tt>.&nbsp;
+A method like <tt>addElements</tt> does not make any sense any longer;
+we would need a method specifically for a collection of <tt>Pair&lt;Integer,Integer></tt>
+instead.&nbsp; In essence, you must design your APIs differently, when
+you work with collections instead of arrays.&nbsp;
+<p>The most compelling argument against collections is efficiency; arrays
+are without doubt more efficient.&nbsp; The argument in favor of collections
+is type safety; the compiler performs all necessary type checks to ensure
+that the collection is a homogenous sequence.
+<br>&nbsp;</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ105">#FAQ105</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is a reifiable type?">What
+is a reifiable type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeArguments.html#What is an unbounded wildcard?">What
+is an unbounded wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is an unbounded wildcard instantiation?">What
+is an unbounded wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is the raw type?">What
+is the raw type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I create an array whose component type is a wildcard instantiation of a parameterized type?">Can
+I create an array whose component type is a wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Why is it allowed to create an array whose component type is an unbounded wildcard instantiation?">Why
+is it allowed to create an array whose component type is an unbounded wildcard
+parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is the difference between the unbounded wildcard instantiation and the raw type?">What
+is the difference between the unbounded wildcard parameterized type and
+the raw type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ106"></a>
+<p><a NAME="Why is there no class literal for the concrete instantiation of a parameterized type?"></a><b><font face="Arial,Helvetica">Why
+is there no class literal for concrete parameterized types?</font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Because parameterized type has no exact
+runtime type representation.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">A class literal denotes a <tt>Class</tt> object that represents
+a given type. For instance, the class literal <tt>String.class</tt> denotes
+the <tt>Class</tt> object that represents the type <tt>String</tt> and
+is identical to the <tt>Class</tt> object that is returned when method
+<tt>getClass</tt>
+is invoked on a S<tt>tring</tt> object. A class literal can be used for
+runtime type checks and for reflection.
+<p>Parameterized types lose their type arguments when they are translated
+to byte code during compilation in a process called
+<i>type erasure</i>.
+As a side effect of type erasure, all&nbsp; instantiations of a generic
+type share the same runtime representation, namely that of the corresponding
+<i>raw
+type</i>.&nbsp; In other words, parameterized types do not have type representation
+of their own. Consequently, there is no point in forming class literals
+such as <tt>List&lt;String>.class</tt>,
+<tt>List&lt;Long>.class</tt> and
+<tt>List&lt;?>.class</tt>, since no such
+<tt>Class</tt> objects exist.&nbsp;
+Only the raw type <tt>List</tt> has a <tt>Class</tt> object that represents
+its runtime type. It is referred to as <tt>List.class</tt>.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ106">#FAQ106</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is type erasure?">What
+is type erasure?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is the raw type?">What
+is the raw type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>&nbsp;
+<h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450></h3>
+
+<h3>
+<a NAME="Raw Types"></a>Raw Types</h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450><a NAME="FAQ201"></a>
+<h2>
+<a NAME="What is the raw type?"></a><font face="Arial,Helvetica"><font size=+0>What
+is the raw type?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>The generic type without any type arguments.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">The generic type without any type arguments, like
+<tt>Collection</tt>,
+is called <i>raw type</i>.&nbsp;
+<p>The raw type is assignment compatible with all instantiations of the
+generic type.&nbsp; Assignment of an instantiation of a generc type to
+the corresponding raw type is permitted without warnings; assignment of
+the raw type to an instantiation yields an "unchecked conversion" warning.
+<p>Example (of assignment compatibility):
+<blockquote><tt><nobr>ArrayList&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+rawList&nbsp;&nbsp;&nbsp; = new ArrayList();&nbsp;</nobr></tt>
+<br><tt><nobr>ArrayList&lt;String> stringList = new ArrayList&lt;String>();</nobr></tt>
+<br><tt><nobr>rawList&nbsp;&nbsp;&nbsp; = stringList;</nobr></tt>
+<br><tt><nobr>stringList = rawList;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#666600">//
+<b>unchecked
+warning</b></font></nobr></tt></blockquote>
+The "unchecked" warning indicates that the compiler does not know whether
+the raw type <tt>ArrayList</tt> really contains strings.&nbsp; A raw type
+<tt>ArrayList</tt> can in principle contain any type of object and is similar
+to a <tt>ArrayList&lt;Object></tt>.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ201">#FAQ201</a></font></font></td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#Why are raw types permitted?">Why
+are raw types permitted?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I use a raw type like any other type?">Can
+I use a raw type like any other type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How does the raw type relate to instantiations of the corresponding parameterized type?">How
+does the raw type relate to instantiations of the corresponding generic
+type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ202"></a>
+<h2>
+<a NAME="Why are raw types permitted?"></a><font face="Arial,Helvetica"><font size=+0>Why
+are raw types permitted?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>To facilitate interfacing with non-generic
+(legacy) code.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Raw types are permitted in the language predominantly to
+facilitate interfacing with non-generic (legacy) code.&nbsp;
+<p>If, for instance, you have a non-generic legacy method that takes a
+<tt>List
+</tt>as
+an argument, you can pass a parameterized type such as <tt>List&lt;String>
+</tt>to
+that method.&nbsp; Conversely, if you have a method that returns a <tt>List</tt>,
+you can assign the result to a reference variable of type <tt>List&lt;String></tt>,
+provided you know for some reason that the returned list really is a list
+of strings.&nbsp;
+<p>Example (of interfacing with legacy code using raw types):
+<blockquote><tt>class SomeLegacyClass {</tt>
+<br><tt>&nbsp; public void setNames(List c) { … }</tt>
+<br><tt>&nbsp; public List getNames() { … }</tt>
+<br><tt>}</tt>
+<p><tt>final class Test&nbsp;</tt>
+<br><tt>&nbsp; public static void main(String[] args) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; SomeLegacyClass obj = new SomeLegacyClass();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; List&lt;String> names = new LinkedList&lt;String>();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; …&nbsp; fill list …</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; obj.setNames(names);</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; names = obj.getNames();&nbsp;&nbsp;&nbsp; <b><font color="#993300">//
+unchecked warning</font></b></tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+A <tt>List&lt;String></tt> is passed to the <tt>setNames</tt> method that
+asks for an argument of the raw type <tt>List</tt>.&nbsp; The&nbsp; conversion
+from a<tt> List&lt;String></tt> to a&nbsp; <tt>List</tt> is safe because
+a method that can handle a heterogeneous list of objects can certainly
+cope with a list of strings.
+<p>The <tt>getNames</tt> method returns a raw type <tt>List</tt>, which
+we assign to a variable of type <tt>List&lt;String></tt>.&nbsp; The compiler
+has not enough information to ensure that the list returned really is a
+list of strings.&nbsp; Despite of that, the compiler permits the conversion
+from the raw type <tt>List</tt> to the more specific type <tt>List&lt;String></tt>,
+in order to allow this kind of mixing of non-generic and generic Java code.
+Since the conversion from
+<tt>List</tt> to <tt>List&lt;String></tt> is
+not type-safe, the assignment is flagged as an “unchecked assignment”.
+<p>The use of raw types in code written after the introduction of genericity
+into the Java programming language is discouraged. According to the Java
+Language Specification, it is possible that future versions of the Java
+programming language will disallow the use of raw types.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ202">#FAQ202</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is the raw type?">What
+are raw types?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I use a raw type like any other type?">Can
+I use a raw type like any other type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How does the raw type relate to instantiations of the corresponding parameterized type?">How
+does the raw type relate to instantiations of the corresponding generic
+type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ203"></a>
+<h2>
+<a NAME="Can I use a raw type like any other type?"></a><font face="Arial,Helvetica"><font size=+0>Can
+I use a raw type like any other type?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Yes, but certain uses will result in
+"unchecked" warnings.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Raw types can be used like regular types without any restrictions,
+except that certain uses will result in "unchecked" warnings.
+<p>Example (of a parameterized type):
+<blockquote><tt>interface Copyable&lt;T> {</tt>
+<br><tt>&nbsp; T copy();</tt>
+<br><tt>}</tt>
+<br><tt>final class Wrapped<b><font color="#000099">&lt;Elem extends Copyable&lt;Elem>></font></b>
+{</tt>
+<br><tt>&nbsp; private <b><font color="#000099">Elem</font></b> theObject;&nbsp;</tt>
+<p><tt>&nbsp; public Wrapped(<b><font color="#000099">Elem</font></b> arg)
+{ theObject = arg.copy(); }</tt>
+<p><tt>&nbsp; public void setObject(<b><font color="#000099">Elem</font></b>
+arg) { theObject = arg.copy(); }</tt>
+<p><tt>&nbsp; public <b><font color="#000099">Elem</font></b> getObject()
+{ return theObject.copy(); }</tt>
+<p><tt>&nbsp; public boolean equals(Object other) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (other == null) return false;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (! (other instanceof Wrapped))&nbsp; return
+false;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return (this.theObject.equals(((Wrapped)other).theObject));</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+Methods or constructors of a raw type have the signature that they would
+have after type erasure.&nbsp; A method or constructor call to a raw type
+generates an unchecked warning if the erasure changes the argument types.
+<p>Example (same as above - after type erasure):
+<blockquote><tt>interface Copyable {</tt>
+<br><tt>&nbsp; Object copy();</tt>
+<br><tt>}</tt>
+<br><tt>final class Wrapped {</tt>
+<br><tt>&nbsp; private <b><font color="#330033">Copyable</font></b> theObject;&nbsp;</tt>
+<p><tt>&nbsp; public Wrapped(<b><font color="#330033">Copyable</font></b>
+arg) { theObject = arg.copy(); }</tt>
+<p><tt>&nbsp; public void setObject(<b><font color="#330033">Copyable</font></b>
+arg) { theObject = arg.copy(); }</tt>
+<p><tt>&nbsp; public <b><font color="#330033">Copyable</font></b> getObject()
+{ return theObject.copy(); }</tt>
+<p><tt>&nbsp; public boolean equals(Object other) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (other == null) return false;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (! (other instanceof Wrapped))&nbsp; return
+false;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return (this.theObject.equals(((Wrapped)other).theObject));</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+Invocation of a method or constructor, whose argument type changed in the
+course of type erasure is unsafe and is flagged as an “unchecked” operation.&nbsp;
+For instance, the method <tt>setObject</tt> has the signature <tt>void
+setObject(Copyable)</tt> after type erasure and its invocation results
+in an “unchecked” warning.&nbsp; The invocation is unsafe because the compiler
+cannot ensure that the argument passed to the method is compatible to the
+"erased" type that the type parameter <tt>Elem</tt> stands for.
+<p>Example (using the raw type):
+<blockquote><tt>class MyString implements Copyable&lt;MyString> {</tt>
+<br><tt>&nbsp; private StringBuilder buffer;</tt>
+<br><tt>&nbsp; public MyString(String s) { buffer = new StringBuilder(s);
+}</tt>
+<br><tt>&nbsp; public MyString copy() { return new MyString(buffer.toString());
+}</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt>
+<br><tt>class Test {</tt>
+<br><tt>&nbsp; private static void test(<b><font color="#000066">Wrapped</font></b>
+wrapper) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; wrapper.<b>setObject</b>(new MyString("Deutsche
+Bank"));&nbsp; <font color="#666600">// <b>unchecked warning</b></font></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Object s = wrapper.<b>getObject</b>();</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public static void main(String[] args) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; <b><font color="#000066">Wrapped&lt;MyString></font></b>
+wrapper = new Wrapped&lt;MyString>(new MyString("Citibank"));</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; test(wrapper);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+If the method's argument type is not changed by type erasure, then the
+method call is safe.&nbsp; For instance, the method <tt>getObject</tt>
+has the signature <tt>Copyable getObject(void)</tt> after type erasure
+and its invocation is safe and warning-free.&nbsp;
+<p>Fields of a raw type have the type that they would have after type erasure.&nbsp;&nbsp;
+A field assignment to a raw type generates an unchecked warning if erasure
+changes the field type.&nbsp; In our example, the field <tt>theObject</tt>
+of the raw type <tt>Wrapped </tt>is changed by type erasure and is of type
+<tt>Copyable</tt>
+after type erasure.&nbsp;
+<p>If the <tt>theObject </tt>field&nbsp; were public and we could assign
+to it, the assignment would be unsafe because the compiler cannot ensure
+that the value being assigned really is of type <tt>Elem</tt>.&nbsp; Yet
+the assignment is permitted and flagged as an “unchecked” assignment. Reading
+the field&nbsp; is safe and does not result in a warning.&nbsp;</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ203">#FAQ203</a></font></font></td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is type erasure?">What
+is type erasure?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How does the raw type relate to instantiations of the corresponding parameterized type?">How
+does the raw type relate to instantiations of the corresponding generic
+type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TypeParameters.html#Can I use a type parameter as part of its own bounds or in the declaration of other type parameters?">Can
+I use a type parameter as part of its own bounds?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>&nbsp;
+<h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450></h3>
+
+<h3>
+<a NAME="WIldcard Instantiations"></a>Wildcard Instantiations</h3>
+<img SRC="../../Images/bar.gif" NOSAVE height=3 width=450><a NAME="FAQ301"></a>
+<h2>
+<a NAME="What is a wildcard instantiation?"></a><font face="Arial,Helvetica"><font size=+0>What
+is a wildcard parameterized type?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>An instantiation of a generic type where
+the type argument is a wildcard (as opposed to a concrete type).</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">A wildcard parameterized type is an instantiation of a
+generic type where at least one type argument is a wildcard.&nbsp; Examples
+of wildcard parameterized types are <tt>Collection&lt;?></tt>, <tt>List&lt;?
+extends Number></tt>, <tt>Comparator&lt;? super String></tt> and <tt>Pair&lt;String,?></tt>.
+A wildcard parameterized type denotes a family of types comprising concrete
+instantiations of a generic type.&nbsp; The kind of the wildcard being
+used determines which concrete parameterized types belong to the family.&nbsp;
+For instance, the wildcard parameterized type <tt>Collection&lt;?></tt>
+denotes the family of all instantiations of the <tt>Collection</tt> interface
+regardless of the type argument.&nbsp; The wildcard parameterized type
+<tt>List&lt;? extends Number></tt> denotes the family of all list types
+where the element type is a subtype of&nbsp; <tt>Number</tt>.&nbsp; The
+wildcard parameterized type
+<tt>Comparator&lt;? super String></tt> is the
+family of all instantiations of the <tt>Comparator</tt> interface for type
+argument types that are supertypes of <tt>String</tt>.&nbsp;
+<p>A wildcard parameterized type is not a concrete type that could appear
+in a <tt>new</tt> expression.&nbsp; A wildcard parameterized type is similar
+to an interface type in the sense that reference variables of a wildcard
+parameterized type can be declared, but no objects of the wildcard parameterized
+type can be created.&nbsp; The reference variables of a wildcard parameterized
+type can refer to an object that is of a type that belongs to the family
+of types that the wildcard parameterized type denotes.
+<p>Examples:
+<blockquote><tt>Collection&lt;?> coll = new ArrayList&lt;String>();</tt>
+<br><tt>List&lt;? extends Number> list = new ArrayList&lt;Long>();</tt>
+<br><tt>Compararator&lt;? super String> cmp = new RuleBasedCollator("&lt;
+a&lt; b&lt; c&lt; d");</tt>
+<br><tt>Pair&lt;String,?> pair = new Pair&lt;String,String>();</tt></blockquote>
+Counter Example:
+<blockquote><tt>List&lt;? extends Number> list = new ArrayList&lt;String>();&nbsp;
+// error</tt></blockquote>
+Type <tt>String</tt> is not a subtype of <tt>Number</tt> and consequently
+<tt>ArrayList&lt;String>
+</tt>does
+not belong to the family of types denoted by <tt>List&lt;? extends Number></tt>.
+For this reason the compiler issues an error message.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ301">#FAQ301</a></font></font></td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TypeArguments.html#What is a wildcard?">What
+is a wildcard?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I use a wildcard instantiation like any other type?">Can
+I use a wildcard parameterized type like any other type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ302"></a>
+<h2>
+<a NAME="What is an unbounded wildcard instantiation?"></a><font face="Arial,Helvetica"><font size=+0>What
+is the unbounded wildcard parameterized type?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>An instantiation of a generic type where
+all type arguments are the unbounded wildcard "<tt>?</tt>".</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Examples of unbounded wildcard parameterized types are
+<tt>Pair&lt;?,?></tt> and <tt>Map&lt;?,?></tt>.
+<p>The unbounded wildcard parameterized type is assignment compatible with
+<i>all</i> instantiations of the correspinding generic type.&nbsp; Assignment
+of another instantiation to the unbounded wildcard instantiation is permitted
+without warnings; assignment of the unbounded wildcard instantiation to
+another instantiation is illegal.
+<p>Example (of assignment compatibility):
+<blockquote><tt><nobr>ArrayList<b>&lt;?></b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+anyList&nbsp;&nbsp;&nbsp; = new ArrayList&lt;Long>();&nbsp;</nobr></tt>
+<br><tt><nobr>ArrayList&lt;String> stringList = new ArrayList&lt;String>();</nobr></tt>
+<br><tt><nobr>anyList&nbsp;&nbsp;&nbsp; = stringList;</nobr></tt>
+<br><tt><nobr>stringList = anyList;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#660000">//
+<b>error</b></font></nobr></tt></blockquote>
+The unbounded wildcard parameterized type is kind of the supertype of all
+other instantiations of the generic type: "subtypes" can be assigned to
+the "unbounded supertype", not vice versa.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ302">#FAQ302</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do unbounded wildcard instantiations of a parameterized type relate to other instantiations of the same type?">How
+do unbounded wildcard instantiations of a generic type relate to other
+instantiations of the same generic type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ303"></a>
+<h2>
+<a NAME="What is the difference between the unbounded wildcard instantiation and the raw type?"></a><font face="Arial,Helvetica"><font size=+0>What
+is the difference between the unbounded wildcard parameterized type and
+the raw type?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>The compiler issues error messages for
+an unbounded wildcard parameterized type while it only reports "unchecked"
+warnings for a raw type.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">In code written after the introduction of genericity into
+the Java programming language you would usually avoid use of raw types,
+because it is discouraged and raw types might no longer be supported in
+future versions of the language (according to the Java Language Specification).&nbsp;
+Instead of the raw type you can use the unbounded wildcard parameterized
+type.
+<p>The raw type and the unbounded wildcard parameterized type have a lot
+in common.&nbsp; Both act as kind of a supertype of all instantiations
+of the corresponding generic type.&nbsp; Both are so-called <i>reifiable
+types.
+</i>Reifiable types can be used in <tt>instanceof</tt> expressions
+and as the component type of arrays, where non-reifiable types (such as
+concrete and bounded wildcard parameterized type) are not permitted.&nbsp;
+<p>In other words, the raw type and the unbounded wildcard parameterized
+type are semantically equivalent.&nbsp; The only difference is that the
+compiler applies stricter rules to the unbounded wildcard parameterized
+type than to the corresponding raw type. Certain operations performed on
+the raw type yield "unchecked" warnings.&nbsp; The same operations, when
+performed on the corresponding&nbsp; unbounded wildcard parameterized type,
+are rejected as errors.&nbsp;</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ303">#FAQ303</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is the raw type?">What
+is the raw type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is an unbounded wildcard instantiation?">What
+is the unbounded wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is a reifiable type?">What
+is a reifiable type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do parameterized types fit into the Java type system?">How
+do parameterized types fit into the Java type system?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How does the raw type relate to instantiations of the corresponding parameterized type?">How
+does the raw type relate to instantiations of the corresponding generic
+type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do instantiations of a parameterized type relate to  instantiations of other parameterized types?">How
+do instantiations of a generic type relate to&nbsp; instantiations of other
+generic types?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do unbounded wildcard instantiations of a parameterized type relate to other instantiations of the same type?">How
+do unbounded wildcard instantiations of a generic type relate to other
+instantiations of the same generic type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do wildcard instantiations with an upper bound relate to other instantiations of the same type?How do wildcard instantiations with an upper bound relate to other instantiations of the same type?">How
+do wildcard instantiations with an upper bound relate to other instantiations
+of the same generic type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#How do wildcard instantiations with a lower bound relate to other instantiations of the same type?">How
+do wildcard instantiations with a lower bound relate to other instantiations
+of the same generic type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ304"></a>
+<h2>
+<a NAME="Which methods and fields are accessible/inaccessible through a reference variable of a wildcard type?"></a><font face="Arial,Helvetica"><font size=+0>Which
+methods and fields are accessible/inaccessible through a reference variable
+of a wildcard parameterized type?</font></font></h2>
+
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i><font size=+0>It depends on the kind
+of wildcard.</font></i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Using an object through a reference variable of a wildcard
+parameterized type is restricted. Consider the following class:
+<p>Example (of a generic class):
+<blockquote><tt>class Box&lt;T> {</tt>
+<br><tt>&nbsp; private T t;</tt>
+<br><tt>&nbsp; public Box(T t) { this.t = t; }</tt>
+<br><tt>&nbsp; public void put(T t) { this.t = t;}</tt>
+<br><tt>&nbsp; public T take() { return t; }</tt>
+<br><tt>&nbsp; public boolean equalTo(Box&lt;T> other) { return this.t.equals(other.t);
+}</tt>
+<br><tt>&nbsp; public Box&lt;T> copy() { return new Box&lt;T>(t); }</tt>
+<br><tt>}</tt></blockquote>
+When we use a reference variable of a wildcard instantiation of type <tt>Box</tt>
+to access methods and fields of the referenced object the compiler would
+reject certain invocations.
+<p>Example (of access through a wildcard parameterized type):
+<blockquote><tt>class Test {</tt>
+<br><tt>&nbsp; public static void main(String[] args) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; <b><font color="#000099">Box&lt;?></font></b>
+box = new Box&lt;String>("abc");</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; box.put("xyz");&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; box.put(null);&nbsp;&nbsp;&nbsp;&nbsp; <b><font color="#003300">//
+ok</font></b></tt>
+<p><tt>&nbsp;&nbsp;&nbsp; String s = box.take();&nbsp; <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Object o = box.take();&nbsp; <b><font color="#003300">//
+ok</font></b></tt>
+<p><tt>&nbsp;&nbsp;&nbsp; boolean equal = box.equalTo(box);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+<b><font color="#660000">// error</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; equal = box.equalTo(new Box&lt;String>("abc"));
+<b><font color="#660000">//
+error</font></b></tt>
+<p><tt>&nbsp;&nbsp;&nbsp; Box&lt;?> box1 = box.copy();&nbsp;&nbsp; <b><font color="#003300">//
+ok</font></b></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; Box&lt;String> box2 = box.copy();&nbsp; <b><font color="#660000">//
+error</font></b></tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt></blockquote>
+In a wildcard parameterized type such as <tt>Box&lt;?></tt> the type of
+the field and the argument and the return types of the methods would be
+unknown.&nbsp; It is like the field t would be of type "<tt>?</tt>" and
+the <tt>put</tt> method would take an argument of type "<tt>?</tt>" and
+the <tt>take</tt> method would return a "<tt>?</tt>" and so on.&nbsp;
+<p>In this situation the compiler does not let us assign anything to the
+field or pass anything to the <tt>put</tt> method. The reason is that the
+compiler cannot make sure that the object that we are trying to pass as
+an argument to a method is of the expected type, since the expected type
+is unknown. Similarly, the compiler does not know of which type the field
+is and cannot check whether we are assigning an object of the correct type,
+because the correct type is not known.&nbsp;
+<p>In contrast, the <tt>take</tt> method can be invoked and it returns
+an object of an unknown type, which we can assign to a reference variable
+of type <tt>Object</tt>.&nbsp;
+<p>Similar effects can be observed for methods such as like <tt>equalTo</tt>
+and <tt>copy</tt>, which&nbsp; have a parameterized argument or return
+type and the type parameter <tt>T</tt> appears as type argument of the
+parameterized argument or return type.&nbsp;
+<p>Consider a generic class with methods that use the type parameter in
+the argument or return type of its methods:
+<p>Example (of a generic class):
+<blockquote><tt>class Box<b><font color="#000000">&lt;T></font></b> {</tt>
+<br><tt>&nbsp; private T t;</tt>
+<br><tt>&nbsp; public Box(T t) { this.t = t; }</tt>
+<br><tt>&nbsp; public Box(<b>Box&lt;? extends <font color="#3333FF">T</font>></b>
+box) { t = box.t; }</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; public boolean equalTo(<b>Box&lt;<font color="#3333FF">T</font>></b>
+other) { return this.t.equals(other.t); }</tt>
+<br><tt>&nbsp; public <b>Box&lt;<font color="#3333FF">T</font>></b> copy()
+{ return new Box&lt;T>(t); }</tt>
+<p><tt>&nbsp; public <b>Pair&lt;<font color="#3333FF">T</font>,<font color="#3333FF">T</font>></b>
+makePair() { return new Pair&lt;T,T>(t,t); }</tt>
+<br><tt>&nbsp; public <b>Class&lt;? extends <font color="#3333FF">T</font>></b>
+getContentType() { ... }</tt>
+<br><tt>&nbsp; public int compareTo(<b>Comparable&lt;? super <font color="#3333FF">T</font>>
+</b>other)
+{ return other.compareTo(t); }</tt>
+<br><tt>}</tt></blockquote>
+The type parameter <tt>T</tt> can appear as the type argument of a parameterized
+argument or return type, like in method <tt>makePair</tt>, which returns
+a
+<tt>Pair&lt;T,T></tt>. But it can also appear as part of the type argument
+of a parameterized argument or return type, namely as bound of a wildcard,
+like in method <tt>geteContentType</tt>, which returns a value of type
+<tt><font color="#000000">Class&lt;?
+extends T></font></tt>.&nbsp; Which methods can or must not be invoked
+through a wildcard instantiation depends not only on the type of the wildcard
+instantiation (unbounded or bounded with upper or lower bound), but also
+on the use of the type parameter (as type argument or as wildcard bound).
+<p>The restriction are fairly complex in detail, because they depend on
+the type of the wildcard (unbounded or bounded with upper or lower bound).&nbsp;
+So far we have only seen <tt>Box&lt;?></tt>, that is, the unbounded wildcard
+instantiation.&nbsp; Which fields and methods are accessible through references
+of other wildcard instantiations?&nbsp; In addition, the rules depend on
+the way in which a method uses the type parameter in the method signatures
+(as the type of an argument or the return type or as the type argument
+of a parameterized argument or return type).&nbsp; A comprehensive discussion
+can be found in the FAQ entries listed in the reference section below.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ304">#FAQ304</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Which methods and fields are accessible/inaccessible through a reference variable of a wildcard type?">Which
+methods and fields are accessible/inaccessible through a reference variable
+of a wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Which methods that use the type parameter in the argument or return type are accessible in an unbounded wildcard instantiation?">Which
+methods that use the type parameter in the argument or return type are
+accessible in an unbounded wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Which methods that use the type parameter in the argument or return type are accessible in an upper bound wildcard instantiation?">Which
+methods that use the type parameter in the argument or return type are
+accessible in an upper bound wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Which methods that use the type parameter in the argument or return type are accessible in a lower bound wildcard instantiation?">Which
+methods that use the type parameter in the argument or return type are
+accessible in a lower bound wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Which methods that use the type parameter as type argument of a parameterized argument or return type are accessible in a wildcard instantiation?">Which
+methods that use the type parameter as type argument of a parameterized
+argument or return type are accessible in a wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Which methods that use the type parameter as upper wildcard bound in a parameterized argument or return type are accessible in a wildcard instantiation?">Which
+methods that use the type parameter as upper wildcard bound in a parameterized
+argument or return type are accessible in a wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#Which methods that use the type parameter as lower wildcard bound in a parameterized argument or return type are accessible in a wildcard instantiation?">Which
+methods that use the type parameter as lower wildcard bound in a parameterized
+argument or return type are accessible in a wildcard parameteriezd type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#In a wildcard instantiation, can I read and write fields whose type is the type parameter?">In
+a wildcard parameterized type, can I read and write fields whose type is
+the type parameter?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ305"></a>
+<p><a NAME="Can I use a wildcard instantiation like any other type?"></a><b><font face="Arial,Helvetica"><font size=+0>Can
+I use a wildcard parameterized type like any other type?</font></font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No.&nbsp; A wildcard parameterized type
+is not a type in the regular sense (different from a non-parameterized
+class/interface or a raw type).</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Wildcard parameterized types can be used for typing (like
+non-parameterized classes and interfaces):
+<ul>
+<li>
+as argument and return types of methods</li>
+
+<li>
+as type of a field or local reference variable&nbsp;</li>
+
+<li>
+as component type of an array</li>
+
+<li>
+as type argument of other parameterized types</li>
+
+<li>
+as target type in casts&nbsp;</li>
+</ul>
+Wildcard parameterized type can NOT be used for the following purposes
+(different from non-parameterized classes and interfaces):
+<ul>
+<li>
+for creation of objects&nbsp;</li>
+
+<li>
+for creation of arrays (except unbounded wildcard)</li>
+
+<li>
+in exception handling</li>
+
+<li>
+in instanceof expressions (except unbounded wildcard)</li>
+
+<li>
+as supertypes</li>
+
+<li>
+in a class literal</li>
+</ul>
+</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ305">#FAQ305</a></font></font></td>
+</tr>
+
+<tr>
+<td WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ306"></a>
+<p><a NAME="Can I create an object whose type is a wildcard instantiation of a parameterized type?"></a><b><font face="Arial,Helvetica"><font size=+0>Can
+I create an object whose type is a wildcard parameterized type?</font></font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No, because a wildcard parameterized
+type is not an object type.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2"><font color="#000000">Creation of objects of a wildcard
+parameterized type does not make sense.&nbsp; A wildcard parameterized
+type is a representative of a family of parameterized types, but we do
+not know for which instantiation that wildcard parameterized type stands.&nbsp;
+Since we do not know anything about the exact type of the object to be
+created, we cannot construct it.&nbsp; For instance, the compiler might
+not know which constructor arguments are acceptable.</font>
+<p>Examples (of illegal creation of wildcard instantiation):
+<blockquote><tt>ArrayList&lt;String> list = new ArrayList&lt;String>();</tt>
+<br><tt>... populate the list ...</tt>
+<p><tt>ArrayList&lt;?> coll2 = <b>new ArrayList<font color="#000099">&lt;?></font></b>(list);
+<font color="#660000">//
+<b>error</b></font></tt>
+<br>&nbsp;</blockquote>
+<font color="#000000">The <tt>ArrayList&lt;?></tt> is a list of elements
+of an unknown type.&nbsp; How can we possibly know that it can be created
+from a list of strings?&nbsp; We don't know that and hence the compiler
+rejects the attempt to create a "list of unknown".</font>
+<p>A wildcard parameterized type is more like an interface type:&nbsp;
+you can declare reference variables of the type, but you cannot create
+objects of the type.&nbsp; A reference variable of an interface type or
+a wildcard parameterized type can refer to an object of a compatible type.&nbsp;
+For an interface, the compatible types are the class or enum types that
+implement the interface.&nbsp; For a wildcard parameterized type, the compatible
+types are the concrete instantiations of the corresponding generic type
+that belong to the family of instantiations that the wildcard denotes.
+<p>Examples (of interface and wildcard <font color="#000000">parameterized
+type</font>):
+<blockquote><tt>Cloneable clon1 = new Date();</tt>
+<br><tt>Cloneable clon2 = new Cloneable();&nbsp;&nbsp;&nbsp;&nbsp; <font color="#660000">//
+<b>error</b></font></tt>
+<p><tt>ArrayList&lt;?> coll1 = <b>new ArrayList<font color="#000099">&lt;String></font></b>();</tt>
+<br><tt>ArrayList&lt;?> coll2 = <b>new ArrayList<font color="#000099">&lt;?></font></b>();
+<font color="#660000">//
+<b>error</b></font></tt></blockquote>
+<font color="#000000">The code snippet above illustrates the similarity
+between an interface and a wildcard parameterized type, using the interface
+<tt>Cloneable</tt>
+and the wildcard parameterized type <tt>ArrayList&lt;?> </tt>as examples.&nbsp;
+We can declare reference variables of type <tt>Cloneable</tt> and <tt>ArrayList&lt;?></tt>,
+but we must not create objects of type <tt>Cloneable</tt> and <tt>ArrayList&lt;?></tt>.</font></td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ306">#FAQ306</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard instantiation?">What
+is a wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="ProgrammingIdioms.html#What is the difference">What
+is the difference between a Collection&lt;?> and a Collection&lt;Object>?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ307"></a>
+<p><a NAME="Can I create an array whose component type is a wildcard instantiation of a parameterized type?"></a><b><font face="Arial,Helvetica"><font size=+0>Can
+I create an array whose component type is a wildcard parameterized type?</font></font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No, because it is not type-safe.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">The rationale is the same as for concrete parameterized
+types: a wildcard <font color="#000000">parameterized type</font>, unless
+it is an unbounded wildcard <font color="#000000">parameterized type</font>,
+is a non-reifiable type and arrays of non-reifiable types are not type-safe.
+<p>The array store check cannot be performed reliably because a wildcard
+<font color="#000000">parameterized type</font> that is not an unbounded
+wildcard <font color="#000000">parameterized type</font> has a non-exact
+runtime type.
+<p>Example (of the consequences):
+<blockquote><tt>Object[] numPairArr = new Pair&lt;? extends Number,? extends
+Number>[10]; // illegal</tt>
+<br><tt>numPairArr[0] = new Pair&lt;Long,Long>(0L,0L);&nbsp;&nbsp;&nbsp;&nbsp;
+// fine</tt>
+<br><tt>numPairArr[0] = new Pair&lt;String,String>("",""); // should fail,
+but would succeed</tt></blockquote>
+The array store check would have to check whether the pair added to the
+array is of type<tt> Pair&lt;? extends Number,? extends Number></tt> or
+of a subtype thereof. Obviously, a <tt>Pair&lt;String,String></tt> is not
+of a matching type and should be rejected with an <tt>ArrayStoreException</tt>.&nbsp;
+But the array store check does not detect any type mismatch, because the
+JVM can only check the array's runtime component type, which is <tt>Pair[]</tt>
+after type erasure, against the element's runtime type, which is <tt>Pair</tt>
+after type erasure.&nbsp;</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ307">#FAQ307</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="Fundamentals.html#What does type-safety mean?">What
+does type-safety mean?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I create an array whose component type is a concrete instantiation of a parameterized type?">Can
+I create an array whose component type is a concrete parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Why is it allowed to create an array whose component type is an unbounded wildcard instantiation?">Why
+is it allowed to create an array whose component type is an unbounded wildcard
+parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is a reifiable type?">What
+is a reifiable type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ307A"></a>
+<p><a NAME="Can I declare a reference variable of an array type whose component type is a bounded wildcard instantiation of a"></a><b><font face="Arial,Helvetica"><font size=+0>Can
+I declare a reference variable of an array type whose component type is
+a bounded wildcard parameterized type?</font></font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Yes, you can, but you should not, because
+it is neither helpful nor type-safe.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">The rationale is the same as for concrete parameterized
+types: a wildcard <font color="#000000">parameterized type</font>, unless
+it is an unbounded wildcard <font color="#000000">parameterized type</font>,
+is a non-reifiable type and arrays of non-reifiable types must not be created.&nbsp;
+Hence it does not make sense to have a reference variable of such an array
+type because it can never refer to array of its type.&nbsp; All that it
+can refer to is <tt>null</tt>, an array whose component type is a non-parameterized
+subtype of the instantiations that belong to the type family denoted by
+the wildcard, or an array whose component type is the corresponding raw
+type. Neither of these cases is overly useful, yet they are permitted.
+<p>Example (of an array reference variable with wildcard parameterized
+component type):
+<blockquote><tt><b>Pair&lt;? extends Number,? extends Number>[]</b> arr
+= null;&nbsp; <b><font color="#006600">// fine</font></b></tt>
+<br><tt>arr = <b><font color="#000066">new Pair&lt;? extends Number,? extends
+Number>[2]</font></b>;&nbsp; <b><font color="#660000">// error: generic
+array creation</font></b></tt></blockquote>
+The code snippet shows that a reference variable of type <tt>Pair&lt;?
+extends Number,? extends Number>[]</tt> can be declared, but the creation
+of such an array is illegal.&nbsp; But we can have the reference variable
+of type <tt>Pair&lt;? extends Number,? extends Number>[]</tt> refer to
+an array of a non-parameterized subtype of any of the concrete instantiations
+that belong to the type family denoted by <tt>Pair&lt;? extends Number,?
+extends Number></tt>. (Remember, wildcard <font color="#000000">parameterized
+types</font> cannot be used as supertypes; hence a non-parameterized subtype
+must be a subtype of a concrete <font color="#000000">parameterized type</font>.)
+<p>Example (of another array reference variable with parameterized component
+type):
+<blockquote><tt>class Point extends Pair&lt;Double,Double> { ... }</tt>
+<p><tt><b>Pair&lt;? extends Number,? extends Number>[]</b> arr = <b><font color="#000066">new
+Point[2]</font></b>;&nbsp;&nbsp;&nbsp; <b><font color="#006600">// fine</font></b></tt></blockquote>
+Using a reference variable of type <tt>Pair&lt;? extends Number,? extends
+Number>[] </tt>offers no advantage over using a variable of the actual
+type <tt>Point[]</tt>.&nbsp; Quite the converse; it is an invitation for
+making mistakes.&nbsp;
+<p>Example (of an array reference variable refering to array of subtypes;
+not recommended):
+<blockquote><tt><b>Pair&lt;? extends Number,? extends Number>[]</b> arr<font color="#000000">
+= </font><b><font color="#000066">new Point[2];</font></b></tt>
+<br><tt><font color="#000000">arr[0]&nbsp;&nbsp; = new Point(-1.0,1.0);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</font><b><font color="#006600">// fine</font></b></tt>
+<br><tt><font color="#000000">array[1] = new Pair&lt;Number,Number>(-1.0,1.0);
+</font><b><font color="#006600">//
+fine</font><font color="#000000"> (causes ArrayStoreException)</font></b></tt>
+<br><tt><font color="#000000">array[2] = new Pair&lt;Integer,Integer>(1,2);
+</font><b><font color="#006600">//
+fine</font><font color="#000000"> (causes ArrayStoreException)</font></b></tt></blockquote>
+The compiler&nbsp; permits code for insertion of elements of type <tt>Pair&lt;<font color="#000000">Number,Number</font>></tt>
+or <tt><font color="#000000">Pair&lt;Integer,Integer> </font></tt>into
+the array through the reference variable of type <tt>Pair&lt;?<b> </b>extends
+Number,? extends Number>[]</tt>. Yet, at runtime, this insertion will always
+fail with an <tt>ArrayStoreException </tt>because we are trying to insert
+a <tt>Pair</tt> into a <tt>Point[]</tt>.&nbsp;&nbsp; The debatable insertions
+would be flagged as errors and thereby prevented if we used the actual
+type of the array, namely <tt>Point[] </tt>instead of <tt>Pair&lt;?extends
+Number,? extends Number>[]</tt> .
+<p>In essence, you should better refrain from using array reference variable
+whose component type is a wildcard parameterized type.&nbsp; Note, that
+the same holds for array reference variable whose component type is a <u>concrete</u>
+parameterized type. Only an array reference variable whose component type
+is an <u>unbounded wildcard</u> parameterized type make sense. This is
+because an unbounded wildcard <font color="#000000">parameterized type</font>
+is a reifiable type and arrays with a reifiable component type can be created;&nbsp;
+the array reference variable can refer to an array of its type and the
+deficiencies discussed above simply do not exist for unbounded wildcard
+arrays.
+<br>&nbsp;</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ307A">#FAQ307A</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="Fundamentals.html#What does type-safety mean?">What
+does type-safety mean?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I create an array whose component type is a wildcard instantiation of a parameterized type?">Can
+I create an array whose component type is a wildcard parameterized type?</a></font></font>
+<br><b><font face="Arial,Helvetica"><font size=-2><a href="#Can I declare a reference variable of an array type whose component type is a concrete instantiation">Can
+I declare a reference variable of an array type whose component type is
+a concrete parameterized type?</a></font></font></b>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I create an array whose component type is a concrete instantiation of a parameterized type?">Can
+I create an array whose component type is a concrete parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I declare a reference variable of an array type whose component type is an unbounded wildcard instantiation of a">Can
+I declare a reference variable of an array type whose component type is
+an unbounded wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Why is it allowed to create an array whose component type is an unbounded wildcard instantiation?">Why
+is it allowed to create an array whose component type is an unbounded wildcard
+parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is a reifiable type?">What
+is a reifiable type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ308"></a>
+<p><a NAME="Why is it allowed to create an array whose component type is an unbounded wildcard instantiation?"></a><b><font face="Arial,Helvetica">Why
+is it allowed to create an array whose component type is an unbounded wildcard
+parameterized type?</font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Because it is type-safe.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">The rationale is related to the rule for other instantiations
+of a generic type: an unbounded wildcard <font color="#000000">parameterized
+type</font> is a reifiable type and arrays of reifiable types are type-safe,
+in contrast to arrays of non-reifiable types, which are not safe and therefore
+illegal. The problem with the unreliable array store check (the reason
+for banning arrays with a non-reifiable component type) does not occur
+if the component type is reifiable.&nbsp;
+<p>Example (of array of unbounded wildcard <font color="#000000">parameterized
+type</font>):
+<blockquote><tt>Object[] pairArr = new <b><font color="#000099">Pair&lt;?,?>[10]</font></b>;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// fine</tt>
+<br><tt>pairArr[0] = new <b>Pair</b>&lt;Long,Long>(0L,0L);&nbsp;&nbsp;&nbsp;&nbsp;
+// fine</tt>
+<br><tt>pairArr[0] = new <b>Pair</b>&lt;String,String>("",""); // fine&nbsp;</tt>
+<br><tt>pairArr[0] = new <b>ArrayList</b>&lt;String>();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// fails with ArrayStoreException</tt></blockquote>
+The array store check must check whether the element&nbsp; added to the
+array is of type<tt> Pair&lt;?,?></tt> or of a subtype thereof.&nbsp; In
+the example the two pairs, although of different type, are perfectly acceptable
+array elements. And indeed, the array store check, based on the non-exact
+runtime type <tt>Pair</tt>, accepts the two pairs and correctly sorts out
+the "alien" <tt>ArrayList</tt> object as illegal by raising an
+<tt>ArrayStoreException</tt>.
+The behavior is exactly the same as for an array of the raw type, which
+is not at all surprising because the raw type is a reifiable type as well.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ308">#FAQ308</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is a reifiable type?">What
+is a reifiable type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="Fundamentals.html#What does type-safety mean?">What
+does type-safety mean?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is the raw type?">What
+is the raw type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I create an array whose component type is a concrete instantiation of a parameterized type?">Can
+I create an array whose component type is a concrete parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I create an array whose component type is a wildcard instantiation of a parameterized type?">Can
+I create an array whose component type is a wildcard parameterized type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ308A"></a>
+<p><a NAME="Can I declare a reference variable of an array type whose component type is an unbounded wildcard instantiation of a"></a><b><font face="Arial,Helvetica"><font size=+0>Can
+I declare a reference variable of an array type whose component type is
+an unbounded wildcard parameterized type?</font></font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Yes.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">An array reference variable whose component type is an
+unbounded wildcard parameterized type (such as <tt>Pair&lt;?,?>[]</tt>)
+is permitted and useful.&nbsp; This is in contrast to array reference variables
+with a component type that is a concrete or bounded wildcard <font color="#000000">parameterized
+type</font> (such as <tt>Pair&lt;Long,Long>[]</tt>or
+<tt>Pair&lt;? extends
+Number,? extends Number>[]</tt>); the array reference variable is permitted,
+but not overly helpful.&nbsp;
+<p>The difference stems from the fact that an unbounded wildcard <font color="#000000">parameterized
+type</font> is a reifiable type and arrays with a reifiable component type
+can be created.&nbsp; Concrete and unbounded wildcard <font color="#000000">parameterized
+types</font> are <u>non</u>-reifiable types and arrays with a non-reifiable
+component type can<u>not</u> be created.&nbsp; As a result, an array variable
+with a reifiable component type can refer to array of its type, but this
+is not possible for the non-reifiable component types.
+<p>Example (of array reference variables with parameterized component types):
+<blockquote><tt><b>Pair&lt;?,?>[]</b> arr&nbsp;</tt>
+<br><tt>&nbsp; = <b><font color="#000066">new Pair&lt;?,?>[2]</font></b>;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+<b><font color="#006600">// fine</font></b></tt>
+<p><tt><b>Pair&lt;? extends Number,? extends Number>[]</b> arr&nbsp;</tt>
+<br><tt>&nbsp; = <b><font color="#000066">new Pair&lt;? extends Number,?
+extends Number>[2]</font></b>;&nbsp; <b><font color="#660000">// error:
+generic array creation</font></b></tt>
+<p><tt><b>Pair&lt;Double,Double>[]</b> arr&nbsp;</tt>
+<br><tt>&nbsp;<b><font color="#000066">new Pair&lt;Double,Double>[2]</font></b>;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+<b><font color="#660000">// error: generic array creation</font></b></tt></blockquote>
+The examples above demonstrate that unbounded wildcard <font color="#000000">parameterized
+types</font> are permitted as component type of an array, while other instantiations
+are not permitted.&nbsp; In the case of a non-reifiable component type
+the array reference variable can be declared, but it cannot refer to an
+array of its type.&nbsp; At most it can refer to an array of a non-parameterized
+subtype (or an array of the corresponding raw type), which opens opportunities
+for mistakes, but does not offer any advantage.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ308A">#FAQ308A</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is a reifiable type?">What
+is a reifiable type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I create an array whose component type is a wildcard instantiation of a parameterized type?">Can
+I create an array whose component type is a wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I declare a reference variable of an array type whose component type is a concrete instantiation">Can
+I declare a reference variable of an array type whose component type is
+a concrete parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I create an array whose component type is a concrete instantiation of a parameterized type?">Can
+I create an array whose component type is a concrete parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Why is it allowed to create an array whose component type is an unbounded wildcard instantiation?">Why
+is it allowed to create an array whose component type is an unbounded wildcard
+parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Can I declare a reference variable of an array type whose component type is a bounded wildcard instantiation of a">Can
+I declare a reference variable of an array type whose component type is
+a bounded wildcard parameterized type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ309"></a>
+<p><a NAME="Can I derive from a wildcard instantiation of a parameterized type?"></a><b><font face="Arial,Helvetica"><font size=+0>Can
+I derive from a wildcard parameterized type?</font></font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>No, a&nbsp; wildcard parameterized type
+is not a supertype.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">Let us scrutinize an example and see why a wildcard <font color="#000000">parameterized
+type</font> cannot be a supertype. Consider the generic interface <tt>Comparable</tt>.
+<p>Example (of a generic interface):
+<blockquote><tt>interface Comparable&lt;T> {</tt>
+<br><tt>&nbsp; int compareTo(T arg);</tt>
+<br><tt>}</tt></blockquote>
+If it were allowed to subtype from a wildcard instantiation of <tt>Comparable</tt>,
+neither we nor the compiler would know what the signature of the <tt>compareTo</tt>
+method would be.
+<p>Example (of illegal use of a wildcard <font color="#000000">parameterized
+type</font> as a supertype):
+<blockquote><tt>class MyClass implements <b><font color="#000000">Comparable</font><font color="#000099">&lt;?></font></b>{
+<font color="#660000">//
+<b>error</b></font></tt>
+<br><tt>&nbsp; public int compareTo(<b><i><font color="#990000">???</font></i></b>
+arg) { ... }</tt>
+<br><tt>}</tt></blockquote>
+The signatures of methods of a wildcard <font color="#000000">parameterized
+type</font> are undefined. We do not know what type of argument the <tt>compareTo</tt>
+method is supposed to accept. We can only subtype from concrete instantiations
+of the <tt>Comparable</tt> interface, so that the signature of the <tt>compareTo</tt>
+method is well-defined.
+<p>Example (of legal use of a concrete <font color="#000000">parameterized
+type</font> as a supertype):
+<blockquote><tt>class MyClass implements <b>Comparable<font color="#000066">&lt;MyClass></font></b>
+{&nbsp; // fine</tt>
+<br><tt>&nbsp; public int compareTo(<b><font color="#000066">MyClass</font></b>
+arg) { ... }</tt>
+<br><tt>}</tt></blockquote>
+Note that the raw type is, of course, acceptable as a supertype, different
+from the wildcard <font color="#000000">parameterized types</font> including
+the unbounded wildcard <font color="#000000">parameterized type</font>.
+<p>Example (of legal use of a raw type as a supertype):
+<blockquote><tt>class MyClass implements <b>Comparable</b>{&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// fine</tt>
+<br><tt>&nbsp; public int compareTo(<b><font color="#000066">Object</font></b>
+arg) { ... }</tt>
+<br><tt>}</tt></blockquote>
+</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ309">#FAQ309</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#What is the raw type?">What
+is the raw type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is a wildcard instantiation?">What
+is a wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is an unbounded wildcard instantiation?">What
+is the unbounded wildcard parameterized type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is the difference between the unbounded wildcard instantiation and the raw type?">What
+is the difference between the unbounded wildcard parameterized type and
+the raw type?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350><a NAME="FAQ310"></a>
+<p><a NAME="Why is there no class literal for wildcard instantiations of a parameterized type?"></a><b><font face="Arial,Helvetica">Why
+is there no class literal for wildcard parameterized types?</font></b>
+<br>&nbsp;
+<table CELLPADDING=10 WIDTH="100%" >
+<tr VALIGN=TOP>
+<td COLSPAN="2" WIDTH="68%"><b><i>Because a wildcard parameterized type
+has no exact runtime type representation.</i></b></td>
+</tr>
+
+<tr>
+<td COLSPAN="2">The rationale is the same as for concrete parameterized
+types.
+<p>Wildcard parameterized types lose their type arguments when they are
+translated to byte code in a process called <i>type erasure</i>. As a side
+effect of type erasure, all&nbsp; instantiations of a generic type share
+the same runtime representation, namely that of the corresponding
+<i>raw
+type</i>.&nbsp; In other words, parameterized types do not have type representation
+of their own. Consequently, there is no point to forming class literals
+such as <tt>List&lt;?>.class</tt>, <tt>List&lt;? extends Number>.class</tt>
+and <tt>List&lt;Long>.class</tt>, since no such
+<tt>Class</tt> objects
+exist.&nbsp; Only the raw type <tt>List</tt> has a <tt>Class object</tt>
+that represents its runtime type. It is referred to as <tt>List.class</tt>.</td>
+</tr>
+
+<tr>
+<td><b><font face="Arial,Helvetica"><font size=-2>LINK TO THIS</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="#FAQ310">#FAQ310</a></font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Arial,Helvetica"><font size=-2>REFERENCES</font></font></b></td>
+
+<td><font face="Arial,Helvetica"><font size=-2><a href="TechnicalDetails.html#What is type erasure?">What
+is type erasure?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#What is the raw type?">What
+is the raw type?</a></font></font>
+<br><font face="Arial,Helvetica"><font size=-2><a href="#Why is there no class literal for the concrete instantiation of a parameterized type?">Why
+is there no class literal for concrete parameterized types?</a></font></font></td>
+</tr>
+</table>
+<img SRC="../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br>
+<hr WIDTH="100%">
+<br><font face="Arial,Helvetica"><font size=-2><a href="../JavaGenericsFAQ.html#TOC">CONTENT<a href="../JavaGenericsFAQ.html#TOC"><img SRC="../../Images/bluebullet.gif" NOSAVE height=6 width=4></a></a><font color="#666666"><a href="Features.html">PREVIOUS<a href="Features.html"><img SRC="../../Images/bluebullet.gif" NOSAVE height=6 width=4></a></a></font><a href="ParameterizedMethods.html">NEXT<a href="ParameterizedMethods.html"><img SRC="../../Images/bluebullet.gif" NOSAVE height=6 width=4></a></a><a href="Index.html#IDX">INDEX</a></font></font>
+</body>
+</html>

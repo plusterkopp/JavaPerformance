@@ -1,0 +1,570 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <title>Output Stream Iterators</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="CppReportOutputIterators"></a>
+<br><font color="#295AB5"><font size=+3>Output Iterators</font></font>
+<br><font color="#295AB5"><font size=+2>Why they differ from other iterators.</font></font>
+<p><font color="#295AB5"><font size=+2>C++ Report, June 1998</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<br>&nbsp;
+<p>In our last two columns we explained (among other topics) the implementation
+of two iterators from the output iterator category: the <font face="Courier New">insert_interator</font>
+and the <font face="Courier New">ostream_iterator</font>. (See [<a href="#Ref1">1</a>]
+and [<a href="#Ref2">2</a>] for further details.) While it is natural that
+both implementations were highly similar, the way certain member functions
+were implemented is surprising if not confusing. Typical examples are the
+implementations of <font face="Courier New">operator++()</font>, <font face="Courier New">operator++(int)</font>,
+and <font face="Courier New">operator*()</font>, which all do nothing but
+return <font face="Courier New">*this</font>. In those columns, we explained
+these peculiarities in the context of each iterator implementation. This
+time, we want to dig a bit deeper. We want to see if there is a reason
+for the surprises, and what this reason is. Before we start these examinations
+let's pass in review iterator implementations in general, in order to point
+out in which aspects <font face="Courier New">insert_interator</font> and
+the <font face="Courier New">ostream_iterator</font> differ from a ‘normal’
+iterator.
+<p><b><i><font face="Arial">Recap: Implementing An Iterator For The Standard
+Library</font></i></b>
+<p>According to interface they support, iterators fall into five different
+categories:
+<blockquote>
+<blockquote>
+<blockquote><img SRC="Folie1.JPG" NOSAVE height=227 width=270></blockquote>
+</blockquote>
+</blockquote>
+
+<p><br>Each category adds new features to the previous one. In brevity:
+<ul>
+<li>
+Input iterators allow algorithms to advance the iterator and give "read
+only" access to the value.</li>
+
+<li>
+Output iterators allow algorithms to advance the iterator and give "write
+only" access to the value.</li>
+
+<li>
+Forward iterators combine read and write access, but only in one direction
+(i.e., forward).</li>
+
+<li>
+Bidirectional iterators allow algorithms to traverse the sequence in both
+directions, forward and backward.</li>
+
+<li>
+Random access iterators allow jumps and "pointer arithmetics".</li>
+</ul>
+The set of requirements that describes an iterator category are relatively
+relaxed. Consider that algorithms are function templates and iterator types
+are template arguments of algorithms. No more is required of an iterator
+type than that the function template can be instantiated, that is, certain
+expressions involving the iterator must compile. The iterator is entirely
+free to provide the required functionality by built-in operations, member
+functions, global functions, etc. . If user-defined operators or functions
+are involved not even a particular signature is required of them, because
+conversions, promotions, or casts can be involved.
+<p>Despite the abundance of options that exist for implementing an iterator
+type, there is a common, canonical approach for implementing iterators.
+We will demonstrate it using an example: <font face="Courier New">traceIter</font>.
+The <font face="Courier New">traceIter</font> is an iterator adapter that
+falls into the forward iterator category in our example. The functionality
+of the <font face="Courier New">traceIter</font> is quite simple: It adapts
+an existing iterator and traces when any of its operations get invoked.
+<p>The <font face="Courier New">traceIter</font>’s implementation is given
+is Listing 1.
+<dir><font face="Courier,Courier New"><font size=-1>template &lt;class
+Iter></font></font>
+<br><font face="Courier,Courier New"><font size=-1>class traceIterator
+: public iterator&lt;forward_iterator_tag,</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+iterator_traits&lt;Iter>::value_type,</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+iterator_traits&lt;Iter>::difference_type,</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+iterator_traits&lt;Iter>::pointer,</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+iterator_traits&lt;Iter>::reference></font></font>
+<br><font face="Courier,Courier New"><font size=-1>{</font></font>
+<br><font face="Courier,Courier New"><font size=-1>public:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; traceIterator()
+{}</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; traceIterator(Iter
+fi) : myIter(fi) {}</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; //
+plus compiler generated copy constructor</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; reference
+operator*() const</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; {</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+trace ("operator*() called !");</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return (myIter.operator*());</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; pointer
+operator->() const</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; {</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+trace ("operator->() called !");</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return (myIter.operator->());</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; traceIterator&amp;
+operator++</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; {</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+trace ("operator++() called !");</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+myIter.operator++();</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return (*this);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; traceIterator
+operator++(int)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; {</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+trace ("operator++(int) called !");</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+traceIterator tmp = *this;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+myIter.operator++(0);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return (tmp);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>private:</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; bool
+compare(traceIterator rhs) const</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; {</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+trace ("operator==() called !");</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return (myIter == rhs.myIter);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; friend
+bool operator==&lt;Iter>(const traceIterator&lt;Iter>&amp;, const traceIterator&lt;Iter>&amp;);</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; void
+trace(string txt) const { cout &lt;&lt; txt &lt;&lt; endl; }</font></font>
+<br><font face="Courier,Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; Iter
+myIter;</font></font>
+<br><font face="Courier,Courier New"><font size=-1>};</font></font>
+<p><font face="Courier,Courier New"><font size=-1>template &lt;class Iter>
+inline bool operator==(const traceIterator&lt;Iter>&amp; x, const traceIterator&lt;Iter>&amp;
+y)</font></font>
+<br><font face="Courier,Courier New"><font size=-1>{ return x.compare(y);
+}</font></font>
+<br><font face="Courier,Courier New"><font size=-1>using rel_ops::operator!=;</font></font></dir>
+
+<center><i><font size=-1>Listing 1: The traceIter iterator adapter</font></i></center>
+
+<p><font face="Arial">The Base Class Template: </font><font face="Courier,Courier New"><font size=+1>Iterator</font></font>
+<p>Any iterator of non-built-in type should be derived from the base class
+template <font face="Courier New">iterator</font>. The iterator base class
+is defined as:
+<dir><font face="Courier New"><font size=-1>template&lt;class Category,
+class T, class Distance = ptrdiff_t,</font></font>
+<br><font face="Courier New"><font size=-1>class Pointer = T*, class Reference
+= T&amp;></font></font>
+<br><font face="Courier New"><font size=-1>struct iterator</font></font>
+<br><font face="Courier New"><font size=-1>{</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; typedef T
+value_type;</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; typedef Distance
+difference_type;</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; typedef Pointer
+pointer;</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; typedef Reference
+reference;</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; typedef Category
+iterator_category;</font></font>
+<br><font face="Courier New"><font size=-1>};</font></font></dir>
+By deriving from this template an iterator specifies:
+<ul>
+<li>
+its iterator category,</li>
+
+<li>
+its value type, which is the type of the value referred to by the iterator,</li>
+
+<li>
+the difference type, which is a type that is capable to express the difference
+between two iterators,</li>
+
+<li>
+types associated with the value type: the value’s pointer and reference
+type.</li>
+</ul>
+Inheritance from the <font face="Courier New">iterator</font> base class
+template also assures that the type names <font face="Courier New">value_type</font>,
+<font face="Courier New">difference_type</font>,
+<font face="Courier New">pointer</font>,
+<font face="Courier New">reference</font>,
+and <font face="Courier New">iterator_category</font> get injected into
+the public section of a derived iterator. The definition of these names
+is essential for the usability of an iterator, because other abstraction
+from the standard library framework rely on these names (e.g. the <font face="Courier New">iterator_traits</font>).
+<p>As we have already mentioned, the <font face="Courier New">traceIter</font>
+shall be a forward iterator. For this reason, the first template argument
+for the base class template <font face="Courier New">iterator</font> is
+<font face="Courier New">forward_iterator_tag</font>,
+which is a type that is already defined in the standard library. For all
+other template parameters we use the types that come with the iterator
+that is adapted.
+<p><font face="Arial">Operations Required By The Forward Iterator Category</font>
+<p>Because the <font face="Courier New">traceIter</font> shall be a forward
+iterator, the standard requires that at least the following operations
+can be applied to this iterator:
+<ul>
+<li>
+Default construction.</li>
+
+<li>
+Copy construction.</li>
+
+<li>
+The operator <font face="Courier New">*</font>.</li>
+
+<li>
+The operator<font face="Courier New"> -></font>.</li>
+
+<li>
+The postfix and prefix increment operators.</li>
+
+<li>
+Operators <font face="Courier New">==</font> and <font face="Courier New">!=</font>
+which allow to compare two iterators for equality and inequality.</li>
+</ul>
+The operations required for other categories differ according to the different
+functionality that comes with the respective categories. The operations
+can be sorted into three groups. We are going to discuss these three groups
+and the typical approach for there implementations in the following.
+<p><b>Operations that give access to the referenced value.</b>
+<p>The operators <font face="Courier New">*</font> and <font face="Courier New">-></font>
+are those operations that give access to the value that is referenced by
+the iterator. They are typically implemented as the iterator’s public members:
+<font face="Courier New">operator*()
+</font>and
+<font face="Courier New">operator->()</font>.
+The <font face="Courier New">operator*()</font> returns a reference to
+the value, while the <font face="Courier New">operator->()</font> returns
+a pointer to it. Their return types are denoted by the inherited nested
+types <font face="Courier New">reference</font> and <font face="Courier New">pointer</font>.
+Note, that for an input iterator (which is similar to a forward iterator
+except that it allows only read access to the value) the return types are
+the const reference respectively the const pointer to the value. Their
+nested type names, however, are still <font face="Courier New">reference</font>
+and <font face="Courier New">pointer</font>.
+<p><b>Operations that move the iterator.</b>
+<p>For a forward iterator, the postfix and prefix increment are the only
+two operations that can be used to move the iterator. They are typically
+implemented as the iterator’s public members: <font face="Courier New">operator++()</font>
+and <font face="Courier New">operator++(int)</font>. They return a reference
+to the iterator itself so that other iterator operations can be chained
+to an increment operation. Other iterator categories support additional
+operations to move the iterator. Bidirectional iterators for example can
+also be decremented, and random access iterators allow to add and subtract
+values of the difference type to and from the iterators. They are generally
+implemented in a similar way as the increment operators.
+<p><b>Operations that allow to compare iterators.</b>
+<p>Forward iterators allow to be compared for equality and inequality.
+Typically an <font face="Courier New">operator==()</font> is implemented
+as a global function, because as a public member it would not allow to
+behave symmetrically with respect to the two operands. No
+<font face="Courier New">operator!=()</font>
+is provided because the standard supplies a global template operator <font face="Courier New">operator!=()</font>
+based on the negation of <font face="Courier New">operator==()</font>’s
+result. Other iterator categories can support more sophisticated ways for
+iterator comparison. Random access iterators, for instance, are required
+to define an ordering, that is<font face="Courier,Courier New"> operator&lt;(),</font>
+etc.
+<br>&nbsp;
+<br>&nbsp;
+<p><font face="Arial">Further Reading</font>
+<p>This recap is quite brief and focused on those areas where the typical
+iterator implementation differs from those of an output iterator. For further
+information, take a look at some of our older articles. [<a href="#Ref4">4</a>]
+explains in more detail and with additional background information (including
+<font face="Courier New">iterator_traits</font>)
+how iterators from the standard library are implement. [<a href="#Ref3">3</a>]
+explains the same issues about iterators from the original STL. An comprehensive
+example for a user defined iterator, which can work with the STL and the
+standard library, is given in [<a href="#Ref5">5</a>].
+<br>&nbsp;
+<br>&nbsp;
+<p><b><i><font face="Arial">Output Iterators Are Different</font></i></b>
+<p>The source code of the <font face="Courier New">insert_iterator</font>
+given in Listing 2 reveals some differences compared to the general rules
+for iterator implementation given above.
+<dir><font face="Courier New"><font size=-1>template &lt;class Container></font></font>
+<br><font face="Courier New"><font size=-1>class insert_iterator :</font></font>
+<br><font face="Courier New"><font size=-1>public iterator&lt;output_iterator_tag,void,void,void,void></font></font>
+<br><font face="Courier New"><font size=-1>{</font></font>
+<br><font face="Courier New"><font size=-1>public:</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; typedef Container
+container_type;</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; insert_iterator&lt;Conatiner>(Container&amp;
+c, typename Container::iterator i)</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; : container(c),
+iter(i) {};</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; insert_iterator&lt;Container>&amp;
+operator=(typename Container::const_reference value)</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; {</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+iter = container->insert (iter, value);</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+iter++;</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return *this;</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; insert_iterator&lt;Container>&amp;
+operator*() { return *this; }</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; ^insert_iterator&lt;Container>&amp;
+operator++() { return *this; }</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; insert_iterator&lt;Container>&amp;
+operator++(int) { return *this; }</font></font>
+<br><font face="Courier New"><font size=-1>protected:</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; Container*
+container;</font></font>
+<br><font face="Courier New"><font size=-1>&nbsp;&nbsp;&nbsp; typename
+Container::iterator iter;</font></font>
+<br><font face="Courier New"><font size=-1>};</font></font></dir>
+
+<center><i><font size=-1>Listing 2: The implementation of </font><font face="Courier,Courier New"><font size=-2>insert_iterator</font></font></i></center>
+
+<p><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<p><font face="Arial">Output Iterators Allow Only Write Access</font>
+<p>Let's start with those operations that give access to the referenced
+value. No <font face="Courier New">operator->()</font> is provided. The
+reason for this is simple: It is not required for an output iterator.
+<p>The implementation of the <font face="Courier,Courier New">operator*()</font>
+looks highly surprising. One would expect that <font face="Courier,Courier New">operator*()</font>
+gives access to the value referenced by the iterator That is what the canonical
+implementation of the <font face="Courier New">traceIter</font> in the
+example above does: it returns a reference to the value. Why do output
+iterators like <font face="Courier New">insert_iterator</font> return a
+reference to the iterator itself instead? The crucial point is that an
+output iterator is only allowed to give write access to the referred value.
+So, what should it return? There is no way to specify write-only access
+to an object in C++; solely read-only access can be expressed in C++ by
+using the qualifier <font face="Courier New">const</font>. The requirements
+of prohibiting read-access means that an output iterator’s
+<font face="Courier New">operator*()</font>
+cannot give direct access to the referred value at all. Obviously we need
+a work around to implement write-only access. Let’s consider a typical
+situation in which the write-only access to the output iterator’s value
+is needed:
+<dir><font face="Courier New"><font size=-1>*iter = newValue;</font></font></dir>
+After applying the operator * to the iterator, a new value is assigned.
+As we mentioned earlier in the recap, neither an iterator’s exact operations
+nor their exact signature is specified. For this reason, an output iterator
+can define a special assignment operator that allows to assign a new value
+to the value that the iterator currently refers to. This assignment operator,
+together with an <font face="Courier New">operator*()</font> that returns
+<font face="Courier New">*this</font>,
+permits the write access to the referenced value and prohibits the read
+access. The <font face="Courier New">insert_iterator</font>‘s special assignment
+operator is:
+<dir><font size=-1><font face="Courier New">insert_iterator&lt;Container>&amp;
+operator=(typename Container::const_reference value)</font><font face="Courier,Courier New">.</font></font></dir>
+Out example line of code:
+<dir><font face="Courier New"><font size=-1>*iter = newValue;</font></font></dir>
+evaluates to different operations depending on the category of the iterator.
+For an output iterator, such as the<font face="Courier New"> insert_iterator</font>,
+it will evaluate to the following sequence of invocations:
+<ul>
+<li>
+As user defined operators gets invoked from left to right,
+<font face="Courier New">insert_iterator::operator*()
+</font>gets
+invoke first. It does nothing but return
+<font face="Courier New">*this</font>.</li>
+
+<li>
+This allows that <font face="Courier New">insert_iterator::operator=(typename
+Container::const_reference value)</font> can be invoked on <font face="Courier New">iter</font>.
+Next the body of this operator (shown in Listing 2) is executed.</li>
+</ul>
+For an iterator of any other category (except input iterators, which do
+not allow write access at all) it evaluates differently. Let's consider
+the <font face="Courier New">traceIter</font> from our previous example:
+<ul>
+<li>
+First, <font face="Courier New">traceIter::operator*()</font> gets invoked,
+which returns a reference to the value referred to by the iterator.</li>
+
+<li>
+To handle the assignment of the new value to the returned reference of
+the old value, the assignment operator for <font face="Courier New">traceIter::value_type</font>
+is called.</li>
+</ul>
+While the special assignment work around helps output iterators to provide
+write-only access to their referenced values, it does not come without
+a disadvantage. Because of the special assignment operator that does all
+the work and the <font face="Courier New">operator*()</font> that does
+nothing but return <font face="Courier New">*this</font>, it is possible
+to omit the <font face="Courier New">operator*()</font> entirely and assign
+the value directly to the iterator:
+<dir><font face="Courier New"><font size=-1>iter = newValue;</font></font></dir>
+We discourage using such code in any algorithm. In the world of generic
+programming, an iterator with more capabilities than an output iterator,
+e.g. a forward iterator, can be used in place of an output iterator. Then,
+unfortunately, the code will not compile and the algorithm is restricted
+to output iterators.
+<p>The fact that an output iterator’s <font face="Courier New">operator*()</font>
+cannot give direct access to the referred to value has another consequence
+for the implementation of output iterators. It is reflected in the template
+parameters that are used for the base class template <font face="Courier New">iterator</font>.
+<font face="Courier New">insert_iterator</font>
+for example is defined as:
+<dir><font face="Courier New"><font size=-1>template &lt;class Container>
+class insert_iterator :</font></font>
+<br><font face="Courier New"><font size=-1>public iterator&lt;output_iterator_tag,void,void,void,void>
+{ ... };</font></font></dir>
+The value type and its associated pointer type and reference type are <font face="Courier New">void</font>.
+The reason for this is fairly simple. Since the <font face="Courier New">ostream_iterator</font>’s
+<font face="Courier New">operator*()</font>
+does not allow direct access to the referred value, it does not make sense
+to specify the value type at all. Making the value type in the <font face="Courier New">iterator</font>
+base class template <font face="Courier New">void</font> is the way to
+declare the value type as unspecified. When the value type is unspecified,
+consequently its associated types should also be unspecified. That explains
+why the pointer type and the reference type are <font face="Courier New">void</font>,
+too. There is a different reasoning that motivates why the difference type
+is also <font face="Courier New">void</font>. We explain it below.
+<p><font face="Arial">Immovable Output Iterators</font>
+<p>While the implementation techniques described above apply to all output
+iterators, <font face="Courier New">insert_iterator</font> and <font face="Courier New">ostream_iterator</font>
+have other implementation details in common that are not necessarily typical
+for all output iterators. These are their implementations of the prefix
+and postfix operator <font face="Courier New">++</font>, which all do nothing
+but return <font face="Courier New">*this</font>. The reasons is that both
+iterators cannot really be advanced.
+<ul>
+<li>
+The <font face="Courier New">insert_iterator</font> has truly static semantics:
+It indicates the fixed position before which new elements are inserted.
+Hence its ++ operators should not have any real effect.</li>
+
+<li>
+The <font face="Courier New">ostream_iterator</font> in a way has dynamic
+semantics: The position of the underlying stream changes whenever an object
+is assigned to the de-referenced<font face="Courier New"> ostream_iterator</font>.
+This position change is caused automatically when the <font face="Courier New">ostream_iterator</font>‘s
+special assignment operator uses the value type’s stream inserter, and
+there is no task left for the <font face="Courier New">ostream_iterator</font>‘s
+++ operators.</li>
+</ul>
+The fact that <font face="Courier New">insert_iterator</font>s and <font face="Courier New">ostream_iterator</font>s
+cannot really be advanced has further consequence: the difference of two
+iterator objects cannot be expressed. What is the difference between two
+iterators? The difference between two random access iterators can be calculated
+as <font face="Courier,Courier New">iter2-iter1</font>, because random
+access iterators support pointer arithmetics. For other categories, the
+difference is calculated as <font face="Courier,Courier New">distance(iter1,iter2)</font>.
+In general, the difference of two iterators is the number of increments
+or decrements needed to get from <font face="Courier,Courier New">iter1</font>
+to <font face="Courier,Courier New">iter2</font>. How many increments does
+it take to get from one immovable <font face="Courier New">insert_iterator</font>
+to an other iterator of the same type. Infinitely many, or none, depending
+on how you see it. The point is that incrementing an<font face="Courier New">
+insert_iterator</font> or an <font face="Courier New">ostream_iterator</font>
+does not advance the iterator and therefore no other iterator can ever
+be reached. This explains why the difference type template parameter, which
+is the third parameter from the <font face="Courier New">iterator</font>
+base class template, is <font face="Courier New">void</font> for <font face="Courier New">insert_iterator</font>
+and <font face="Courier New">ostream_iterator</font>.
+<p><b><i><font face="Arial">Summary</font></i></b>
+<p>The implementations of the <font face="Courier New">insert_iterator</font>
+and <font face="Courier New">ostream_iterator</font> from our last columns
+showed some interesting similarities. Some of them stem from the fact that
+output iterator’s <font face="Courier New">operator*()</font> cannot grant
+direct access to the value referred by the iterator, because there is no
+way to specify write-only access in C++. The result is an implementation
+for output iterators that is different from other iterators' implementation.
+Other similarities are based on the coincidental commonality that <font face="Courier New">insert_iterator</font>
+and <font face="Courier New">ostream_iterator</font> cannot be advanced.
+<p><b><font size=+0>References</font></b>
+<ol>
+<li>
+<a NAME="Ref1"></a><a href="../InsertIterators/InsertIterators.html">Insert
+Iterators</a></li>
+
+<br>Klaus Kreft &amp; Angelika Langer
+<br>C++ Report, February 1999
+<li>
+<a NAME="Ref2"></a><a href="../StreamIterators/StreamIterators.html">Stream
+Iterators</a></li>
+
+<br>Klaus Kreft &amp; Angelika Langer
+<br>C++ Report, April 1999
+<li>
+<a NAME="Ref3"></a>Iterators in the Standard Template Library (STL)</li>
+
+<br>Klaus Kreft &amp; Angelika Langer
+<br>C++ Report, July 1996
+<li>
+<a NAME="Ref4"></a><a href="../IteratorsInStdlib/IteratorsInStdlib.html">Iterators
+in the Standard C++ Library</a></li>
+
+<br>Klaus Kreft &amp; Angelika Langer
+<br>C++ Report, Nov./Dec. 1996
+<li>
+<a NAME="Ref5"></a>Building an Iterator for STL &amp; Standard Library</li>
+
+<br>Klaus Kreft &amp; Angelika Langer
+<br>C++ Report, February 1997</ol>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveSTL.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveSTL.htm">Effective
+STL Programming</a> </font></b>- The Standard Template Library in Depth
+<br><font color="#000000"><font size=-1>4-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+
+<tr>
+<td ALIGN=CENTER><a href="../../../Courses/IOStreamsInDepth.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/IOStreamsInDepth.htm">IOStreams
+and Locales</a> </font></b>- Standard C++ IOStreams and Locales in Depth
+<br><font color="#000000"><font size=-1>5-day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

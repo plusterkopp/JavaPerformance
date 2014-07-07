@@ -1,0 +1,981 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Generator" content="Microsoft Word 97">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <meta name="Description" content="Pre-Copyedit Version of Article in JavaSpektrum, July 2002">
+   <meta name="KeyWords" content="Java comaparator compareTo comparisonc Effective Java">
+   <title>Implementing the compareTo() Method</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="EffectiveJava04"></a>
+<br><font color="#295AB5"><font size=+3>Objekt-Vergleich mittels Comparatoren</font></font>
+<br><font color="#295AB5"><font size=+2>Wie, wann und warum implementiert
+man die compareTo()-Methode?</font></font>
+<p><font color="#295AB5"><font size=+2>JavaSPEKTRUM, Juli 2002</font></font>
+<br><font color="#295AB5"><font size=+1>Klaus Kreft &amp; Angelika Langer</font></font>
+<p><img SRC="../../../Images/bar.gif" NOSAVE BORDER=0 height=5 width=600>
+<br>&nbsp;
+<p><b>In dieser Artikelserie haben wir uns bisher mit Basisfunktionalit&auml;t
+besch&auml;ftigt, die jede Klasse in Java zur Verf&uuml;gung stellt. Dabei
+haben wir uns eingehend mit der Implementierung der Methode equals() befasst.&nbsp;
+In dieser Ausgabe wollen wir dort ankn&uuml;pfen und uns die compareTo()
+Methode n&auml;her ansehen. Die Methode compareTo() h&auml;ngt eng mit
+der Methode equals() zusammen, da beide Methoden Aussagen zur Gleichheit
+von Objekten liefern und deshalb konsistent zueinander implementiert werden
+sollten.&nbsp; In dieser Ausgabe werden wir uns ansehen, was diese Konsistenz-Forderung
+genau bedeutet,&nbsp; wof&uuml;r man compareTo() &uuml;berhaupt braucht,
+und worauf man achten muss, wenn man es korrekt implementieren will.</b>
+<br>&nbsp;
+<h2>
+<b>Wof&uuml;r braucht man compareTo() ?</b></h2>
+Die Methode compareTo() ist n&uuml;tzlich, wenn Objekte eines Typs in einem
+baum-basierten Container wie java.util.TreeSet oder java.util.TreeMap abgelegt
+werden sollen oder wenn Sequenzen solcher Objekte (mit Hilfe von Sortiermethoden
+wie&nbsp; Arrays.sort()) sortiert werden sollen.&nbsp; F&uuml;r beide Anwendungsf&auml;lle
+braucht man eine Vergleichsfunktion, die eine Sortierreihenfolge liefert.&nbsp;
+Beim Sortieren ist das offensichtlich.&nbsp; Bei den Containern liegt es
+daran, dass baum-basierte Container ihre Objekte immer in sortierter Reihefolge
+halten. Die compareTo()-Methode definiert das ben&ouml;tigte Sortierkriterium:&nbsp;
+sie liefert die Aussage, ob das this-Objekt gr&ouml;&szlig;er, kleiner
+oder gleich einem anderen Objekt ist. compareTo()ist also eine Vergleichsfunktion,
+die insbesondere auch den Fall den Gleichheit abdeckt und deshalb in enger
+Beziehung zur equals()-Methode steht, die ebenfalls auf Gleichheit zweier
+Objekte pr&uuml;ft.
+<p>Wir haben uns in vorangegangenen Artikeln mit den Methoden equals()
+und hashCode() besch&auml;ftigt.&nbsp; Diese beiden Methoden werden gebraucht,
+wenn Objekte in einem hash-basierten Container verwaltet werden sollen.&nbsp;
+Baum-basierte Container sind intern ganz anders organisiert als hash-basierte
+Container, aber auch sie stellen gewisse Anforderungen an die Objekte,
+die sie verwalten k&ouml;nnen.&nbsp; F&uuml;r die hash-basierten Container
+war die Anforderung: equals() und hashCode() m&uuml;ssen zur Verf&uuml;gung
+stehen, und zwar in konsistenter und korrekter Form.&nbsp; Die genauen
+Anforderungen sind formal im equals()-Contract und hashCode()-Contract
+spezifiziert. F&uuml;r die baum-basierten Container ist das ganz &auml;hnlich.
+<p>Die Anforderung an Objekte, die in einem baum-basierten abgelegt werden
+k&ouml;nnen, besteht darin, dass f&uuml;r die Objekte eine Ordnung definiert
+sein muss.&nbsp; Diese Ordnung kann auf zwei Wegen zur Verf&uuml;gung gestellt
+werden:
+<ul>
+<li>
+Die im Container zu speichernden Objekte m&uuml;ssen das Interface Comparable
+implementieren und eine Methode compareTo() zur Verf&uuml;gung stellen.
+Hier ist Interface Comparable:</li>
+
+<br><tt>public interface Comparable {</tt>
+<br><tt>&nbsp; public int compareTo(Object o);</tt>
+<br><tt>}</tt>
+<li>
+Es gibt einen Comparator, der Objekte, die im Container abgelegt werden
+sollen, vergleichen kann.&nbsp; Ein Comparator ist Instanz einer Klasse,
+welche das Comparator-Interface implementiert und Methoden equals() und
+compare() zur Verf&uuml;gung stellt. Hier ist Interface Comparator:</li>
+
+<br><tt>public interface Comparator {</tt>
+<br><tt>&nbsp; int compare(Object o1, Object o2);</tt>
+<br><tt>&nbsp; boolean equals(Object o);</tt>
+<br><tt>}<sup><a href="#footnote_1">1</a></sup></tt></ul>
+Im ersten Fall ist die Vergleichsfunktionalit&auml;t Bestandteil der Funktionalit&auml;t
+der Klasse des Objekts, im zweiten Fall ist der Vergleich nicht in der
+Klasse, sondern extern im Comparator implementiert.&nbsp; Logisch sind
+diese beiden Varianten aber gleichwertig. Wir werden im Folgenden nur noch
+die Implementierung der compareTo()-Methode besprechen; alle Gesagte gilt
+dann analog auch f&uuml;r die compare()-Methode eines entsprechenden Comparators.
+<p>Wie man schon sehen kann, ist die compareTo()-Methode einer Klasse im
+Vergleich zur equals()- Methode von einer etwas anderen Qualit&auml;t.&nbsp;
+equals() ist bereits in der Superklasse aller Klassen, n&auml;mlich Object,
+definiert und implementiert.&nbsp; Damit haben alle Objekte in Java eine
+equals()-Methode und man muss sich immer Gedanken dar&uuml;ber machen,
+ob das von Object geerbte equals() korrekt ist oder man es f&uuml;r eine
+neue Klasse nicht besser &uuml;berschreiben sollte.&nbsp; Das ist f&uuml;r
+compareTo() deutlich anders.&nbsp; compareTo() ist nicht in Object definiert,
+sondern im Comparable-Interface. Das bedeutet, das nicht alle Java-Objekte
+automatisch "comparable" sind. Wenn eine Klasse das Comparable-Interface
+nicht implementiert, dann ist auch kein Malheur.&nbsp; Man kann immer noch
+einen entsprechenden Comparator definieren, der die Funktionalit&auml;t
+des Objekt-Vergleichs in seiner compare()-Methode implementiert.. Wenn
+es auch den nicht gibt, dann kann man solche Objekte eben nicht in baum-basierten
+Containern ablegen.&nbsp; Au&szlig;erdem kann man Sequenzen solcher Objekte
+nicht sortieren. Objekte ohne compareTo() und ohne Comparator sind per
+definitionem nicht vergleichbar und damit weder sortierbar noch in einem
+baum-basierten Container ablegbar.
+<p>Das kann von der Semantik der Klasse her v&ouml;llig korrekt sein; nicht
+alle Objekte per se sind sortierbar.&nbsp; Es kann auch vorkommen, dass
+die Objekte zwar sortierbar w&auml;ren, aber diese Funktionalit&auml;t
+einfach nicht gebraucht wird in einer Applikation.&nbsp; Anders als bei
+equals(), wo man sich auf jeden Fall Gedanken machen muss, kann man die
+Problematik "compareTo()" bei Bedarf vernachl&auml;ssigen.&nbsp; Es gibt
+ohne compareTo() gewisse Einschr&auml;nkungen, aber keine fiesen Fehler.&nbsp;
+Wenn man compareTo() aber implementieren will, dann sollte man es richtig
+machen. Wie das geht und worauf man achten muss, sehen wir uns im Folgenden
+n&auml;her an.
+<br>&nbsp;
+<h2>
+Baum-basierte Container in Java</h2>
+Wie sehen baum-basierte Container aus und wof&uuml;r brauchen sie die compareTo()-Methode?
+<p>Baum-basierte Container sind Datenstrukturen, die ihre Elemente in Knoten
+ablegen.&nbsp; All diese Knoten verweisen aufeinander, so dass der Container
+aus einem Geflecht von miteinander verbundenen Knoten besteht.&nbsp; Die
+Verweise sind so organisiert, dass ein Bin&auml;r-Baum entsteht: in einem
+Bin&auml;r-Buam verweist jeder Knoten auf seinen &uuml;bergeordneten Knoten
+(parent) und auf zwei untergeordnete Knoten (children) (deshalb "Bin&auml;r"-Baum).&nbsp;
+Die beiden Kind-Knoten sind so angelegt, dass das Element im linken Kind-Knoten
+kleiner und das Element im rechten Kind-Knoten gr&ouml;&szlig;er als das
+Element im eigenen Knoten sind.&nbsp; Auf diese Weise entsteht eine Sortierreihenfolge;
+es gibt einen Navigationsalgorithmus, der vom kleinsten Knoten &uuml;ber
+den jeweils n&auml;chst-gr&ouml;&szlig;eren Knoten bis zu gr&ouml;&szlig;ten
+Knoten alle Elemente des Container zug&auml;nglich macht.&nbsp; Damit sind
+alle Elemente in einem baum-basierten Container in sortierter Reihenfolge
+zugreifbar.
+<p>Baum-basierte Container geh&ouml;ren zu den Standard-Datenstrukturen
+in der Informatik und sind in der entsprechenden Standardliteratur &uuml;ber
+Datenstrukturen und Algorithmen beschrieben (siehe zum Beispiel /<a href="#Knuth">KNU</a>/
+oder /<a href="#Sedgewick">SED</a>/).&nbsp; Hier ein kurzer Abriss &uuml;ber
+die wesentlichen Elemente; siehe auch Abbildung 1, welche den logischen
+Aufbau eines baum-basierten Containers zeigt.
+<center><img SRC="Folie1.JPG" NOSAVE height=375 width=500>
+<br><i>Abbildung 1: Interne Bin&auml;r-Baum-Struktur eines baum-basierten
+Containers</i></center>
+
+<p><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<p>Die Sortierreihenfolge ist eines der charakterisierenden Merkmale eines
+baum-basierten Containers.&nbsp; Wenn man daran interessiert ist, dass
+die Elemente in einer Sequenz immer in sortierter Reihenfolge verf&uuml;gbar
+sind, dann ist ein baum-basierter Container ideal.&nbsp; Der Container
+sorgt selbst&auml;ndig daf&uuml;r, dass neue Elemente immer an der "richtigen"
+Stelle in den Baum eingef&uuml;gt werden, d.h. an der Stelle, an die das
+neue Element gem&auml;&szlig; seines Inhalts in der Sortierreihenfolge
+geh&ouml;rt. Und hier kommt die compareTo()-Methode ins Spiel:&nbsp; f&uuml;r
+die Entscheidung &uuml;ber die richtige Position eines Elements braucht
+ein baum-basierter Java-Container entweder die compareTo()-Methode des
+Elements oder einen &auml;quivalenten Comparator.
+<p>Baum-basierte Container haben, &uuml;ber die Sortierreihenfolge hinaus,
+die Eigenschaft, dass der Zugriff auf die Elemente im Container in logarithmischer
+Zeit erfolgt.&nbsp; Zumindest ist das so, wenn der Bin&auml;r-Baum balanciert
+ist, das hei&szlig;t, wenn alle &Auml;ste in etwa gleich lang sind.&nbsp;
+Das ist normalerweise der Fall; baum-basierte Container balancieren ihre
+Bin&auml;r-B&auml;ume automatisch aus, wenn diese aus dem Gleichgewicht
+geraten sind.&nbsp; Verglichen mit einem hash-basierten Container sind
+die logarithmischen Zugriffszeiten sehr zuverl&auml;ssig.&nbsp; Bei einem
+hash-basierten Container variiert die G&uuml;te der Zugriffszeiten mit
+der G&uuml;te der Hash-Code-Berechnung: sie kann bei guter Verteilung fast
+konstant sein, was viel besser als der logarithmische Zugriff ist, aber
+auch linear bei ung&uuml;nstiger Verteilung, was sehr viel schlechter als
+der logarithmische Zugriff ist.
+<p>Man sieht also, dass die baum-basierten Java-Container sowohl f&uuml;r
+das Navigieren im Baum als auch f&uuml;r die Suche nach vorhandenen Elementen
+im Container oder das Einf&uuml;gen von neuen Elementen in den Container
+entweder die compareTo()-Methode des Elements oder einen &auml;quivalenten
+Comparator brauchen.&nbsp; Nehmen wir also einmal an, dass wir eine Klasse
+"comparable" machen wollen, damit wir Instanzen dieser Klasse in baum-basierten
+Container ablegen k&ouml;nnen.&nbsp; Was genau muss eine Implementierung
+von compareTo() leisten, damit der baum-basierte Container funktioniert?&nbsp;
+Die geforderten Eigenschaften sind im sogenannten Comparator-Contract festgelegt.
+<br>&nbsp;
+<h2>
+Der Comparator-Contract</h2>
+
+<p><br>Die Anforderungen an einen Comparator bzw. eine compareTo()-Methode
+findet man in der JavaDoc der Java 2 Standard Edition (J2SE) unter dem
+Eintrag Comparable.compareTo oder Comparator.compare. Hier ist der Originaltext:
+<br>&nbsp;
+<blockquote><tt>public int compareTo(Object o)</tt>
+<p>Compares this object with the specified object for order. Returns a
+negative integer, zero, or&nbsp; a positive integer as this object is less
+than, equal to, or greater than the specified object.
+<ul>
+<li>
+In the foregoing description, the notation sgn(expression) designates the
+mathematical signum function, which is defined to return one of -1, 0,
+or 1 according to whether the value of expression is negative, zero or
+positive. The implementer must ensure&nbsp; sgn(x.compareTo(y)) == -sgn(y.compareTo(x))
+for all x and y. (This implies that x.compareTo(y) must throw an exception
+iff y.compareTo(x) throws an exception.)</li>
+</ul>
+
+<ul>
+<li>
+The implementer must also ensure that the relation is transitive: (x.compareTo(y)>0
+&amp;&amp;&nbsp; y.compareTo(z)>0) implies x.compareTo(z)>0.</li>
+</ul>
+
+<ul>
+<li>
+Finally, the implementer must ensure that x.compareTo(y)==0 implies that&nbsp;
+sgn(x.compareTo(z)) == sgn(y.compareTo(z)), for all z.</li>
+</ul>
+
+<ul>
+<li>
+It is strongly recommended, but not strictly required that (x.compareTo(y)==0)
+== (x.equals(y)). Generally speaking, any class that implements the Comparable
+interface and violates this condition should clearly indicate this fact.
+The recommended language is "Note: this class has a natural ordering that
+is inconsistent with equals."</li>
+</ul>
+Parameters:
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; o - the Object to be compared.
+<br>Returns:
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; a negative integer, zero,
+or a positive integer as this object is less than, equal to, or greater
+than the specified object.
+<br>Throws:
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ClassCastException - if
+the specified object's type prevents it from being compared to this Object.</blockquote>
+
+<p><br>Das bedeutet das Folgende:
+<ol>
+<li>
+compareTo() muss eine der folgenden Antworten geben:</li>
+
+<ul>
+<li>
+negativer Returnwert&nbsp; falls this kleiner als other</li>
+
+<li>
+0&nbsp;&nbsp; falls this gleich other</li>
+
+<li>
+positiver Returnwert&nbsp; falls this gr&ouml;&szlig;er als other</li>
+
+<li>
+ClassClastException falls this und other nicht vergleichbar sind</li>
+</ul>
+
+<li>
+Symmetrie: Wenn x kleiner als y ist, dann muss y gr&ouml;&szlig;er als
+x sein und umgekehrt.</li>
+
+<br>&nbsp;
+<li>
+Transitivit&auml;t: Wenn x gr&ouml;&szlig;er als y und y gr&ouml;&szlig;er
+als z, dann muss auch x gr&ouml;&szlig;er als z sein.</li>
+
+<br>&nbsp;
+<li>
+Wenn x und y gleich sind, dann liefert der Vergleich von z mit x dasselbe
+Ergebnis wie der Vergleich von z mit y, d.h. wenn z gr&ouml;&szlig;er als
+x ist, dann ist es auch gr&ouml;&szlig;er als y, usw.</li>
+
+<br>&nbsp;
+<li>
+Konsistenz zu equals(): es wird empfohlen, dass Objekte, die gem&auml;&szlig;
+equals()gleich sind auch gem&auml;&szlig; compareTo() gleich sein sollten,
+und umgekehrt.</li>
+</ol>
+Hier sieht man deutlich die enge Beziehung zwischen equals() und compareTo().
+Es ist zwar nicht verlangt, dass equals() und compareTo() dieselbe Gleichheitsbeziehung
+liefern, aber es wird dringend empfohlen.&nbsp; Sehen wir uns einmal an,
+was passiert, wenn diese Forderung verletzt ist, und unter welchen Umst&auml;nden
+sie &uuml;berhaupt verletzt wird.
+<br>&nbsp;
+<h2>
+Konsistenz zwischen compareTo() und equals()</h2>
+
+<p><br>Ein Beispiel f&uuml;r eine Ordnungsrelation, die nicht konsistent
+zu equals() ist, ist die compareToIgnoreCase()-Methode der String-Klasse.
+Diese Methode liefert Gleichheit f&uuml;r Strings, die sich allein in der
+Gro&szlig;-/Kleinschreibung unterscheiden.&nbsp; Beispiel:
+<p><tt>String a = new String("abc");</tt>
+<br><tt>String b = new String("ABC");</tt>
+<p><tt>a.compareToIgnoreCase(b));&nbsp;&nbsp; // yields: 0</tt>
+<br><tt>a.equals(b));&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// yields: false</tt>
+<p>Ein Comparator auf der Basis von compareToIgnoreCase() w&auml;re inkonsistent
+zu equals(), weil die Strings "abc" und "ABC" bzgl. equals() verschieden
+sind, aber bzgl. des Comparators aber gleich sind.&nbsp; (Die String-Klasse
+hat auch eine compareTo()-Methode, die konsistent zu equals() ist, aber
+lassen wir im Moment mal au&szlig;er acht; wir wollen ja gerade den inkonsistenten
+Fall betrachten.)
+<p>Was passiert, wenn eine solche inkonsistente Vergleichsfunktionalit&auml;t
+verwendet?&nbsp; Man wird zum Beispiel beobachten, dass man in einem TreeSet
+nur einen der beiden Strings "abc" und "ABC" ablegen kann, weil ein TreeSet
+kein Duplikate erlaubt und "abc" bzgl. compareToIgnoreCase() ein Duplikat
+von "ABC" w&auml;re.&nbsp; Au&szlig;erdem w&uuml;rde man auf die Frage,
+ob "ABC" im Container enthalten ist, die Antwort "ja" bekommen, auch wenn
+"ABC" gar nicht enthalten ist, sondern nur eines seiner Duplikate wie "abc"
+oder "aBc" oder "abC".&nbsp; Beispiel:
+<p><tt>class CaseInsensitiveStringComparator implements Comparator {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; public int compare(Object
+o1,Object o2) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return ((String)o1).compareToIgnoreCase((String)o2);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>}</tt>
+<p><tt>Set s = new TreeSet(new Test.CaseInsensitiveStringComparator());</tt>
+<br><tt>s.add(new String("abc"));&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// yields: true</tt>
+<br><tt>s.add(new String("ABC"));&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// yields: false</tt>
+<br><tt>Iterator i = s.iterator();</tt>
+<br><tt>while (i.hasNext())</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; System.out.println(i.next());&nbsp;
+// set contains only "abc"</tt>
+<br><tt>s.contains(new String("ABC"));&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// yields: true</tt>
+<p>Die Effekte der Inkonsistenz zwischen compareTo() (bzw. Comparator)
+und equals() sind vielleicht verwirrend, aber es ist dennoch garantiert,
+dass die baum-basierten Container trotz Inkonsistenz funktionieren.&nbsp;
+Deshalb ist die Konsistenz empfohlen, aber nicht verlangt.
+<p>Ein anderes Beispiel f&uuml;r einen Vergleich, der inkonsistent zu equals()
+w&auml;re das Folgende:&nbsp; Betrachten wir eine Klasse Name, bestehend
+aus Vor- und Zuname.&nbsp; Wenn in equals() sowohl Vor- als auch Zuname
+in den Vergleich eingehen, aber bei compareTo() nur der Nachname ber&uuml;cksichtigt
+wird, dann sind compareTo() und equals() inkonsistent.&nbsp; Dann w&auml;re
+n&auml;mlich Peter M&uuml;ller und Thomas M&uuml;ller ungleich bzgl. equals(),
+aber gleich bzgl. compareTo().&nbsp; F&uuml;r die Konsistenz ist es erforderlich,
+dass in die Implementierung von compareTo() genau die Information eingeht,
+die auch zum Ergebnis von equals() beitr&auml;gt, und umgekehrt.
+<p>Wenn Klassen eine zu equals() inkonsistente Implementierung des Vergleichs
+liefern, dann sollte man das unbedingt in der Dokumentation der Klasse
+beschreiben.&nbsp; Der JDK schl&auml;gt sogar einen Wortlauf vor, der in
+der JavaDoc-Beschreibung der Klasse zu verwenden sei: "Note: this class
+has a natural ordering that is inconsistent with equals." (zu finden in&nbsp;
+/<a href="#JDOC">JDOC</a>/ unter Comparable.compareTo() und Comparator.compare()).
+<br>&nbsp;
+<h2>
+Implementierung von compareTo()</h2>
+Worauf muss man nun achten, wenn man compareTo() implementiert?&nbsp; Eigentlich
+muss man ziemlich genau dasselbe beachten wie f&uuml;r die Implementierung
+von equals().&nbsp; Man wird im Prinzip Feld f&uuml;r Feld vergleichen
+und daraus das Gesamtergebnis bestimmen.
+<br>&nbsp;
+<h3>
+Signatur</h3>
+Zur Signatur von compareTo() ist eigentlich nicht viel zu sagen.&nbsp;
+Sie ist im Interface Comparable festgelegt.&nbsp; Objekte, die man in einem
+TreeSet oder einer TreeMap ablegen will m&uuml;ssen das Comparable-Interface
+implementieren. Andernfalls gibt es eine ClassCastException zur Laufzeit.&nbsp;
+Also wird man die compareTo()-Methode mit der Signatur implementieren,
+die im Comparable-Interface verlangt wird:
+<p><tt>public int compareTo(Object o)</tt>
+<p>Die Alternative zum Comparable-Interface ist der Comparator.&nbsp; Wenn
+die Element nicht das Comparable-Interface implementieren, dann gibt man
+bei der Konstruktion des Containers einen Comparator mit, dessen compare()-Methode
+dann statt der compareTo()-Methode der Elemente verwendet wird.
+<p>Interessanterweise findet man im JDK eine Reihe von Klassen, die nicht
+nur die vom Comparable-Interface verlangte compareTo()-Methode haben, sondern
+noch eine oder mehrere &uuml;berladene Versionen von compareTo() haben.&nbsp;
+Die Klasse java.util.Date ist ein Beispiel daf&uuml;r.
+<p><tt>public class Date implements java.io.Serializable, Cloneable, Comparable
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp; public int compareTo(Date anotherDate) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; long thisTime = this.getTime();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; long anotherTime = anotherDate.getTime();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return (thisTime&lt;anotherTime ? -1 : (thisTime==anotherTime
+? 0 : 1));</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public int compareTo(Object o) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return compareTo((Date)o);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Diese Implementierungstechnik hat den Vorteil, dass man sich Implementierung
+von int compareTo(Date) den Downcast von Object auf Date sparen kann, weil
+diese Methode nur gerufen wird, wenn das Argument ein Date oder eine Subklasse
+von Date ist.&nbsp; Und bei der Subklasse liegt der Hase im Pfeffer.&nbsp;
+Die Date-Klasse ist nicht als final deklariert und ist damit eine potentielle
+Superklasse.&nbsp; Wenn der Autor einer Subklasse von Date nun seinerseits
+die Subklassen-Objekte Comparable machen will, dann gen&uuml;gt es nicht
+mehr, nur die vom Comparable-Interface verlangte Version von int compareTo(Object)
+zu implementieren, sondern dann muss man s&auml;mtliche in der Superklasse
+vorhandenen Versionen von compareTo() &uuml;berschreiben.&nbsp; Andernfalls
+kann es leicht &Uuml;bersetzungsfehler wegen "ambiguous method calls" geben.
+<p>Sehen wir uns einmal eine Subklasse NamedDate von Date an:
+<p><tt>&nbsp; public class NamedDate extends java.util.Date {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; private String name;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; NamedDate(String n) {name = n;}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; NamedDate(String n, int year, int month,
+int date)&nbsp; { super(year,month,date); name=n; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; public int compareTo(Object o) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (super.compareTo(o)==0)
+return name.compareTo(((NamedDate)o).name);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return super.compareTo(o);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp; }</tt>
+<p>Die Subklasse redefiniert die im Comparable-Interface definierte compareTo()-Methode.&nbsp;
+Der Aufruf von compareTo() zum Zwecke des Vergleichs zweier NamedDate-Objekte
+f&uuml;hrt dann aber zu einem &Uuml;bersetzungsfehler:
+<p><tt>&nbsp; NamedDate a = new NamedDate("New Year's Eve",2000,12,31);</tt>
+<br><tt>&nbsp; NamedDate b = new NamedDate("today");</tt>
+<br><tt>&nbsp; a.compareTo(b);&nbsp; // does not compile</tt>
+<p>Die Fehlermeldung lautet: reference to compareTo is ambiguous, both
+method compareTo(java.util.Date) in java.util.Date and method compareTo(java.lang.Object)
+in NamedDate match
+<p>Der Fehler lie&szlig;e sich zwar in diesem Beispiel durch einen Cast
+des Arguments nach Date vermeiden, also durch den Aufruf a.compareTo((Date)b);
+aber man kann dem Benutzer der Klasse NamedDate nicht zumuten, dass er
+wei&szlig;, zu welchem Typ er die Argumente einer Methode konvertieren
+muss, damit der Aufruf &uuml;berhaupt geht.&nbsp; Die oben gezeigte Implementierung
+ist daher nicht zu empfehlen.
+<p>Die Fehlermeldung des Compiler wegen des zweideutigen Methodenaufrufs
+ist angesichts der Overload-Resolution-Regeln in Java nicht &uuml;berraschend.
+Der Java-Compiler muss f&uuml;r den Aufruf von a.compareTo(b) die richtige
+Version von compareTo() finden.&nbsp; Dazu sucht er zun&auml;chst alle
+Kandidaten zusammen.&nbsp; Als Kandidaten kommen alle compareTo()-Methoden
+aus der Klasse NamedDate sowie alle zug&auml;nglichen compareTo()-Methoden
+aus s&auml;mtlichen Superklassen von NamedDate in Frage.&nbsp; Es gibt
+also 3 Kandidaten in unserem Beispiel:
+<ul>
+<li>
+NamedDate.compareTo(Object)</li>
+
+<li>
+Date.compareTo(Object) und</li>
+
+<li>
+Date.compareTo(Date)</li>
+</ul>
+Aus dieser Kandidatenmenge bestimmt der Compiler dann den "besten" Kandidaten.&nbsp;
+In dieser Bewertung der Kandidaten gehen zwei Kriterien ein:
+<blockquote>(a) die Konvertierungen, die f&uuml;r die Argumente der Methode
+n&ouml;tig sind
+<br>(b) die Konvertierungen, die f&uuml;r das Objekt n&ouml;tig sind, auf
+dem die Methode aufgerufen wird</blockquote>
+
+<p><br>Die genauen Regeln f&uuml;r den Methoden-Aufruf sind in der Sprachbeschreibung
+(siehe /<a href="#Gosling">GOS</a>/) beschrieben und sind schwer zu verstehen.&nbsp;
+An dieser Stelle daher nur ein ungef&auml;hrer Einblick:
+<p>In unserem Beispiel muss f&uuml;r den ersten Kandidaten NamedDate.compareTo(Object)
+eine Konvertierung von NamedDate, dem Typ des &uuml;bergebenen Arguments,
+nach Object, dem deklarierten Argumenttyp, gemacht werden.&nbsp; Das ist
+eine Konvertierung des Arguments &uuml;ber zwei Stufen in der Klassenhierarchie
+hinweg; das Objekts selbst muss nicht konvertiert werden.&nbsp; F&uuml;r
+den zweiten Kandidaten Date.compareTo(Object) muss dieselbe Konvertierung
+f&uuml;r das Argument gemacht werden und der Kandidat ist dazu noch in
+einem fremden Scope, n&auml;mlich der Superklasse Date definiert.&nbsp;
+Dieser Kandidat ist deshalb schlechter als der erste Kandidat.&nbsp; Der
+dritte Kandidat Date.compareTo(Date) erfordert eine Typkonvertierung f&uuml;rs
+Argument &uuml;ber eine Stufe hinweg, von NamedDate nach Date, und ist
+in der Superklasse definiert, was eine Konvertierung des Objekts erfordert.&nbsp;
+Damit ist keiner der Kandidaten 1 und 3 eindeutig besser und der Compiler
+meldet den zweideutigen Aufruf als Fehler.
+<p>Weil zweideutige Methodenaufrufe in Java so schnell zustande kommen,
+vermeidet man es eigentlich generell, in Klassenhierarchien Overloading
+(mehrere Versionen derselben Methoden in derselben Klasse) und Overriding
+(Redefinition von Methoden in abgeleiteten Klassen) zu mischen.&nbsp; Wenn
+die Superklasse Date nur eine Version von compareTo() h&auml;tte, n&auml;mlich
+die vom Comparable-Interface verlangte Version Date.compareTo(Object),
+dann g&auml;be es keine Zweideutigkeiten: die Subklassen-Version NamedDate.compareTo(Object)
+w&auml;re dann in unserem Beispiel eindeutig der beste Kandidat.&nbsp;
+Um die Zweideutigkeiten zu vermeiden, werden wir&nbsp; nur eine compareTo()-Methode
+pro Klasse implementieren.
+<p>Was macht aber nun, wenn man von einer Superklasse wie Date mit ihren
+&uuml;berladenen Versionen von compareTo() ableiten will oder muss?&nbsp;
+Da bleibt nur die M&ouml;glichkeit, s&auml;mtliche Versionen von compareTo()
+zu redefinieren.&nbsp; Wenn man dann ohnehin schon dabei ist, diverse Varianten
+der Methode zu definieren, dann liegt es nahe, im Stil der Superklasse
+auch noch eine subklassen-spezifische Variante NamedDate.compareTo(NamedDate)
+hinzuzuf&uuml;gen, die die eigentliche Funktionalit&auml;t implementiert
+und an die die &uuml;brigen Versionen delegieren. Damit ist eine Inflation
+von compareTo()-Methoden vorprogrammiert, die sich nat&uuml;rlich fortsetzt,
+sobald die Klassenhierarchie w&auml;chst und weitere Sub-Subklassen hinzu
+kommen.
+<p>Insgesamt halten wir die Verwendung mehrerer &uuml;berladener Versionen
+von compareTo(), wie man sie im JDK findet, f&uuml;r wenig nachahmenswert.&nbsp;
+Sie bietet keinen nennenswerten Vorteil und f&uuml;hrt in Klassenhierarchien
+zu einer inflation&auml;ren Vermehrung der &uuml;berladener Versionen.&nbsp;
+Bei final Klassen, wie zum Beispiel der String-Klasse, st&ouml;rt es nicht,
+aber bei non-final Klassen raten wir davon ab.
+<p>Die eigentlich Implementierung der compareTo()-Methode &auml;hnelt der
+Implementierung von equals().
+<br>&nbsp;
+<h3>
+Alias-Pr&uuml;fung</h3>
+Man kann, wie bei der Implementierung von equals(), zwecks Optimierung
+als erstes pr&uuml;fen, ob die beiden zu vergleichenden Objekte identisch
+sind.&nbsp; Identische Objekte sind insbesondere auch gleich, d.h. compareTo()
+muss 0 zur&uuml;ckgeben, und man kann sich allen weiteren Aufwand sparen.
+<p><tt>public int compareTo(Object other) {</tt>
+<br><tt>&nbsp; if (this == other)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return 0;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt>
+<h3>
+Test auf null</h3>
+Die Pr&uuml;fung, ob other eine null-Referenz ist, wird bei der Implementierung
+von compareTo() &uuml;blicherweise unterlassen.&nbsp; Statt dessen wird
+einfach auf other zugegriffen und ggf. eine NullPointerException provoziert.
+Das ist g&auml;ngige Praxis so und der Comparator-Contract sagt auch nichts
+dazu, wie null-Referenzen behandelt werden m&uuml;ssen. Aus der Symmetrie-Anforderung
+des Comparator-Contracts kann man allerdings indirekt ableiten, dass der
+Vergleich mit null eine NullPointerException ausl&ouml;sen muss, weil der
+symmetrische Fall, n&auml;mlich null.compareTo(o) eine solche Exception
+hervorruft.
+<p>Bei der Implementierung von equals() ist das anders.&nbsp; Dort muss
+man den Sonderfall der null-Referenz als Argument von equals() explizit
+abfangen, weil der equals()-Contract verlangt, dass der Vergleich mit null
+immer false liefern muss. equals() ist deshalb in der Behandlung von null-Referenzen
+nicht symmetrisch: o.equals(null) muss false liefern, wohingegen null.equals(o)
+eine NullPointerException ausl&ouml;st.&nbsp; compareTo() hingegen ist
+auch f&uuml;r null-Referenzen symmetrisch und wirft in beiden F&auml;llen
+eine NullPointerException.
+<h3>
+Test auf Vergleichbarkeit</h3>
+Das Comparable-Interface verlangt, dass man compareTo() mit der Signatur
+public int compareTo(Object other) implementiert. Das bedeutet, dass other
+auf Objekte beliebigen Typs verweisen kann. Aus diesem Grunde muss man
+pr&uuml;fen, ob other &uuml;berhaupt mit this vergleichbar ist.&nbsp; Diesen
+Vergleichbarkeitstest haben wir im Falle von equals() ausf&uuml;hrlich
+diskutiert (siehe /<a href="#Kreft1">KRE</a>/).&nbsp; Alles dort Gesagte
+gilt uneingeschr&auml;nkt auch hier.
+<p>Aus Gr&uuml;nden der Konsistenz zu equals() wird man f&uuml;r den Vergleichbarkeitstest
+in compareTo() dieselbe Technik verwenden, die man auch in equals() verwendet
+hat.&nbsp; Wir hatten vorgeschlagen, diesen Test mit Hilfe von getClass()
+zu machen:
+<p><tt>int compareTo(Object other) {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; if (other.getClass() != getClass())</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; throw new ClassCastException();</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>}</tt>
+<p>Als Reaktion im Falle von Unvergleichbarkeit schreibt der Comparator-Contract
+eine ClassCastException vor.&nbsp; Das ist eine Reaktion, die deutlich
+verschieden ist von dem Ergebnis, welches equals() in der gleichen Situation
+liefert.&nbsp; Die equals()-Methode liefert im Falle von Unvergleichbarkeit
+false zur&uuml;ck, wohingegen compareTo() in derselben Situation eine unchecked
+Exception wirft.&nbsp; Dieser kleine Unterschied hat gr&ouml;&szlig;ere
+Auswirkung, insbesondere was das Arbeiten mit Containern betrifft.
+<p>In einem hash-basierten Java-Container k&ouml;nnen Objekte beliebigen
+Typs abgelegt werden.&nbsp; Das hei&szlig;t, es k&ouml;nnen auch im selben
+Container verschiedene Typen von Objekten liegen.&nbsp; Solche heterogenen
+Elementsequenzen kann mit baum-basierten Java-Containern nicht erreichen.&nbsp;
+In einem TreeSet beispielsweise k&ouml;nnen nur Objekte abgelegt werden,
+die miteinander vergleichbar sind.&nbsp; Beim Versuch, einen "Fremdlings"
+im TreeSet einzuf&uuml;gen, wird die compareTo()-Methode gerufen, die in
+diesem Fall der Unvergleichbarkeit eine ClassCastException ausl&ouml;st.&nbsp;
+Es wird also nicht gelingen, einen "Fremdling" einzuf&uuml;gen.&nbsp; Das
+ist beim HashSet anders.&nbsp; Zwar wird auch beim Einf&uuml;gen des "Fremdlings"
+die equals()-Methode gerufen, aber sie wirft keine Exception, sondern sagt
+lediglich, dass der "Fremdling" verschieden ist von Elementen anderen Typs.
+Das ist kein Problem und der "Fremdling" wird eingef&uuml;gt und kann sp&auml;ter
+auch wieder im Container gefunden werden.
+<p>Das Verhalten von TreeSet und HashSet ist also ganz anders und dieser
+Unterschied ergibt sich als Nebeneffekt der ClassCastException, die von
+compareTo() ausgel&ouml;st wird. Interessanterweise implementieren sowohl
+TreeSet als auch HashSet ein gemeinsames Interface, n&auml;mlich das Set-Interface.&nbsp;
+Wenn man gegen dieses Set-Interface programmiert, dann wei&szlig; man nicht,
+ob sich hinter dem Interface ein TreeSet oder ein HashSet verbirgt und
+man wei&szlig; dann auch nicht, ob die add()-Methode mit einer unchecked
+Exception abbrechen kann oder nicht.&nbsp; Das ist einer der vielleicht
+nicht so erfreulichen Effekte der unchecked Exceptions in Java: die Methode
+Set.add() ist so deklariert, dass sie keine Exceptions wirft, zumindest
+keine checked Exceptions. Dennoch wird die semantisch identische Operation
+im Falle von HashSet gutartig verlaufen, w&auml;hrend sie im Falle von
+TreeSet mit einem gravierenden Fehler, n&auml;mlich mit einer unchecked
+Exception, scheitert.
+<p>Woran liegt es nun, dass man in compareTo() eine Exception ausl&ouml;st
+statt eine gutartige Antwort zu liefern? Das liegt einfach an der Semantik
+des Vergleichs.&nbsp; Es gibt keinen Returnwert, der Unvergleichbarkeit
+ausdr&uuml;ckt.&nbsp; Man muss sich entscheiden zwischen gr&ouml;&szlig;er,
+kleiner und gleich. Au&szlig;erdem soll die Vergleichsrelation auch noch
+symmetrisch und transitiv sein. Wenn man etwa versuchen w&uuml;rde zu sagen
+"Alle fremden Objekte sind kleiner als meine Objekte.", dann w&uuml;rde
+man im Falle der Unvergleichbarkeit einen positiven Wert zur&uuml;ck geben.&nbsp;
+Mit dieser Strategie ger&auml;t man aber in Konflikt mit der Symmetrie-Anforderung.&nbsp;
+Aus meinObjekt.compareTo(fremdesObjekt) > 0 m&uuml;sste folgen fremdesObjekt.compareTo(meinObjekt)
+&lt; 0.&nbsp; Und das stimmt nat&uuml;rlich nicht, wenn alle diese Strategie
+verfolgen.&nbsp; Deshalb ergeben sich "Inseln der Vergleichbarkeit", das
+hei&szlig;t, Mengen von Objekte, die miteinander per compareTo() verglichen
+werden k&ouml;nnen.&nbsp; Und nur miteinander vergleichbare Objekte k&ouml;nnen
+gemeinsam im selben baum-basierten Container abgelegt werden.
+<p>In der oben vorgeschlagenen Implementierung des Vergleichbarkeitstest
+per getClass() besteht eine "Insel" aus allen Objekte desselben Typ. Ebenso
+wie bei equals() kann man &uuml;berlegen, ob man die Vergleichbarkeit auf
+Sub- und Superklassen ausdehnen m&ouml;chte.&nbsp; Solche Implementierungen
+von compareTo() findet man im JDK.&nbsp; Wir haben bereits ein Beispiel
+gesehen, n&auml;mlich in der Klasse java.util.Date:
+<p><tt>public class Date implements java.io.Serializable, Cloneable, Comparable
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp; public int compareTo(Date anotherDate) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; long thisTime = this.getTime();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; long anotherTime = anotherDate.getTime();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return (thisTime&lt;anotherTime ? -1 : (thisTime==anotherTime
+? 0 : 1));</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; public int compareTo(Object o) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return compareTo((Date)o);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>}</tt>
+<p>In der Implementierung von Date.compareTo(Object) wird ein Downcast
+von Object nach Date gemacht.&nbsp; Dieser Downcast stellt den Test auf
+Vergleichbarkeit dar.&nbsp; Er scheitert mit der geforderten ClassCastException,
+wenn das Argument kein Date ist und auch nicht von einem Typ, der von Date
+abgeleitet ist.&nbsp; Hier werden also alle Objekte als vergleichbar angesehen,
+die vom gleichen oder von einem Subtyp sind.&nbsp; Diese Art der Implementierung&nbsp;
+&auml;hnelt der f&uuml;r equals() oft verwendeten, aber problematischen
+Technik des Vergleichbarkeitstest per instandeof-Operator.&nbsp; Bei equals()
+haben wir gesehen, dass Implementierungen von equals() in Klassenhierarchien,
+die die Vergleichbarkeit per instanceof-Test auf Subtypen ausdehnen, i.a.
+inkorrekt sind, weil sie intransitiv sind.&nbsp; Genau dasselbe Problem
+ergibt sich hier bei compareTo(), wenn der Vergleichbarkeitstest per Downcast
+gemacht wird.
+<p>Betrachten wir die oben schon verwendete Subklasse NamedDate:
+<p><tt>public class NamedDate extends java.util.Date {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; private String name;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; NamedDate(String n) {name = n;}</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; NamedDate(String n, int year, int month,
+int date)&nbsp; { super(year,month,date); name=n; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; public int compareTo(Object other) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return compareTo((NamedDate)other);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; public int compareTo(Date other) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return super.compareTo(other);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; public int compareTo(NamedDate other)
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (this==other) return 0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int res = super.compareTo(other);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (res==0) return name.compareTo(((NamedDate)other).name);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return res;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>}</tt>
+<p>Wir haben hier all die notwendigen &uuml;berladenen Versionen von compareTo()
+im Stil der Superklasse Date implementiert.&nbsp; Diese Implementierung
+scheitert schon daran, dass sie die Anforderung (4) aus dem Comparator-Contract
+verletzt:
+<p>Finally, the implementer must ensure that x.compareTo(y)==0 implies
+that&nbsp; sgn(x.compareTo(z)) == sgn(y.compareTo(z)), for all z.
+<p>Hier ist ein Beispiel:
+<p><tt>Date&nbsp; x = new Date();</tt>
+<br><tt>NamedDate y = new NamedDate("SD deadline");</tt>
+<br><tt>NamedDate z = new NamedDate("today");</tt>
+<p><tt>x.compareTo(y);&nbsp;&nbsp; // returns 0</tt>
+<br><tt>x.compareTo(z);&nbsp;&nbsp; // returns 0</tt>
+<br><tt>y.compareTo(z);&nbsp;&nbsp; // returns -33</tt>
+<center><img SRC="Folie2.JPG" height=375 width=500>
+<br><i>Abbildung 2: Beispiel einer inkorrekten (intransitiven) Implementierung
+von compareTo()</i></center>
+
+<p><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<p>Der Aufruf x.compareTo(y) ruft die Methode Date.compareTo(Date), welche
+die Superklassen-Anteile der beiden Objekte vergleicht.&nbsp; Deshalb kommt
+hier Gleichheit heraus.&nbsp; Der Aufruf x.compareTo(z ) ruft wiederum
+die Methode Date.compareTo(Date) und es kommt wieder Gleichheit heraus.&nbsp;
+Jetzt m&uuml;sste auch f&uuml;r den Vergleich y.compareTo(z) Gleichheit
+herauskommen.&nbsp; Das ist aber nicht der Fall.&nbsp; Es wird die Methode
+NamedDate.compareTo(NamedDate) gerufen, welche den Subklassen-spezifischen
+Anteil, n&auml;mlich den String,&nbsp; einbezieht und dann eben keine Gleichheit
+mehr feststellt.
+<p>Ganz genau wie bei equals() zeigt sich, dass man den Vergleich von Sub-
+und Superklassen-Objekten nicht korrekt implementieren kann, wenn die Subklassen
+eigene Felder hinzuf&uuml;gen, die zum Vergleich beitragen.&nbsp; Die Implementierungen
+von compareTo() in der Klasse java.util.Date sind zwar nicht falsch, aber
+eine Subklasse von Date, die zus&auml;tzliche nicht-transiente, nicht-statische
+Felder hat, kann keine korrekte Implementierung von compareTo() liefern.&nbsp;
+Deshalb sollten die Date.compareTo()-Methoden als final deklariert sein.
+<p>F&uuml;r eigene Klassen und Klassenhierarchien empfehlen wir, wie bei
+equals(), den Vergleichbarkeitstest per getClass().&nbsp; Der Vergleichbarkeitstest
+per Downcast ist nur bei final-Klassen unproblematisch, wo er sogar den
+Vorteil bietet, dass die ClassCastException als Seiteneffekt des Donwncasts
+automatisch erzeugt wird.
+<p>Warum der Test per Downcast im JDK verwendet wird und auch in der einschl&auml;gigen
+Java-Literatur (siehe zum Beispiel /<a href="#Bloch">BLO</a>/) propagiert
+wird, ist relativ unklar.&nbsp; Der Test per Downcast verleitet zu den
+gezeigten Fehlern in Klassenhierarchien, wohingegen der Test per getClass()
+robust ist und praktisch keine Nachteile hat. Er f&uuml;hrt lediglich zu
+der Einschr&auml;nkung, dass nur noch Objekte gleich Typs in einem baum-basierten
+Container abgelegt werden k&ouml;nnen.&nbsp; Das l&auml;sst sich aber leicht
+umgehen, indem man zus&auml;tzliche Comparatoren implementiert.&nbsp; Nehmen
+wir einmal an, wir h&auml;tten Date und NamedDate mit getClass() implementiert
+statt mit dem Downcast und wir wollten trotzdem einen TreeSet anlegen,
+der Date und NamedDate-Objekte enth&auml;lt.&nbsp; Dann kann man sich einen
+speziellen Date-Comparator schreiben, der in seiner compare()-Methode den
+Vergleich von Date und NamedDate-Objekten zul&auml;sst und dabei immer
+den Date-Anteil der Objekte vergleicht.&nbsp; Wenn man den TreeSet mit
+diesem Date-Comparator versorgt, dann verwendet der Container statt der
+compareTo()-Methoden der einzelnen Elemente die compare()-Methode des Date-Comparators.&nbsp;
+Damit kann man den gew&uuml;nschten heterogenen Container problemlos angelegen
+und alle Elemente im Container werden bzgl. Sortierung wie Date-Objekte
+behandelt.
+<p>Die Einschr&auml;nkung durch die getClass()-Technik ist im Falle von
+compareTo() deutlich geringer als bei equals(), weil die baum-basierten
+Container verglichen mit den hash-basierten Containern sehr flexibel sind.
+Ein hash-basierter Java-Container ist darauf fixiert, die hashCode() und
+die equals()-Methode der Elemente zu verwenden.&nbsp; Ein Pendant zum Comparator,
+also eine Alternative zu hashCode() und equals(), gibt es bei den hash-basierten
+Java-Containern nicht.
+<br>&nbsp;
+<h3>
+Vergleich der Felder</h3>
+F&uuml;r den eigentlichen Vergleich wird man die einzelnen Felder von this
+mit den korrespondierenden Feldern von other vergleichen. In welcher Reihenfolge
+man das tut, h&auml;ngt von der Semantik der Klasse ab.&nbsp; &Uuml;blicherweise
+priorisiert man die Felder und pr&uuml;ft weniger priore Felder nur wenn
+die h&ouml;her prioren Felder gleich sind.&nbsp; Also zum Beispiel bei
+einem Namen wird man erst die Familiennamen miteinander vergleichen, und
+nur wenn die Familiennamen gleich sind, vergleicht man auch die Vornamen.
+Diese Priorisierung der Felder determiniert die resultierende Sortierreihenfolge.
+<h4>
+Delegation an die Superklasse</h4>
+Bei Feldern, die von einer Superklasse geerbt werden, wird man den Vergleich
+der geerbten Felder per super.compareTo() an die Superklasse delegieren.&nbsp;
+Ob man das als erstes oder als letztes tut, h&auml;ngt von der Semantik
+der Klasse und der gew&uuml;nschten Sortierreihenfolge ab.&nbsp; Es kommt
+h&auml;ufig vor, dass die subklassen-spezifischen Felder nur dann verglichen
+werden, wenn der Superklassen-Anteil gleich ist. Das sieht dann wie folgt
+aus:
+<p><tt>public int compareTo(Object other) {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; int result = super.compareTo(other);</tt>
+<br><tt>&nbsp; if (result == 0) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ... compare subclass specific parts ...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return ... ;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; else</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; return result;</tt>
+<br><tt>}</tt>
+<p>Es muss aber nicht in allen F&auml;llen so sein, dass die Superklassen-Felder
+in der Sortierreichenfolge die h&ouml;here Priorit&auml;t gegen&uuml;ber
+den Subklassen-Feldern haben. In unserem Beispiel einer Klasse, die Vor-
+und Zunamen enth&auml;lt, k&ouml;nnte eine Klasse abgeleitet werden, die
+zus&auml;tzlich das Geburtsdatum enth&auml;lt.&nbsp; Wenn nun zuerst super.compareTo()
+gerufen wird, dann bestimmt der Name die Sortierreihenfolge, und das Geburtsdatum
+kommt nur ins Spiel, wenn die Namen gleich sind.&nbsp; Es k&ouml;nnte aber
+auch so sein, dass die Sortierung nach Alter bzw. Geburtsdatum erfolgen
+soll; dann w&uuml;rde super.compareTo() sp&auml;ter gerufen, n&auml;mlich
+erst dann, wenn die Geburtsdaten gleich sind. Das hei&szlig;t, anders als
+bei equals() delegiert man nicht generell als erstes an die Superklasse.&nbsp;
+Das kann so sein, muss aber nicht. Weglassen kann man die Delegation an
+die Superklasse, d.h. den Vergleich der Superklassen-Felder, allerdings
+nicht. In den Vergleich m&uuml;ssen alle Felder einbezogen werden, die
+auch f&uuml;r equals() ber&uuml;cksichtigt werden, wegen der Konsistenz
+zu equals().&nbsp; Dazu geh&ouml;ren nat&uuml;rlich auch die geerbten Felder.
+<h4>
+Vergleich der eigenen Felder</h4>
+F&uuml;r den eigentlichen Vergleich der Felder unterscheidet man zwischen
+<ul>
+<li>
+transienten Feldern,</li>
+
+<li>
+Feldern von primitivem Typ,</li>
+
+<li>
+Feldern, die Referenzen sind,</li>
+
+<li>
+Feldern, die Referenzen auf Objekte sind, die nicht Comparable sind, und</li>
+
+<li>
+Feldern, die Referenzen auf Objekte sind, die bei equals() eine Sonderbehandlung
+erhalten haben.</li>
+</ul>
+
+<p><br>Transiente Felder werden wie bei equals()&nbsp; ignoriert.
+<p>Bei Feldern von primitiven Typ verwendet man die entsprechenden Operatoren
+>, &lt;, und ==.&nbsp; Man k&ouml;nnte bei numerischen Feldern auf die
+Idee kommen, einfach die Differenz zu berechnen, weil die Differenz den
+verlangten Returnwert bereits sehr nahe kommt:&nbsp; die Differenz ist
+0 ist bei Gleichheit und positiv oder negativ bei Ungleichheit.&nbsp; Hier
+ist ein Beispiel:
+<p><tt>class someClass implements Comparable {</tt>
+<br><tt>&nbsp;private int size;</tt>
+<br><tt>&nbsp;...</tt>
+<br><tt>&nbsp;int compareTo(Object other) {</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp; int diff = size - ((someClass)other).size;</tt>
+<br><tt>&nbsp; if (diff != 0)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; return diff;</tt>
+<br><tt>&nbsp; ...</tt>
+<br><tt>&nbsp;}</tt>
+<br><tt>}</tt>
+<p>Das ist allerdings nicht zu empfehlen, weil die Differenz &uuml;berlaufen
+k&ouml;nnte (d.h gr&ouml;&szlig;er als INTEGER.MAX_VALUE = (231-1) sein
+k&ouml;nnte) und dann ist das Ergebnis falsch.
+<p>Bei Feldern, die Referenzen sind, wird man meistens die compareTo()-Methode
+der entsprechenden Klasse rufen.
+<p>Bei Feldern, die Referenzen auf Typen sind, die das Comparable-Interface
+nicht implementieren, muss man auf einen geeigneten Comparator zur&uuml;ckgreifen,
+falls es einen gibt.&nbsp; Wenn es den auch nicht gibt und das Feld aber
+zur Implementierung von equals() beigetragen hat, dann kann man keine Konsistenz
+zu equals() mehr erreichen.&nbsp; Das sollte man dann entsprechend dokumentieren.
+<p>Feldern, die Referenzen auf Objekte sind, die bei equals() eine Sonderbehandlung
+erhalten haben, m&uuml;ssen wegen der Konsistenz zu equals() eine entsprechende
+Sonderbehandlung in der Implementierung von compareTo() erhalten.&nbsp;
+Ein Beispiel ist die StringBuffer-Klasse.&nbsp; Wenn man StringBuffer miteinander
+vergleichen will, muss man sie zun&auml;chst in Strings konvertieren und
+dann die Strings miteinander vergleichen.&nbsp; F&uuml;r die Implementierung
+von compareTo() macht man das genauso.&nbsp; Das bietet sich auch schon
+deshalb an, weil die Klasse StringBuffer gar nicht Comparable ist, die
+Klasse String hingegen schon.
+<br>&nbsp;
+<h2>
+Zusammenfassung</h2>
+In diesem Artikel haben wir uns angesehen wof&uuml;r man die Methode compareTo()
+braucht, n&auml;mlich f&uuml;r das Sortieren von Objekten und das Speichern
+von Objekten in baum-basierten Containern. Wir haben uns die Anforderungen
+an die compareTo()-Methode, den sogenannten&nbsp; Comparator-Contract,
+angesehen und diskutiert, wie man eine korrekte Implementierung von compareTo()
+bewerkstelligt.&nbsp;&nbsp; Die wesentlichen Schwierigkeiten sind dabei
+die Konsistenz zu equals(), die empfohlen wird, aber nicht zwingend erforderlich
+ist.&nbsp; Die Konsistenz-Anforderung f&uuml;hrt zu einer engen Abh&auml;ngigkeit
+von der Implementierung der equals()-Methode einer Klasse.&nbsp; Eine weitere
+Schwierigkeit ist der Test auf Vergleichbarkeit von Objekten, den man entweder
+per getClass() oder per Downcast machen kann.&nbsp; Der Test per getClass()
+ist robuster und weniger fehleranf&auml;llig. Der Test per Downcast ist
+weit verbreitet sowohl im JDK als auch in der Java-Literatur, obwohl er
+zu Fehlern verleitet; er ist nur f&uuml;r final Klassen korrekt und hat
+dort den Vorteil, dass die notwenige Exception automatisch ausgel&ouml;st
+wird. Au&szlig;erdem haben wir gesehen, dass baum-basierte und hash-basierte
+Container trotz gemeinsamer Interfaces semantischrecht unterschiedlich
+sind, weil Operationen, die beim hash-basierten Container gutartig sind,
+beim baum-basierten Container zu Exceptions f&uuml;hren.
+<h2>
+Anmerkungen</h2>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<tr>
+<td VALIGN=TOP><a NAME="footnote_1"></a>/1/&nbsp;</td>
+
+<td>Diese equals()-Methode im Interface Comparator hat nichts mit dem Vergleich
+der Objekte zu tun, die der Comparator mittels compare() vergleicht. Comparator.equals()
+vergleicht Comparatoren miteinander; Comparator.compare() vergleicht zwei
+Objekte eines fremden Typs miteinander.&nbsp; Beispiel f&uuml;r einen Comparator:&nbsp;
+<p><tt>final class CaseInsensitiveStringComparator implements Comparator
+{</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; public int compare(Object
+o1,Object o2) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return ((String)o1).compareToIgnoreCase((String)o2);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; public boolean
+equals(Object obj) {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return (obj==null)?false:(getClass()==obj.getClass());</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>}</tt></td>
+</tr>
+</table>
+
+<h2>
+Literaturverweise</h2>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=10 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft1"></a>/KRE/</td>
+
+<td VALIGN=TOP><b>Objekt-Vergleich per equals(), Teil 1 und 2&nbsp;</b>
+<br>Klaus Kreft &amp; Angelika Langer
+<br>Java Spektrum, Januar 2002 und M&auml;rz 2002
+<br>URL: <a href="http://www.langer.camelot.de/Articles/JavaSpektrum/01.Equals-Part1/01.Equals1.html">http://www.langer.camelot.de/Articles/JavaSpektrum/01.Equals-Part1/01.Equals1.html</a>
+<br>URL: <a href="http://www.langer.camelot.de/Articles/JavaSpektrum/02.Equals-Part2/02.Equals2.html">http://www.langer.camelot.de/Articles/JavaSpektrum/02.Equals-Part2/02.Equals2.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Kreft2"></a>/KRE2/</td>
+
+<td><b><font face="Times New Roman, Times, serif"><font size=+0>Secrets
+of equals()</font></font></b>
+<br><b><font face="Times New Roman, Times, serif"><font size=+0>Part 1:
+Not all implementations of equals() are equal</font></font></b>
+<br><b><font face="Times New Roman, Times, serif"><font size=+0>Part 2:
+How to implement a correct slice comparison in Java</font></font></b>
+<br>Angelika Langer &amp; Klaus Kreft
+<br>Java Solutions, April 2002 and August 2002
+<br>URL: <a href="http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals.html">http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals.html</a>
+<br>URL: <a href="http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals-2.html">http://www.langer.camelot.de/Articles/Java/SecretsOfEquals/Equals-2.html</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Gosling"></a>/GOS/</td>
+
+<td><b>The Java Language Specification, 2nd Ed.</b>, sec. 15.12, p. 345ff
+<br>James Gosling, Bill Joy, Guy Steele, Gilad Bracha&nbsp;
+<br>Addison-Wesley, June 2000&nbsp;
+<br>ISBN: 0201310082
+<br>URL: <a href="http://java.sun.com/docs/books/jls/">http://java.sun.com/docs/books/jls/</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Bloch"></a>/BLO/&nbsp;</td>
+
+<td><b>Effective Java Programming Language Guide</b>
+<br>Josh Bloch&nbsp;
+<br>Addison-Wesley, June 2001&nbsp;
+<br>ISBN: 0201310058</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Knuth"></a>/KNU/&nbsp;</td>
+
+<td><b>The Art of Computer Programming, vol.3: Sorting and Searching.&nbsp;
+ed.2.&nbsp;</b>
+<br>Donald E. Knuth
+<br>Addison Wesley, 1998
+<br>ISBN 0-201-89685-0</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="Sedgewick"></a>/SED/&nbsp;</td>
+
+<td><b>Algorithms.&nbsp; Second edition.&nbsp;</b>
+<br>Robert Sedgewick
+<br>Addison-Wesley, 1983, 1988,&nbsp; 1989 reprint with authors corrections
+<br>ISBN 0-201-06673-4</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDK"></a>/JDK/&nbsp;</td>
+
+<td><b>Java 2 Platform, Standard Edition v1.3.1</b>
+<br>URL: <a href="http://java.sun.com/j2se/1.3/">http://java.sun.com/j2se/1.3/</a></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP><a NAME="JDOC"></a>/JDOC/&nbsp;</td>
+
+<td><b>Java 2 Platform, Standard Edition, v 1.3.1 - API Specification</b>
+<br>URL: <a href="http://java.sun.com/j2se/1.3/docs/api/index.html">http://java.sun.com/j2se/1.3/docs/api/index.html</a></td>
+</tr>
+</table>
+
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=1 WIDTH="88%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td COLSPAN="2"><img SRC="../../../Images/bar-small.gif" NOSAVE height=3 width=350>
+<br><font color="#000000">If you are interested to hear more about this
+and related topics you might want to check out the following seminar:</font></td>
+</tr>
+
+<tr>
+<td><b><i><font color="#295AB5">Seminar</font></i></b>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td ALIGN=CENTER VALIGN=CENTER WIDTH="10%"><a href="../../../Courses/EffectiveJava.htm"><img SRC="../../../Images/abstract.gif" NOSAVE BORDER=0 height=25 width=37></a></td>
+
+<td><b><font color="#000000"><a href="../../../Courses/EffectiveJava.htm">Effective
+Java</a> </font></b>- Advanced Java Programming Idioms&nbsp;
+<br><font color="#000000"><font size=-1>5 day seminar (open enrollment
+and on-site)</font></font></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+</body>
+</html>

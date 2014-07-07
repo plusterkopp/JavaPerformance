@@ -1,0 +1,232 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer & Klaus Kreft">
+   <title>Book Review  -  Efficient C++</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080" leftMargin="0" topMargin="0" marginwidth="0" marginheight="0">
+<a NAME="BokReviewEfficientCpp"></a>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="489" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=BOTTOM WIDTH="102"><img SRC="../../../Images/czonesub.gif" NOSAVE BORDER=0 height=33 width=106 align=LEFT></td>
+
+<td WIDTH="50%">
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="781" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=BOTTOM WIDTH="300"><b><sub><font face="Verdana"><font color="#FF0037"><font size=+3>&nbsp;Book
+Review</font></font></font></sub></b></td>
+</tr>
+
+<tr>
+<td VALIGN=BOTTOM WIDTH="387"><img SRC="../../../Images/czonesubrule.gif" VSPACE=4 NOSAVE BORDER=0 height=2 width=380></td>
+</tr>
+</table>
+&nbsp;</td>
+</tr>
+</table>
+
+<table BORDER=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP WIDTH="245">
+<center><table BORDER=0 WIDTH="100%" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP WIDTH="65"><img SRC="0201379503.gif" NOSAVE height=140 width=111></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="65"><b><font face="Verdana"><font size=-2>Efficient
+C++: Performance Programming Techniques&nbsp;</font></font></b></td>
+</tr>
+
+<tr>
+<td><i><font face="Verdana"><font size=-2>By Dov Bulka et al.&nbsp;</font></font></i></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="65"><font face="Verdana"><font size=-2>Reading,MA:Addison-Wesley
+Longman&nbsp;</font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="65"><font face="Verdana"><font size=-2>ISBN 0201379503&nbsp;</font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="65"><font face="Verdana"><font size=-2>336 pages&nbsp;</font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="65"></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="65"><font face="Verdana"><font size=-2>Price: $34.95&nbsp;</font></font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="65"><i><font face="Verdana"><font size=-2>(Reviewed
+3/29/00)</font></font></i></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP>&nbsp;</td>
+</tr>
+</table></center>
+&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="50%">
+<center><table BORDER=0 WIDTH="566" >
+<caption>&nbsp;</caption>
+
+<tr>
+<td VALIGN=TOP WIDTH="60%"><b><font face="Verdana"><font color="#232990"><font size=+2>Squeezing
+Every Ounce of Performance Out of Large C++ Systems&nbsp;</font></font></font></b></td>
+</tr>
+
+<tr>
+<td WIDTH="60%"><i><font face="Verdana"><font size=-1>Refutes the misconception
+that C++ is inefficient</font></font></i></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td WIDTH="60%"><font face="Verdana"><font color="#333399"><font size=+2>D</font></font><font size=-1>oes
+software efficiency matter? This is the provocative question with which
+Dov Bulka and David Mayhew introduce their readers to the topic of performance
+programming in C++. Indeed, we find ourselves in an era where interpreted
+languages (such as Java and VB) enjoy increasing attention and where human-readable
+data exchange formats (such as XML and HTML) are preferred over binary
+formats. In former times we used to shy away from such obvious performance
+impediments, but today there is a seemingly unbroken belief prevalent in
+the IT industry that processor development will overcome any performance
+problems sooner or later. Bulka and Mayhew disagree, and we join their
+opposition. There is no excuse for performance-degrading design and programming
+style. In many software development domains, execution-time characteristics
+still play a significant role. For those C++ programmers who care about
+software efficiency, <i>Efficient C++: Performance Programming Techniques</i>
+is an excellent resource.&nbsp;</font></font>
+<p><font face="Verdana"><font size=-1>Unfortunately, C++ has a bad reputation
+as an inefficient programming language compared to C or assembler language.
+This is partly because in C++ the source-to-assembler code mapping is no
+longer a one-to-one identity, which in turn requires that the C++ programmer
+understand the cost of C++ language constructs. In C++ you are not going
+to achieve good performance accidentally without knowing the pitfalls.
+On the other hand, much of the reservation towards C++ stems from its infancy,
+when C++ compilers were still immature. Today, however, compiler technology
+has greatly matured and compiler builders invest much energy in optimization
+strategies. But these realizations have not yet reached the industry in
+all cases. There are still developers around—especially in embedded systems
+environments—who believe that templates are evil and will result in code
+size explosion just because early compilers indeed produced considerable
+code bloat. But this is history. Those who are concerned with software
+efficiency can greatly profit from the use of modern language features.
+<i>Efficient
+C++</i> sheds some light onto this type of misconception.&nbsp;</font></font>
+<p><font face="Verdana"><font size=-1>The book itself is informative and
+covers a broad range of efficiency-related topics, including coding style,
+design optimizations, concurrency control, and even system architecture
+dependencies. It examines all potentially inefficient C++ language constructs,
+demonstrates misuse, and suggests remedies.&nbsp;</font></font>
+<p><font face="Verdana"><font size=-1>Specifically:&nbsp;</font></font>
+<ul>
+<li>
+<font face="Verdana"><font size=-1><b>The cost of construction and destruction,
+temporaries, type conversions, etc.</b> While this should be painfully
+obvious for every experienced developer, you cannot repeat it often enough.
+The authors point out that redundant construction and lazy evaluation are
+a solution to certain problems in this area. They discuss return value
+optimization and argument and return value passing by value vs. reference.
+Everything that is state-of-the-art in this area is covered in this book.
+There is also an entire chapter devoted to reference counting.</font></font></li>
+
+<li>
+<font face="Verdana"><font size=-1><b>Virtual functions and inlining.</b>
+The overhead of virtual function calls should be obvious to the average
+C++ programmer, too. However, we are sure that only a few developers are
+aware of the fact that the true cost of virtual functions stems from the
+inability to inline them. This book devotes two chapters exclusively to
+inline functions. Bulka and Meyhew explain in detail the cost of function
+calls and the benefits of inlining (like enabling cross-call optimization),
+and provide countless practical tips for proper inlining. This is good
+because overly aggressive inlining can have an adverse effect and degrade
+efficiency. Inlining must therefore be done with care and prudence.</font></font></li>
+
+<li>
+<font face="Verdana"><font size=-1><b>The STL.</b> The STL is an uncommon
+combination of flexibility and efficiency, two principles that usually
+exclude each other. In the STL they are successfully combined. The basic
+message is this: Use it—it's almost impossible to do any better and beat
+its performance.</font></font></li>
+
+<li>
+<font face="Verdana"><font size=-1><b>Memory allocation and concurrency
+control.</b> The authors explain the cost of NEW and DELETE and give examples
+of more efficient alternatives—that is, memory pools for both single- and
+multi-threaded environments. Their chapter devoted to multi-threaded programs
+discusses data sharing problems and various locking techniques. For a full
+coverage of concurrent programming, you should certainly consult a book
+like Doug Lea's <i>Concurrent Programming in Java</i>, yet it is helpful
+to have the main points covered in this book under the aspect of performance
+programming.</font></font></li>
+
+<li>
+<b><font face="Verdana"><font size=-1>Coding and design optimizations.</font></font></b><font face="Verdana"><font size=-1>This
+is a collection of various techniques, such as caching, lazy evaluation,
+reference counting, and elimination of useless computations. The latter
+is particularly striking. They write, "The fastest code is the one that
+never executes." Well, that sounds like common sense, but the authors show
+convincing examples that we've seen in practice, too, which prove that
+common sense is not so common.</font></font></li>
+
+<li>
+<font face="Verdana"><font size=-1><b>Systems architecture.</b> In the
+closing chapter Bulka and Mayhew look at efficiency from yet another vantage
+point: how efficient the underlying hardware is. They discuss disk and
+memory structures, register sets, caching and virtual memory, the cost
+of context switches, and threading choices. It's good to remind software
+engineers that not all problems can be solved by proper software design
+alone and that there is an interaction between software and hardware.&nbsp;</font></font></li>
+</ul>
+<font face="Verdana"><font size=-1>By and large, <i>Efficient C++: Performance
+Programming Techniques</i> is brilliant. It approaches software efficiency
+from all conceivable sides and provides comprehensive coverage of the topic.
+It is full of practical tips and tricks, which prove that the authors have
+substantial practical experience in squeezing every ounce of performance
+out of large C++ systems. This book is highly recommendable and a must-read
+for every serious C++ programmer.&nbsp;</font></font>
+<p><i><font face="Verdana"><font size=-1><b>Angelika Langer</b> develops
+and teaches classes on advanced C++, STL, multithreading, internationalization,
+and Java. She served on the ANSI/ISO C++ Committee from 1993 to 1998. <b>Klaus
+Kreft</b> is a software architect and consultant with 15+ years of experience
+in industrial software development. He works for Siemens Business Services
+in Germany. Langer and Kreft are authors of "Standard C++ IOStreams and
+Locales: Advanced Programmer's Guide and Reference" (Addison-Wesley, 1999)
+and are columnists for <a href="http://www.creport.com/" target="_blank">C++
+Report</a> magazine.&nbsp;</font></font></i></td>
+</tr>
+</table></center>
+&nbsp;</td>
+</tr>
+
+<tr>
+<td COLSPAN="2">&nbsp;</td>
+
+<td></td>
+</tr>
+</table>
+
+</body>
+</html>
