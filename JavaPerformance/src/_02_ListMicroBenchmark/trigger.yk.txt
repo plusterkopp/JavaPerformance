@@ -1,0 +1,3 @@
+MethodListener methodPattern=_02_ListMicroBenchmark.MicroBenchmark$MicroBenchRunnable:setup(long) instanceOf= fillThis=true fillParams=true fillReturnValue=true maxTriggerCount=-1
+  onenter: StopCPUProfiling
+  onreturn: StartCPUSampling

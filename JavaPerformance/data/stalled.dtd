@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT snapshot (execution_log, cov.data?, package+)>
+<!ATTLIST snapshot
+	version CDATA #REQUIRED
+>
+
+<!ELEMENT execution_log EMPTY>
+<!ATTLIST execution_log
+	generator CDATA #REQUIRED
+	program_name CDATA #REQUIRED
+	program_start CDATA #REQUIRED
+	snapshot_created CDATA #REQUIRED
+	elapsed_time CDATA #REQUIRED
+	machine_name CDATA #REQUIRED
+	machine_type CDATA #REQUIRED
+	os_name CDATA #REQUIRED
+	os_version CDATA #REQUIRED
+>
+
+<!ELEMENT package (cov.data?, class+)>
+<!ATTLIST package
+	name CDATA #REQUIRED
+>
+
+<!-- source can be blank (i.e. root set?) -->
+<!ELEMENT class (cov.data?, method+)>
+<!ATTLIST class
+	name CDATA #REQUIRED
+	source CDATA #IMPLIED
+>
+
+<!-- there can be methods containing 0 lines -->
+<!ELEMENT method (cov.data.method?, line*)>
+<!ATTLIST method
+	name CDATA #REQUIRED
+>
+
+<!ELEMENT line (#PCDATA | cov.data.line)*>
+<!ATTLIST line
+	number CDATA #REQUIRED
+>
+
+<!ELEMENT cov.data EMPTY>
+<!ATTLIST cov.data
+	calls CDATA #REQUIRED
+	hit_methods CDATA #REQUIRED
+	total_methods CDATA #REQUIRED
+	hit_lines CDATA #REQUIRED
+	total_lines CDATA #REQUIRED
+>
+
+<!ELEMENT cov.data.method EMPTY>
+<!ATTLIST cov.data.method
+	calls CDATA #REQUIRED
+	hit_lines CDATA #REQUIRED
+	total_lines CDATA #REQUIRED
+>
+
+<!ELEMENT cov.data.line EMPTY>
+<!ATTLIST cov.data.line
+	calls CDATA #IMPLIED
+>

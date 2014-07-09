@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE snapshot SYSTEM "stalled.dtd">
+
+
+<snapshot version="1.0">
+  <execution_log generator="Coverage Blut und Eisen" program_name="CoverageTutorialWindow" program_start="Feb 9, 2001 11:23:49 AM" snapshot_created="Feb 9, 2001 11:23:58 AM" elapsed_time="5068" machine_name="WS30065" machine_type="Pentium" os_name="Windows NT" os_version="4" />
+  <cov.data calls="252" hit_methods="33" total_methods="62" hit_lines="136" total_lines="386" />
+  <package name="default">
+    <cov.data calls="51" hit_methods="22" total_methods="34" hit_lines="105" total_lines="265" />
+    <class name="CoverageTutorialWindow" source="CoverageTutorialWindow.java">
+      <cov.data calls="8" hit_methods="7" total_methods="14" hit_lines="62" total_lines="190" />
+      <method name="&lt;clinit&gt;()">
+        <cov.data.method calls="1" hit_lines="5" total_lines="5" />
+      </method>
+      <method name="main(String[])">
+        <cov.data.method calls="1" hit_lines="5" total_lines="5" />
+      </method>
+      <method name="println()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="2" />
+      </method>
+      <method name="println(String)">
+        <cov.data.method calls="1" hit_lines="2" total_lines="2" />
+      </method>
+      <method name="action(java.awt.Event, Object)">
+        <cov.data.method calls="1" hit_lines="6" total_lines="24" />
+      </method>
+      <method name="processEvent(java.awt.AWTEvent)">
+        <cov.data.method calls="0" hit_lines="0" total_lines="4" />
+      </method>
+      <method name="instance()">
+        <cov.data.method calls="2" hit_lines="3" total_lines="3" />
+      </method>
+      <method name="&lt;init&gt;()">
+        <cov.data.method calls="1" hit_lines="24" total_lines="24" />
+      </method>
+      <method name="performUnitTest3()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="58" />
+      </method>
+      <method name="performUnitTest2H()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="3" />
+      </method>
+      <method name="performUnitTest2L()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="3" />
+      </method>
+      <method name="performUnitTest2(AbstractMutableCollection)">
+        <cov.data.method calls="0" hit_lines="0" total_lines="28" />
+      </method>
+      <method name="performUnitTest1()">
+        <cov.data.method calls="1" hit_lines="17" total_lines="24" />
+      </method>
+      <method name="about()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="5" />
+      </method>
+    </class>
+    <class name="LIFOLinkedList" source="LIFOLinkedList.java">
+      <cov.data calls="8" hit_methods="5" total_methods="6" hit_lines="19" total_lines="36" />
+      <method name="clear()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="5" />
+      </method>
+      <method name="updateIterators(SuperLinkedList$Link)">
+        <cov.data.method calls="1" hit_lines="6" total_lines="7" />
+      </method>
+      <method name="remove(Object)">
+        <cov.data.method calls="1" hit_lines="6" total_lines="17" />
+      </method>
+      <method name="add(Object)">
+        <cov.data.method calls="3" hit_lines="2" total_lines="2" />
+      </method>
+      <method name="iterator()">
+        <cov.data.method calls="2" hit_lines="3" total_lines="3" />
+      </method>
+      <method name="&lt;init&gt;()">
+        <cov.data.method calls="1" hit_lines="2" total_lines="2" />
+      </method>
+    </class>
+    <class name="SuperLinkedList" source="SuperLinkedList.java">
+      <cov.data calls="3" hit_methods="2" total_methods="4" hit_lines="3" total_lines="9" />
+      <method name="iterator()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="0" />
+      </method>
+      <method name="isEmpty()">
+        <cov.data.method calls="2" hit_lines="1" total_lines="1" />
+      </method>
+      <method name="contains(Object)">
+        <cov.data.method calls="0" hit_lines="0" total_lines="6" />
+      </method>
+      <method name="&lt;init&gt;()">
+        <cov.data.method calls="1" hit_lines="2" total_lines="2" />
+      </method>
+    </class>
+    <class name="SuperLinkedList$Link" source="SuperLinkedList.java">
+      <cov.data calls="18" hit_methods="3" total_methods="4" hit_lines="8" total_lines="10" />
+      <method name="setNext(SuperLinkedList$Link)">
+        <cov.data.method calls="0" hit_lines="0" total_lines="2" />
+      </method>
+      <method name="getNext()">
+        <cov.data.method calls="5" hit_lines="1" total_lines="1" />
+      </method>
+      <method name="getObject()">
+        <cov.data.method calls="10" hit_lines="1" total_lines="1" />
+      </method>
+      <method name="&lt;init&gt;(Object, SuperLinkedList$Link)">
+        <cov.data.method calls="3" hit_lines="6" total_lines="6" />
+      </method>
+    </class>
+    <class name="LIFOLinkedList$LinkedListIter" source="LIFOLinkedList.java">
+      <cov.data calls="14" hit_methods="5" total_methods="6" hit_lines="13" total_lines="20" />
+      <method name="getLink()">
+        <cov.data.method calls="2" hit_lines="2" total_lines="3" />
+      </method>
+      <method name="clearNext()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="4" />
+      </method>
+      <method name="peekNext()">
+        <cov.data.method calls="1" hit_lines="2" total_lines="3" />
+      </method>
+      <method name="hasNext()">
+        <cov.data.method calls="5" hit_lines="1" total_lines="1" />
+      </method>
+      <method name="next()">
+        <cov.data.method calls="4" hit_lines="4" total_lines="5" />
+      </method>
+      <method name="&lt;init&gt;(LIFOLinkedList, SuperLinkedList)">
+        <cov.data.method calls="2" hit_lines="4" total_lines="4" />
+      </method>
+    </class>
+  </package>
+  <package name="java.util">
+    <cov.data calls="201" hit_methods="11" total_methods="28" hit_lines="31" total_lines="121" />
+    <class name="Vector" source="Vector.java">
+      <cov.data calls="201" hit_methods="11" total_methods="28" hit_lines="31" total_lines="121" />
+      <method name="toString()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="11" />
+      </method>
+      <method name="clone()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="7" />
+      </method>
+      <method name="removeAllElements()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="4" />
+      </method>
+      <method name="removeElement(Object)">
+        <cov.data.method calls="2" hit_lines="4" total_lines="5" />
+      </method>
+      <method name="addElement(Object)">
+        <cov.data.method calls="23" hit_lines="4" total_lines="5" />
+      </method>
+      <method name="insertElementAt(Object, int)">
+        <cov.data.method calls="0" hit_lines="0" total_lines="10" />
+      </method>
+      <method name="removeElementAt(int)">
+        <cov.data.method calls="2" hit_lines="7" total_lines="11" />
+      </method>
+      <method name="setElementAt(Object, int)">
+        <cov.data.method calls="0" hit_lines="0" total_lines="5" />
+      </method>
+      <method name="lastElement()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="3" />
+      </method>
+      <method name="firstElement()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="3" />
+      </method>
+      <method name="elementAt(int)">
+        <cov.data.method calls="112" hit_lines="2" total_lines="6" />
+      </method>
+      <method name="lastIndexOf(Object, int)">
+        <cov.data.method calls="0" hit_lines="0" total_lines="4" />
+      </method>
+      <method name="lastIndexOf(Object)">
+        <cov.data.method calls="0" hit_lines="0" total_lines="1" />
+      </method>
+      <method name="indexOf(Object, int)">
+        <cov.data.method calls="4" hit_lines="3" total_lines="4" />
+      </method>
+      <method name="indexOf(Object)">
+        <cov.data.method calls="2" hit_lines="1" total_lines="1" />
+      </method>
+      <method name="contains(Object)">
+        <cov.data.method calls="2" hit_lines="1" total_lines="1" />
+      </method>
+      <method name="elements()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="1" />
+      </method>
+      <method name="isEmpty()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="1" />
+      </method>
+      <method name="size()">
+        <cov.data.method calls="26" hit_lines="1" total_lines="1" />
+      </method>
+      <method name="capacity()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="1" />
+      </method>
+      <method name="setSize(int)">
+        <cov.data.method calls="0" hit_lines="0" total_lines="6" />
+      </method>
+      <method name="ensureCapacityHelper(int)">
+        <cov.data.method calls="0" hit_lines="0" total_lines="9" />
+      </method>
+      <method name="ensureCapacity(int)">
+        <cov.data.method calls="0" hit_lines="0" total_lines="3" />
+      </method>
+      <method name="trimToSize()">
+        <cov.data.method calls="0" hit_lines="0" total_lines="6" />
+      </method>
+      <method name="copyInto(Object[])">
+        <cov.data.method calls="0" hit_lines="0" total_lines="4" />
+      </method>
+      <method name="&lt;init&gt;()">
+        <cov.data.method calls="8" hit_lines="2" total_lines="2" />
+      </method>
+      <method name="&lt;init&gt;(int)">
+        <cov.data.method calls="10" hit_lines="2" total_lines="2" />
+      </method>
+      <method name="&lt;init&gt;(int, int)">
+        <cov.data.method calls="10" hit_lines="4" total_lines="4" />
+      </method>
+    </class>
+  </package>
+</snapshot>
+

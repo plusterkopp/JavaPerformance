@@ -1,0 +1,1717 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.79 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="Author" content="Angelika Langer and Klaus Kreft">
+   <title>Errata (1st Printing)</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#113E79" vlink="#677DAD" alink="#008080">
+<a NAME="Top"></a><a NAME="IOStreamsErrata1stPrinting"></a>
+<br>&nbsp;
+<table BORDER=0 CELLPADDING=10 WIDTH="100%" >
+<tr>
+<td>Thanks to everybody who took the time to send us an email to draw our
+attention to mistakes and typos in the book. We thank our readers for reading
+the book so carefully and attentively that you could spot the flaws. Thanks
+a lot!
+<p>Below is a list of errors that have have been identified in the first
+printing. All of these errors should be corrected in the second printing.&nbsp;
+<p>Feel free to send us <a href="mailto:langer@camelot.de">email</a> as
+soon as you detect another mistake.&nbsp;
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 COLS=3 WIDTH="75%" >
+<tr VALIGN=TOP>
+<td><a href="#21">page 21</a>
+<br><a href="#22">page 22</a>
+<br><a href="#33">page 33</a>
+<br><a href="#35">page 35</a>
+<br><a href="#37">page 37</a>
+<br><a href="#38">page 38</a>
+<br><a href="#39">page 39</a>
+<br><a href="#40">page 40</a>
+<br><a href="#42">page 42</a>
+<br><a href="#43">page 43</a>
+<br><a href="#45">page 45</a>
+<br><a href="#48">page 48</a>
+<br><a href="#50">page 50</a>
+<br><a href="#53">page 53</a>
+<br><a href="#55">page 55</a>
+<br><a href="#58">page 58</a>
+<br><a href="#70">page 70 &amp; 77</a>
+<br><a href="#73">page 73</a>
+<br><a href="#85">page 85</a>
+<br><a href="#89">page 89 &amp; 90</a>
+<br><a href="#92">page 92</a>
+<br><a href="#115">page 115</a>
+<br><a href="#144">page 144</a>
+<br><a href="#152">page 152 -155</a>
+<br><a href="#156">page 156</a>
+<br><a href="#160">page 160</a>
+<br><a href="#161">page 161</a></td>
+
+<td><a href="#162">page 162</a>
+<br><a href="#171">page 171</a>
+<br><a href="#177">page 177</a>
+<br><a href="#180">page 180</a>
+<br><a href="#188">page 188</a>
+<br><a href="#221">page 221</a>
+<br><a href="#222">page 222</a>
+<br><a href="#225">page 225 - 248</a>
+<br><a href="#233">page 233</a>
+<br><a href="#240">page 240</a>
+<br><a href="#241">page 241</a>
+<br><a href="#242">page 242</a>
+<br><a href="#245">page 245</a>
+<br><a href="#255">page 255</a>
+<br><a href="#272">page 272</a>
+<br><a href="#275">page 275</a>
+<br><a href="#281">page 281</a>
+<br><a href="#284">page 284</a>
+<br><a href="#286">page 286</a>
+<br><a href="#287">page 287</a>
+<br><a href="#288">page 288</a>
+<br><a href="#296">page 296</a>
+<br><a href="#298">page 298</a>
+<br><a href="#305">page 305</a>
+<br><a href="#315">page 315</a>
+<br><a href="#316">page 316</a></td>
+
+<td><a href="#317">page 317</a>
+<br><a href="#322">page 322</a>
+<br><a href="#323">page 323</a>
+<br><a href="#325">page 325</a>
+<br><a href="#327">page 327 &amp; 333</a>
+<br><a href="#335">page 335</a>
+<br><a href="#336">page 336</a>
+<br><a href="#338">page 338 &amp; 339</a>
+<br><a href="#456">page 456</a>
+<br><a href="#464">page 464</a>
+<br><a href="#479">page 479</a>
+<br><a href="#487">page 487</a>
+<br><a href="#502">page 502</a>
+<br><a href="#508">page 508</a>
+<br><a href="#511">page 511</a>
+<br><a href="#511&513">page 511 &amp; 513</a>
+<br><a href="#512">page 512 &amp; 514</a>
+<br><a href="#516">page 516</a>
+<br><a href="#549">page 549</a>
+<br><a href="#565">page 565</a>
+<br><a href="#615">page 614 &amp; 615</a>
+<br><a href="#621">page 621</a>
+<br><a href="#632">page 632</a>
+<br><a href="#636">page 636</a>
+<br><a href="#638">page 638</a>
+<br><a href="#640">page 640</a></td>
+</tr>
+</table>
+<img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="21"></a><b>page 21:</b>
+<br><i>The example uses a C-style string for demonstration of the effect
+of width. However, what we describe is wrong, because the maximum number
+of extracted characters is <tt>width()</tt> for C++ strings and <tt>width()-1</tt>
+for C string.&nbsp; In our example, only 9 instead of 10 characters would&nbsp;
+be extracted. We should have better been using a C++ string. The example
+but be corrected to:</i>
+<p><tt>// input</tt>
+<br><tt>int i; <b><blink><font color="#FF6666">string s;</font></blink></b></tt>
+<p><tt>cin.width(10);</tt>
+<br><tt>cin >> i >> s;</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Scott Barrett, Principal Member
+Technical Staff&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>PAR Government Systems Corporation,
+Rome, NY, May 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="22"></a><b>page 22:</b>
+<br><i>The code sample for demonstrating the effect of the field width
+setting is misleading because the leading white spaces are not visible.&nbsp;
+It should be changed to:</i>
+<p><font size=-1>&nbsp; <font face="Courier New,Courier">// output</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;int i; char s[11];</font></font>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;cout.width(10);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;<b><blink><font color="#FF6666">cout.fill('.');</font></blink></b></font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;cout &lt;&lt;i
+&lt;&lt; s;</font></font>
+<p>&nbsp;If the variables <font face="Courier New,Courier">i</font> and
+<font face="Courier New,Courier">s</font>
+have the following values:
+<br>&nbsp;<font face="Courier New,Courier"><font size=-1>i: 123</font></font>
+<br>&nbsp;and&nbsp;
+<br>&nbsp;<font face="Courier New,Courier"><font size=-1>s: "abc"</font></font>
+<p>&nbsp;then the output is
+<p>&nbsp;<font face="Courier New,Courier"><font size=-1><b><blink><font color="#FF6666">.......</font></blink></b>123abc</font></font>
+<p>that is, seven <b><blink><font color="#FF6666">dots</font></blink></b>
+followed by the three digits representing the value of <font face="Courier New,Courier">i</font>,
+followed by the character sequence contained in <font face="Courier New,Courier">s</font>.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Bernd Mohr / Research Centre
+Juelich, ZAM, Germany, August 2000&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="33"></a><b>page 33:</b>
+<br><i>The first two paragraphs in the section on "The Stream State's Effect
+on Insertion and Extraction" on page 33 is misleading and should read:</i>
+<p>&nbsp;&nbsp; The stream state affects the behavior of the IOStreams
+operations. By convention, all IOStreams operations have no effect once
+the stream state indicates an error situation. More specifically, I/O operations
+do nothing if the initial stream state at the time of&nbsp; their invocation
+includes either <font face="Courier New,Courier">failbit</font>, <font face="Courier New,Courier">badbit</font>,
+or <font face="Courier New,Courier">eofbit</font>, and input and output
+operations stop as soon as one of the stream state flags is set.
+<br>&nbsp;&nbsp; Note the interesting effect of the <font face="Courier New,Courier">eofbit</font>:
+Extractions do not only stop in case of an error (<font face="Courier New,Courier">failbit</font>
+or <font face="Courier New,Courier">badbit</font>), but also when the end
+of the input stream is reached (<font face="Courier New,Courier">eofbit</font>).
+Insertions typically stop only in case of an error, because no output operation
+ever sets the <font face="Courier New,Courier">eofbit</font>. If, however,
+the <font face="Courier New,Courier">eofbit</font> has been set before
+the output operation is invoked, then the attempted insertion will fail
+and have no effect. This can happen in bidirectional streams when an extraction
+that reached the end of the input is followed by an insertion to the stream,
+which then has the <font face="Courier New,Courier">eofbit</font> set due
+to the preceeding extraction. For this reason the <font face="Courier New,Courier">eofbit</font>
+in addition to the error flags <font face="Courier New,Courier">failbit</font>
+and <font face="Courier New,Courier">badbit</font> stops operations on
+input and bidirectional streams, but is irrelevant for operations on output
+streams.&nbsp;
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Bernd Mohr / Research Centre
+Juelich, ZAM, Germany, August 2000&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="35"></a><b>page 35:</b>
+<br><i>In the middle of page 35 we describe the effect of the cast operator
+that converts a stream to type <tt>void*</tt> saying the following:&nbsp;</i>
+<p>The cast operator <tt>operator void*()</tt> returns a zero pointer value
+if <tt>failbit</tt> or <tt>badbit</tt> are set, and zero otherwise.&nbsp;
+<p><i>Of course, this is nonsense.&nbsp; It must be corrected to:</i>
+<p>The cast operator <tt>operator void*()</tt> returns a zero pointer value
+if <tt>failbit</tt> or <tt>badbit</tt> are
+<br>set, and <b><blink><font color="#FF6666">nonzero</font></blink></b>
+otherwise.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Robert P. Goddard, Senior Physicist,
+University of Washington, Seattle, WA, January 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="37"></a><b>page 37:</b>
+<br>An alternative to wrapping the critical operations into a try block
+is to suppress exceptions, execute all critical operations, and activate
+them afterwards. Here is an example:&nbsp;
+<p><font face="Courier New,Courier"><font size=-1>cout.exceptions(ios_base::goodbit);</font></font>
+<br><b><blink><font face="Courier New,Courier"><font color="#FF6666"><font size=-1>cout
+&lt;&lt; x;</font></font></font></blink></b>
+<br><font face="Courier New,Courier"><font size=-1>// do lots of other
+stream I/O</font></font>
+<br><font face="Courier New,Courier"><font size=-1>try {cout.exceptions(ios_base::badbit
+| ios_base::failbit);}</font></font>
+<br><font face="Courier New,Courier"><font size=-1>catch(ios_base::failure&amp;
+exc)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{&nbsp;&nbsp; if (cout.bad())</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; {&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// unrecoverable error</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+...</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+throw;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; }&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; else
+if(cout.fail())</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; {&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// retry</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+...</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; }</font></font>
+<br><font face="Courier New,Courier"><font size=-1>}</font></font>
+<p>The call to <font face="Courier New,Courier"><font size=-1><b><blink><font color="#FF6666">cout</font></blink></b>.exceptions(ios_base::goodbit)</font></font>
+clears the exception mask and deactivates all exceptions. All of the subsequent
+statements are executed because no exception can be thrown. Eventually,
+the call to <font face="Courier New,Courier"><font size=-1><b><blink><font color="#FF6666">cout</font></blink></b>.exceptions
+(ios_base::badbit | ios_base::failbit)</font></font> is wrapped into a
+try block and raises an <font face="Courier New,Courier"><font size=-1>ios_base::failure
+</font></font>exception
+in case that any of the previously executed operations failed.&nbsp;
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>students of an IOStreams seminar
+held at SAP AG in St. Leon-Rot, Germany, April 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="38"></a><b>page 38:</b>
+<br>To reset the stream state to good after an error has occured either
+<font face="Courier New,Courier"><font size=-1>clear()</font></font>
+or
+<font face="Courier New,Courier"><font size=-1>clear(goodbit) </font></font>can
+be used . Let us add a call to <font face="Courier New,Courier"><font size=-1>clear()</font></font>
+to the example above where we suggest to retry I/O processing. The code
+changes to:&nbsp;
+<p>&nbsp; <font face="Courier New,Courier"><font size=-1>cout.exceptions(ios_base::goodbit);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;<b><blink><font color="#FF6666">cout
+&lt;&lt; x;</font></blink></b></font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;// do lots of
+other stream I/O</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;try {cout.exceptions(ios_base::badbit
+| ios_base::failbit);}</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;catch(ios_base::failure&amp;
+exc)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;{&nbsp;&nbsp;
+if (cout.bad())</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;
+{&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// unrecoverable error</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+...</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+throw;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;
+}&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;
+else if(cout.fail())</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;
+{&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+cout.clear();&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// redo <b><blink><font color="#FF6666">the</font></blink></b> stream I/O
+that does not cause failure</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;
+}</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;}</font></font>
+<p><font face="Trebuchet MS"><font size=-2>error in code found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>students of an IOStreams seminar
+held at SAP AG in St. Leon-Rot, Germany, April 2000</font></font>
+<br><font face="Trebuchet MS"><font size=-2>typo in comment found by:</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Robert W. Hand, February 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="39"></a><b>page 39:</b>
+<br><i>The comment in the code snippet on page 39 should read:</i>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;
+else if(cout.fail())</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;
+{&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+cout.clear();&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// <b><blink><font color="#FF6666">redo those stream I/O operations that
+do not cause failure</font></blink></b></font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+return;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;
+}</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;}</font></font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Vikram bir Singh, September
+2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="40"></a><b>page 40:</b>
+<br><i>The first code example on page 40 should read:</i>
+<p><font face="Courier New,Courier">ifstream source<b><blink><font color="#FF6666">("src.cpp")</font></blink></b>;</font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Jonathan Levinson, July 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="42"></a><b>page 42:</b>
+<br><i>The last paragraph on page 42 is slightly misleading and should
+read:</i>
+<p><b><font face="Arial,Helvetica"><font size=-2>THE INITIAL FILE LENGTH</font></font></b><font face="Courier New,Courier">.
+</font>The
+open mode <font face="Courier New,Courier">trunc</font> (meaning
+<i>truncate</i>)&nbsp;
+sets the initial file length to zero, which has the effect of discarding
+the file content. The <font face="Courier New,Courier">trunc</font> flag
+is&nbsp; included in the default open mode of output file streams, so you
+can omit the <font face="Courier New,Courier">trunc</font> flag and think
+of the open mode <font face="Courier New,Courier">out</font> as being equivalent
+to <font face="Courier New,Courier">out|trunc</font>. This only holds true
+for output file streams. For bidirectional file streams, the <font face="Courier New,Courier">trunc</font>
+flag must always be explicitly specified, i.e., you must say <font face="Courier New,Courier">in|out|trunc</font>,
+if the file content is to be discarded.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Bernd Mohr / Research Centre
+Juelich, ZAM, Germany, August 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="43"></a><b>page 43:</b>
+<br><i>The last code example on page 43 should read:</i>
+<p><font face="Courier New,Courier">fstream BiStr(<b><blink><font color="#FF6666">"poem.txt"</font></blink></b>,<b><blink><font color="#FF6666">ios_base::in|ios_base::out</font></blink></b>);</font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Clinton James, IT Director,
+UCS Call One, Chicago, IL USA, July 2000 and</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Vikram bir Singh, September
+2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="45"></a><b>page 45:</b>
+<br><i>The first code example on page 45 should read:</i>
+<p><font face="Courier New,Courier">// bidirectional file stream opened
+<b><blink><font color="#FF6666">only
+for input</font></blink></b></font>
+<br><font face="Courier New,Courier">fstream BiFil("poem.txt", <b><blink><font color="#FF6666">ios_base::in</font></blink></b>);</font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Vikram bir Singh, September
+2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="48"></a><b>page 48:</b>
+<br>Typically, you use in-memory I/O if the information to be read is already
+available in the form of a string, or if the formatted result will be processed
+as a string.&nbsp; For example, to interpret the contents of a string as
+an integer value, the code might look like this:&nbsp;
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;int i;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;if (istringstream("4711")
+>> i)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; //
+i has the value: 4711</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;}</font></font>
+<p>The equivalent operation in C would be a call to the <b><blink><font face="Courier New,Courier"><font color="#FF6666"><font size=-1>sscanf()</font></font></font></blink></b>
+function. However, string streams are more powerful than <font face="Courier New,Courier"><font size=-1>sscanf()</font></font>,
+because they use the full set of formatting facilities of IOStreams, including
+internationalization for instance.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>students of an IOStreams seminar
+held at SAP AG in St. Leon-Rot, Germany, April 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="50"></a><b>page 50:</b>
+<br><i>A -- is printed as a plain - in the code snippet on page 50. The
+code snippet should read:</i>
+<p><tt>&nbsp;<font size=-1>// character buffer; can store lines of length
+99</font></tt>
+<br><tt><font size=-1>&nbsp;// note: input adds a terminating null character&nbsp;</font></tt>
+<br><tt><font size=-1>&nbsp;const int line_buffer_size = 100;</font></tt>
+<br><tt><font size=-1>&nbsp;char buffer[line_buffer_size];</font></tt>
+<p><tt><font size=-1>&nbsp;int line_number = 0;</font></tt>
+<br><tt><font size=-1>&nbsp;while (cin.getline(buffer, line_buffer_size,
+'\n')&nbsp;&nbsp;&nbsp; // stream still good() ?</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp; || cin.gcount())&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// any characters read ?</font></tt>
+<br><tt><font size=-1>&nbsp;{</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp; int count = cin.gcount();</font></tt>
+<p><tt><font size=-1>&nbsp;&nbsp; if (cin.eof())</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // end of file
+found; last line extracted</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout &lt;&lt;
+"Partial final line";&nbsp;</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp; else if (cin.fail())&nbsp;</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp; {&nbsp;&nbsp; // max number of chars
+was reached; line was longer 99 chars</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout &lt;&lt;
+"Partial long line";</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // clear stream
+state so that we can continue reading</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cin.clear(cin.rdstate()
+&amp; ~ios::failbit);</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp; } else {</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // don't include
+newline in count</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // mind: delimiter
+was extracted and counted, but not stored&nbsp;</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><blink><font color="#FF6666">count--;</font></blink></b></font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout &lt;&lt;
+"Line " &lt;&lt; ++line_number;</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp; }</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp; cout &lt;&lt; " (" &lt;&lt; count &lt;&lt;
+" chars): " &lt;&lt; buffer &lt;&lt; endl;</font></tt>
+<br><tt><font size=-1>&nbsp;}</font></tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Igor V. Rafienko, Norway, September
+2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="53"></a><b>page 53:</b>
+<br><i>The last paragraph should read:</i>
+<p>The error handling is omitted from the example. The functions <tt>tellp()/tellg()</tt>
+indicate failure by returning the invalid stream position <tt>pos_type(-1)</tt>
+and <tt>seekp()/<b><blink><font color="#FF6666">seekg()</font></blink></b></tt>
+indicate failure by setting the stream state.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Wolfgang Kaisers, Germany,
+July 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="55"></a><b>page 55:</b>
+<br><i>A -- is printed as a plain - in the code snippets on page 55. The
+code snippets should read:</i>
+<p><tt><font size=-1>&nbsp;ofstream ostr("/tmp/fil");&nbsp;</font></tt>
+<br><tt><font size=-1>&nbsp;int i=10;</font></tt>
+<br><tt><font size=-1>&nbsp;ostr &lt;&lt; unitbuf;</font></tt>
+<br><tt><font size=-1>&nbsp;while (<b><blink><font color="#FF6666">i--</font></blink></b>)</font></tt>
+<br><tt><font size=-1>&nbsp;{ ostr &lt;&lt; i; }</font></tt>
+<p><i><tt>and</tt></i>
+<p><tt><font size=-1>&nbsp;ofstream ostr("/tmp/fil");&nbsp;</font></tt>
+<br><tt><font size=-1>&nbsp;int i=10;</font></tt>
+<br><tt><font size=-1>&nbsp;while (<b><blink><font color="#FF6666">i--</font></blink></b>)</font></tt>
+<br><tt><font size=-1>&nbsp;{ ostr &lt;&lt; i;&nbsp;</font></tt>
+<br><tt><font size=-1>&nbsp;&nbsp; ostr.flush();</font></tt>
+<br><tt><font size=-1>&nbsp;}</font></tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Igor V. Rafienko, Norway, September
+2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="58"></a><b>page 58:</b>
+<br><i>We failed to mention that sync_with_stdio is a member function of
+ios_base; instead our code snippet suggests that is its a global function.
+The corresponding section should read:</i>
+<p>This synchronization is time consuming and for this reason might not
+be desired in all situations. You can switch it off by calling
+<p><tt>&nbsp; <b><blink><font color="#FF6666">ios_base::</font></blink></b>sync_with_stdio(false);</tt>
+<p><b><blink><font color="#FF6666">where <tt>sync_with_stdio()</tt> is
+a static stream member function defined in base class <tt>ios_base</tt>.&nbsp;</font></blink></b>
+<p>After such a call the predefined streams will operate independently
+of the C standard files, with possible performance improvements in your
+C++ stream operations.&nbsp;
+<br>&nbsp;
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Igor V. Rafienko, Norway, September
+2000</font></font>
+<br><font face="Trebuchet MS"><font size=-2>further improvements suggestes
+by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Robert P. Goddard, Senior Physicist,
+University of Washington, Seattle, WA, January 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="70"></a><b>page 70 and 77:</b>
+<br><font color="#000000"><i><font face="Times New Roman,Times">In diagrams
+change </font></i><font face="Courier New,Courier"><font size=-1>basic_streamout</font></font><i><font face="Times New Roman,Times">
+to </font></i></font><b><blink><font face="Courier New,Courier"><font color="#FF6666"><font size=-1>basic_streambuf</font></font></font></blink></b><i><font face="Times New Roman,Times">.</font></i>
+<p><img SRC="page70.gif" NOSAVE height=242 width=322>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>students of an IOStreams seminar
+held at SAP AG in St. Leon-Rot, Germany, April 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="73"></a><b>page73:</b>
+<br><i>On that page we describe the difference between&nbsp; the base class
+version of <tt>rdbuf() </tt>and the hiding version in the concrete stream
+classes. The text says:&nbsp;</i>
+<p>Mind the difference described in the preceding chapter between the base
+class version of <tt>rdbuf() </tt>and the hiding version in the concrete
+stream classes. The base class version returns the stream buffer object
+referred to by the stream buffer pointer; the derived class version returns
+a pointer to the embedded stream buffer object. After resetting of the
+stream buffer pointer, both are different.
+<p>Astute reader Robert Goddard comments: <font size=-1>The phrase "both
+are different" is ambiguous: different from one another (true), or both
+are different from their previous values (false)? I suggest the phrase
+"the result of a call to the base class's rdbuf() has changed but the result
+of a call to the concrete class's rdbuf() has not." Or, since you have
+spelled it out elsewhere, you may choose to shorten it to "the results
+of calling the two rdbuf() functions differ from one another."</font>
+<p><i>Suggested reading of the section therefore is:</i>
+<p>Mind the difference described in the preceding chapter between the base
+class version of <tt>rdbuf() </tt>and the hiding version in the concrete
+stream classes. The base class version returns the stream buffer object
+referred to by the stream buffer pointer; the derived class version returns
+a pointer to the embedded stream buffer object. After resetting of the
+stream buffer pointer, <b><blink><font color="#FF6666">the results of calling
+the two <tt>rdbuf()</tt> functions differ from one another.</font></blink></b>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Robert P. Goddard, Senior Physicist,
+University of Washington, Seattle, WA, January 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="85"></a><b>page 85:</b>
+<br><i>Suggested improvement:</i>
+<p>Class <tt>basic_streambuf&lt;class charT, class Traits></tt> is an ”abstract”
+base class in the sense that no instances of this class can be constructed.
+Its constructor is protected and <b><blink><font color="#FF6666">hence
+</font></blink></b>accessible
+only to derived classes.&nbsp;
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>James M. Stern,&nbsp;&nbsp;
+ITG, Inc., Culver City, CA, April 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="89"></a><b>page 89 &amp; 90:</b>
+<br><i>Typos in various places: replace "exits" by "exists":</i>
+<p><i>page 89:</i>
+<br>If the put area <b><blink><font color="#FF6666">exists</font></blink></b>
+and it is not already full, i.e. next_pointer != 0 and next_pointer &lt;
+end_pointer, then the character is put to the position the next_pointer
+is referring to, and the next_pointer is incremented.&nbsp;
+<p><i>page 90:</i>
+<br>&nbsp;If the get area <b><blink><font color="#FF6666">exists</font></blink></b>
+and characters have already been read, i.e. next_pointer != 0 and begin_pointer
+&lt; next_pointer, then a putback position is available.&nbsp;
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Robert P. Goddard, Senior Physicist,
+University of Washington, Seattle, WA, January 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="92"></a><b>page 92:</b>
+<br><i><font face="Times New Roman,Times">The buffer in the diagram is
+larger than intended. Correct the diagram to:</font></i>
+<p><img SRC="page92.gif" NOSAVE height=305 width=497>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Vikram bir Singh, October 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="115"></a><b>page 115:</b>
+<br><i>The code sample must be corrected to:&nbsp;</i>
+<p><font face="Courier New,Courier"><font size=-1>template &lt;class charT,
+class Traits></font></font>
+<br><font face="Courier New,Courier"><font size=-1>void foo(basic_streambuf&lt;charT,Traits>*
+sbuf)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; Traits::char_type
+c;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; Traits::int_type
+i;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; i = sbuf->sgetc();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// get the next value</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// see whether it’s end-of-file</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; if (!<b><blink><font color="#FF6666">Traits::</font></blink></b>eq_int_type(i,Traits::eof()))&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// if not, convert it to a character</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; { c = <b><blink><font color="#FF6666">Traits::</font></blink></b>to_char_type(i);&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// pass on the character</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; }</font></font>
+<br><font face="Courier New,Courier"><font size=-1>}</font></font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Wolfgang Kaisers, Germany,
+July 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="144"></a><b>page 144:</b>
+<br><i>Must read:&nbsp;</i>
+<p>Invocation of <tt>erase_event</tt> callback functions on calls to <tt>copyfmt()
+</tt>is
+useful because <tt>copyfmt()</tt> <b><blink><font color="#FF6666">overwrites</font></blink></b>
+the original data members of the stream object.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>James M. Stern,&nbsp;&nbsp;
+ITG, Inc., Culver City, CA, April 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="152"></a><b>page 152-155:</b>
+<br><i>The references to section 3.1.4, Refined Inserters and Extractors,
+is incorrect in various places. The following pages must be corrected:&nbsp;</i>
+<p><i>page 152:</i>
+<br>The example in section <b><blink><font color="#FF6666">3.1.4</font></blink></b>,
+Refined Inserters and Extractors, demonstrates the correct use of sentries.
+<p><i>page 154:</i>
+<br>A concrete example is shown in section <b><blink><font color="#FF6666">3.1.4</font></blink></b>,
+Refined Inserters and Extractors.
+<p><i>page 155:</i>
+<br>Some of these aspects are demonstrated in the example presented in
+section <b><blink><font color="#FF6666">3.1.4</font></blink></b>, Refined
+Inserters and Extractors.&nbsp;
+<p><i>page 155:</i>
+<br>The inserters and extractors presented in section <b><blink><font color="#FF6666">3.1.5</font></blink></b>,
+Generic Inserters and Extractors, are another demonstration of the principle.&nbsp;
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Mark Rodgers&nbsp;&nbsp; Cadenza
+New Zealand Ltd, June 2000 and</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Wolfgang Kaisers, Germany,
+July 2000 and</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Bernd Mohr / Research Centre
+Juelich, ZAM, Germany, August 2000&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="156"></a><b>page 156:</b>
+<br><i>Ignore the footnote on page 156. We initially had no intent to discuss
+format control parameters, but decided later that the example would be
+incomplete without it and added a section on format control (see section
+3.1.4.3).&nbsp; For this reason the footnote is obsolete and should be
+removed.</i>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Bernd Mohr / Research Centre
+Juelich, ZAM, Germany, August 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="160"></a><b>page 160:</b>
+<br><i>Part of the sample code for the inserter is incorrect because the
+<tt>fill_n</tt>
+algorithm does not return the advanced output itertor as we had assumed,
+but returns void instead. The corresponding code must be corrected to:&nbsp;</i>
+<p><font face="Courier New,Courier"><font size=-1>if (charToPad &lt;= 0)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; sink =
+copy(s.begin(), s.end(), sink);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>}</font></font>
+<br><font face="Courier New,Courier"><font size=-1>else</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; if (os.flags()
+&amp; ios_base::left)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; {</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+sink = copy(s.begin(), s.end(), sink);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; <b><blink><font color="#FF6666">fill_n(sink,charToPad,os.fill());</font></blink></b></font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; }</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; else</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; {</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; <b><blink><font color="#FF6666">fill_n(sink,charToPad,os.fill());</font></blink></b></font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+sink = copy(s.begin(), s.end(), sink);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; }</font></font>
+<br><font face="Courier New,Courier"><font size=-1>}</font></font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Wolfgang Kaisers, Germany,
+July 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="161"></a><b>page 161:</b>
+<br><i>The&nbsp; section below might be slightly misleading. We did not
+mean to suggest that the C++ standard requires&nbsp; dates before January
+1, 1970 to be unrepresentable.</i>
+<p><tt>mktime()</tt> also flags date values that cannot be represented
+in a <tt>tm</tt> structure, such as dates before January 1, 1970.&nbsp;
+<p><i>The C standard states that a conforming implementation of the C library
+is required to document its choice of range and precision of times representable
+in time_t. In all implementations that we know of the valid range starts
+with January 1, 1970. In other words, whether or not a date before January
+1, 1970 can be represented is implementation-defined.</i>
+<p><i>Suggested improvement: add a footnote.</i>
+<p><tt>mktime()</tt> also flags date values that cannot be represented.<b><sup><blink><font color="#FF6666">*</font></blink></sup></b>
+<p><b><blink><font color="#FF6666"><font size=-1><sup>*</sup> The range
+of times representable in <tt>time_t</tt> is implementation-defined. In
+many implementations of the C library dates before January 1, 1970 cannot
+be represented.&nbsp;</font></font></blink></b>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>James M. Stern,&nbsp;&nbsp;
+ITG, Inc., Culver City, CA, April 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="162"></a><b>page 162:</b>
+<br><i>The sample code is a simplification of the truth: The leap-year
+rule in <tt>date::valid()</tt> is a little off. For example, 1900 wasn't
+a leap year and 2100 won't be. We were deliberately trying to keep the
+algorithm simple, because the focus of this section is on error indication
+in inserters and extractors rather than leap-year algorithms.&nbsp;</i>
+<p><i>Suggested improvement: add a footnote.</i>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; bool valid()&nbsp;
+// check for sensible date; rejects nonsense like 32.12.1999</font></font><b><sup><blink><font color="#FF6666">*</font></blink></sup></b>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; {&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; ...</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; }</font></font>
+<p><b><font color="#FF6666"><font size=-1><sup><blink>*</blink></sup> <blink>The
+leap-year rule in <tt>date::valid()</tt> is simplified For example, 1900
+wasn't a leap year and 2100 won't be.</blink></font></font></b>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>James M. Stern,&nbsp;&nbsp;
+ITG, Inc., Culver City, CA, April 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="171"></a><b>page 171:</b>
+<br><i>The sample code for the inserter is incorrect and must be corrected
+to:&nbsp;</i>
+<p><font face="Courier New,Courier"><font size=-1>template &lt;class charT,
+class Traits, <b><blink><font color="#FF6666">class Argument</font></blink></b>></font></font>
+<br><font face="Courier New,Courier"><font size=-1>basic_ostream&lt;charT,
+Traits>&amp; g_inserter&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; (basic_ostream&lt;charT,
+Traits>&amp; os, const Argument&amp; <b><blink><font color="#FF6666">arg</font></blink></b>)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{ ... }</font></font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Ben Dorman, Ph.D.&nbsp;&nbsp;
+Principal Programmer Analyst, Raytheon ITSS</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Laboratory for High Energy
+Astrophysics, NASA/GSFC, Greenbelt MD, April 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="177"></a><b>page 177:</b>
+<br><i>Three of the function pointer types on page 177 are incorrect and
+must be corrected to:&nbsp;</i>
+<p><font face="Courier New,Courier"><font size=-1>(2) basic_ios&lt;charT,Traits>&amp;&nbsp;&nbsp;&nbsp;&nbsp;
+(*pf)(basic_ios&lt;charT,Traits><b><blink><font color="#FF6666">&amp;</font></blink></b>)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>(3) basic_istream&lt;charT,Traits>&amp;
+(*pf)(basic_istream&lt;charT,Traits><b><blink><font color="#FF6666">&amp;</font></blink></b>)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>(4) basic_ostream&lt;charT,Traits>&amp;
+(*pf)(basic_ostream&lt;charT,Traits><b><blink><font color="#FF6666">&amp;</font></blink></b>)</font></font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Wayne Vucenic, Contract Programmer</font></font>
+<br><font face="Trebuchet MS"><font size=-2>No Bugs Software, Cupertino,
+California, June 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="180"></a><b>page 180:</b>
+<br><i>The code samples contains some bugs. It must be corrected to:</i>
+<p>&nbsp;<tt>class mendl {</tt>
+<br><tt>&nbsp;public:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; explicit mendl(unsigned int i) : i_(i) {}</tt>
+<br><tt>&nbsp;private:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; unsigned int i_;</tt>
+<p><tt>&nbsp;&nbsp;&nbsp; template &lt;class charT, class Traits></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; friend basic_ostream&lt;charT,Traits>&amp; operator&lt;&lt;&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; (basic_ostream&lt;charT,Traits>&amp; os, const
+mendl&amp; w)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; {&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // the manipulation: insert end-of-line
+characters and flush</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for (int i=0; i&lt;<b><blink><font color="#FF6666">w.</font></blink></b>i_;&nbsp;
+i++)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; os.put(os.widen('\n'));&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b><blink><font color="#FF6666">return</font></blink></b>
+os.flush();</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; }</tt>
+<br><tt>&nbsp;};</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Pete McEvoy, August 2000&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="188"></a><b>page 188:</b>
+<br><i>The sample first code on this page has a couple of <tt>class</tt>
+keyword that shouldn't be there. It should read:&nbsp;</i>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;template &lt;class
+charT, class Traits, class Argument></font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;<b><blink><font color="#FF6666">basic_ostream&lt;charT,Traits></font></blink></b>&amp;
+operator&lt;&lt;&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;(<b><blink><font color="#FF6666">basic_ostream&lt;charT,Traits></font></blink></b>&amp;
+os,&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;const one_arg_manip_weh&lt;Argument>&amp;
+oamw)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; if(os.good())</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;
+do_manip(os,oamw);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; return os;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;}</font></font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Brian Chamberlain, July 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="221"></a><b>page 221:</b>
+<br><i>Freudian slip. The section must read:</i>
+<p>The format string <tt>"%Y"</tt> produces the year <b><blink><font color="#FF6666">with</font></blink></b>
+century as a decimal number, yet the output on&nbsp; the terminal is&nbsp;
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;Hello World, this
+is ths year 1/1/00</font></font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>James M. Stern,&nbsp;&nbsp;
+ITG, Inc., Culver City, CA, April 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="222"></a><b>page 222:</b>
+<br><i>The section must read:</i>
+<p>Consequently, setting the format string to <b><tt><blink><font color="#FF6666">"%Y"</font></blink></tt></b>
+has no effect.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>James M. Stern,&nbsp;&nbsp;
+ITG, Inc., Culver City, CA, April 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="225"></a><b>page 225 - 248:</b>
+<br><i>Throughout chapter 3.4 all member functions that return an <tt>int_type
+</tt>are
+incorrectly declared: the nested type <tt>int_type&nbsp;</tt> must be fully
+qualified with the respective class scope when the member functions are
+defined outside of the class scope. The following corrections must be made:&nbsp;</i>
+<p><i>page 231:</i>
+<br><font face="Courier New,Courier"><font size=-1>template &lt;class charT,
+class traits ></font></font>
+<br><font face="Courier New,Courier"><font size=-1><b><blink><font color="#FF6666">unbuffered_streambuf&lt;charT,traits>::</font></blink></b>int_type</font></font>
+<br><font face="Courier New,Courier"><font size=-1>unbuffered_streambuf&lt;charT,traits>::overflow(int_type
+c)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{&nbsp; ...&nbsp; }</font></font>
+<p><i>page 232:</i>
+<br><font face="Courier New,Courier"><font size=-1>template &lt;class charT,
+class traits ></font></font>
+<br><font face="Courier New,Courier"><font size=-1><b><blink><font color="#FF6666">unbuffered_streambuf&lt;charT,traits>::</font></blink></b>int_type</font></font>
+<br><font face="Courier New,Courier"><font size=-1>unbuffered_streambuf&lt;charT,traits>::underflow()</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{&nbsp; ...&nbsp; }</font></font>
+<p><i>page 232:</i>
+<br><font face="Courier New,Courier"><font size=-1>template &lt;class charT,
+class traits></font></font>
+<br><font face="Courier New,Courier"><font size=-1><b><blink><font color="#FF6666">unbuffered_streambuf&lt;charT,traits>::</font></blink></b>int_type</font></font>
+<br><font face="Courier New,Courier"><font size=-1><font color="#000000">unbuffered_streambuf&lt;charT,traits>::</font>uflow()</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{&nbsp; ...&nbsp; }</font></font>
+<p><font face="Courier New,Courier"><font size=-1>template &lt;class charT,
+class traits ></font></font>
+<br><font face="Courier New,Courier"><font size=-1><b><blink><font color="#FF6666">unbuffered_streambuf&lt;charT,traits>::</font></blink></b>int_type</font></font>
+<br><font face="Courier New,Courier"><font size=-1>unbuffered_streambuf&lt;charT,traits>::pbackfail(int_type
+c)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{&nbsp; ...&nbsp; }</font></font>
+<p><i>page 237:</i>
+<br><font face="Courier New,Courier"><font size=-1>template &lt;class charT,
+class traits></font></font>
+<br><font face="Courier New,Courier"><font size=-1><b><blink><font color="#FF6666">outbuf&lt;charT,traits>::</font></blink></b>int_type&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>outbuf&lt;charT,traits>::overflow
+(int_type c)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{&nbsp; ...&nbsp; }</font></font>
+<p><i>page 240:</i>
+<br><font face="Courier New,Courier"><font size=-1>template &lt;class charT,
+class traits></font></font>
+<br><font face="Courier New,Courier"><font size=-1><b><blink><font color="#FF6666">inbuf&lt;charT,traits>::</font></blink></b>int_type
+inbuf&lt;charT,traits>::underflow()</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{&nbsp; ...&nbsp; }</font></font>
+<p><i>page 242:</i>
+<br><font face="Courier New,Courier"><font size=-1>template &lt;class charT,
+class traits></font></font>
+<br><font face="Courier New,Courier"><font size=-1><b><blink><font color="#FF6666">inbuf&lt;charT,traits>::</font></blink></b>int_type&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>inbuf&lt;charT,traits>::pbackfail(int_type
+c)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{&nbsp; ...&nbsp; }</font></font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Mogens Hansen&nbsp; Software
+Engineer at MAN B&amp;W Diesel A/S in Copenhagen, Denmark&nbsp; and</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Allan Stokes&nbsp;&nbsp; Victoria
+BC, Canada, June 2000&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="233"></a><b>page 233:</b>
+<br><i>The signature of uflow() is incorrect and must be corrected to:&nbsp;</i>
+<p><font face="Courier New,Courier"><font size=-1>template &lt;class charT,
+class traits></font></font>
+<br><font face="Courier New,Courier"><font size=-1><font color="#000000">unbuffered_streambuf&lt;charT,
+traits>::</font>int_type</font></font>
+<br><font face="Courier New,Courier"><font size=-1><b><blink><font color="#FF6666">unbuffered_streambuf&lt;charT,
+traits>::</font></blink></b>uflow()</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{&nbsp; ...&nbsp; }</font></font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Mogens Hansen&nbsp; Software
+Engineer</font></font>
+<br><font face="Trebuchet MS"><font size=-2>MAN B&amp;W Diesel A/S in Copenhagen,
+Denmark, June 2000&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="240"></a><b>page 240:</b>
+<br><i>In the code snippet in the middle of the page (implementation of
+the constructor) we use an interger literal, although we've already defined
+a symbolic name for the constant value. This is so ugly and should be corrected
+to:&nbsp;</i>
+<p><font face="Courier New,Courier"><font size=-1>template &lt;class charT,
+class traits></font></font>
+<br><font face="Courier New,Courier"><font size=-1>inbuf&lt;charT,traits>::inbuf()</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; setg(buffer+<b><blink><font color="#FF6666">pbSize</font></blink></b>,
+buffer+<b><blink><font color="#FF6666">pbSize</font></blink></b>, buffer+<b><blink><font color="#FF6666">pbSize</font></blink></b>);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>}</font></font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Allan Stokes&nbsp;&nbsp; Victoria
+BC, Canada, June 2000&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="241"></a><b>page 241:</b>
+<br><i>Our implementation of inbuf::buffer_in() is copying overlapping
+areas, which is undefined.&nbsp; We should be using memmove() instead.
+The code must be corrected to:</i>
+<p><font face="Courier New,Courier"><font size=-1>template &lt;class charT,
+class traits></font></font>
+<br><font face="Courier New,Courier"><font size=-1>int inbuf&lt;charT,traits>::buffer_in()</font></font>
+<br><font face="Courier New,Courier"><font size=-1>{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; // determine
+number of putback characters</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; streamsize numPutbacks
+= min(gptr() - eback(), pbSize);</font></font>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp; <b><blink><font color="#FF6666">memmove</font></blink></b>(buffer
++ (pbSize-numPutbacks) * sizeof(char_type),</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+gptr() - numPutbacks * sizeof(char_type),</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+numPutbacks * sizeof(char_type));</font></font>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp; int retval = buffer_from_device(buffer
++ pbSize * sizeof(char_type),</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+bufSize - pbSize);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; if (retval &lt;=
+0)</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; {</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; setg(0,0,0);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; return
+-1;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; }</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; else</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; {</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; setg(buffer
++ pbSize - numPutbacks,</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; buffer
++ pbSize, buffer + pbSize + retval);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; return
+retval;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; }</font></font>
+<br><font face="Courier New,Courier"><font size=-1>}</font></font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>James M. Stern,&nbsp;&nbsp;
+ITG, Inc., Culver City, CA, April 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="242"></a><b>page 242:</b>
+<br><i>Typo. Section must read:</i>
+<p>Again, the error handling in <b><tt><blink><font color="#FF6666">underflow()</font></blink></tt></b>is
+oversimplified in that it always returns <tt>traits_type::eof()</tt> to
+indicate failure, regardless of the source of the error.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>James M. Stern,&nbsp;&nbsp;
+ITG, Inc., Culver City, CA, April 2001&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="245"></a><b>page 245:</b>
+<br><i>The description of showmanyc() could be more precise.&nbsp; Suggested
+improvement:</i>
+<p>The virtual member function <tt>showmanyc()</tt> (pronounced “ess-how-many-see,”
+not “show-manic”) returns an estimation of the number of characters available
+for input, or <tt>-1</tt>.<font color="#FF6666"> <b><blink>If the returned
+value is positive, then at least the indicated number of characters can
+be made available by one or more calls to <tt>underflow()</tt>. </blink></b></font>If
+the operations returns <tt>-1</tt>, calls to <tt>underflow() </tt>and <tt>uflow()
+</tt>will
+fail. The intent is not only to know in advance that these calls will not
+return <tt>traits_type::eof()</tt>, but that they will return “immediately.”
+Or, to put it more simply, the purpose of this operation is to check if
+characters are available on the external device, which can be read by <tt>underflow()
+</tt>or
+<tt>uflow()
+</tt>without
+waiting.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>James M. Stern,&nbsp;&nbsp;
+ITG, Inc., Culver City, CA, April 2001&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="255"></a><b>page 255:</b>
+<br><i>The example of a Greek date format is slightly incorrect: The iota
+used in the name of the day and the name of the month must be accented
+using the Unicode character&nbsp; 03AF. <a href="greekDateFormat.html">Click
+here</a> for the correct format using ISO-8859-7 character encoding.</i>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Klitos Kyriacou UK, March 2001&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="272"></a><b>page 272:</b>
+<br><i>Typo in page. Should read:</i>
+<p>The reference returned remains valid at least as long as any copy of
+the containing locale exists. Section <b><blink><font color="#FF6666">7.3</font></blink></b>,
+Memory Management of Facets in a Locale, explains why this is and how it
+works.
+<p><i>Typo in footnote. Should read:</i>
+<p>4. The facet type <tt>money_put&lt;char, string_inserter&lt;char> >
+</tt>is
+an instantiation of the <tt>money_put</tt> template for an output iterator
+other than the default, which is <tt>ostreambuf_iterator&lt;charT>
+</tt>and
+was omitted from the list of template arguments in <b><tt><blink><font color="#FF6666">money_put&lt;char></font></blink></tt></b>.
+...
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Klaus Wittlich, Cologne Germany,
+December 2000</font></font>
+<br><font face="Trebuchet MS"><font size=-2>James M. Stern,&nbsp;&nbsp;
+ITG, Inc., Culver City, CA, April 2001</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Steve Love, UK, April 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="275"></a><b>page 275:</b>
+<br><i>Typo in page. Should read:</i>
+<p>To be more precise, we should say that in every locale there is one
+representative of each standard facet family. Remember, we mentioned before,
+at the beginning of chapter <b><blink><font color="#FF6666">5</font></blink></b>,
+that facet types are organized in facet families, that is, hierarchies
+of facet classes derived from each other.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>James M. Stern,&nbsp;&nbsp;
+ITG, Inc., Culver City, CA, April 2001&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="281"></a><b>page 281:</b>
+<br><i>Typo in the code sample. Must read:</i>
+<p><tt>template &lt;class String></tt>
+<br><tt>String* compare1toM (<b><blink><font color="#FF6666">locale</font></blink></b>
+loc, String one, String* begin, String* end)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; const collate&lt;String::value_type>&amp; collateFacet =</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+use_facet&lt; collate&lt;String::value_type> >(loc);</tt>
+<br><tt>&nbsp; String tmpOne =&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; collateFacet.transform(one.c_str(),one.c_str()+one.length());</tt>
+<br><tt>&nbsp; for (; begin &lt; end ; begin++)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; String tmpMany = collateFacet.transform((*begin).c_str(),</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(*begin).c_str()+(*begin).length());</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; if (tmpOne == tmpMany)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return(begin);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; return (end);</tt>
+<br><tt>}</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Norihisa Kitazawa, Japan, April
+2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="284"></a><b>page 284:</b>
+<br><i>Missing declarations. Add verbal description:</i>
+<p>Correct usage of the conversion functions is not completely obvious
+from studying their signatures. The following example should help to reveal
+the subtleties. The example shows a situation where multibyte characters
+are read from a file <b><blink><font color="#FF6666">(accessible via file
+descriptor <tt>fd</tt>)</font></blink></b> and then converted to
+<br>wide characters via <tt>in()</tt>. The multibyte characters are read
+byte by byte from the external file into a buffer. The buffer is an array
+of bytes, i.e., an array of units of type char. The operating system function
+<tt>read()</tt>
+is used to fill the buffer. The characters resulting from the conversion
+are wide characters and are accumulated in a <tt>wchar_t
+</tt>buffer. The
+conversion therefore is from the external character type
+<tt>char</tt>
+to the internal character type <tt>wchar_t</tt>. The type of an appropriate
+conversion state is assumed to be <tt>ConversionState</tt>.
+<b><blink><font color="#FF6666">For
+error indication there symbolic integral constants defined, namely <tt>ReadError</tt>,
+<tt>ConversionError</tt>,
+and <tt>ResultBufferFull</tt>.</font></blink></b> Here is the source code
+that does the conversion:
+<br>&nbsp;
+<p><i>Typo in code sample (closing bracket missing). Must read:</i>
+<p><tt>if ((readResult = read (fd, readStart, readSize)<b><blink><font color="#FF6666">)</font></blink></b>
+&lt;= 0)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; if (readResult = 0)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; err = NoMoreInput;</tt>
+<br><tt>&nbsp; else</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; err = ReadError;</tt>
+<br><tt>&nbsp; break;</tt>
+<br><tt>}</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Klaus Wittlich, December 2000&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="286"></a><b>page 286:</b>
+<br><i>Error in the signature of close(). Must read:</i>
+<p><tt>void close(catalog <b><blink><font color="#FF6666">cat_id</font></blink></b>)
+const;</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Norihisa Kitazawa, Japan, April
+2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="286"></a><b>page 286:</b>
+<br><i>Typo. Must read:</i>
+<p>The C++ standard describes how message catalogs can be accessed via
+the <blink><font color="#FF6666">messages</font></blink> facet’s member
+functions.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Norihisa Kitazawa, Japan, April
+2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="286"></a><b>page 286:</b>
+<br><i>The section header "Formatting and Parsing Facets" can be misunderstood
+as talking about&nbsp; formatting and parsing of facets, while we actually
+talk about "Facets for Formatting and Parsing".</i>
+<p><i>Change section header on page 286, in the table of contents on page
+ix.</i>
+<p><font face="Trebuchet MS"><font size=-2>suggested by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>James M. Stern,&nbsp;&nbsp;
+ITG, Inc., Culver City, CA, April 2001&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="287"></a><b>page 287:</b>
+<br><i>Suggested improvement:</i>
+<p>If the last integer is<tt> &lt;= 0</tt> or<b><tt><blink><font color="#FF6666">
+== CHAR_MAX</font></blink></tt></b>, the described group is unlimited.
+<p><font face="Trebuchet MS"><font size=-2>suggested by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>James M. Stern,&nbsp;&nbsp;
+ITG, Inc., Culver City, CA, April 2001&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="287"></a><b>page 287:</b>
+<br><i>For better understanding break last paragrpah in numpunct section&nbsp;
+into 2 paragraphs. Should read:</i>
+<p>In Nepal, on the other hand, the first group has three digits and all
+subsequent groups have two digits, so that the same number, 10 million,
+is formatted as 1,00,00,000. This grouping is described by a two-element
+string, where the first element is 3 and the second 2.&nbsp;
+<br>&nbsp;&nbsp;&nbsp; Please note that an empty string and a string that
+contains a single 0 describe the same grouping.
+<p><font face="Trebuchet MS"><font size=-2>suggested by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Klaus Wittlich, December 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="288"></a><b>page 288:</b>
+<br><i>Typo. Must read:</i>
+<p>For formatting of the numeric value, the <tt>put()</tt> function takes
+into account the information contained in numpunct, which is obtained from
+the locale returned by <tt>fg.getloc()</tt>, the format flags contained
+in the <tt>ios_base</tt> object <tt>fg</tt>, the fill character <tt>fl</tt>,
+and the character classification information taken from the ctype facet
+<blink><font color="#FF6666">contained</font></blink>
+in the locale returned by <tt>fg.getloc()</tt>.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Norihisa Kitazawa, Japan, April
+2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="296"></a><b>page 296:</b>
+<br><i>Typo. Must read:</i>
+<p>For example, a call to the first version of <tt>put()</tt> with a <tt>struct
+tm</tt> containing the 25 th of December 1993 and the character sequence
+<tt>"This
+is %A, day %d of month %B <b><blink><font color="#FF6666">in</font></blink></b>
+the year %Y. \n"</tt>, i.e. the following code snippet:
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Norihisa Kitazawa, Japan, April
+2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="296"></a><b>page 296:</b>
+<br><i>The call to the time_put facet's put() function in the sample code
+on the bottom of page 296 is non-portable. The put() function requires
+two arguments of type const char* in this case. (The pointers denote begining
+and end of the format pattern string.) We provided string iterators instead
+of const char* pointers, which works out well in most implementation of
+string, because the string iterator is typically implemented as a character
+pointer. However, in general a type compatibility between basic_string&lt;charT>::iterator
+and const charT* is not guaranteed by the standard. For this reason our
+code is non-portable and should be corrected as follows:&nbsp;</i>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;ostringstream oss;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;locale loc("American_USA.1252");</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;oss.imbue(loc);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;const time_put&lt;char>&amp;
+tfac = use_facet&lt;time_put&lt;char> >(loc);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;struct tm xmas
+= { 0, 0, 12, 25, 11, 93 };</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;string fmt("This
+is %A, day %d of month %B in the year %Y.\n");</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;time_put&lt;char>::iter_type
+ret&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; = tfac.put(oss,oss,'
+',&amp;xmas,</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp; <b><blink><font color="#FF6666">fmt.c_str(),fmt.c_str()+fmt.length()</font></blink></b>);</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;cout &lt;&lt;
+oss.str() &lt;&lt; endl;</font></font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Mark Rodgers, Cadenza New Zealand
+Ltd, June 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="298"></a><b>page 298:</b>
+<br><i>Typo. Must read:</i>
+<p><tt><b><blink><font color="#FF6666">get_date()</font></blink></b> </tt>searches
+for a character sequence that matches a time_put output pro-duced
+<br>with the format character <tt>x</tt>.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Norihisa Kitazawa, Japan, April
+2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="305"></a><b>page 305:</b>
+<br><i>Inthe diagram the occurrence of&nbsp; <tt>ctype_byname&lt;wchar_t,
+char, mbstate_t> </tt>must be replaced with <tt><b><blink><font color="#FF6666">codecvt</font></blink></b>_byname&lt;wchar_t,
+char, mbstate_t></tt>.&nbsp;</i>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Norihisa Kitazawa, Japan, April
+2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="315"></a><b>page 315:</b>
+<br><i>Typo in the name numpunct_byname, appears as numpunct:byname. Must
+read:</i>
+<p>Note that every instantiation of numpunct for a different character
+type introduces another facet family with its own facet identification.
+<tt>numpunct&lt;char></tt>
+has the identification <tt>numpunct&lt;char>::id</tt>, and <tt>numpunct&lt;wchar_t></tt>
+has the identification <tt>numpunct&lt;wchar_t>::id</tt>, which is a different
+static variable with a different value. The derived class <b><tt><blink><font color="#FF6666">numpunct_byname&lt;char></font></blink></tt></b>
+shares the identification <tt>numpunct&lt;char>::id</tt> with its base
+class <tt>numpunct&lt;char></tt>, and <tt>numpunct_byname&lt;wchar_t></tt>
+has the identification <tt>numpunct&lt;wchar_t>::id</tt> of its base class.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Norihisa Kitazawa, Japan, May
+2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="316"></a><b>page 316:</b>
+<br><i>Incorrect reference. Must read:</i>
+<p>More about the dynamic cast can be found in section G.<b><blink><font color="#FF6666">8</font></blink></b>,
+Dynamic Cast, in appendix G.
+<p><font face="Trebuchet MS"><font size=-2>suggested by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Klaus Wittlich, December 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="317"></a><b>page 317:</b>
+<br><i>Typo: base_facet appears as base_base. Must read:</i>
+<p><tt>use_facet()</tt> will find a facet with the facet interface identification
+<tt>base_facet::id</tt>
+in the locale object <tt>loc</tt>, and the dynamic cast to <tt>const <b><blink><font color="#FF6666">base_facet</font></blink></b>*</tt>
+will be processed successfully, because the facet is of exactly the required
+type.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Norihisa Kitazawa, Japan, May
+2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="322"></a><b>page 322:</b>
+<br><i>Typo. Must read:</i>
+<p>Note that the base class constructor is called with the value <tt>1</tt>
+as the initial value for the facet’s refs argument. Such a <blink><font color="#FF6666">facet</font></blink>
+need not be stuffed into a locale object but can be used independently.
+Here is the sample usage from section 6.4.3:
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Norihisa Kitazawa, Japan, May
+2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="323"></a><b>page 323:</b>
+<br><i>There is a typo in the declaration of the two destructors in the
+code sample on page 323:</i>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;class base_facet
+: public locale::facet</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; public:</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; base_facet(size_t
+refs=0) : locale::facet(refs) {}</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; virtual
+string bar() { return ”this is the base class”; }</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; static
+::std::locale::id id;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; protected:</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; </font><b><blink><font color="#FF6666">~</font></blink></b><font size=-1>base_facet()
+{}</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;};</font></font>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;class derived_facet
+: public base_facet</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;{</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; public:</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; derived_facet()
+: base_facet(0) {}</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; virtual
+string bar() { return "this is the derived class"; }</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; virtual
+string bar_2() { return "hello world"; }</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp; protected:</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp; </font><b><blink><font color="#FF6666">~</font></blink></b><font size=-1>derived_facet()
+{}</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;};</font></font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Bernd Mohr / Research Centre
+Juelich, ZAM, Germany, August 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="325"></a><b>page 325:</b>
+<br><i>We explain that locales can be passed by value without introducing
+substantial overhead, but in all our examples we pass locales by reference.
+For this reason the first paragraph of the section on the Semantics of
+Locales should be modified. It should read:</i>
+<p>Locales are designed for being passed around by value. As we have seen
+in the previous section, internally a locale is nothing more than a handle
+for a container of facets. As a result, copying and assignment of locales
+are relatively inexpensive and you can safely pass a locale to a function
+by value (rather than by reference) without risking substantial overhead.&nbsp;
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Bernd Mohr / Research Centre
+Juelich, ZAM, Germany, August 2000</font></font><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="327"></a><b>page 327 &amp; 333:</b>
+<br><i>Typo. There are references to chapter 4 instead of chapter 7. Must
+read:</i>
+<p><i>on page 327:</i>
+<br>Locales and facets form an extensible framework that allows the addition
+of user-defined internationalization services. Such services can be encapsulated
+into user-defined facet types, which can have arbitrary interfaces and
+functionality. In <blink><font color="#FF6666">chapter 7</font></blink>,
+“The Architecture of the Locale Framework,” we explained that facet types
+must have the following two properties:
+<p><i>on page 333:</i>
+<br>Now we come to the design and implementation of the address facet.
+In <blink><font color="#FF6666">chapter 7</font></blink>, “The Architecture
+of the Locale Framework,” we explained that facets must have the following
+two properties:
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Norihisa Kitazawa, Japan, May
+2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="335"></a><b>page 335:</b>
+<br><i>Typo in the code sample. The public put() function must be corrected
+to:</i>
+<p><tt>void put(OutIter oi,</tt>
+<br><tt>&nbsp;&nbsp; const String&amp; firstname, const String&amp; secname,
+const String&amp; lastname,</tt>
+<br><tt>&nbsp;&nbsp; const String&amp; address1,&nbsp; const String&amp;
+address2,</tt>
+<br><tt>&nbsp;&nbsp; const String&amp; town,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+const String&amp; zipcode, const String&amp; state,</tt>
+<br><tt>&nbsp;&nbsp; const String&amp; country,&nbsp;&nbsp; const String&amp;
+cntrycode) const</tt>
+<br><tt>{ do_put(oi, firstname, <b><blink><font color="#FF6666">secname</font></blink></b>,
+lastname,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; address1, address2,
+town, zipcode, country, cntrycode); }</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Norihisa Kitazawa, Japan, May
+2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="335"></a><b>page 335:</b>
+<br><i>For performance reasons, prefer prefix increment over postfix increment.
+Change code to:</i>
+<p><tt>void put_string(OutIter oi, String s) const</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; typename String::iterator si, end;</tt>
+<br><tt>&nbsp; for (si=s.begin(), end= s.end(); si!=end ; <b><blink><font color="#FF6666">++si,
+++oi</font></blink></b>)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; *oi = *si;</tt>
+<br><tt>}</tt>
+<p><font face="Trebuchet MS"><font size=-2>suggested by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Klaus Wittlich, December 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="336"></a><b>page 336:</b>
+<br><i>Typo in the chapter reference. Must read:</i>
+<p>See sections 6.3.1.2, <blink><font color="#FF6666">The Derived Byname
+Facets</font></blink>, and 5.1.1, Named Locales, for details about these
+locale names.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Norihisa Kitazawa, Japan, May
+2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="338"></a><b>page 338 &amp; 339:</b>
+<br><i>Typos in the code sample. Must read:</i>
+<p><tt>template &lt;class charT></tt>
+<br><tt>basic_ostream&lt;charT>&amp;</tt>
+<br><tt>operator&lt;&lt;( basic_ostream&lt;charT>&amp; os, const address&lt;charT>&amp;
+ad)</tt>
+<br><tt>{</tt>
+<br><tt>&nbsp; locale loc = os.getloc();</tt>
+<p><tt>&nbsp; try</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; const address_put&lt;charT>&amp; apFacet = use_facet&lt;address_put&lt;charT>
+> (loc);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; apFacet.put(os, ad.firstname_, ad.secname_,
+<blink><font color="#FF6666">ad.lastname_</font></blink>,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ad.address1_, ad.address2_, ad.town_, ad.zipcode_,</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; ad.state_, ad.country_, <blink><font color="#FF6666">ad.cntrycode_</font></blink>);</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; catch (bad_cast&amp;)</tt>
+<br><tt>&nbsp; {</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; // locale does not contain a address_put facet
+;</tt>
+<br><tt>&nbsp; }</tt>
+<br><tt>&nbsp; return (os);</tt>
+<br><tt>}</tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Norihisa Kitazawa, Japan, May
+2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="464"></a><b>page 464:</b>
+<br><i>The description of header <tt>&lt;iosfwd></tt> is misleading, because
+the types <tt>streamoff</tt> and <tt>streamsize</tt>&nbsp; are explained,
+but not even mentioned there. It should instead read:&nbsp;</i>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_ios&lt;char>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ios;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_ios&lt;wchar_t>&nbsp;&nbsp;&nbsp; wios;</font></font>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_streambuf&lt;char> streambuf;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_istream&lt;char>&nbsp;&nbsp; istream;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_ostream&lt;char>&nbsp;&nbsp; ostream;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_iostream&lt;char>&nbsp; iostream;</font></font>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_stringbuf&lt;char>&nbsp;&nbsp;&nbsp;&nbsp; stringbuf;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_istringstream&lt;char> istringstream;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_ostringstream&lt;char> ostringstream;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_stringstream&lt;char>&nbsp; stringstream;</font></font>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_filebuf&lt;char>&nbsp; filebuf;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_ifstream&lt;char> ifstream;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_ofstream&lt;char> ofstream;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_fstream&lt;char>&nbsp; fstream;</font></font>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_streambuf&lt;wchar_t> wstreambuf;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_istream&lt;wchar_t>&nbsp;&nbsp; wistream;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_ostream&lt;wchar_t>&nbsp;&nbsp; wostream;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_iostream&lt;wchar_t>&nbsp; wiostream;</font></font>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_stringbuf&lt;wchar_t>&nbsp;&nbsp;&nbsp;&nbsp; wstringbuf;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_istringstream&lt;wchar_t> wistringstream;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_ostringstream&lt;wchar_t> wostringstream;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_stringstream&lt;wchar_t>&nbsp; wstringstream;</font></font>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_filebuf&lt;wchar_t>&nbsp; wfilebuf;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_ifstream&lt;wchar_t> wifstream;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_ofstream&lt;wchar_t> wofstream;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef basic_fstream&lt;wchar_t>&nbsp; wfstream;</font></font>
+<p><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+template &lt;class state> class fpos;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef fpos&lt;char_traits&lt;char>::state_type>&nbsp;&nbsp;&nbsp; streampos;</font></font>
+<br><font face="Courier New,Courier"><font size=-1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef fpos&lt;char_traits&lt;wchar_t>::state_type> wstreampos;</font></font>
+<p><a NAME="456"></a><b>page 456:</b>
+<br><i>Instead of including explanations of the types <tt>streamoff</tt>
+and <tt>streamsize </tt>in this section, the corresponding information
+should be given in the section about header <tt>&lt;ios></tt>. The section
+about header <tt>&lt;ios></tt>&nbsp; on page 456 should&nbsp; be extended
+by:&nbsp;</i>
+<p><b><tt>streamoff</tt></b> is an implementation-defined type which can
+be constructed from an integral value, can be converted to an integral
+value, and allows checks for equality and inequality. Usually it is a typedef
+for one of the signed basic integral types.
+<br><b><tt>streamsize</tt></b> is an implementation-defined type which
+is a typedef for one of the signed basic integral types. In general it
+is used to represent the number of characters transferred in an I/O-operation,
+or the size of an I/O-buffer.
+<p><a NAME="638"></a><b>page 638:</b>
+<br><i>This also changes the index:</i>
+<p><tt>streamoff</tt><i> </i>type<i> </i><b><blink><font color="#FF6666">456</font></blink></b>
+<br><tt>streampos</tt>. See also <tt>fpos</tt>
+<br>&nbsp;typedef, <b><blink><font color="#FF6666">456</font></blink></b>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Christoph Koegl, Dept. of Computer
+Science, University of Kaiserslautern, July 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="487"></a><b>page 487:</b>
+<br><i>There is an <b><blink><font color="#FF0000">open issue in the C++
+standard
+</font></blink></b>regarding the behavior of <tt>getline()</tt>
+in case of failure.&nbsp;</i>
+<p><i>In the book we write that the character buffer is zeroed out on failure,
+that is, when the sentry returns false or the sentry constructors throws
+an exception. The standard does not explicitly say so. An alternative interpretation
+is that <tt>getline()</tt> will NOT store a null character in case of failure.
+<font color="#000000">Both
+approaches (storing a null character and not storing it) exist in current
+implementations. Those implementations that do store a null character on
+failure only do so when the sentry returns false, but do not store it if
+the sentry constructor throws an exception.</font></i>
+<p><i><font color="#000000">The issue is still open. The proposed resolutions
+are listed below:</font></i>
+<p><i><font color="#000000">Proposed resolution 1</font></i>
+<p><i><font color="#000000">"If the sentry constructor exits by throwing
+an exception, the exception is not caught. If the sentry object returns
+false, when converted to a value of type bool, the function returns without</font></i>
+<br><i><font color="#000000">attempting to obtain any input. In either
+case the number of extracted characters is set to 0 and the function's
+argument is left unchanged."</font></i>
+<p><i><font color="#000000">Proposed resolution 2&nbsp;</font></i>
+<p><i><font color="#000000">"If the sentry constructor exits by throwing
+an exception or if the sentry object returns false, when converted to a
+value of type bool, the function returns without attempting to obtain any
+input. In either case the number of extracted characters is set to 0; unformatted
+input functions taking a character array of non-zero size as an argument
+shall also store a null character (using charT()) in the first location
+of the array."</font></i>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Martin Sebor&nbsp;&nbsp; Rogue
+Wave Software, Inc., May 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="479"></a><b>page 479:</b>
+<br><i>The descriptions of the default constructor and the init() fucntion
+of class basic_ios&lt;charT,traits> are incomplete:</i>
+<p><tt>basic_ios();</tt>
+<br>Constructs an object of type<i> </i><tt>basic_ios&lt;charT,traits>
+</tt><b><blink><font color="#FF6666">leaving
+its data member&nbsp; uninitialized. The object must be initialized by
+calling its <tt>init()</tt> member function.&nbsp;</font></blink></b>
+<br><b><blink><font color="#FF6666">If it is destroyed before it has been
+initialized the behavior is undefined.</font></blink></b>
+<br>&nbsp;
+<p><tt>void init(basic_streambuf&lt;char_type,traits_type>* sb);</tt>
+<p>Initializes <tt>this</tt> so that:
+<p><tt>- <b><blink><font color="#FF6666">this->rdbuf()==sb</font></blink></b>,</tt>
+<br><tt>- this->rdstate()==ios_base::goodbit</tt>, if <tt>sb!=0 </tt>otherwise
+<br><tt>&nbsp; this->rdstate()==ios_base::badbit,</tt>
+<br><tt>- this->exceptions()==ios_base::goodbit,</tt>
+<br><tt>- this->flags()==ios_base::skipws | ios_base::dec,</tt>
+<br><tt>- this->width()==0,</tt>
+<br><tt>- this->precision()==6,</tt>
+<br><tt>- this->fill()==this->widen(‘ ‘),</tt>
+<br><tt>- this->tie()==0,&nbsp;</tt>
+<br><tt>- this->getloc() </tt>returns a copy of the global locale, constructed
+by
+<br><tt>&nbsp; locale()</tt>, and
+<br><tt>- <b><blink><font color="#FF6666">this-><i>iarray </i></font></blink></b></tt><b><blink><font color="#FF6666">and
+<tt>this->p<i>array
+</i></tt>are
+null pointers</font></blink></b>.
+<br>&nbsp;
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Angelika Langer,&nbsp; Trainer/Consultant,
+Munich, Germany, August 2000&nbsp;</font></font><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="502"></a><b>page 502:</b>
+<br><i>A basic_ostream has <tt>seekp</tt> and <tt>tellp</tt> functions,
+not <tt>seekg</tt> and <tt>tellg</tt>&nbsp; functions. Replace <tt>seekg</tt>
+and <tt>tellg </tt>by <tt>seekp</tt> and <tt>tellp:</tt></i>
+<p><b><font face="Arial,Helvetica"><font size=-1>POSITIONING</font></font></b>
+<br><font face="Courier New,Courier"><font size=-1>basic_ostream&lt;char_type,traits_type>&amp;&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1><b>seek<blink><font color="#FF6666">p</font></blink></b>(pos_type
+pos);</font></font>
+<br>Repositions <tt>this</tt> to the location designated by <tt>pos</tt>,
+by calling <tt>this->rdbuf()-> pubseekpos(pos)</tt>. Failures are indicated
+by the state of <tt>*this</tt>. Returns <tt>*this</tt>.
+<p><font face="Courier New,Courier"><font size=-1>basic_ostream&lt;char_type,traits_type>&amp;&nbsp;</font></font>
+<br><font face="Courier New,Courier"><font size=-1><b>seek<blink><font color="#FF6666">p</font></blink></b>(off_type
+off, ios_base::seekdir dir);</font></font>
+<br>Repositions <tt>this</tt> to the location designated by <tt>off</tt>
+and <tt>dir</tt>, by calling <tt>this->rdbuf()-> pubseekpos(off,dir)</tt>.
+Failures are indicated by the state of <tt>*this</tt>. Returns <tt>*this</tt>.
+<p><font face="Courier New,Courier"><font size=-1>pos_type <b>tell<blink><font color="#FF6666">p</font></blink></b>();</font></font>
+<br>If <tt>this->fail()==true</tt>, returns <tt>pos_type(-1)</tt>. Otherwise
+gets the stream positions by calling&nbsp; <tt>this->rdbuf()->pubseekoff(0,ios_base::cur,ios_base::out)</tt>
+and returns the result from this call.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Bernd Mohr / Research Centre
+Juelich, ZAM, Germany, August 2000&nbsp;</font></font><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="508"></a><b>page 508:</b>
+<br><i>Minor typos. The title and page header should read:</i>
+<p><font face="Arial Black"><font color="#000000">basic_streambuf&lt;charT,traits</font><blink><font color="#FF6666">></font></blink><sup><font color="#000000"><font size=-2>2</font></font></sup></font>
+<p><i>There is blank missing in the definition of <tt>traits_type</tt>:</i>
+<p><font face="Courier New,Courier"><font size=-1>typedef traits traits_type;</font></font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Allan Stokes&nbsp;&nbsp; Victoria
+BC, Canada, June 2000&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Bernd Mohr / Research Centre
+Juelich, ZAM, Germany, August 2000</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Klaus Wittlich, January 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="511"></a><b>page 511:</b>
+<br><i>The argument of the function sputc() is missing. The signatures
+must be corrected to:</i>
+<p><i>page 511:</i>
+<br><tt><font size=+1><font color="#000000">int_type sputc(</font><b><blink><font color="#FF6666">char_type
+c</font></blink></b><font color="#000000">);</font></font></tt>
+<br><font color="#000000">Stores the character <tt>c </tt>in the put area,
+e.g. <tt>(*pptr()) = c</tt>. If the put area does not exist or is full
+( i.e. <tt>pptr()==0 || pptr()==epptr()</tt>), <tt>this->overflow()</tt>
+is called and the result of this call returned.&nbsp;</font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Angelika Langer, Trainer/Consultant,
+Munich, Germany,&nbsp; August 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="511&513"></a><b>page 511&amp;513:</b>
+<br><i>There are typos in the description of xsputn(), sputn(), and sungetc().
+The signatures and descriptions must be corrected to:</i>
+<p><i>page 511:</i>
+<br><tt><font size=+1><font color="#000000">int_type sunget</font><b><blink><font color="#FF6666">c</font></blink></b><font color="#000000">();</font></font></tt>
+<br><font color="#000000">If a putback position is available (i.e. <tt>gptr()!=
+0 &amp;&amp; eback()&lt;gptr()</tt>), the next pointer of the get area
+is decremented and the element the next pointer is now pointing to is returned.
+The element is converted to <tt>int_type</tt> before the return. Otherwise
+calls&nbsp; <tt>this-> backfail()</tt></font><b><blink><font color="#FF6666">and</font></blink></b><font color="#000000">
+returns the result of this call.</font>
+<p><tt><font size=+1><font color="#000000">streamsize sputn(</font><b><blink><font color="#FF6666">const</font></blink></b><font color="#000000">
+char_type* s, streamsize n);</font></font></tt>
+<br><font color="#000000">Calls <tt>this->xsputn(s,n)</tt> and returns
+the result of this call.</font>
+<p><i>page 513:</i>
+<br><font face="Courier New,Courier">virtual streamsize xsputn(<b><blink><font color="#FF6666">const</font></blink></b>
+char_type* s, streamsize n);</font>
+<br>Writes <tt>n</tt> successive characters beginning with <tt>(*s) </tt>to
+the put area. It behaves like repeated calls to <tt>this->sputc()</tt>.
+Writing stops when either <tt>n</tt> characters have been written or a
+call to <tt>this-><b><blink><font color="#FF6666">sputc</font></blink></b>()
+</tt>would
+return <tt>traits_type::eof()</tt>. The functions returns the number of
+written characters.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Angelika Langer, Trainer/Consultant,
+Munich, Germany,&nbsp; August 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="512"></a><b>page 512 - 514:</b>
+<br><i>The return type of the functions epptr(), pbase(), pptr(), eback(),
+egptr(), and gptr() must be char_type* instead of char_type, and these
+functions are const emember functions. The signatures must be corrected
+to:</i>
+<p><i>page 512:</i>
+<br><font face="Courier New,Courier"><font size=-1><font color="#000000">char_type</font><b><blink><font color="#FF6666">*</font></blink></b><font color="#000000">
+epptr() </font><b><blink><font color="#FF6666">const</font></blink></b><font color="#000000">;</font></font></font>
+<br><font color="#000000">&nbsp; Returns the end pointer of the put area.</font>
+<p><i>page 513:</i>
+<br><font face="Courier New,Courier"><font size=-1><font color="#000000">char_type</font><b><blink><font color="#FF6666">*</font></blink></b><font color="#000000">
+pbase() </font><b><blink><font color="#FF6666">const</font></blink></b><font color="#000000">;</font></font></font>
+<br><font color="#000000">&nbsp; Returns the begin pointer of the put area.</font>
+<p><font face="Courier New,Courier"><font size=-1><font color="#000000">char_type</font><b><blink><font color="#FF6666">*</font></blink></b><font color="#000000">
+pptr() </font><b><blink><font color="#FF6666">const</font></blink></b><font color="#000000">;</font></font></font>
+<br><font color="#000000">&nbsp; Returns the next pointer of the put area.</font>
+<p><i>page 514:</i>
+<br><font face="Courier New,Courier"><font size=-1><font color="#000000">char_type</font><b><blink><font color="#FF6666">*</font></blink></b><font color="#000000">
+eback() </font><b><blink><font color="#FF6666">const</font></blink></b><font color="#000000">;</font></font></font>
+<br><font color="#000000">&nbsp; Returns the begin pointer of the get area.</font>
+<p><font face="Courier New,Courier"><font size=-1><font color="#000000">char_type</font><b><blink><font color="#FF6666">*</font></blink></b><font color="#000000">
+egptr() </font><b><blink><font color="#FF6666">const</font></blink></b><font color="#000000">;</font></font></font>
+<br><font color="#000000">&nbsp; Returns the end pointer of the get area.</font>
+<p><font face="Courier New,Courier"><font size=-1><font color="#000000">char_type</font><b><blink><font color="#FF6666">*</font></blink></b><font color="#000000">
+gptr() </font><b><blink><font color="#FF6666">const</font></blink></b><font color="#000000">;</font></font></font>
+<br><font color="#000000">&nbsp; Returns the next pointer of the get area.</font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Allan Stokes, Victoria BC,
+Canada, June 2000 and&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Angelika Langer, Trainer/Consultant,
+Munich, Germany,&nbsp; August 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="516"></a><b>page 516:</b>
+<br><i>The stream buffer's function imbue() is a virtual function and,
+different from the stream's imbue() function, it does not return anything.
+The signature must be corrected to:</i>
+<p><font face="Courier New,Courier"><b><blink><font color="#FF6666">virtual
+void</font></blink></b><font color="#000000"> imbue(const locale&amp; loc);</font></font>
+<br><font color="#000000">Allows an object of a derived class to be informed
+that the locale of this has changed, by overwriting this function in the
+respective derived class. <tt>basic_streambuf &lt;charT,traits>::imbue()</tt>
+does nothing.</font>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Rajesh Kommu, October 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="549"></a><b>page 549:</b>
+<br><i>The synopsis is entirely wrong; it describes <tt>iterator_traits</tt>
+instead of <tt>iterator</tt>, which is plain wrong The synopsis must read:</i>
+<p><tt><font color="#000000">&nbsp;&nbsp;&nbsp; namespace std {</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; template&lt;class
+Category, class T, class Distance = ptrdiff_t,</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+class Pointer = T*, class Reference = T&amp;></font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; struct iterator
+{</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef T&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; value_type;</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef Distance&nbsp; difference_type;</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef Pointer&nbsp;&nbsp; pointer;</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef Reference reference;</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+typedef Category&nbsp; iterator_category;</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp; }</font></tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Klaus Wittlich, January 2001</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="565"></a><b>page 565:</b>
+<br><i>Section must read:</i>
+<p>If ct is the radix separator, i.e., <tt>ct == use_facet&lt; numpunct&lt;charT>
+>loc.<b><blink><font color="#FF6666">decimal_point</font></blink></b>()</tt>,
+the related character is set to <tt>'.'</tt>.
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>James M. Stern,&nbsp;&nbsp;
+ITG, Inc., Culver City, CA, April 2001&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="615"></a><b>page 614 &amp; 615:</b>
+<br><i>These two pages should use the same code sample in the paragraph
+on SAFE DOWNCAST and THE DYNAMIC_CAST OPERATOR. The code sample should
+read:</i>
+<p><tt><font color="#000000">void foo(Base* ptr)&nbsp;</font></tt>
+<br><tt><font color="#000000">{</font></tt>
+<br><tt><font color="#000000">&nbsp; Derived* dp = dynamic_cast&lt;Derived*>(ptr);</font></tt>
+<br><tt><font color="#000000">&nbsp; if ( </font><b><blink><font color="#FF6666">dp
+== 0</font></blink></b><font color="#000000"> )</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp; { /* whatever is appropriate,
+but do not access any members&nbsp;</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+of the derived class */&nbsp;</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp; }&nbsp;</font></tt>
+<br><tt><font color="#000000">&nbsp; else</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp; dp->cnt = 0;</font></tt>
+<br><tt><font color="#000000">}</font></tt>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>William Moffatt UK, May 2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="621"></a><b>page 621:</b>
+<br><i>This page has a dangling reference to a section that we did not
+include in the final version of the book. Ignore the last sentence of the
+following section:</i>
+<p><font size=-1><b>ALLOCATORS</b>.&nbsp; </font>C++ strings support different
+memory allocation models by means of so-called allocators. <b><blink><font color="#FF6666">See
+box on ”Error! Reference source not found.”</font></blink></b>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Michael S. Scherotter&nbsp;&nbsp;
+Software Architect</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Tartus Development, Inc., San
+Rafael, CA, May 2000&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="632"></a><b>page 632:</b>
+<br><i>The entry for istream has a typo. It should read:</i>
+<p><blink><font color="#000000"><tt>istream</tt>. <i>See</i> </font><b><tt><font color="#FF6666">basic_istream</font></tt></b><font color="#000000">typedef,
+453</font></blink>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Vikram bir Singh, September
+2000</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="636"></a><b>page 636 &amp; 639:</b>
+<br><i>The entries for seekp, seekg, tellp, and tellg must be corrected.&nbsp;</i>
+<p><tt>seekg() </tt><b><blink><font color="#FF6666">stream member</font></blink></b>,
+52, 489
+<br><tt>seekp() </tt><b><blink><font color="#FF6666">stream member</font></blink></b>,
+52, <b><blink><font color="#FF6666">502</font></blink></b>
+<br><tt>tellg() </tt>stream member, 51, 52, 117, 489
+<br><tt>tellp() </tt>stream member, 51, 52, 117, <b><blink><font color="#FF6666">502</font></blink></b>
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Bernd Mohr / Research Centre
+Juelich, ZAM, Germany, August 2000&nbsp;</font></font><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450>
+<br><a NAME="640"></a><b>page 640:</b>
+<br><i>The index lacks an entry for unformatted input/output. The following
+entry should be added:</i>
+<p>Unformatted
+<br>&nbsp; input 49-51, 486-488
+<br>&nbsp; output 51,501
+<p><font face="Trebuchet MS"><font size=-2>error found by:&nbsp;</font></font>
+<br><font face="Trebuchet MS"><font size=-2>Allan Stokes&nbsp;&nbsp; Victoria
+BC, Canada, June 2000&nbsp;</font></font>
+<br><img SRC="../Images/bar-small.gif" VSPACE=10 NOSAVE height=1 width=450></td>
+</tr>
+
+<tr>
+<td></td>
+</tr>
+</table>
+
+</body>
+</html>
