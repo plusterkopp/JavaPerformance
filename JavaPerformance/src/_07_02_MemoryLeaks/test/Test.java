@@ -3,9 +3,9 @@ package _07_02_MemoryLeaks.test;
 import java.util.*;
 
 /**
- * StalledStack demonstrates loitering objects pinned in the heap. It uses static methods provided
- * by FileProcessor class to parse a JProbe Coverage XML snapshot, extract Java file names and
- * simulate a time and/or resource intensive process that uses these file names.
+ * StalledStack demonstrates loitering objects pinned in the heap. It uses static methods provided by FileProcessor
+ * class to parse a JProbe Coverage XML snapshot, extract Java file names and simulate a time and/or resource intensive
+ * process that uses these file names.
  */
 public class Test {
 
@@ -13,7 +13,7 @@ public class Test {
 		// Print out all arguments passed in to this main method.
 		System.out.println( "Arguments : ");
 		for ( int i = 0; i < args.length; i++) {
-			System.out.println( args[i]);
+			System.out.println( args[ i]);
 		}
 		System.out.println( "\n");
 
@@ -22,15 +22,13 @@ public class Test {
 			System.exit( 1);
 		}
 
-		/*
-		 * BEGIN YourKit
+		/* BEGIN YourKit
 		 * 
 		 * This is specific to using a dynamic profiler such as YourKit.
 		 * 
-		 * Halt the program by waiting for input in order to allow you to attach YourKit to the
-		 * application. Otherwise you would have no chance to attach and set the triggers because
-		 * the program ends faster than you can set the triggers.
-		 */
+		 * Halt the program by waiting for input in order to allow you to attach YourKit to the application. Otherwise
+		 * you would have no chance to attach and set the triggers because the program ends faster than you can set the
+		 * triggers. */
 		System.out.println( "shall we continue? <press RETURN>");
 		try {
 			System.in.read();
@@ -38,27 +36,20 @@ public class Test {
 		} catch ( Exception e) {
 			e.printStackTrace();
 		}
-		/*
-		 * Print the triggers you have been specifying manually.
+		/* Print the triggers you have been specifying manually.
 		 * 
-		 * It requires an external library that is located at: <YourKit_Home>\lib\yjp.jar and
-		 * demonstrates use of the YourKit API. See YourKit => Help => Profiler API for details and
-		 * the JavaDoc.
-		 */
-		System.out.println( "Triggers: " + new com.yourkit.api.Controller().getTriggers());
-		/*
-		 * END YourKit
-		 */
+		 * It requires an external library that is located at: <YourKit_Home>\lib\yjp.jar and demonstrates use of the
+		 * YourKit API. See YourKit => Help => Profiler API for details and the JavaDoc. */
+		// System.out.println( "Triggers: " + new com.yourkit.api.Controller().getTriggers());
+		/* END YourKit */
 
-		System.out.println( "Parsing file: " + args[0]);
+		System.out.println( "Parsing file: " + args[ 0]);
 
 		try {
-			ArrayList<String> javafiles = FileProcessor.readXMLFile( args[0]);
+			ArrayList<String> javafiles = FileProcessor.readXMLFile( args[ 0]);
 		} catch ( NoClassDefFoundError e) {
-			System.out
-				.println( "An implementation of a SAX Parser is missing from your classpath.");
-			System.out
-				.println( "Please add crimson.jar located in the 'lib' folder of the demos directory");
+			System.out.println( "An implementation of a SAX Parser is missing from your classpath.");
+			System.out.println( "Please add crimson.jar located in the 'lib' folder of the demos directory");
 			System.out.println( "to your classpath and try again.\n");
 			e.printStackTrace();
 			System.exit( 1);
