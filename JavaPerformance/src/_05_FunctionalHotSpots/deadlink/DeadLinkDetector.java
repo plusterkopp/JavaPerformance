@@ -20,112 +20,117 @@ import java.util.*;
 import _05_FunctionalHotSpots.util.file.*;
 import _05_FunctionalHotSpots.util.html.*;
 
-
 public final class DeadLinkDetector {
-    private PageDescription pageDescr = null;
-    private File htmlFile = null;
+	private PageDescription		pageDescr	= null;
+	private File				htmlFile	= null;
 
-    private static HashMap deadLinks = new HashMap();
-    private static Statistics stats = new Statistics(deadLinks);
+	private static HashMap		deadLinks	= new HashMap();
+	private static Statistics	stats		= new Statistics( deadLinks);
 
-    public static Statistics getStatistics() {
-       return stats;
-    }
+	public static Statistics getStatistics() {
+		return stats;
+	}
 
-    public final class ProcessorSupport {
-        private ProcessorSupport() {} // no public constructors
+	public final class ProcessorSupport {
+		private ProcessorSupport() {
+		} // no public constructors
 
-        public HashMap getDeadLinks() {
-            return deadLinks;
-        }
-        public File GetHtmlFile() {
-            return htmlFile;
-        }
-        public PageDescription getPageDescription() {
-            return pageDescr;
-        }
-    }
-    public void giveSupportTo(SupportedSingleTagTokenAttributeProcessor other) {
-        other.receiveSupport(new ProcessorSupport());
-    }
+		public HashMap getDeadLinks() {
+			return deadLinks;
+		}
 
+		public File GetHtmlFile() {
+			return htmlFile;
+		}
 
-    public DeadLinkDetector(File htmlFile) {
-        this.pageDescr = null;
-        this.htmlFile  = htmlFile;
-    }
-    public DeadLinkDetector(String pageName) {
-        this.pageDescr = new PageDescription(pageName);
-        this.htmlFile = null;
-    }
+		public PageDescription getPageDescription() {
+			return pageDescr;
+		}
+	}
 
-    public SingleTagTokenAttributeProcessor getDeadLinkProcessor() {
-        return new DeadLinkProcessor(this, htmlFile);
-    }
+	public void giveSupportTo( SupportedSingleTagTokenAttributeProcessor other) {
+		other.receiveSupport( new ProcessorSupport());
+	}
 
-    public static void printDeadLinks(PrintStream out) {
-    	Set linkNames = deadLinks.keySet();
-    	Iterator iter1 = linkNames.iterator();
+	public DeadLinkDetector( File htmlFile) {
+		this.pageDescr = null;
+		this.htmlFile = htmlFile;
+	}
 
-    	while (iter1.hasNext()) {
-    	    String linkName = (String) iter1.next();
-            out.println("LINK = "+linkName);
-            HashSet filesContainingLink = (HashSet)deadLinks.get(linkName);
-            out.println("CONTAINED IN: ");
-            Iterator iter2 = filesContainingLink.iterator();
-            while (iter2.hasNext()) {
-            	out.println(iter2.next());
-            }
-            out.println();
-        }
-    }
+	public DeadLinkDetector( String pageName) {
+		this.pageDescr = new PageDescription( pageName);
+		this.htmlFile = null;
+	}
 
-    private static final String DIR_OPTION = "dir";
-    private static final String DIR_DEFAULT = "D:/HomePageNew/Generated";
+	public SingleTagTokenAttributeProcessor getDeadLinkProcessor() {
+		return new DeadLinkProcessor( this, htmlFile);
+	}
 
-    private static String retrieveDirectoryName(String[] args) {
+	public static void printDeadLinks( PrintStream out) {
+		Set linkNames = deadLinks.keySet();
+		Iterator iter1 = linkNames.iterator();
 
-	    if (args == null || (args.length>0 && args[0].equals("?"))) {
-	    	System.out.println("usage: java [-D<option>=value] util.DeadLinkDetector");
-	        System.out.println("   "+DIR_OPTION+"=<absolute directory path>");
-	        System.out.println("   e.g. desc=D:/HomePageNew/Generated");
-		System.exit(-1);
-	    }
+		while ( iter1.hasNext()) {
+			String linkName = ( String) iter1.next();
+			out.println( "LINK = " + linkName);
+			HashSet filesContainingLink = ( HashSet) deadLinks.get( linkName);
+			out.println( "CONTAINED IN: ");
+			Iterator iter2 = filesContainingLink.iterator();
+			while ( iter2.hasNext()) {
+				out.println( iter2.next());
+			}
+			out.println();
+		}
+	}
 
-	    String dirname = System.getProperty(DIR_OPTION);
-	    if (dirname == null) {
-	    	dirname = DIR_DEFAULT;
-	    }
-	    return dirname;
-    }
-    public static void main(String[] args) {
-        // retrieve the directory to be searched and a dummy name of a temporary directory
-    	String theDirectory = retrieveDirectoryName(args);
+	private static final String	DIR_OPTION	= "dir";
+	private static final String	DIR_DEFAULT	= "D:/HomePageNew/Generated";
 
-    	System.out.println("DEAD LINK DETECTION started ...\n");
-        System.out.println("directory to be examined: \n"+theDirectory);
-        System.out.println("\nThis search for dead links will take a while.  Please wait ...\n");
+	private static String retrieveDirectoryName( String[] args) {
 
-    	// find all files from the directory to be examined
-        FileFinder finder = new FileFinder(FileFinder.HTML_FILES);
-        Collection theFiles = finder.getAllFilesInDirectory(theDirectory);
+		if ( args == null || ( args.length > 0 && args[0].equals( "?"))) {
+			System.out.println( "usage: java [-D<option>=value] util.DeadLinkDetector");
+			System.out.println( "   " + DIR_OPTION + "=<absolute directory path>");
+			System.out.println( "   e.g. desc=D:/HomePageNew/Generated");
+			System.exit( -1);
+		}
 
-        DeadLinkDetector detector = null;
+		String dirname = System.getProperty( DIR_OPTION);
+		if ( dirname == null) {
+			dirname = DIR_DEFAULT;
+		}
+		return dirname;
+	}
 
-    	for (Iterator iter = theFiles.iterator(); iter.hasNext(); ) {
-    		File inputFile = (File)iter.next();
-    		String inputFileName = FileUtility.changeRealPathToSymbolicPath(inputFile.getPath());
+	public static void main( String[] args) {
+		// retrieve the directory to be searched and a dummy name of a temporary directory
+		String theDirectory = retrieveDirectoryName( args);
 
-    	    detector = new DeadLinkDetector(inputFile);
+		System.out.println( "DEAD LINK DETECTION started ...\n");
+		System.out.println( "directory to be examined: \n" + theDirectory);
+		System.out.println( "\nThis search for dead links will take a while.  Please wait ...\n");
 
-    	    TagTokenVisitor tagProcessor = new TagTokenVisitor();
-    	    tagProcessor.register(new AttributeProcessorImplementation(detector.getDeadLinkProcessor()));
-            new HmtlFileProcessor(tagProcessor).processHtmlFile(inputFileName,null);
-        }
+		// find all files from the directory to be examined
+		FileFinder finder = new FileFinder( FileFinder.HTML_FILES);
+		Collection theFiles = finder.getAllFilesInDirectory( theDirectory);
 
-        System.out.println("\n---  DEAD LINK DETECTION ---\n");
-        System.out.println("directory to be examined: "+theDirectory);
-        System.out.println("\n"+stats+"\n");
-	    DeadLinkDetector.printDeadLinks(System.out);
-    }
+		DeadLinkDetector detector = null;
+
+		for ( Iterator iter = theFiles.iterator(); iter.hasNext();) {
+			File inputFile = ( File) iter.next();
+			String inputFileName = FileUtility.changeRealPathToSymbolicPath( inputFile.getPath());
+
+			detector = new DeadLinkDetector( inputFile);
+
+			TagTokenVisitor tagProcessor = new TagTokenVisitor();
+			tagProcessor.register( new AttributeProcessorImplementation( detector
+				.getDeadLinkProcessor()));
+			new HmtlFileProcessor( tagProcessor).processHtmlFile( inputFileName, null);
+		}
+
+		System.out.println( "\n---  DEAD LINK DETECTION ---\n");
+		System.out.println( "directory to be examined: " + theDirectory);
+		System.out.println( "\n" + stats + "\n");
+		DeadLinkDetector.printDeadLinks( System.out);
+	}
 }

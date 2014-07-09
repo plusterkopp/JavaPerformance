@@ -4,6 +4,7 @@
  */
 package _05_FunctionalHotSpots.util.html;
 
+import _05_FunctionalHotSpots.cvu.*;
 import _05_FunctionalHotSpots.cvu.html.*;
 
 /**

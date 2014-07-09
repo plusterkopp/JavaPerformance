@@ -2,6 +2,7 @@ package _05_FunctionalHotSpots.deadlink;
 
 import java.io.*;
 
+import _05_FunctionalHotSpots.cvu.*;
 import _05_FunctionalHotSpots.cvu.html.*;
 import _05_FunctionalHotSpots.util.file.*;
 

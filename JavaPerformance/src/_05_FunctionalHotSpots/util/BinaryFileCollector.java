@@ -6,6 +6,7 @@ package _05_FunctionalHotSpots.util;
 
 import java.util.*;
 
+import _05_FunctionalHotSpots.cvu.*;
 import _05_FunctionalHotSpots.cvu.html.*;
 import _05_FunctionalHotSpots.util.file.*;
 import _05_FunctionalHotSpots.util.html.*;

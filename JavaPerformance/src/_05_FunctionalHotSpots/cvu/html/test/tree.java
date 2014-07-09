@@ -17,6 +17,7 @@ package _05_FunctionalHotSpots.cvu.html.test;
 
 import java.io.*;
 
+import _05_FunctionalHotSpots.cvu.*;
 import _05_FunctionalHotSpots.cvu.html.*;
 
 class tree {
