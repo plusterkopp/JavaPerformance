@@ -2,11 +2,11 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="D:/temp/JavaPerformance/Installation/JakartaCommonMath/commons-math-2.0/commons-math-2.0.jar" sourcepath="D:/temp/JavaPerformance/Installation/JakartaCommonMath/commons-math-2.0/commons-math-2.0-sources.jar">
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/YourKit"/>
+	<classpathentry kind="lib" path="lib/commons-math-2.0.jar" sourcepath="lib/commons-math-2.0-sources.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="jar:file:/D:/temp/JavaPerformance/Installation/JakartaCommonMath/commons-math-2.0/commons-math-2.0-javadoc.jar!/"/>
+			<attribute name="javadoc_location" value="jar:platform:/resource/JavaPerformance/lib/commons-math-2.0-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/YourKit"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
