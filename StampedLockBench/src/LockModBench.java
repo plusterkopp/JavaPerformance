@@ -447,7 +447,9 @@ public class LockModBench {
 			double readsPS = rSum / runSecs;
 			double writesPS = mSum / runSecs;
 			BenchLogger.sysout( lockName + ": " + nf.format( readsPS) + " r/s, " + nf.format( writesPS) + " w/s, " + lockType.getRunInfo());
+			BenchRunner.addToComparisonList( lockName + " reads", readsPS);
 		}
+		BenchRunner.printComparisonList( LTReentLock.class.getSimpleName() + " reads");
 	}
 
 	private static void sleep( int i) {
